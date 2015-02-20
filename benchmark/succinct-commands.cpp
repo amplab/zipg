@@ -3,7 +3,6 @@
 #include <unistd.h>
 
 #include "../include/succinct/SuccinctShard.hpp"
-#include "../include/succinct/bench/SuccinctBenchmark.hpp"
 
 int main(int argc, char **argv) {
     std::string inputpath = std::string(argv[1]);

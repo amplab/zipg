@@ -5,6 +5,7 @@
 #include <vector>
 #include <set>
 #include <unordered_map>
+#include <list>
 
 #include <sys/mman.h>
 #include <sys/types.h>
@@ -35,7 +36,7 @@ public:
 
     size_t num_nodes();
 
-    void get(std::string& result, int64_t key);
+    void get_neighbors(std::string& result, int64_t key);
 
     void access(std::string& result, int64_t key, int32_t len);
 

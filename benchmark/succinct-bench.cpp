@@ -2,48 +2,34 @@
 #include <fstream>
 #include <unistd.h>
 
-#include "../include/succinct/SuccinctShard.hpp"
-#include "succinct/bench/SuccinctBenchmark.hpp"
+#include "../include/succinct-graph/SuccinctGraph.hpp"
+#include "../include/succinct-graph/bench/SuccinctGraphBenchmark.hpp"
 
 void print_usage(char *exec) {
-    fprintf(stderr, "Usage: %s [-m mode] [-i isa_sampling_rate] [-n npa_sampling_rate] [-t type] [-l len] [file]\n", exec);
+    fprintf(stderr, "Usage: %s [-m mode] [-t type] [file]\n", exec);
 }
 
 int main(int argc, char **argv) {
-    if(argc < 2 || argc > 12) {
+    if(argc < 2 || argc > 5) {
         print_usage(argv[0]);
         return -1;
     }
 
     int c;
     uint32_t mode = 0;
-    uint32_t isa_sampling_rate = 32;
-    uint32_t npa_sampling_rate = 128;
-    std::string type = "latency-get";
+    std::string type = "neighbor-throughput";
     int32_t len = 100;
-    while((c = getopt(argc, argv, "m:i:n:t:l:")) != -1) {
+    while((c = getopt(argc, argv, "m:t:")) != -1) {
         switch(c) {
         case 'm':
             mode = atoi(optarg);
             break;
-        case 'i':
-            isa_sampling_rate = atoi(optarg);
-            break;
-        case 'n':
-            npa_sampling_rate = atoi(optarg);
-            break;
         case 't':
             type = std::string(optarg);
             break;
-        case 'l':
-            len = atoi(optarg);
-            break;
         default:
             mode = 0;
-            isa_sampling_rate = 32;
-            npa_sampling_rate = 128;
-            type = "latency-get";
-            len = 100;
+            type = "neighbor-throughput";
         }
     }
 
@@ -55,26 +41,24 @@ int main(int argc, char **argv) {
     std::string inputpath = std::string(argv[optind]);
     std::ifstream input(inputpath);
 
-    SuccinctShard *fd;
+    SuccinctGraph *graph;
     if(mode == 0) {
-        fd = new SuccinctShard(0, inputpath, true, isa_sampling_rate, npa_sampling_rate);
+        graph = new SuccinctGraph(inputpath);
 
         // Serialize and save to file
-        std::ofstream s_out(inputpath + ".succinct");
-        fd->serialize(s_out);
-        s_out.close();
-    } else if(mode == 1) {
-        fd = new SuccinctShard(0, inputpath, false, isa_sampling_rate, npa_sampling_rate);
+        // std::ofstream s_out(inputpath + ".succinct");
+        // fd->serialize(s_out);
+        // s_out.close();
     } else {
-        // Only modes 0, 1 supported for now
+        // Only modes 0 supported for now
         assert(0);
     }
 
-    SuccinctBenchmark s_bench(fd);
+    SuccinctBenchmark s_bench(graph);
     if(type == "latency-get") {
-        s_bench.benchmark_get_latency("latency_results_get");
-    } else if(type == "throughput-access") {
-        s_bench.benchmark_access_throughput(len);
+        //s_bench.benchmark_get_latency("latency_results_get");
+    } else if(type == "neighbor-throughput") {
+        s_bench.benchmark_neighbor_throughput();
     } else {
         // Not supported
         assert(0);

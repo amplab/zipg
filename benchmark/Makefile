@@ -10,12 +10,12 @@ TARGET_S := $(BINDIR)/bench
 OBJ_S := $(BUILDDIR)/succinct-bench.o
 
 CFLAGS := -O3 -std=c++11 -Wall -g
-LIB := -L ../external/succinct-cpp/lib -lsuccinct
+LIB := -L ../external/succinct-cpp/lib -lsuccinct -L ../lib -lsuccinctgraph
 INC := -I ../include
 
 all: bench commands
 
-bench: $(TARGET_S)
+bench: clean $(TARGET_S)
 
 commands: $(TARGET_C)
 
