@@ -11,7 +11,7 @@ OBJ_S := $(BUILDDIR)/succinct-bench.o
 
 CFLAGS := -O3 -std=c++11 -Wall -g
 LIB := -L ../external/succinct-cpp/lib -lsuccinct
-INC := -I ../include -I ../external/succinct-cpp/include/
+INC := -I ../include
 
 all: bench commands
 

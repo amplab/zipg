@@ -1,18 +1,47 @@
 CC := g++
+AR := ar
 
 BINDIR := bin
+BUILDDIR := build
 EXTERNDIR := external
 LIBDIR := lib
 INCLUDEDIR := include
+SRCDIR := src
 SUCCINCTDIR := $(EXTERNDIR)/succinct-cpp
 
-all: succinct
+SRCDIRS := $(shell find $(SRCDIR) -type d)
+BUILDDIRS := $(subst $(SRCDIR),$(BUILDDIR),$(SRCDIRS))
+
+SOURCES := $(shell find $(SRCDIR) -type f -name *.cpp)
+OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.cpp=.o))
+TARGET := $(LIBDIR)/libsuccinctgraph.a
+CFLAGS := -O3 -std=c++11 -Wall -g
+LIB := -L ../external/succinct-cpp/lib -lsuccinct
+INC := -I include
+
+all: succinct graph
 
 succinct:
 	mkdir -p $(LIBDIR)
 	cd $(SUCCINCTDIR) && $(MAKE)
 
+graph: $(TARGET)
+
+$(TARGET): $(OBJECTS)
+	@echo "Creating static library..."
+	@mkdir -p $(LIBDIR)
+	@echo " $(AR) $(ARFLAGS) $@ $^"; $(AR) $(ARFLAGS) $@ $^
+
+$(BUILDDIR)/%.o: $(SRCDIR)/%.cpp
+	@mkdir -p $(BUILDDIRS)
+	@echo " $(CC) $(CFLAGS) $(INC) -c -o $@ $<";\
+	        $(CC) $(CFLAGS) $(INC) -c -o $@ $<
+
+bench: graph
+	cd benchmark && $(MAKE)
+
 clean:
 	echo "Cleaning...";
 	cd $(SUCCINCTDIR) && $(MAKE) clean
-	rm -rf $(BINDIR)/* $(LIBDIR)/* $(INCLUDEDIR)/succinct
+	rm -rf $(BINDIR)/*  $(BUILDDIR)/* $(LIBDIR)/*
+
