@@ -23,6 +23,7 @@ all: succinct graph
 
 succinct:
 	mkdir -p $(LIBDIR)
+	git submodule update --init
 	cd $(SUCCINCTDIR) && $(MAKE)
 
 graph: $(TARGET)
