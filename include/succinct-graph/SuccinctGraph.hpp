@@ -25,9 +25,6 @@ private:
     std::string input_datafile;
 
     size_t nodes, edges;
-    std::vector<int64_t> value_offsets;
-
-    uint32_t id;
 
 public:
     static const int64_t MAX_NODES = 1L << 32;
@@ -35,14 +32,17 @@ public:
     SuccinctGraph(std::string datafile);
 
     size_t num_nodes();
+    size_t num_edges();
 
     void get_neighbors(std::string& result, int64_t key);
-
+/*
     void access(std::string& result, int64_t key, int32_t len);
 
     int64_t count(std::string str);
 
     void search(std::set<int64_t>& result, std::string str);
+*/
+    size_t serialize(std::ostream& out);
 
 private:
     std::string format_data_file(std::string datafile);
