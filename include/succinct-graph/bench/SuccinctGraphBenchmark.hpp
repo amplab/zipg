@@ -52,7 +52,7 @@ static __inline__ unsigned long long rdtsc(void) {
 #endif
 
 
-class SuccinctBenchmark {
+class SuccinctGraphBenchmark {
 
 private:
     typedef unsigned long long int time_t;
@@ -101,7 +101,7 @@ private:
 
 public:
 
-    SuccinctBenchmark(SuccinctGraph *graph, std::string queryfile = "") {
+    SuccinctGraphBenchmark(SuccinctGraph *graph, std::string queryfile = "") {
         this->graph = graph;
         generate_randoms();
         if(queryfile != "") {
@@ -204,8 +204,9 @@ public:
         res_stream.close();
     }
 */
-    void benchmark_neighbor_throughput() {
-        double thput = 0;
+    std::pair<double, double> benchmark_neighbor_throughput() {
+        double get_neighbor_thput = 0;
+        double edges_thput = 0;
         std::string value;
 
         try {
@@ -219,14 +220,19 @@ public:
 
             // Measure phase
             i = 0;
+            long edges = 0;
+            double totsecs = 0;
             time_t start = get_timestamp();
             while (get_timestamp() - start < MEASURE_T) {
+                time_t query_start = get_timestamp();
                 graph->get_neighbors(value, randoms[i % randoms.size()]);
+                time_t query_end = get_timestamp();
+                totsecs += (double) (query_end - query_start) / (1000.0 * 1000.0);
+                edges += std::count(value.begin(), value.end(), ' ');
                 i++;
             }
-            time_t end = get_timestamp();
-            double totsecs = (double) (end - start) / (1000.0 * 1000.0);
-            thput = ((double) i / totsecs);
+            get_neighbor_thput = ((double) i / totsecs);
+            edges_thput = ((double) edges / totsecs);
 
             i = 0;
             time_t cooldown_start = get_timestamp();
@@ -239,13 +245,7 @@ public:
             fprintf(stderr, "Throughput test ends...\n");
         }
 
-        printf("Get throughput: %lf\n", thput);
-
-        std::ofstream ofs;
-        ofs.open("thput",
-                std::ofstream::out | std::ofstream::app);
-        ofs << thput << "\n";
-        ofs.close();
+        return std::make_pair(get_neighbor_thput, edges_thput);
     }
 
 private:
