@@ -1,11 +1,9 @@
 CC := g++
 
 SRCDIR := ../benchmark
-BUILDDIR := ../build/bench
+BUILDDIR := ../build
 BINDIR := ../bin
 
-TARGET_C := $(BINDIR)/commands
-OBJ_C := $(BUILDDIR)/succinct-commands.o
 TARGET_S := $(BINDIR)/bench
 OBJ_S := $(BUILDDIR)/succinct-bench.o
 
@@ -13,16 +11,9 @@ CFLAGS := -O3 -std=c++11 -Wall -g
 LIB := -L ../external/succinct-cpp/lib -lsuccinct -L ../lib -lsuccinctgraph
 INC := -I ../include
 
-all: bench commands
+all: bench
 
-bench: clean $(TARGET_S)
-
-commands: $(TARGET_C)
-
-$(TARGET_C): $(OBJ_C)
-	@echo "Linking..."
-	@mkdir -p $(BINDIR)
-	@echo " $(CC) $^ -o $(TARGET_C) $(LIB)"; $(CC) $^ -o $(TARGET_C) $(LIB)
+bench: $(TARGET_S)
 
 $(TARGET_S): $(OBJ_S)
 	@echo "Linking..."
@@ -35,6 +26,6 @@ $(BUILDDIR)/%.o: $(SRCDIR)/%.cpp
 
 clean:
 	@echo "Cleaning...";
-	@echo " $(RM) -r $(BUILDDIR) $(TARGET)"; $(RM) -r $(BUILDDIR) $(TARGET)
+	@echo " $(RM) -r $(BUILDDIR) $(TARGET_S)"; $(RM) -r $(BUILDDIR) $(TARGET_S)
 	
 .PHONY: clean
