@@ -29,7 +29,7 @@ std::string SuccinctGraph::format_data_file(std::string datafile) {
     for(this->edges = 0; !input.eof(); this->edges++) {
         std::string line;
         std::getline(input, line, '\n');
-        int split_pos = line.find(',');
+        int split_pos = line.find(' ');
         if (split_pos == -1)
             break;
         int from_node = std::atoi(line.substr(0, split_pos).c_str());
@@ -40,14 +40,10 @@ std::string SuccinctGraph::format_data_file(std::string datafile) {
             neighbor_list.resize(this->nodes, std::list<int>());
         }
 
-        //printf("got: %d, %d\n", from_node, to_node);
         neighbor_list[from_node].push_back(to_node);
     }
     input.close();
 
-    // More TODO
-    // instead of benching getNeighbor() queries / second, benchmark
-    // getEdges() queries / second (for each getNeighbor(), count number of edges);
     std::string tempfile = datafile + ".succinct.graph.temp";
     std::ofstream s_out(tempfile);
     for (int node = 0; node < this->nodes; node++) {

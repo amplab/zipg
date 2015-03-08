@@ -13,7 +13,7 @@ INC := -I ../include
 
 all: bench
 
-bench: $(TARGET_S)
+bench: clean $(TARGET_S)
 
 $(TARGET_S): $(OBJ_S)
 	@echo "Linking..."
