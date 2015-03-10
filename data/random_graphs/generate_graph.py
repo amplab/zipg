@@ -21,12 +21,14 @@ else:
     node_degree_left = np.ones(num_nodes) * node_degree
     nodes_remaining = np.array(range(n))
     while n > 0:
+        if n % 1000000 == 0:
+            print str(n) + ' nodes left'
         from_node_idx = np.random.randint(0, n)
         from_node = nodes_remaining[from_node_idx]
         degree = node_degree_left[from_node]
         nodes_remaining[from_node_idx] = nodes_remaining[n-1]
         n -= 1
-        to_node_idxs = np.random.randint(0, n, degree, False)
+        to_node_idxs = np.random.choice(n, degree, False)
         for to_node_idx in to_node_idxs:
             to_node = nodes_remaining[to_node_idx]
             node_degree_left[to_node] -= 1
