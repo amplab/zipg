@@ -26,7 +26,7 @@ else:
         degree = node_degree_left[from_node]
         nodes_remaining[from_node_idx] = nodes_remaining[n-1]
         n -= 1
-        to_node_idxs = np.random.randint(0, n, degree)
+        to_node_idxs = np.random.randint(0, n, degree, False)
         for to_node_idx in to_node_idxs:
             to_node = nodes_remaining[to_node_idx]
             node_degree_left[to_node] -= 1
