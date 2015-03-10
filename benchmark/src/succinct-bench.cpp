@@ -2,8 +2,8 @@
 #include <fstream>
 #include <unistd.h>
 
-#include "../include/succinct-graph/SuccinctGraph.hpp"
-#include "../include/succinct-graph/bench/SuccinctGraphBenchmark.hpp"
+#include "../../include/succinct-graph/SuccinctGraph.hpp"
+#include "../include/SuccinctGraphBenchmark.hpp"
 
 void print_usage(char *exec) {
     fprintf(stderr, "Usage: %s [-t type] [file]\n", exec);

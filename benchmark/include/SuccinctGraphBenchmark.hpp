@@ -1,5 +1,5 @@
-#ifndef SUCCINCT_BENCHMARK_H
-#define SUCCINCT_BENCHMARK_H
+#ifndef SUCCINCT_GRAPH_BENCHMARK_H
+#define SUCCINCT_GRAPH_BENCHMARK_H
 
 #include <cstdio>
 #include <fstream>
@@ -7,7 +7,7 @@
 
 #include <sys/time.h>
 
-#include "../SuccinctGraph.hpp"
+#include "../../include/succinct-graph/SuccinctGraph.hpp"
 
 #if defined(__i386__)
 
@@ -62,7 +62,7 @@ private:
     const count_t COOLDOWN_N = 1000;
     const count_t MEASURE_N = 10000;
 
-    static const count_t WARMUP_T = 10000000;
+    static const count_t WARMUP_T = 60000000;
     static const count_t MEASURE_T = 60000000;
     static const count_t COOLDOWN_T = 10000000;
 
@@ -108,102 +108,7 @@ public:
             read_queries(queryfile);
         }
     }
-/*
-    void benchmark_count(std::string res_path) {
 
-        time_t t0, t1, tdiff;
-        uint64_t res;
-        count_t sum;
-        std::ofstream res_stream(res_path);
-
-        // Measure
-        sum = 0;
-        fprintf(stderr, "Measuring for %lu queries...\n", MEASURE_N);
-        for(uint64_t i = 0; i < queries.size(); i++) {
-            t0 = rdtsc();
-            res = fd->count(queries[i]);
-            t1 = rdtsc();
-            tdiff = t1 - t0;
-            res_stream << res << "\t" << tdiff << "\n";
-            sum = (sum + res) % fd->original_size();
-        }
-        fprintf(stderr, "Measure chksum = %lu\n", sum);
-        fprintf(stderr, "Measure complete.\n");
-
-        res_stream.close();
-
-    }
-
-    void benchmark_search(std::string res_path) {
-
-        time_t t0, t1, tdiff;
-        count_t sum;
-        std::ofstream res_stream(res_path);
-
-        // Measure
-        sum = 0;
-        fprintf(stderr, "Measuring for %lu queries...\n", MEASURE_N);
-        for(uint64_t i = 0; i < queries.size(); i++) {
-            std::set<int64_t> res;
-            t0 = rdtsc();
-            fd->search(res, queries[i]);
-            t1 = rdtsc();
-            tdiff = t1 - t0;
-            res_stream << res.size() << "\t" << tdiff << "\n";
-            sum = (sum + res.size()) % fd->original_size();
-        }
-        fprintf(stderr, "Measure chksum = %lu\n", sum);
-        fprintf(stderr, "Measure complete.\n");
-
-        res_stream.close();
-
-    }
-
-    void benchmark_get_latency(std::string res_path) {
-        time_t t0, t1, tdiff;
-        count_t sum;
-        std::ofstream res_stream(res_path);
-
-        // Warmup
-        sum = 0;
-        fprintf(stderr, "Warming up for %lu queries...\n", WARMUP_N);
-        for(uint64_t i = 0; i < WARMUP_N; i++) {
-            std::string res;
-            fd->get(res, randoms[i]);
-            sum = (sum + res.length()) % fd->original_size();
-        }
-        fprintf(stderr, "Warmup chksum = %lu\n", sum);
-        fprintf(stderr, "Warmup complete.\n");
-
-        // Measure
-        sum = 0;
-        fprintf(stderr, "Measuring for %lu queries...\n", MEASURE_N);
-        for(uint64_t i = WARMUP_N; i < WARMUP_N + MEASURE_N; i++) {
-            std::string res;
-            t0 = get_timestamp();
-            fd->get(res, randoms[i]);
-            t1 = get_timestamp();
-            tdiff = t1 - t0;
-            res_stream << randoms[i] << "\t" << res << "\t" << tdiff << "\n";
-            sum = (sum + res.length()) % fd->original_size();
-        }
-        fprintf(stderr, "Measure chksum = %lu\n", sum);
-        fprintf(stderr, "Measure complete.\n");
-
-        // Cooldown
-        sum = 0;
-        fprintf(stderr, "Cooling down for %lu queries...\n", COOLDOWN_N);
-        for(uint64_t i = WARMUP_N + MEASURE_N; i < randoms.size(); i++) {
-            std::string res;
-            fd->get(res, randoms[i]);
-            sum = (sum + res.length()) % fd->original_size();
-        }
-        fprintf(stderr, "Cooldown chksum = %lu\n", sum);
-        fprintf(stderr, "Cooldown complete.\n");
-
-        res_stream.close();
-    }
-*/
     std::pair<double, double> benchmark_neighbor_throughput() {
         double get_neighbor_thput = 0;
         double edges_thput = 0;
