@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
+	<classpathentry kind="lib" path="/Users/evanye/neo4j-benchmark/neo4j-benchmark/lib/lucene-core-3.6.2.jar"/>
+	<classpathentry kind="lib" path="/Users/evanye/neo4j-benchmark/neo4j-benchmark/lib/neo4j-kernel-2.1.7.jar"/>
+	<classpathentry kind="lib" path="/Users/evanye/neo4j-benchmark/neo4j-benchmark/lib/neo4j-lucene-index-2.1.7.jar"/>
+	<classpathentry kind="lib" path="/Users/evanye/neo4j-benchmark/neo4j-benchmark/lib/neo4j-primitive-collections-2.1.7.jar"/>
+	<classpathentry kind="lib" path="/Users/evanye/neo4j-benchmark/neo4j-benchmark/lib/jta-1.3.1.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

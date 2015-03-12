@@ -3,6 +3,7 @@
 *.lo
 *.o
 *.obj
+*.class
 
 # Precompiled Headers
 *.gch
@@ -27,4 +28,9 @@
 *.out
 *.app
 
+# Misc
+*.succinct
+*.temp
+*.txt
+*.xlsx
 .DS_STORE
