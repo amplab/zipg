@@ -24,24 +24,18 @@ private:
     SuccinctShard * shard;
     std::string input_datafile;
 
-    size_t nodes, edges;
+    int64_t nodes, edges;
 
 public:
     static const int64_t MAX_NODES = 1L << 32;
 
     SuccinctGraph(std::string datafile);
 
-    size_t num_nodes();
-    size_t num_edges();
+    int64_t num_nodes();
+    int64_t num_edges();
 
     void get_neighbors(std::string& result, int64_t key);
-/*
-    void access(std::string& result, int64_t key, int32_t len);
 
-    int64_t count(std::string str);
-
-    void search(std::set<int64_t>& result, std::string str);
-*/
     size_t serialize(std::ostream& out);
 
 private:

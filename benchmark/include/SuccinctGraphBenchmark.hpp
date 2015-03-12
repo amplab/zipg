@@ -1,111 +1,63 @@
 #ifndef SUCCINCT_GRAPH_BENCHMARK_H
 #define SUCCINCT_GRAPH_BENCHMARK_H
 
-#include <cstdio>
-#include <fstream>
-#include <vector>
-
-#include <sys/time.h>
-
+#include <random>
+#include "../../external/succinct-cpp/benchmark/include/Benchmark.hpp"
 #include "../../include/succinct-graph/SuccinctGraph.hpp"
 
-#if defined(__i386__)
-
-static __inline__ unsigned long long rdtsc(void) {
-    unsigned long long int x;
-    __asm__ volatile (".byte 0x0f, 0x31" : "=A" (x));
-    return x;
-}
-#elif defined(__x86_64__)
-
-static __inline__ unsigned long long rdtsc(void) {
-    unsigned hi, lo;
-    __asm__ __volatile__ ("rdtsc" : "=a"(lo), "=d"(hi));
-    return ( (unsigned long long)lo)|( ((unsigned long long)hi)<<32 );
-}
-
-#elif defined(__powerpc__)
-
-static __inline__ unsigned long long rdtsc(void) {
-    unsigned long long int result=0;
-    unsigned long int upper, lower,tmp;
-    __asm__ volatile(
-                "0:                  \n"
-                "\tmftbu   %0           \n"
-                "\tmftb    %1           \n"
-                "\tmftbu   %2           \n"
-                "\tcmpw    %2,%0        \n"
-                "\tbne     0b         \n"
-                : "=r"(upper),"=r"(lower),"=r"(tmp)
-                );
-    result = upper;
-    result = result<<32;
-    result = result|lower;
-
-    return(result);
-}
-
-#else
-
-#error "No tick counter is available!"
-
-#endif
-
-
-class SuccinctGraphBenchmark {
+class SuccinctGraphBenchmark : public Benchmark {
 
 private:
-    typedef unsigned long long int time_t;
-    typedef unsigned long count_t;
+    static const count_t WARMUP_T = 60 * 1E6;
+    static const count_t MEASURE_T = 120 * 1E6;
+    static const count_t COOLDOWN_T = 10 * 1E6;
 
-    const count_t WARMUP_N = 1000;
-    const count_t COOLDOWN_N = 1000;
-    const count_t MEASURE_N = 10000;
+    void generate_query_files(std::string warmup_query_file, std::string query_file) {
+        int64_t nodes = graph->num_nodes();
+        std::random_device rd;
+        std::mt19937 rng(rd());
+        std::uniform_int_distribution<int64_t> uni(0, nodes - 1);
 
-    static const count_t WARMUP_T = 60000000;
-    static const count_t MEASURE_T = 60000000;
-    static const count_t COOLDOWN_T = 10000000;
+        std::ofstream warmup_out(warmup_query_file);
+        std::ofstream query_out(query_file);
+        for(count_t i = 0; i < std::max(nodes, (int64_t)20000); i++) {
+            int64_t rand_node = uni(rng);
+            warmup_queries.push_back(rand_node);
+            warmup_out << rand_node << std::endl;
+        }
 
-    static time_t get_timestamp() {
-		struct timeval now;
-		gettimeofday (&now, NULL);
-
-		return  now.tv_usec + (time_t)now.tv_sec * 1000000;
-	}
-
-    void generate_randoms() {
-        count_t q_cnt = WARMUP_N + COOLDOWN_N + MEASURE_N;
-        for(count_t i = 0; i < q_cnt; i++) {
-            randoms.push_back(rand() % graph->num_nodes());
+        for(count_t i = 0; i < std::max(nodes, (int64_t)50000); i++) {
+            int64_t rand_node = uni(rng);
+            queries.push_back(rand_node);
+            query_out << rand_node << std::endl;
         }
     }
 
-    void read_queries(std::string filename) {
-        std::ifstream inputfile(filename);
-        if(!inputfile.is_open()) {
-            fprintf(stderr, "Error: Query file [%s] may be missing.\n",
-                    filename.c_str());
-            return;
+    void read_queries(std::string warmup_query_file, std::string query_file) {
+        std::ifstream warmup_input(warmup_query_file);
+        std::ifstream query_input(query_file);
+
+        std::string line;
+        while (getline(warmup_input, line)) {
+            warmup_queries.push_back(std::strtoll(line.c_str(), NULL, 10));
         }
 
-        std::string line, bin, query;
-        while (getline(inputfile, line)) {
-            // Extract key and value
-            int split_index = line.find_first_of('\t');
-            bin = line.substr(0, split_index);
-            query = line.substr(split_index + 1);
-            queries.push_back(query);
+        while (getline(query_input, line)) {
+            queries.push_back(std::strtoll(line.c_str(), NULL, 10));
         }
-        inputfile.close();
+        warmup_input.close();
+        query_input.close();
     }
 
 public:
 
-    SuccinctGraphBenchmark(SuccinctGraph *graph, std::string queryfile = "") {
+    SuccinctGraphBenchmark(SuccinctGraph *graph, bool create_query_files,
+            std::string warmup_query_file, std::string query_file) : Benchmark() {
         this->graph = graph;
-        generate_randoms();
-        if(queryfile != "") {
-            read_queries(queryfile);
+        if(create_query_files) {
+            generate_query_files(warmup_query_file, query_file);
+        } else {
+            read_queries(warmup_query_file, query_file);
         }
     }
 
@@ -119,7 +71,7 @@ public:
             long i = 0;
             time_t warmup_start = get_timestamp();
             while (get_timestamp() - warmup_start < WARMUP_T) {
-                graph->get_neighbors(value, randoms[i % randoms.size()]);
+                graph->get_neighbors(value, warmup_queries[i % warmup_queries.size()]);
                 i++;
             }
 
@@ -130,9 +82,9 @@ public:
             time_t start = get_timestamp();
             while (get_timestamp() - start < MEASURE_T) {
                 time_t query_start = get_timestamp();
-                graph->get_neighbors(value, randoms[i % randoms.size()]);
+                graph->get_neighbors(value, queries[i % queries.size()]);
                 time_t query_end = get_timestamp();
-                totsecs += (double) (query_end - query_start) / (1000.0 * 1000.0);
+                totsecs += (double) (query_end - query_start) / (double(1E6));
                 edges += std::count(value.begin(), value.end(), ' ');
                 i++;
             }
@@ -142,7 +94,7 @@ public:
             i = 0;
             time_t cooldown_start = get_timestamp();
             while (get_timestamp() - cooldown_start < COOLDOWN_T) {
-                graph->get_neighbors(value, randoms[i % randoms.size()]);
+                graph->get_neighbors(value, warmup_queries[i % warmup_queries.size()]);
                 i++;
             }
 
@@ -154,8 +106,8 @@ public:
     }
 
 private:
-    std::vector<uint64_t> randoms;
-    std::vector<std::string> queries;
+    std::vector<uint64_t> warmup_queries;
+    std::vector<uint64_t> queries;
     SuccinctGraph *graph;
 };
 

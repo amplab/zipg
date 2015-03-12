@@ -9,12 +9,12 @@ TARGET_S := $(BINDIR)/bench
 OBJ_S := $(BUILDDIR)/succinct-bench.o
 
 CFLAGS := -O3 -std=c++11 -Wall -g
-LIB := -L $(LIBDIR) -lsuccinct 
-INC := -I ../include -I include
+LIB := -L $(LIBDIR) -lsuccinct -L ../lib -lsuccinctgraph
+INC := -I ../include -I include -I ../external/succinct-cpp/benchmark/include/
 
 all: bench
 
-bench: $(TARGET_S)
+bench: clean $(TARGET_S)
 
 $(TARGET_S): $(OBJ_S)
 	@echo "Linking..."
@@ -26,7 +26,7 @@ $(BUILDDIR)/%.o: $(SRCDIR)/%.cpp
 	@echo " $(CC) $(CFLAGS) $(INC) -c -o $@ $<"; $(CC) $(CFLAGS) $(INC) -c -o $@ $<
 
 clean:
-	@echo "Cleaning..."; 
+	@echo "Cleaning...";
 	@echo " $(RM) -r $(BUILDDIR) $(TARGET_S)";\
 		$(RM) -r $(BUILDDIR) $(TARGET_S)
 	

@@ -9,11 +9,11 @@ SuccinctGraph::SuccinctGraph(std::string datafile) {
     this->shard = new SuccinctShard(0, tempfile);
 }
 
-size_t SuccinctGraph::num_nodes() {
+int64_t SuccinctGraph::num_nodes() {
     return nodes;
 }
 
-size_t SuccinctGraph::num_edges() {
+int64_t SuccinctGraph::num_edges() {
     return edges;
 }
 
