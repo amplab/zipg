@@ -40,6 +40,7 @@ public:
 
 private:
     std::string format_data_file(std::string datafile);
+    size_t lines_in_file(std::string file_path);
 };
 
 #endif

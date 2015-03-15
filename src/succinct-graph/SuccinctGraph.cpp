@@ -7,6 +7,9 @@ SuccinctGraph::SuccinctGraph(std::string datafile, bool construct) {
     this->edges = 0;
     if (construct) {
         datafile = format_data_file(datafile);
+    } else {
+        //TODO: also find a way of computing edges when we do not construct
+        this->nodes = lines_in_file(datafile);
     }
     //TODO: generalize id so we can create multiple succinct graphs
     this->shard = new SuccinctShard(0, datafile, construct);
@@ -62,4 +65,14 @@ std::string SuccinctGraph::format_data_file(std::string datafile) {
 
 size_t SuccinctGraph::serialize(std::ostream& out) {
     return shard->serialize(out);
+}
+
+size_t SuccinctGraph::lines_in_file(std::string file_path) {
+    std::ifstream file(file_path);
+    size_t lines = 0;
+    std::string line;
+    while (std::getline(file, line)) {
+        lines++;
+    }
+    return lines;
 }
