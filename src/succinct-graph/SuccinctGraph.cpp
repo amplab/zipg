@@ -1,12 +1,15 @@
 #include "../../include/succinct-graph/SuccinctGraph.hpp"
 #include <iostream>
 
-SuccinctGraph::SuccinctGraph(std::string datafile) {
+SuccinctGraph::SuccinctGraph(std::string datafile, bool construct) {
     this->input_datafile = datafile;
     this->nodes = 0;
     this->edges = 0;
-    std::string tempfile = format_data_file(datafile);
-    this->shard = new SuccinctShard(0, tempfile);
+    if (construct) {
+        datafile = format_data_file(datafile);
+    }
+    //TODO: generalize id so we can create multiple succinct graphs
+    this->shard = new SuccinctShard(0, datafile, construct);
 }
 
 int64_t SuccinctGraph::num_nodes() {
@@ -23,7 +26,6 @@ void SuccinctGraph::get_neighbors(std::string& result, int64_t key) {
 
 std::string SuccinctGraph::format_data_file(std::string datafile) {
     std::ifstream input(datafile);
-
     std::vector< std::list<int> > neighbor_list;
 
     for(this->edges = 0; !input.eof(); this->edges++) {
@@ -44,7 +46,7 @@ std::string SuccinctGraph::format_data_file(std::string datafile) {
     }
     input.close();
 
-    std::string tempfile = datafile + ".succinct.graph.temp";
+    std::string tempfile = datafile + ".graph";
     std::ofstream s_out(tempfile);
     for (int node = 0; node < this->nodes; node++) {
         std::list<int> neighbors = neighbor_list[node];

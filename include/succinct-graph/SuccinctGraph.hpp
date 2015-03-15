@@ -29,7 +29,7 @@ private:
 public:
     static const int64_t MAX_NODES = 1L << 32;
 
-    SuccinctGraph(std::string datafile);
+    SuccinctGraph(std::string datafile, bool construct = true);
 
     int64_t num_nodes();
     int64_t num_edges();

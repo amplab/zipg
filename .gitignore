@@ -30,7 +30,7 @@
 
 # Misc
 *.succinct
-*.temp
+*.graph
 *.txt
 *.xlsx
 .DS_STORE

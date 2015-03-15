@@ -69,22 +69,30 @@ int main(int argc, char **argv) {
         return -1;
     }
 
-    std::string inputpath = std::string(argv[optind]);
-    std::ifstream input(inputpath);
+    std::string original_file;
+    std::string input_path = std::string(argv[optind]);
     std::ofstream result_file(result_file_name, std::ios_base::app);
+    SuccinctGraph * graph;
+    if (input_path.find(".graph") == std::string::npos) {
+        original_file = input_path;
+        graph = new SuccinctGraph(input_path, true);
+        // Serialize and save to file
+        std::ofstream s_out(input_path + ".graph.succinct");
+        graph->serialize(s_out);
+        s_out.close();
+    } else {
+        original_file = input_path.substr(0, input_path.size() - 6);
+        graph = new SuccinctGraph(input_path, false);
+    }
 
-    SuccinctGraph * graph = new SuccinctGraph(inputpath);
-    // Serialize and save to file
-    std::ofstream s_out(inputpath + ".succinct");
-    graph->serialize(s_out);
-    std::string original_size = get_file_size(inputpath, size);
-    std::string succinct_size = get_file_size(inputpath + ".succinct", size);
-    s_out.close();
+    std::string original_size = get_file_size(original_file, size);
+    std::string succinct_size = get_file_size(original_file + ".graph.succinct", size);
 
     SuccinctGraphBenchmark s_bench(graph, create_file, warmup_query_file, measure_query_file);
+
     if(type == "neighbor-throughput") {
         std::pair<double, double> thput_pair = s_bench.benchmark_neighbor_throughput();
-        result_file << inputpath << "\n";
+        result_file << original_file << "\n";
         result_file << "Nodes: " << graph->num_nodes() << "\n";
         result_file << "Edges: " << graph->num_edges() << "\n";
         result_file << "Get Neighbor Throughput: " << thput_pair.first << "\n";
