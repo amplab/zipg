@@ -44,7 +44,7 @@ public class Benchmark {
 			for (int i = 0; i < N; i++) {
 				nodes[i] = tempNodes.remove(0);
 			}
-
+			System.out.println(N);
 			// warmup
 			int i = 0;
 			long warmupStart = System.nanoTime();
