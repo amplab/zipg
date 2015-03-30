@@ -1,25 +1,9 @@
-/**
- * Licensed to Neo Technology under one or more contributor
- * license agreements. See the NOTICE file distributed with
- * this work for additional information regarding copyright
- * ownership. Neo Technology licenses this file to you under
- * the Apache License, Version 2.0 (the "License"); you may
- * not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied. See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
 import java.io.BufferedReader;
-import java.io.File;
+import java.io.BufferedWriter;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -31,21 +15,22 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.ResourceIterator;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
-import org.neo4j.graphdb.index.Index;
 import org.neo4j.graphdb.schema.IndexDefinition;
 import org.neo4j.graphdb.schema.Schema;
 
 public class BenchName {
-	// private static final String DB_PATH =
-	// "target/neo4j-store-with-new-indexing";
 	private static final String DB_DIR = "/Users/evanye/succinct-graph/benchmark/";
+	private static final String QUERY_DIR = "/Users/evanye/succinct-graph/benchmark/";
+	private static final String OUTPUT_FILE = "neo4j_name_benchmark.txt";
+	private static final long WARMUP_TIME = (long) (60 * 1E9); // 60 seconds
+	private static final long MEASURE_TIME = (long) (120 * 1E9); // 120 seconds
+	private static final long COOLDOWN_TIME = (long) (30 * 1E9); // 30 seconds
 
 	public static void main(String[] args) {
-		// String dataset = args[0];
-		String dataset = "1000_10";
-		String db_path = DB_DIR + "neo4j_" + dataset;
-		String warmup_query_path = DB_DIR + "warmup_" + dataset + ".txt";
-		String query_path = DB_DIR + "query_" + dataset + ".txt";
+		String dataset = args[0];
+		String db_path = DB_DIR + dataset;
+		String warmup_query_path = QUERY_DIR + "warmup_" + dataset + ".txt";
+		String query_path = QUERY_DIR + "query_" + dataset + ".txt";
 		nameThroughput(db_path, warmup_query_path, query_path);
 	}
 
@@ -61,40 +46,64 @@ public class BenchName {
 		IndexDefinition indexDefinition;
 		Label label = DynamicLabel.label("Node");
 		try (Transaction tx = graphDb.beginTx()) {
-			Schema schema = graphDb.schema();
-			if (!schema.getIndexes(label).iterator().hasNext()) {
-				indexDefinition = schema.indexFor(label).on("name").create();
+			// warmup
+			int i = 0;
+			System.out.println("Warming up queries");
+			long warmupStart = System.nanoTime();
+			while (System.nanoTime() - warmupStart < WARMUP_TIME) {
+				List<Node> nodes = getNodes(graphDb, label, warmupQueries[i
+						% warmupQueries.length]);
+				i++;
+			}
 
-				schema.awaitIndexOnline(indexDefinition, 1000, TimeUnit.SECONDS);
+			// measure
+			i = 0;
+			System.out.println("Measure queries");
+			long edges = 0;
+			double totalSeconds = 0;
+			long start = System.nanoTime();
+			while (System.nanoTime() - start < MEASURE_TIME) {
+				long queryStart = System.nanoTime();
+				List<Node> nodes = getNodes(graphDb, label, queries[i
+						% queries.length]);
+				long queryEnd = System.nanoTime();
+				totalSeconds += (queryEnd - queryStart) / ((double) 1E9);
+				i++;
+			}
+			double thput = ((double) i) / totalSeconds;
+			
+			System.out.println("Get Name throughput: " + thput);
+			try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(OUTPUT_FILE, true)))) {
+			    out.println(DB_PATH);
+			    out.println(thput + "\n");
+			} catch (IOException e) {
+			    e.printStackTrace();
+			}
+
+			// cooldown
+			i = 0;
+			long cooldownStart = System.nanoTime();
+			while (System.nanoTime() - cooldownStart < COOLDOWN_TIME) {
+				List<Node> nodes = getNodes(graphDb, label, warmupQueries[i
+						% warmupQueries.length]);
+				i++;
 			}
 			tx.success();
 		}
-
-		{
-			// START SNIPPET: findUsers
-
-			String nameToFind = warmupQueries[0];
-			System.out.println(nameToFind);
-			try (Transaction tx = graphDb.beginTx()) {
-				try (ResourceIterator<Node> nodes = graphDb.findNodes(label,
-						"name", nameToFind)) {
-					ArrayList<Node> userNodes = new ArrayList<>();
-					while (nodes.hasNext()) {
-						userNodes.add(nodes.next());
-					}
-					for (Node node : userNodes) {
-						System.out.println("The id of user " + nameToFind
-								+ " is " + node.getId());
-					}
-				}
-			}
-			// END SNIPPET: findUsers
-
-		}
 		System.out.println("Shutting down database ...");
-		// START SNIPPET: shutdownDb
 		graphDb.shutdown();
-		// END SNIPPET: shutdownDb
+	}
+
+	private static List<Node> getNodes(GraphDatabaseService graphDb,
+			Label label, String name) {
+		try (ResourceIterator<Node> nodes = graphDb.findNodes(label, "name",
+				name)) {
+			ArrayList<Node> userNodes = new ArrayList<>();
+			while (nodes.hasNext()) {
+				userNodes.add(nodes.next());
+			}
+			return userNodes;
+		}
 	}
 
 	private static String[] getQueries(String file) {
