@@ -73,6 +73,7 @@ public:
             // Warmup phase
             long i = 0;
             time_t warmup_start = get_timestamp();
+            std::cout << "Warming up" << std::endl;
             while (get_timestamp() - warmup_start < WARMUP_T) {
                 graph->get_nodes(result, warmup_queries[i % warmup_queries.size()]);
                 i++;
@@ -82,6 +83,7 @@ public:
             i = 0;
             double totsecs = 0;
             time_t start = get_timestamp();
+            std::cout << "Measuring throughput" << std::endl;
             while (get_timestamp() - start < MEASURE_T) {
                 time_t query_start = get_timestamp();
                 graph->get_nodes(result, queries[i % queries.size()]);
@@ -90,6 +92,7 @@ public:
                 i++;
             }
             thput = ((double) i / totsecs);
+            std::cout << "Throughput: " << thput << std::endl;
 
             i = 0;
             time_t cooldown_start = get_timestamp();

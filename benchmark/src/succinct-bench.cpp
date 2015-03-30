@@ -95,6 +95,7 @@ int main(int argc, char **argv) {
     result_file << "Original file size: " << original_size << "\n";
     result_file << "Succinct file size: " << succinct_size << "\n\n";
 
+    std::cout << "benching " << graph_file << std::endl;
     if (type == "neighbor-throughput") {
         NeighborBenchmark s_bench(graph, warmup_query_file, measure_query_file);
         std::pair<double, double> thput_pair = s_bench.benchmark_neighbor_throughput();
