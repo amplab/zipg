@@ -65,7 +65,7 @@ std::string SuccinctGraph::format_input_data(std::string node_file, std::string 
     node_input.close();
     edge_input.close();
 
-    std::string graph_file = edge_file.substr(0, edge_file.find('.')) + ".graph";
+    std::string graph_file = node_file.substr(0, node_file.find('.')) + ".graph";
     std::ofstream s_out(graph_file);
     for (int node = 0; node < this->nodes; node++) {
         std::list<int> neighbors = neighbor_list[node];

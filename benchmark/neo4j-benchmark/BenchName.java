@@ -19,8 +19,8 @@ import org.neo4j.graphdb.schema.IndexDefinition;
 import org.neo4j.graphdb.schema.Schema;
 
 public class BenchName {
-	private static final String DB_DIR = "/Users/evanye/succinct-graph/benchmark/";
-	private static final String QUERY_DIR = "/Users/evanye/succinct-graph/benchmark/";
+	private static final String DB_DIR = "/home/ec2-user/target/";
+	private static final String QUERY_DIR = "/home/ec2-user/queries/";
 	private static final String OUTPUT_FILE = "neo4j_name_benchmark.txt";
 	private static final long WARMUP_TIME = (long) (60 * 1E9); // 60 seconds
 	private static final long MEASURE_TIME = (long) (120 * 1E9); // 120 seconds

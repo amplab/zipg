@@ -5,27 +5,28 @@ BUILDDIR := ../build
 BINDIR := ../bin
 LIBDIR := ../external/succinct-cpp/lib
 
+OBJ := $(BUILDDIR)/succinct-graph/SuccinctGraph.o
 TARGET_S := $(BINDIR)/bench
 OBJ_S := $(BUILDDIR)/succinct-bench.o
-TARGET_C := $(BINDIR)/create_nodes
+TARGET_C := $(BINDIR)/create
 OBJ_C := $(BUILDDIR)/succinct-create.o
 
 CFLAGS := -O3 -std=c++11 -Wall -g
-LIB := -L $(LIBDIR) -lsuccinct -L ../lib -lsuccinctgraph
+LIB := -L $(LIBDIR) -lsuccinct
 INC := -I ../include -I include -I ../external/succinct-cpp/benchmark/include/
 
 all: create bench
 
 create: $(TARGET_C)
 
-bench: clean $(TARGET_S)
+bench: $(TARGET_S)
 
-$(TARGET_C): $(OBJ_C)
+$(TARGET_C): $(OBJ_C) $(OBJ)
 	@echo "Linking create file..."
 	@mkdir -p $(BINDIR)
 	@echo " $(CC) $^ -o $(TARGET_C) $(LIB)"; $(CC) $^ -o $(TARGET_C) $(LIB)
 
-$(TARGET_S): $(OBJ_S)
+$(TARGET_S): $(OBJ_S) $(OBJ)
 	@echo "Linking bench file..."
 	@mkdir -p $(BINDIR)
 	@echo " $(CC) $^ -o $(TARGET_S) $(LIB)"; $(CC) $^ -o $(TARGET_S) $(LIB)
