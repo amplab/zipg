@@ -1,12 +1,10 @@
 #!/bin/bash
-for nodes in 2000000 3000000 4000000 #10000 100000 1000000 2000000 3000000 4000000 5000000
+source config.sh
+for num_nodes in ${nodes[@]} 
 do
-	freq=1
-	while [ $freq -lt $nodes ]
-	do
-		echo creating succinct graph: ${nodes}_${freq}
-                ./succinct-graph/bin/create nodes ${nodes} ${freq}
-		./succinct-graph/bin/create succinct ${nodes}_${freq}.node ${nodes}.edge
-		freq=$((freq * 10))
-	done
+    for freq in ${freqs[@]}
+    do
+        echo creating succinct graph: ${num_nodes}_${freq}
+        ${dir}/succinct-graph/bin/create succinct ${dir}/files/${num_nodes}_${freq}.node ${dir}/files/${num_nodes}.edge
+    done
 done

@@ -1,4 +1,7 @@
-for nodes in 2000000 3000000 4000000 5000000
+#!/usr/bin/env bash
+source config.sh
+for num_nodes in ${nodes[@]} 
 do
-	../../graphs/generate_graphs ${nodes}	
+    echo "Creating edge/${num_nodes}.edge"
+    ${dir}/graphs/generate_graphs ${num_nodes} ${dir}/edges 
 done

@@ -9,7 +9,7 @@ constexpr char alphanum[] =
     "abcdefghijklmnopqrstuvwxyz";
 
 void generate_name(std::string& name) {
-    for(int i = 0; i < SuccinctGraph::NAME_SIZE; i++) {
+    for(int i = 0; i < 100; i++) {
         name[i] = alphanum[rand() % (sizeof(alphanum) - 1)];
     }
 }
@@ -17,7 +17,7 @@ void generate_name(std::string& name) {
 void create_node_names(int nodes, int freq) {
     std::string node_file = std::to_string(nodes) + "_" + std::to_string(freq) + ".node";
     std::ofstream s_out(node_file);
-    std::string name = "0000";
+    std::string name = std::string(100, '0');
     std::vector<std::string> names;
     while (nodes > 0) {
         generate_name(name);

@@ -19,15 +19,15 @@ import org.neo4j.graphdb.schema.IndexDefinition;
 import org.neo4j.graphdb.schema.Schema;
 
 public class BenchName {
-    private static final String DB_DIR = "/home/ec2-user/target/";
-    private static final String QUERY_DIR = "/home/ec2-user/queries/";
-    private static final String OUTPUT_FILE = "/home/ec2-user/neo4j_name_benchmark.txt";
+    private static final String DB_DIR = "/work/evanye/target/";
+    private static final String QUERY_DIR = "/work/evanye/queries/";
+    private static final String OUTPUT_FILE = "/work/neo4j_name_benchmark.txt";
     private static final long WARMUP_TIME = (long) (60 * 1E9); // 60 seconds
     private static final long MEASURE_TIME = (long) (120 * 1E9); // 120 seconds
     private static final long COOLDOWN_TIME = (long) (30 * 1E9); // 30 seconds
 
     public static void main(String[] args) {
-        String dataset = args[0];
+        String dataset = args[0] + "_" + args[1];
         String db_path = DB_DIR + dataset;
         String warmup_query_path = QUERY_DIR + "warmup_" + dataset + ".txt";
         String query_path = QUERY_DIR + "query_" + dataset + ".txt";
