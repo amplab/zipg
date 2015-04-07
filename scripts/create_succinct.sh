@@ -5,6 +5,8 @@ do
     for freq in ${freqs[@]}
     do
         echo creating succinct graph: ${num_nodes}_${freq}
-        ${dir}/succinct-graph/bin/create succinct ${dir}/files/${num_nodes}_${freq}.node ${dir}/files/${num_nodes}.edge
+        ${bin}/create succinct ${data}/nodes/${num_nodes}_${freq}.node ${data}/edges/${num_nodes}.edge
+        mv ${data}/nodes/${num_nodes}_${freq}.graph ${data}/graphs
+        mv ${data}/nodes/${num_nodes}_${freq}.graph.succinct ${data}/succinct
     done
 done

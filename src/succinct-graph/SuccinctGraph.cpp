@@ -1,8 +1,8 @@
-#include "../../include/succinct-graph/SuccinctGraph.hpp"
+#include "succinct-graph/SuccinctGraph.hpp"
 #include <iostream>
 
-const int SuccinctGraph::NAME_SIZE = 4;
-const std::string SuccinctGraph::NAME_DELIMINATOR = "<";
+const int ATTR_SIZE = 5;
+const std::string DELIMINATORS = "<|/->";
 
 SuccinctGraph::SuccinctGraph(std::string node_file, std::string edge_file) {
     this->nodes = 0;
@@ -27,12 +27,16 @@ int64_t SuccinctGraph::num_edges() {
     return edges;
 }
 
-void SuccinctGraph::get_name(std::string& result, int64_t key) {
-    return this->shard->access(result, key, NAME_DELIMINATOR.length(), NAME_SIZE);
+int64_t SuccinctGraph::num_attributes() {
+    return DELIMINATORS.size();
 }
 
-void SuccinctGraph::get_nodes(std::set<int64_t>& result, std::string name) {
-    this->shard->search(result, NAME_DELIMINATOR + name);
+void SuccinctGraph::get_attribute(std::string& result, int64_t key, int attr) {
+    return this->shard->access(result, key, attr * (ATTR_SIZE + 1) + 1, ATTR_SIZE);
+}
+
+void SuccinctGraph::search_nodes(std::set<int64_t>& result, int attr, std::string search_key) {
+    this->shard->search(result, DELIMINATORS[attr] + search_key);
 }
 
 void SuccinctGraph::get_neighbors(std::string& result, int64_t key) {
@@ -49,6 +53,10 @@ std::string SuccinctGraph::format_input_data(std::string node_file, std::string 
         std::getline(node_input, line, '\n');
         if (line.length() == 0)
             break;
+        line = "," + line;
+        for (char c: DELIMINATORS) {
+            line[line.find(',')] = c; 
+        }
         node_names.push_back(line);
     }
 
@@ -65,14 +73,14 @@ std::string SuccinctGraph::format_input_data(std::string node_file, std::string 
     node_input.close();
     edge_input.close();
 
-    std::string graph_file = node_file.substr(0, node_file.find('.')) + ".graph";
+    std::string graph_file = node_file.substr(0, node_file.find(".node")) + ".graph";
     std::ofstream s_out(graph_file);
     for (int node = 0; node < this->nodes; node++) {
         std::list<int> neighbors = neighbor_list[node];
         neighbors.sort();
-        s_out << NAME_DELIMINATOR << node_names[node];
+        s_out << node_names[node];
         for (int n: neighbors) {
-            s_out << " " + std::to_string(n);
+            s_out << " " << n;
         }
         s_out << "\n";
     }

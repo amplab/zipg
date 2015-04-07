@@ -27,16 +27,15 @@ private:
     int64_t nodes, edges;
 
 public:
-    static const int NAME_SIZE;
-
     SuccinctGraph(std::string node_file, std::string edge_file);
     SuccinctGraph(std::string graph_file);
 
     int64_t num_nodes();
     int64_t num_edges();
+    int64_t num_attributes();
 
-    void get_name(std::string& result, int64_t key);
-    void get_nodes(std::set<int64_t>& result, std::string name);
+    void get_attribute(std::string& result, int64_t key, int attr);
+    void search_nodes(std::set<int64_t>& result, int attr, std::string search_key);
     void get_neighbors(std::string& result, int64_t key);
 
     size_t serialize(std::ostream& out);
