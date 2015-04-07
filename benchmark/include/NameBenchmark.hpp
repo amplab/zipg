@@ -67,7 +67,6 @@ public:
 
     double benchmark_name_throughput() {
         double thput = 0;
-        std::set<int64_t> result;
 
         try {
             // Warmup phase
@@ -75,6 +74,7 @@ public:
             time_t warmup_start = get_timestamp();
             std::cout << "Warming up" << std::endl;
             while (get_timestamp() - warmup_start < WARMUP_T) {
+                std::set<int64_t> result;
                 graph->get_nodes(result, warmup_queries[i % warmup_queries.size()]);
                 i++;
             }
@@ -85,6 +85,7 @@ public:
             time_t start = get_timestamp();
             std::cout << "Measuring throughput" << std::endl;
             while (get_timestamp() - start < MEASURE_T) {
+                std::set<int64_t> result;
                 time_t query_start = get_timestamp();
                 graph->get_nodes(result, queries[i % queries.size()]);
                 time_t query_end = get_timestamp();
@@ -97,6 +98,7 @@ public:
             i = 0;
             time_t cooldown_start = get_timestamp();
             while (get_timestamp() - cooldown_start < COOLDOWN_T) {
+                std::set<int64_t> result;
                 graph->get_nodes(result, warmup_queries[i % warmup_queries.size()]);
                 i++;
             }
