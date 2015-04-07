@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
-dir=/work/evanye
-nodes=( 100000 1000000 10000000 )
+dir=../data
+nodes=( 500000 1000000 2000000 4000000 )
 freqs=( 10 )
