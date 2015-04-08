@@ -28,7 +28,7 @@ public class BenchName {
         String warmup_query_path = args[1];
         String query_path = args[2];
         String output_file = args[3];
-        nameThroughput(db_path, warmup_query_path, query_path);
+        nameThroughput(db_path, warmup_query_path, query_path, output_file);
     }
 
     private static void nameThroughput(String DB_PATH,
@@ -103,8 +103,8 @@ public class BenchName {
 
     private static List<Long> getNodes(GraphDatabaseService graphDb,
             Label label, int attr, String search) {
-        try (ResourceIterator<Node> nodes = graphDb.findNodes(label, "name" + attr,
-                name)) {
+        try (ResourceIterator<Node> nodes = graphDb.findNodes(label, "name" + (attr + 1),
+                search)) {
             ArrayList<Long> userIds = new ArrayList<>();
             while (nodes.hasNext()) {
                 userIds.add(nodes.next().getId());
@@ -118,7 +118,6 @@ public class BenchName {
             BufferedReader br = new BufferedReader(new FileReader(file));
             String line = br.readLine();
             while (line != null) {
-                lines.add(line);
                 String[] tokens = line.split(",");
                 indices.add(Integer.parseInt(tokens[0]));
                 queries.add(tokens[1]);
@@ -126,7 +125,6 @@ public class BenchName {
             }
         } catch (IOException e) {
             e.printStackTrace();
-            return null;
         }
     }
 
