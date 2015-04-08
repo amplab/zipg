@@ -33,8 +33,12 @@ public class BenchName {
 
     private static void nameThroughput(String DB_PATH,
             String warmup_query_path, String query_path, String output_file) {
-        String[] warmupQueries = getQueries(warmup_query_path);
-        String[] queries = getQueries(query_path);
+        List<Integer> warmupAttributes = new ArrayList<Integer>();
+        List<String> warmupQueries = new ArrayList<String>();
+        List<Integer> attributes = new ArrayList<Integer>();
+        List<String> queries = new ArrayList<String>();
+        getQueries(warmup_query_path, warmupAttributes, warmupQueries);
+        getQueries(query_path, attributes, queries);
 
         // START SNIPPET: startDb
         GraphDatabaseService graphDb = new GraphDatabaseFactory()
@@ -47,9 +51,14 @@ public class BenchName {
             int i = 0;
             System.out.println("Warming up queries");
             long warmupStart = System.nanoTime();
+            int warmupSize = warmupAttributes.size();
             while (System.nanoTime() - warmupStart < WARMUP_TIME) {
-                List<Long> nodes = getNodes(graphDb, label, warmupQueries[i
-                        % warmupQueries.length]);
+                List<Long> nodes = getNodes(graphDb, label, warmupAttributes.get(i % warmupSize),
+                        warmupQueries.get(i % warmupSize));
+                if (nodes.size() == 0) {
+                    System.out.println("wtf " + warmupAttributes.get(i) + " " + warmupQueries.get(i));
+                    System.exit(0);
+                }
                 i++;
             }
 
@@ -59,10 +68,11 @@ public class BenchName {
             long edges = 0;
             double totalSeconds = 0;
             long start = System.nanoTime();
+            int size = attributes.size();
             while (System.nanoTime() - start < MEASURE_TIME) {
                 long queryStart = System.nanoTime();
-                List<Long> nodes = getNodes(graphDb, label, queries[i
-                        % queries.length]);
+                List<Long> nodes = getNodes(graphDb, label, attributes.get(i % size),
+                        queries.get(i % size));
                 long queryEnd = System.nanoTime();
                 totalSeconds += (queryEnd - queryStart) / ((double) 1E9);
                 i++;
@@ -81,8 +91,8 @@ public class BenchName {
             i = 0;
             long cooldownStart = System.nanoTime();
             while (System.nanoTime() - cooldownStart < COOLDOWN_TIME) {
-                List<Long> nodes = getNodes(graphDb, label, warmupQueries[i
-                        % warmupQueries.length]);
+                List<Long> nodes = getNodes(graphDb, label, warmupAttributes.get(i % warmupSize),
+                        warmupQueries.get(i % warmupSize));
                 i++;
             }
             tx.success();
@@ -92,8 +102,8 @@ public class BenchName {
     }
 
     private static List<Long> getNodes(GraphDatabaseService graphDb,
-            Label label, String name) {
-        try (ResourceIterator<Node> nodes = graphDb.findNodes(label, "name",
+            Label label, int attr, String search) {
+        try (ResourceIterator<Node> nodes = graphDb.findNodes(label, "name" + attr,
                 name)) {
             ArrayList<Long> userIds = new ArrayList<>();
             while (nodes.hasNext()) {
@@ -103,20 +113,17 @@ public class BenchName {
         }
     }
 
-    private static String[] getQueries(String file) {
+    private static void getQueries(String file, List<Integer> indices, List<String> queries) {
         try {
             BufferedReader br = new BufferedReader(new FileReader(file));
-            List<String> lines = new ArrayList<String>();
             String line = br.readLine();
             while (line != null) {
                 lines.add(line);
+                String[] tokens = line.split(",");
+                indices.add(Integer.parseInt(tokens[0]));
+                queries.add(tokens[1]);
                 line = br.readLine();
             }
-            String[] queries = new String[lines.size()];
-            for (int i = 0; i < lines.size(); i++) {
-                queries[i] = lines.get(i);
-            }
-            return queries;
         } catch (IOException e) {
             e.printStackTrace();
             return null;
