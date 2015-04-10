@@ -9,17 +9,17 @@ constexpr char alphanum[] =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     "abcdefghijklmnopqrstuvwxyz";
 
-void generate_name(std::string& name) {
-    for(int i = 0; i < 10; i++) {
+void generate_name(std::string& name, int len) {
+    for(int i = 0; i < len; i++) {
         name[i] = alphanum[rand() % (sizeof(alphanum) - 1)];
     }
 }
 
-std::vector<std::string> create_names(int nodes, int freq) {
-    std::string name = std::string(10, '0');
+std::vector<std::string> create_names(int nodes, int freq, int len) {
+    std::string name = std::string(len, '0');
     std::vector<std::string> names;
     while (nodes > 0) {
-        generate_name(name);
+        generate_name(name, len);
         int i = 0;
         while (nodes > 0 && i < freq) {
             names.push_back(name);
@@ -31,12 +31,12 @@ std::vector<std::string> create_names(int nodes, int freq) {
     return names;
 }
 
-void create_node_names(int nodes, int num_attr, int freq) {
-    std::string node_file = std::to_string(nodes) + "_" + std::to_string(freq) + ".node";
+void create_node_names(int nodes, int num_attr, int freq, int len) {
+    std::string node_file = std::to_string(nodes) + ".node";
     std::ofstream s_out(node_file);
     std::vector<std::vector<std::string>> attributes;
     for (int attr = 0; attr < num_attr; attr++ ) { 
-        attributes.push_back(create_names(nodes, freq));
+        attributes.push_back(create_names(nodes, freq, len));
     }
     for (int i = 0; i < nodes; i++) {
         s_out << attributes[0][i];
@@ -105,7 +105,8 @@ int main(int argc, char **argv) {
         int nodes = atoi(argv[2]);
         int attributes = atoi(argv[3]);
         int freq = atoi(argv[4]);
-        create_node_names(nodes, attributes, freq);
+        int len = atoi(argv[5]);
+        create_node_names(nodes, attributes, freq, len);
     } else if (type == "succinct") {
         std::string node_file = argv[2];
         std::string edge_file = argv[3];

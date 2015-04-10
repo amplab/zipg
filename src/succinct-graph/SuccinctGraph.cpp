@@ -1,8 +1,8 @@
 #include "succinct-graph/SuccinctGraph.hpp"
 #include <iostream>
 
-const int ATTR_SIZE = 5;
-const std::string DELIMINATORS = "<|/->";
+const int ATTR_SIZE = 32;
+const std::string DELIMINATORS = "<>()#$%&*+";
 
 SuccinctGraph::SuccinctGraph(std::string node_file, std::string edge_file) {
     this->nodes = 0;
@@ -53,9 +53,10 @@ std::string SuccinctGraph::format_input_data(std::string node_file, std::string 
         std::getline(node_input, line, '\n');
         if (line.length() == 0)
             break;
-        line = "," + line;
-        for (char c: DELIMINATORS) {
-            line[line.find(',')] = c; 
+        int pos = -1;
+        for (char delim: DELIMINATORS) {
+            pos = line.find(',', pos + 1);
+            line[pos] = delim; 
         }
         node_names.push_back(line);
     }

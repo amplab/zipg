@@ -2,7 +2,7 @@
 dir=..
 bin=../bin
 data=../data
-JAVA_HOME=/usr/lib/jvm/java-1.7.0-openjdk-amd64
-nodes=( 500000 1000000 2000000 4000000 )
-freqs=( 10 )
-attributes=5
+nodes=( 2000000 4000000 8000000 16000000 32000000 )
+freq=10
+attributes=10
+attribute_length=32
