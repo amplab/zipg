@@ -4,7 +4,7 @@ for num_nodes in ${nodes[@]}
 do
     for freq in ${freqs[@]}
     do
-        echo "Benching ${nodes}_${freq}"
-        ./succinct-graph/bin/bench -t name-throughput -w queries/warmup_${nodes}_${freq}.txt -q queries/query_${nodes}_${freq}.txt -o name_throughput_results.txt ${nodes}_${freq}.graph
+        echo "Benching ${num_nodes}_${freq}"
+        ${bin}/bench -t name-throughput -w ${data}/queries/warmup_${num_nodes}_${freq}.txt -q ${data}/queries/query_${num_nodes}_${freq}.txt -o ${dir}/name_throughput_results.txt ${data}/succinct/${num_nodes}_${freq}.graph
     done
 done
