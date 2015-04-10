@@ -2,6 +2,7 @@
 #include <sstream>
 #include <fstream>
 #include <unistd.h>
+#include <random>
 #include "succinct-graph/SuccinctGraph.hpp"
 
 constexpr char alphanum[] =
@@ -35,12 +36,12 @@ void create_node_names(int nodes, int num_attr, int freq, int len) {
     std::string node_file = std::to_string(nodes) + ".node";
     std::ofstream s_out(node_file);
     std::vector<std::vector<std::string>> attributes;
-    for (int attr = 0; attr < num_attr; attr++ ) { 
+    for (int attr = 0; attr < num_attr; attr++ ) {
         attributes.push_back(create_names(nodes, freq, len));
     }
     for (int i = 0; i < nodes; i++) {
         s_out << attributes[0][i];
-        for (int attr = 1; attr < num_attr; attr++ ) { 
+        for (int attr = 1; attr < num_attr; attr++ ) {
             s_out << "," << attributes[attr][i];
         }
         s_out << std::endl;
@@ -59,7 +60,25 @@ void create_succinct_file(std::string node_file, std::string edge_file) {
     printf("Created succinct graph: %s\n", succinct_file.c_str());
 }
 
-void generate_query_files(std::string node_file, std::string warmup_query_file, std::string query_file) {
+void generate_neighbor_queries(int64_t nodes, std::string warmup_query_file, std::string query_file) {
+    std::random_device rd;
+    std::mt19937 rng(rd());
+    std::uniform_int_distribution<int64_t> uni(0, nodes - 1);
+
+    std::ofstream warmup_out(warmup_query_file);
+    std::ofstream query_out(query_file);
+    for(int64_t i = 0; i < nodes; i++) {
+        warmup_out << uni(rng) << std::endl;
+    }
+    for(int64_t i = 0; i < 2 * nodes; i++) {
+        query_out << uni(rng) << std::endl;
+    }
+    warmup_out.close();
+    query_out.close();
+    printf("Created Neighbor query files: %s, %s\n", warmup_query_file.c_str(), query_file.c_str());
+}
+
+void generate_node_queries(std::string node_file, std::string warmup_query_file, std::string query_file) {
     int64_t nodes = 0;
     std::ifstream node_input(node_file);
     std::string line;
@@ -85,18 +104,18 @@ void generate_query_files(std::string node_file, std::string warmup_query_file, 
     std::ofstream query_out(query_file);
     for(int64_t i = 0; i < nodes; i++) {
         int attr = rand() % num_attributes;
-        value = attributes->at(uni(rng))->at(attr); 
+        value = attributes->at(uni(rng))->at(attr);
         warmup_out << attr << "," << value << std::endl;
     }
 
     for(int64_t i = 0; i < 2 * nodes; i++) {
         int attr = rand() % num_attributes;
-        value = attributes->at(uni(rng))->at(attr); 
+        value = attributes->at(uni(rng))->at(attr);
         query_out << attr << "," << value << std::endl;
     }
     warmup_out.close();
     query_out.close();
-    printf("Created files: %s, %s\n", warmup_query_file.c_str(), query_file.c_str());
+    printf("Created node files: %s, %s\n", warmup_query_file.c_str(), query_file.c_str());
 }
 
 int main(int argc, char **argv) {
@@ -111,11 +130,16 @@ int main(int argc, char **argv) {
         std::string node_file = argv[2];
         std::string edge_file = argv[3];
         create_succinct_file(node_file, edge_file);
-    } else if (type == "queries") {
+    } else if (type == "node-queries") {
         std::string node_file = argv[2];
         std::string warmup_file = argv[3];
         std::string query_file = argv[4];
-        generate_query_files(node_file, warmup_file, query_file);
+        generate_node_queries(node_file, warmup_file, query_file);
+    } else if (type == "neighbor-queries") {
+        int nodes = atoi(argv[2]);
+        std::string warmup_file = argv[3];
+        std::string query_file = argv[4];
+        generate_neighbor_queries(nodes, warmup_file, query_file);
     } else {
         assert(1); // not supported
     }

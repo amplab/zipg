@@ -10,26 +10,6 @@ void print_usage(char *exec) {
     fprintf(stderr, "Usage: %s [-t type] [-q query_file] [-b file_size_type (KB, MB, GB)] [-o output_file] [graph_file]\n", exec);
 }
 
-double get_file_size(std::string filename, std::string format) {
-    struct stat stat_buf;
-    int rc = stat(filename.c_str(), &stat_buf);
-    if (rc == 0) {
-        int shift;
-        if (format == "MB") {
-            shift = 20;
-        } else if (format == "GB") {
-            shift = 30;
-        } else { // treat default as KB
-            shift = 10;
-            format = "KB";
-        }
-        return stat_buf.st_size >> shift;
-    } else {
-        fprintf(stderr, (filename + " file size could not be determined.").c_str());
-        return -1;
-    }
-}
-
 int main(int argc, char **argv) {
     if(argc < 2 || argc > 16) {
         print_usage(argv[0]);
@@ -74,14 +54,12 @@ int main(int argc, char **argv) {
     SuccinctGraph * graph = new SuccinctGraph(graph_file);
 
     std::ofstream result_file(result_file_name, std::ios_base::app);
-    double succinct_size = get_file_size(succinct_file, size);
 
     result_file << graph_file << "\n";
     result_file << "Nodes: " << graph->num_nodes() << "\n";
     result_file << "Edges: " << graph->num_edges() << "\n";
-    result_file << "Succinct file size: " << succinct_size << "\n";
 
-    std::cout << "benching " << graph_file << std::endl;
+    std::cout << "Benching " << graph_file << std::endl;
     if (type == "neighbor-throughput") {
         NeighborBenchmark s_bench(graph, warmup_query_file, measure_query_file);
         std::pair<double, double> thput_pair = s_bench.benchmark_neighbor_throughput();
