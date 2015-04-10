@@ -19,25 +19,26 @@ import org.neo4j.graphdb.schema.IndexDefinition;
 import org.neo4j.graphdb.schema.Schema;
 
 public class BenchName {
-    private static final String DB_DIR = "/work/evanye/target/";
-    private static final String QUERY_DIR = "/work/evanye/queries/";
-    private static final String OUTPUT_FILE = "/work/neo4j_name_benchmark.txt";
     private static final long WARMUP_TIME = (long) (60 * 1E9); // 60 seconds
     private static final long MEASURE_TIME = (long) (120 * 1E9); // 120 seconds
     private static final long COOLDOWN_TIME = (long) (30 * 1E9); // 30 seconds
 
     public static void main(String[] args) {
-        String dataset = args[0] + "_" + args[1];
-        String db_path = DB_DIR + dataset;
-        String warmup_query_path = QUERY_DIR + "warmup_" + dataset + ".txt";
-        String query_path = QUERY_DIR + "query_" + dataset + ".txt";
-        nameThroughput(db_path, warmup_query_path, query_path);
+        String db_path = args[0];
+        String warmup_query_path = args[1];
+        String query_path = args[2];
+        String output_file = args[3];
+        nameThroughput(db_path, warmup_query_path, query_path, output_file);
     }
 
     private static void nameThroughput(String DB_PATH,
-            String warmup_query_path, String query_path) {
-        String[] warmupQueries = getQueries(warmup_query_path);
-        String[] queries = getQueries(query_path);
+            String warmup_query_path, String query_path, String output_file) {
+        List<Integer> warmupAttributes = new ArrayList<Integer>();
+        List<String> warmupQueries = new ArrayList<String>();
+        List<Integer> attributes = new ArrayList<Integer>();
+        List<String> queries = new ArrayList<String>();
+        getQueries(warmup_query_path, warmupAttributes, warmupQueries);
+        getQueries(query_path, attributes, queries);
 
         // START SNIPPET: startDb
         GraphDatabaseService graphDb = new GraphDatabaseFactory()
@@ -50,9 +51,14 @@ public class BenchName {
             int i = 0;
             System.out.println("Warming up queries");
             long warmupStart = System.nanoTime();
+            int warmupSize = warmupAttributes.size();
             while (System.nanoTime() - warmupStart < WARMUP_TIME) {
-                List<Long> nodes = getNodes(graphDb, label, warmupQueries[i
-                        % warmupQueries.length]);
+                List<Long> nodes = getNodes(graphDb, label, warmupAttributes.get(i % warmupSize),
+                        warmupQueries.get(i % warmupSize));
+                if (nodes.size() == 0) {
+                    System.out.println("wtf " + warmupAttributes.get(i) + " " + warmupQueries.get(i));
+                    System.exit(0);
+                }
                 i++;
             }
 
@@ -62,10 +68,11 @@ public class BenchName {
             long edges = 0;
             double totalSeconds = 0;
             long start = System.nanoTime();
+            int size = attributes.size();
             while (System.nanoTime() - start < MEASURE_TIME) {
                 long queryStart = System.nanoTime();
-                List<Long> nodes = getNodes(graphDb, label, queries[i
-                        % queries.length]);
+                List<Long> nodes = getNodes(graphDb, label, attributes.get(i % size),
+                        queries.get(i % size));
                 long queryEnd = System.nanoTime();
                 totalSeconds += (queryEnd - queryStart) / ((double) 1E9);
                 i++;
@@ -73,7 +80,7 @@ public class BenchName {
             double thput = ((double) i) / totalSeconds;
 
             System.out.println("Get Name throughput: " + thput);
-            try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(OUTPUT_FILE, true)))) {
+            try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(output_file, true)))) {
                 out.println(DB_PATH);
                 out.println(thput + "\n");
             } catch (IOException e) {
@@ -84,8 +91,8 @@ public class BenchName {
             i = 0;
             long cooldownStart = System.nanoTime();
             while (System.nanoTime() - cooldownStart < COOLDOWN_TIME) {
-                List<Long> nodes = getNodes(graphDb, label, warmupQueries[i
-                        % warmupQueries.length]);
+                List<Long> nodes = getNodes(graphDb, label, warmupAttributes.get(i % warmupSize),
+                        warmupQueries.get(i % warmupSize));
                 i++;
             }
             tx.success();
@@ -95,9 +102,9 @@ public class BenchName {
     }
 
     private static List<Long> getNodes(GraphDatabaseService graphDb,
-            Label label, String name) {
-        try (ResourceIterator<Node> nodes = graphDb.findNodes(label, "name",
-                name)) {
+            Label label, int attr, String search) {
+        try (ResourceIterator<Node> nodes = graphDb.findNodes(label, "name" + (attr + 1),
+                search)) {
             ArrayList<Long> userIds = new ArrayList<>();
             while (nodes.hasNext()) {
                 userIds.add(nodes.next().getId());
@@ -106,23 +113,18 @@ public class BenchName {
         }
     }
 
-    private static String[] getQueries(String file) {
+    private static void getQueries(String file, List<Integer> indices, List<String> queries) {
         try {
             BufferedReader br = new BufferedReader(new FileReader(file));
-            List<String> lines = new ArrayList<String>();
             String line = br.readLine();
             while (line != null) {
-                lines.add(line);
+                String[] tokens = line.split(",");
+                indices.add(Integer.parseInt(tokens[0]));
+                queries.add(tokens[1]);
                 line = br.readLine();
             }
-            String[] queries = new String[lines.size()];
-            for (int i = 0; i < lines.size(); i++) {
-                queries[i] = lines.get(i);
-            }
-            return queries;
         } catch (IOException e) {
             e.printStackTrace();
-            return null;
         }
     }
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 source config.sh
-for num_nodes in ${nodes[@]} 
+for num_nodes in ${nodes[@]}
 do
     echo "Creating csv for ${num_nodes} nodes"
     sed 's/\([0-9]*\) \([0-9]*\)/\1,\2,E/' ${data}/edges/${num_nodes}.edge > ${data}/csv/${num_nodes}_edge.csv 
