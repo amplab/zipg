@@ -68,14 +68,14 @@ public:
     std::pair<double, double> benchmark_neighbor_throughput() {
         double get_neighbor_thput = 0;
         double edges_thput = 0;
-        std::string value;
 
         try {
             // Warmup phase
             long i = 0;
             time_t warmup_start = get_timestamp();
             while (get_timestamp() - warmup_start < WARMUP_T) {
-                graph->get_neighbors(value, warmup_queries[i % warmup_queries.size()]);
+                std::set<int64_t> result;
+                graph->get_neighbors(result, warmup_queries[i % warmup_queries.size()]);
                 i++;
             }
 
@@ -85,11 +85,12 @@ public:
             double totsecs = 0;
             time_t start = get_timestamp();
             while (get_timestamp() - start < MEASURE_T) {
+                std::set<int64_t> result;
                 time_t query_start = get_timestamp();
-                graph->get_neighbors(value, queries[i % queries.size()]);
+                graph->get_neighbors(result, queries[i % queries.size()]);
                 time_t query_end = get_timestamp();
                 totsecs += (double) (query_end - query_start) / (double(1E6));
-                edges += std::count(value.begin(), value.end(), ' ');
+                edges += result.size();
                 i++;
             }
             get_neighbor_thput = ((double) i / totsecs);
@@ -98,7 +99,8 @@ public:
             i = 0;
             time_t cooldown_start = get_timestamp();
             while (get_timestamp() - cooldown_start < COOLDOWN_T) {
-                graph->get_neighbors(value, warmup_queries[i % warmup_queries.size()]);
+                std::set<int64_t> result;
+                graph->get_neighbors(result, warmup_queries[i % warmup_queries.size()]);
                 i++;
             }
 

@@ -36,7 +36,7 @@ public:
 
     void get_attribute(std::string& result, int64_t key, int attr);
     void search_nodes(std::set<int64_t>& result, int attr, std::string search_key);
-    void get_neighbors(std::string& result, int64_t key);
+    void get_neighbors(std::set<int64_t>& result, int64_t key);
 
     size_t serialize(std::ostream& out);
 

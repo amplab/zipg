@@ -1,5 +1,6 @@
 #include "succinct-graph/SuccinctGraph.hpp"
 #include <iostream>
+#include <sstream>
 
 const int ATTR_SIZE = 32;
 const std::string DELIMINATORS = "<>()#$%&*+";
@@ -39,24 +40,32 @@ void SuccinctGraph::search_nodes(std::set<int64_t>& result, int attr, std::strin
     this->shard->search(result, DELIMINATORS[attr] + search_key);
 }
 
-void SuccinctGraph::get_neighbors(std::string& result, int64_t key) {
-    this->shard->get(result, key);
+void SuccinctGraph::get_neighbors(std::set<int64_t>& result, int64_t key) {
+    std::string line;
+    this->shard->access(line, key, this->num_attributes() * (ATTR_SIZE + 1) + 1);
+    std::istringstream iss(line);
+    std::string token;
+    // TOOO: make edge deliminators not necessarily blank space
+    while (getline(iss, token, ' ')) {
+        result.insert(std::strtoll(token.c_str(), NULL, 10));
+    }
 }
 
 std::string SuccinctGraph::format_input_data(std::string node_file, std::string edge_file) {
     std::ifstream node_input(node_file);
     std::ifstream edge_input(edge_file);
-    std::vector< std::string > node_names;
+    std::vector<std::string> node_names;
     std::string line;
 
     for(this->nodes = 0; !node_input.eof(); this->nodes++) {
         std::getline(node_input, line, '\n');
         if (line.length() == 0)
             break;
+        line = ',' + line; //prepend each data element with a comma
         int pos = -1;
         for (char delim: DELIMINATORS) {
             pos = line.find(',', pos + 1);
-            line[pos] = delim; 
+            line[pos] = delim;
         }
         node_names.push_back(line);
     }
