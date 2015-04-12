@@ -60,17 +60,17 @@ void create_succinct_file(std::string node_file, std::string edge_file) {
     printf("Created succinct graph: %s\n", succinct_file.c_str());
 }
 
-void generate_neighbor_queries(int64_t nodes, std::string warmup_query_file, std::string query_file) {
+void generate_neighbor_queries(int64_t nodes, int warmup_size, int query_size, std::string warmup_query_file, std::string query_file) {
     std::random_device rd;
     std::mt19937 rng(rd());
     std::uniform_int_distribution<int64_t> uni(0, nodes - 1);
 
     std::ofstream warmup_out(warmup_query_file);
     std::ofstream query_out(query_file);
-    for(int64_t i = 0; i < nodes; i++) {
+    for(int64_t i = 0; i < warmup_size; i++) {
         warmup_out << uni(rng) << std::endl;
     }
-    for(int64_t i = 0; i < 2 * nodes; i++) {
+    for(int64_t i = 0; i < query_size; i++) {
         query_out << uni(rng) << std::endl;
     }
     warmup_out.close();
@@ -78,7 +78,7 @@ void generate_neighbor_queries(int64_t nodes, std::string warmup_query_file, std
     printf("Created Neighbor query files: %s, %s\n", warmup_query_file.c_str(), query_file.c_str());
 }
 
-void generate_node_queries(std::string node_file, std::string warmup_query_file, std::string query_file) {
+void generate_node_queries(std::string node_file, int warmup_size, int query_size, std::string warmup_query_file, std::string query_file) {
     int64_t nodes = 0;
     std::ifstream node_input(node_file);
     std::string line;
@@ -102,13 +102,13 @@ void generate_node_queries(std::string node_file, std::string warmup_query_file,
 
     std::ofstream warmup_out(warmup_query_file);
     std::ofstream query_out(query_file);
-    for(int64_t i = 0; i < nodes; i++) {
+    for(int64_t i = 0; i < warmup_size; i++) {
         int attr = rand() % num_attributes;
         value = attributes->at(uni(rng))->at(attr);
         warmup_out << attr << "," << value << std::endl;
     }
 
-    for(int64_t i = 0; i < 2 * nodes; i++) {
+    for(int64_t i = 0; i < query_size; i++) {
         int attr = rand() % num_attributes;
         value = attributes->at(uni(rng))->at(attr);
         query_out << attr << "," << value << std::endl;
@@ -134,12 +134,16 @@ int main(int argc, char **argv) {
         std::string node_file = argv[2];
         std::string warmup_file = argv[3];
         std::string query_file = argv[4];
-        generate_node_queries(node_file, warmup_file, query_file);
+        int warmup_size = atoi(argv[5]);
+        int query_size = atoi(argv[6]);
+        generate_node_queries(node_file, warmup_size, query_size, warmup_file, query_file);
     } else if (type == "neighbor-queries") {
         int nodes = atoi(argv[2]);
         std::string warmup_file = argv[3];
         std::string query_file = argv[4];
-        generate_neighbor_queries(nodes, warmup_file, query_file);
+        int warmup_size = atoi(argv[5]);
+        int query_size = atoi(argv[6]);
+        generate_neighbor_queries(nodes, warmup_size, query_size, warmup_file, query_file);
     } else {
         assert(1); // not supported
     }
