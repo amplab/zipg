@@ -132,17 +132,17 @@ int main(int argc, char **argv) {
         create_succinct_file(node_file, edge_file);
     } else if (type == "node-queries") {
         std::string node_file = argv[2];
-        std::string warmup_file = argv[3];
-        std::string query_file = argv[4];
-        int warmup_size = atoi(argv[5]);
-        int query_size = atoi(argv[6]);
+        int warmup_size = atoi(argv[3]);
+        int query_size = atoi(argv[4]);
+        std::string warmup_file = argv[5];
+        std::string query_file = argv[6];
         generate_node_queries(node_file, warmup_size, query_size, warmup_file, query_file);
     } else if (type == "neighbor-queries") {
         int nodes = atoi(argv[2]);
-        std::string warmup_file = argv[3];
-        std::string query_file = argv[4];
-        int warmup_size = atoi(argv[5]);
-        int query_size = atoi(argv[6]);
+        int warmup_size = atoi(argv[3]);
+        int query_size = atoi(argv[4]);
+        std::string warmup_file = argv[5];
+        std::string query_file = argv[6];
         generate_neighbor_queries(nodes, warmup_size, query_size, warmup_file, query_file);
     } else {
         assert(1); // not supported
