@@ -18,14 +18,14 @@ private:
 
         std::string line;
         while (getline(warmup_input, line)) {
-            int split_pos = line.find(' ');
+            int split_pos = line.find(',');
             int attr = std::atoi(line.substr(0, split_pos).c_str());
             std::string search = line.substr(split_pos + 1);
             warmup_attr.push_back(attr);
             warmup_queries.push_back(search);
         }
         while (getline(query_input, line)) {
-            int split_pos = line.find(' ');
+            int split_pos = line.find(',');
             int attr = std::atoi(line.substr(0, split_pos).c_str());
             std::string search = line.substr(split_pos + 1);
             queries_attr.push_back(attr);
@@ -55,6 +55,11 @@ public:
             while (get_timestamp() - warmup_start < WARMUP_T) {
                 std::set<int64_t> result;
                 graph->search_nodes(result, warmup_attr[i % warmup_size], warmup_queries[i % warmup_size]);
+                if (result.size() != 100) {
+                    std::cout << warmup_attr[i] << ", " << warmup_queries[i] << "\n";
+                    for (int x: result)
+                        std::cout << x << "\n";
+                }
                 i++;
             }
 
