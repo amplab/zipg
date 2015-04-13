@@ -55,11 +55,9 @@ public:
             while (get_timestamp() - warmup_start < WARMUP_T) {
                 std::set<int64_t> result;
                 graph->search_nodes(result, warmup_attr[i % warmup_size], warmup_queries[i % warmup_size]);
-                if (result.size() != 100) {
-                    std::cout << warmup_attr[i] << ", " << warmup_queries[i] << "\n";
-                    for (int x: result)
-                        std::cout << x << "\n";
-                }
+                if (result.size() == 0) {
+                    std::cout << "Error: no results for attr " << warmup_attr[i] << ", query"
+                        << warmup_queries[i] << "\n";
                 i++;
             }
 
