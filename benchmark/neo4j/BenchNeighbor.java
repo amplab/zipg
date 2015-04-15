@@ -76,12 +76,12 @@ public class BenchNeighbor {
             }
 
             tx.success();
+            out.close();
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
             System.out.println("Shutting down database ...");
             graphDb.shutdown();
-            out.close();
         }
     }
 

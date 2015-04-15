@@ -101,12 +101,12 @@ public class BenchNode {
                         warmupQueries.get(i % warmupSize));
             }
             tx.success();
+            out.close();
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
             System.out.println("Shutting down database ...");
             graphDb.shutdown();
-            out.close();
         }
     }
 
