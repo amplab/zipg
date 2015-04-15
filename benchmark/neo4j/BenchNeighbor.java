@@ -81,6 +81,7 @@ public class BenchNeighbor {
         } finally {
             System.out.println("Shutting down database ...");
             graphDb.shutdown();
+            out.close();
         }
     }
 

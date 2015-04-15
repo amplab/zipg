@@ -103,9 +103,11 @@ public class BenchNode {
             tx.success();
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            System.out.println("Shutting down database ...");
+            graphDb.shutdown();
+            out.close();
         }
-        System.out.println("Shutting down database ...");
-        graphDb.shutdown();
     }
 
     private static void nodeThroughput(String DB_PATH,
