@@ -18,27 +18,99 @@ import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.graphdb.schema.IndexDefinition;
 import org.neo4j.graphdb.schema.Schema;
 
-public class BenchName {
+public class BenchNode {
     private static final long WARMUP_TIME = (long) (60 * 1E9); // 60 seconds
     private static final long MEASURE_TIME = (long) (120 * 1E9); // 120 seconds
     private static final long COOLDOWN_TIME = (long) (30 * 1E9); // 30 seconds
 
     public static void main(String[] args) {
-        String db_path = args[0];
-        String warmup_query_path = args[1];
-        String query_path = args[2];
-        String output_file = args[3];
-        nameThroughput(db_path, warmup_query_path, query_path, output_file);
-    }
+        String type = args[0];
+        String db_path = args[1];
+        String warmup_query_path = args[2];
+        String query_path = args[3];
+        String output_file = args[4];
+        int warmup_n = Integer.parseInt(args[5]);
+        int measure_n = Integer.parseInt(args[6]);
+        int cooldown_n = Integer.parseInt(args[7]);
 
-    private static void nameThroughput(String DB_PATH,
-            String warmup_query_path, String query_path, String output_file) {
         List<Integer> warmupAttributes = new ArrayList<Integer>();
         List<String> warmupQueries = new ArrayList<String>();
         List<Integer> attributes = new ArrayList<Integer>();
         List<String> queries = new ArrayList<String>();
         getQueries(warmup_query_path, warmupAttributes, warmupQueries);
         getQueries(query_path, attributes, queries);
+
+        if (type.equals("node-throughput"))
+            nodeThroughput(db_path, warmupAttributes, warmupQueries, attributes, queries, output_file);
+        else if (type.equals("node-latency"))
+            nodeLatency(db_path, warmup_n, measure_n, cooldown_n,
+                warmupAttributes, warmupQueries, attributes, queries, output_file);
+        else
+            System.out.println("No type " + type + " is supported!");
+    }
+
+    private static void nodeLatency(String DB_PATH,
+            int warmup_n, int measure_n, int cooldown_n,
+            List<Integer> warmupAttributes, List<String> warmupQueries,
+            List<Integer> attributes, List<String> queries, String output_file) {
+
+        // START SNIPPET: startDb
+        GraphDatabaseService graphDb = new GraphDatabaseFactory()
+                .newEmbeddedDatabase(DB_PATH);
+        registerShutdownHook(graphDb);
+        IndexDefinition indexDefinition;
+        Label label = DynamicLabel.label("Node");
+        Transaction tx = graphDb.beginTx();
+        try {
+            PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(output_file)));
+
+            // warmup
+            System.out.println("Warming up queries");
+            int warmupSize = warmupAttributes.size();
+            for (int i = 0; i < warmup_n; i++) {
+                List<Long> nodes = getNodes(graphDb, label, warmupAttributes.get(i % warmupSize),
+                        warmupQueries.get(i % warmupSize));
+                if (nodes.size() == 0) {
+                    System.out.println("Error: no results for attribute " + warmupAttributes.get(i)
+                            + ", searching for " + warmupQueries.get(i));
+                    System.exit(0);
+                }
+            }
+
+            // measure
+            System.out.println("Measure queries");
+            int size = attributes.size();
+            for (int i = 0; i < measure_n; i++) {
+                if (i % 10000 == 0) {
+                    tx.success();
+                    tx.finish();
+                    tx = graphDb.beginTx();
+                }
+                int attr = attributes.get(i % size);
+                String query = queries.get(i % size);
+                long queryStart = System.nanoTime();
+                List<Long> nodes = getNodes(graphDb, label, attr, query);
+                long queryEnd = System.nanoTime();
+                double millisecs = (queryEnd - queryStart) / ((double) 1000 * 1000);
+                out.println(attr + "," + query + "," + nodes.size() + "," +  millisecs);
+            }
+
+            // cooldown
+            for (int i = 0; i < cooldown_n; i++) {
+                List<Long> nodes = getNodes(graphDb, label, warmupAttributes.get(i % warmupSize),
+                        warmupQueries.get(i % warmupSize));
+            }
+            tx.success();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        System.out.println("Shutting down database ...");
+        graphDb.shutdown();
+    }
+
+    private static void nodeThroughput(String DB_PATH,
+            List<Integer> warmupAttributes, List<String> warmupQueries,
+            List<Integer> attributes, List<String> queries, String output_file) {
 
         // START SNIPPET: startDb
         GraphDatabaseService graphDb = new GraphDatabaseFactory()

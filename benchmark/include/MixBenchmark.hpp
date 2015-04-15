@@ -62,7 +62,7 @@ public:
         read_neighbor_queries(warmup_neighbor_file, query_neighbor_file);
     }
 
-    double benchmark_name_throughput() {
+    double benchmark() {
         double thput = 0;
 
         try {

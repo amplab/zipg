@@ -37,7 +37,7 @@ public:
     }
 
     void benchmark_neighbor_latency(std::string res_path, count_t WARMUP_N, count_t MEASURE_N, count_t COOLDOWN_N) {
-        time_t t0, t1, tdiff;
+        time_t t0, t1;
         std::ofstream res_stream(res_path);
 
         // Warmup
@@ -57,8 +57,8 @@ public:
             this->graph->get_neighbors(result, queries[i]);
             t1 = get_timestamp();
             assert(result.size() != 0 && "No result found in benchmarking node latency");
-            tdiff = t1 - t0;
-            res_stream << queries[i] << "," << tdiff << "\n";
+            double millisecs = (t1 - t0) / 1000.0;
+            res_stream << queries[i] << "," << millisecs << "\n";
         }
         fprintf(stderr, "Measure complete.\n");
 

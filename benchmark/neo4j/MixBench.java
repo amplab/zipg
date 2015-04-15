@@ -107,7 +107,7 @@ public class MixBench {
                     List<Long> results = getNodes(graphDb, label, attr, query);
                     queryEnd = System.nanoTime();
                 }
-	        totalSeconds += (queryEnd - queryStart) / ((double) 1E9);
+                totalSeconds += (queryEnd - queryStart) / ((double) 1E9);
                 if (i > 0 && i % 1000 == 0) {
                     tx.success();
                     tx.finish();

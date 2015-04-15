@@ -65,9 +65,6 @@ int main(int argc, char **argv) {
     std::string graph_file = std::string(argv[optind]);
     SuccinctGraph * graph = new SuccinctGraph(graph_file);
 
-    std::ofstream result_file(result_file_name, std::ios_base::app);
-    result_file << graph_file << "\n";
-
     std::cout << "Benching " << graph_file << std::endl;
     if (type == "neighbor-latency") {
         NeighborBenchmark bench(graph, warmup_query_file, measure_query_file);
@@ -79,16 +76,16 @@ int main(int argc, char **argv) {
         result_file << "Get Edges Throughput: " << thput_pair.second << "\n";
     } else if (type == "node-latency") {
         NodeBenchmark bench(graph, warmup_query_file, measure_query_file);
-        bench.benchmark_name_latency(result_file_name, warmup_n, measure_n, cooldown_n);
-    } else if (type == "name-throughput") {
+        bench.benchmark_node_latency(result_file_name, warmup_n, measure_n, cooldown_n);
+    } else if (type == "node-throughput") {
         NodeBenchmark s_bench(graph, warmup_query_file, measure_query_file);
-        double thput = s_bench.benchmark_name_throughput();
+        double thput = s_bench.benchmark_node_throughput();
         result_file << "Get Name Throughput: " << thput << "\n\n";
     } else if (type == "mix-throughput") {
         MixBenchmark m_bench(graph, warmup_n, measure_n, cooldown_n,
                 warmup_query_file, measure_query_file,
                 warmup_neighbor_file, measure_neighbor_file);
-        double thput = m_bench.benchmark_name_throughput();
+        double thput = m_bench.benchmark();
         result_file << "Mix throughput: " << thput << "\n\n";
     } else {
         assert(0); // Not supported
