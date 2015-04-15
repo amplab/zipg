@@ -36,6 +36,43 @@ public:
         read_queries(warmup_query_file, query_file);
     }
 
+    void benchmark_neighbor_latency(std::string res_path, count_t WARMUP_N, count_t MEASURE_N, count_t COOLDOWN_N) {
+        time_t t0, t1, tdiff;
+        std::ofstream res_stream(res_path);
+
+        // Warmup
+        fprintf(stderr, "Warming up for %lu queries...\n", WARMUP_N);
+        for(uint64_t i = 0; i < WARMUP_N; i++) {
+            std::set<int64_t> result;
+            this->graph->get_neighbors(result, warmup_queries[i]);
+            assert(result.size() != 0 && "No result found in benchmarking node latency");
+        }
+        fprintf(stderr, "Warmup complete.\n");
+
+        // Measure
+        fprintf(stderr, "Measuring for %lu queries...\n", MEASURE_N);
+        for(uint64_t i = 0; i < MEASURE_N; i++) {
+            std::set<int64_t> result;
+            t0 = get_timestamp();
+            this->graph->get_neighbors(result, queries[i]);
+            t1 = get_timestamp();
+            assert(result.size() != 0 && "No result found in benchmarking node latency");
+            tdiff = t1 - t0;
+            res_stream << queries[i] << "," << tdiff << "\n";
+        }
+        fprintf(stderr, "Measure complete.\n");
+
+        // Cooldown
+        fprintf(stderr, "Cooling down for %lu queries...\n", COOLDOWN_N);
+        for(uint64_t i = 0; i < COOLDOWN_N; i++) {
+            std::set<int64_t> result;
+            this->graph->get_neighbors(result, warmup_queries[i]);
+        }
+        fprintf(stderr, "Cooldown complete.\n");
+
+        res_stream.close();
+    }
+
     std::pair<double, double> benchmark_neighbor_throughput() {
         double get_neighbor_thput = 0;
         double edges_thput = 0;

@@ -67,11 +67,15 @@ int main(int argc, char **argv) {
 
     std::ofstream result_file(result_file_name, std::ios_base::app);
     result_file << graph_file << "\n";
-    result_file << "Nodes: " << graph->num_nodes() << "\n";
-    result_file << "Edges: " << graph->num_edges() << "\n";
 
     std::cout << "Benching " << graph_file << std::endl;
-    if (type == "neighbor-throughput") {
+    if (type == "node-latency") {
+        NameBenchmark bench(graph, warmup_query_file, measure_query_file);
+        bench.benchmark_name_latency(result_file_name, warmup_n, measure_n, cooldown_n);
+    } else if (type == "neighbor-latency") {
+        NeighborBenchmark bench(graph, warmup_query_file, measure_query_file);
+        bench.benchmark_neighbor_latency(result_file_name, warmup_n, measure_n, cooldown_n);
+    } else if (type == "neighbor-throughput") {
         NeighborBenchmark s_bench(graph, warmup_query_file, measure_query_file);
         std::pair<double, double> thput_pair = s_bench.benchmark_neighbor_throughput();
         result_file << "Get Neighbor Throughput: " << thput_pair.first << "\n";
