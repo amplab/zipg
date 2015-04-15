@@ -65,6 +65,8 @@ int main(int argc, char **argv) {
     std::string graph_file = std::string(argv[optind]);
     SuccinctGraph * graph = new SuccinctGraph(graph_file);
 
+    std::ofstream result_file(result_file_name, std::ios_base::app);
+
     std::cout << "Benching " << graph_file << std::endl;
     if (type == "neighbor-latency") {
         NeighborBenchmark bench(graph, warmup_query_file, measure_query_file);
