@@ -58,7 +58,7 @@ public:
             t1 = get_timestamp();
             assert(result.size() != 0 && "No result found in benchmarking node latency");
             double millisecs = (t1 - t0) / 1000.0;
-            res_stream << queries[i] << "," << millisecs << "\n";
+            res_stream << queries[i] << "," << result.size() << "," << millisecs << "\n";
         }
         fprintf(stderr, "Measure complete.\n");
 
