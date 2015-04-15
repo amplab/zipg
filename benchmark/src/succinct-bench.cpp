@@ -4,7 +4,7 @@
 
 #include "succinct-graph/SuccinctGraph.hpp"
 #include "../include/NeighborBenchmark.hpp"
-#include "../include/NameBenchmark.hpp"
+#include "../include/NodeBenchmark.hpp"
 #include "../include/MixBenchmark.hpp"
 
 void print_usage(char *exec) {
@@ -69,10 +69,7 @@ int main(int argc, char **argv) {
     result_file << graph_file << "\n";
 
     std::cout << "Benching " << graph_file << std::endl;
-    if (type == "node-latency") {
-        NameBenchmark bench(graph, warmup_query_file, measure_query_file);
-        bench.benchmark_name_latency(result_file_name, warmup_n, measure_n, cooldown_n);
-    } else if (type == "neighbor-latency") {
+    if (type == "neighbor-latency") {
         NeighborBenchmark bench(graph, warmup_query_file, measure_query_file);
         bench.benchmark_neighbor_latency(result_file_name, warmup_n, measure_n, cooldown_n);
     } else if (type == "neighbor-throughput") {
@@ -80,8 +77,11 @@ int main(int argc, char **argv) {
         std::pair<double, double> thput_pair = s_bench.benchmark_neighbor_throughput();
         result_file << "Get Neighbor Throughput: " << thput_pair.first << "\n";
         result_file << "Get Edges Throughput: " << thput_pair.second << "\n";
+    } else if (type == "node-latency") {
+        NodeBenchmark bench(graph, warmup_query_file, measure_query_file);
+        bench.benchmark_name_latency(result_file_name, warmup_n, measure_n, cooldown_n);
     } else if (type == "name-throughput") {
-        NameBenchmark s_bench(graph, warmup_query_file, measure_query_file);
+        NodeBenchmark s_bench(graph, warmup_query_file, measure_query_file);
         double thput = s_bench.benchmark_name_throughput();
         result_file << "Get Name Throughput: " << thput << "\n\n";
     } else if (type == "mix-throughput") {

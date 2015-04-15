@@ -1,11 +1,11 @@
-#ifndef SUCCINCT_GRAPH_NAME_BENCHMARK_H
-#define SUCCINCT_GRAPH_NAME_BENCHMARK_H
+#ifndef SUCCINCT_GRAPH_NODE_BENCHMARK_H
+#define SUCCINCT_GRAPH_NODE_BENCHMARK_H
 
 #include <random>
 #include "../../external/succinct-cpp/benchmark/include/Benchmark.hpp"
 #include "../../include/succinct-graph/SuccinctGraph.hpp"
 
-class NameBenchmark : public Benchmark {
+class NodeBenchmark : public Benchmark {
 
 private:
     static const count_t WARMUP_T = 60 * 1E6;
@@ -37,7 +37,7 @@ private:
 
 public:
 
-    NameBenchmark(SuccinctGraph *graph, std::string warmup_query_file,
+    NodeBenchmark(SuccinctGraph *graph, std::string warmup_query_file,
             std::string query_file) : Benchmark() {
         this->graph = graph;
         read_queries(warmup_query_file, query_file);
@@ -65,7 +65,7 @@ public:
             t1 = get_timestamp();
             assert(result.size() != 0 && "No result found in benchmarking node latency");
             tdiff = t1 - t0;
-            res_stream << queries_attr[i] << "," << queries[i] << "," << tdiff << "\n";
+            res_stream << queries_attr[i] << "," << queries[i] << "," << result.size() << "," << tdiff << "\n";
         }
         fprintf(stderr, "Measure complete.\n");
 
