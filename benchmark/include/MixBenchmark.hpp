@@ -70,14 +70,15 @@ public:
             std::cout << "Warming up" << std::endl;
             int warmup_size = warmup_queries.size();
             for (int i = 0; i < WARMUP_N; i++) {
-                std::set<int64_t> result;
                 if (i % 2 == 0) {
+                    std::string result;
                     graph->get_neighbors(result, warmup_neighbor_indices[i % warmup_size]);
-                    if (result.size() == 0) {
+                    if (result.length() == 0) {
                         printf("Error getting neighbors for %d\n", warmup_neighbor_indices[i % warmup_size]);
                         std::exit(1);
                     }
                 } else {
+                    std::set<int64_t> result;
                     graph->search_nodes(result, warmup_attr[i % warmup_size], warmup_queries[i % warmup_size]);
                     if (result.size() == 0) {
                         printf("Error searching for attr %d for %s\n", warmup_attr[i % warmup_size], warmup_queries[i % warmup_size].c_str());
@@ -91,11 +92,12 @@ public:
             std::cout << "Measuring throughput" << std::endl;
             int size = queries.size();
             for (int i = 0; i < MEASURE_N; i++) {
-                std::set<int64_t> result;
                 time_t query_start = get_timestamp();
                 if (i % 2 == 0) {
+                    std::string result;
                     graph->get_neighbors(result, neighbor_indices[i % size]);
                 } else {
+                    std::set<int64_t> result;
                     graph->search_nodes(result, queries_attr[i % size], queries[i % size]);
                 }
                 time_t query_end = get_timestamp();
@@ -104,12 +106,13 @@ public:
             thput = ((double) MEASURE_N / totsecs);
             printf("Throughput: %f\n total queries: %d, total time: %f\n\n", thput, MEASURE_N, totsecs);
 
-            // Cooldown phasej
+            // Cooldown phase
             for (int i = 0; i < COOLDOWN_N; i++) {
-                std::set<int64_t> result;
                 if (i % 2 == 0) {
+                    std::string result;
                     graph->get_neighbors(result, warmup_neighbor_indices[i % warmup_size]);
                 } else {
+                    std::set<int64_t> result;
                     graph->search_nodes(result, warmup_attr[i % warmup_size], warmup_queries[i % warmup_size]);
                 }
             }

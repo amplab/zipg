@@ -1,5 +1,6 @@
 #include "succinct-graph/SuccinctGraph.hpp"
 #include <iostream>
+#include <limits>
 #include <sstream>
 
 const int ATTR_SIZE = 32;
@@ -40,15 +41,15 @@ void SuccinctGraph::search_nodes(std::set<int64_t>& result, int attr, std::strin
     this->shard->search(result, DELIMINATORS[attr] + search_key);
 }
 
-void SuccinctGraph::get_neighbors(std::set<int64_t>& result, int64_t key) {
-    std::string line;
-    this->shard->access(line, key, this->num_attributes() * (ATTR_SIZE + 1) + 1);
-    std::istringstream iss(line);
-    std::string token;
+void SuccinctGraph::get_neighbors(std::string& result, int64_t key) {
+    // std::string line;
+    this->shard->access(result, key, this->num_attributes() * (ATTR_SIZE + 1) + 1, std::numeric_limits<int32_t>::max());
+    //std::istringstream iss(line);
+    //std::string token;
     // TOOO: make edge deliminators not necessarily blank space
-    while (getline(iss, token, ' ')) {
-        result.insert(std::strtoll(token.c_str(), NULL, 10));
-    }
+    //while (getline(iss, token, ' ')) {
+    //    result.insert(std::strtoll(token.c_str(), NULL, 10));
+    //}
 }
 
 std::string SuccinctGraph::format_input_data(std::string node_file, std::string edge_file) {
