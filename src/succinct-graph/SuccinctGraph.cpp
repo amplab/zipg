@@ -11,14 +11,14 @@ SuccinctGraph::SuccinctGraph(std::string node_file, std::string edge_file) {
     this->edges = 0;
     this->graph_file = format_input_data(node_file, edge_file);
     //TODO: generalize id so we can create multiple succinct graphs
-    this->shard = new SuccinctShard(0, this->graph_file);
+    this->shard = new SuccinctShard(0, this->graph_file, SuccinctMode::CONSTRUCT_IN_MEMORY);
 }
 
 SuccinctGraph::SuccinctGraph(std::string graph_file) {
     this->graph_file = graph_file;
     //TODO: also find a way of computing edges when we do not construct
     this->nodes = lines_in_file(graph_file);
-    this->shard = new SuccinctShard(0, graph_file, false);
+    this->shard = new SuccinctShard(0, graph_file, SuccinctMode::LOAD_IN_MEMORY);
 }
 
 int64_t SuccinctGraph::num_nodes() {
