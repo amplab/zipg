@@ -51,8 +51,7 @@ public class BenchNeighbor {
             for (int i = 0; i < warmup_n; i++) {
                 List<Node> neighbors = getNeighbors(graphDb, warmupQueries[i % warmupQueries.length]);
                 if (neighbors.size() == 0) {
-                    System.out.println("Error: no results for neighbor of " + warmupQueries[i % warmupQueries.length]);
-                    System.exit(0);
+                    System.err.println("Error: no results for neighbor of " + warmupQueries[i % warmupQueries.length]);
                 }
             }
 
@@ -67,7 +66,7 @@ public class BenchNeighbor {
                 List<Node> neighbors = getNeighbors(graphDb, queries[i % queries.length]);
                 long queryEnd = System.nanoTime();
                 double millisecs = (queryEnd - queryStart) / ((double) 1000 * 1000);
-                out.println(queries[i % queries.length] + "," + millisecs);
+                out.println(queries[i % queries.length] + "," + neighbors.size() + "," + millisecs);
             }
 
             // cooldown
@@ -95,14 +94,18 @@ public class BenchNeighbor {
         try {
             PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(output_file, true)));
             // warmup
+            System.out.println("Warming up neo4j neighbor throughput");
             int i = 0;
             long warmupStart = System.nanoTime();
             while (System.nanoTime() - warmupStart < WARMUP_TIME) {
                 List<Node> neighbors = getNeighbors(graphDb, warmupQueries[i % warmupQueries.length]);
+                if (neighbors.size() == 0)
+                    System.err.println("Error: no results found in neo4j neighbor throughput benchmarking");
                 i++;
             }
 
             // measure
+            System.out.println("Measuring neo4j neighbor throughput");
             i = 0;
             long edges = 0;
             double totalSeconds = 0;
@@ -116,6 +119,9 @@ public class BenchNeighbor {
                 long queryStart = System.nanoTime();
                 List<Node> neighbors = getNeighbors(graphDb, queries[i % queries.length]);
                 long queryEnd = System.nanoTime();
+                if (neighbors.size() == 0)
+                    System.err.println("Error: no results found in neo4j neighbor throughput benchmarking");
+
                 totalSeconds += (queryEnd - queryStart) / ((double) 1E9);
                 edges += neighbors.size();
                 i++;
@@ -124,6 +130,7 @@ public class BenchNeighbor {
             double edgesThput = ((double) edges) / totalSeconds;
 
             // cooldown
+            System.out.println("cooling down neo4j neighbor throughput");
             i = 0;
             long cooldownStart = System.nanoTime();
             while (System.nanoTime() - cooldownStart < COOLDOWN_TIME) {
