@@ -91,8 +91,8 @@ public class BenchNode {
                 long queryStart = System.nanoTime();
                 List<Long> nodes = getNodes(graphDb, label, attr, query);
                 long queryEnd = System.nanoTime();
-                double millisecs = (queryEnd - queryStart) / ((double) 1000 * 1000);
-                out.println(attr + "," + query + "," + nodes.size() + "," +  millisecs);
+                double microsecs = (queryEnd - queryStart) / ((double) 1000);
+                out.println(attr + "," + query + "," + nodes.size() + "," +  microsecs);
             }
 
             // cooldown
@@ -177,13 +177,16 @@ public class BenchNode {
 
     private static List<Long> getNodes(GraphDatabaseService graphDb,
             Label label, int attr, String search) {
-        try (ResourceIterator<Node> nodes = graphDb.findNodes(label, "name" + attr,
-                search)) {
+	ResourceIterator<Node> nodes = graphDb.findNodes(label, "name" + attr,search);
+        try {
             ArrayList<Long> userIds = new ArrayList<>();
             while (nodes.hasNext()) {
                 userIds.add(nodes.next().getId());
             }
             return userIds;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
         }
     }
 

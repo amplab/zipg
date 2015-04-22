@@ -48,13 +48,15 @@ public class BenchNeighbor {
         try {
             PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(output_file)));
             // warmup
+            System.out.println("warmup");
             for (int i = 0; i < warmup_n; i++) {
-                List<Node> neighbors = getNeighbors(graphDb, warmupQueries[i % warmupQueries.length]);
+                List<Long> neighbors = getNeighbors(graphDb, warmupQueries[i % warmupQueries.length]);
                 if (neighbors.size() == 0) {
                     System.err.println("Error: no results for neighbor of " + warmupQueries[i % warmupQueries.length]);
                 }
             }
 
+            System.out.println("measure");
             // measure
             for (int i = 0; i < measure_n; i++) {
                 if (i % 10000 == 0) {
@@ -63,15 +65,15 @@ public class BenchNeighbor {
                     tx = graphDb.beginTx();
                 }
                 long queryStart = System.nanoTime();
-                List<Node> neighbors = getNeighbors(graphDb, queries[i % queries.length]);
+                List<Long> neighbors = getNeighbors(graphDb, queries[i % queries.length]);
                 long queryEnd = System.nanoTime();
-                double millisecs = (queryEnd - queryStart) / ((double) 1000 * 1000);
-                out.println(queries[i % queries.length] + "," + neighbors.size() + "," + millisecs);
+                double microsecs = (queryEnd - queryStart) / ((double) 1000);
+                out.println(queries[i % queries.length] + "," + neighbors.size() + "," + microsecs);
             }
 
             // cooldown
             for (int i = 0; i < cooldown_n; i++) {
-                List<Node> neighbors = getNeighbors(graphDb, warmupQueries[i % warmupQueries.length]);
+                List<Long> neighbors = getNeighbors(graphDb, warmupQueries[i % warmupQueries.length]);
             }
 
             tx.success();
@@ -98,7 +100,7 @@ public class BenchNeighbor {
             int i = 0;
             long warmupStart = System.nanoTime();
             while (System.nanoTime() - warmupStart < WARMUP_TIME) {
-                List<Node> neighbors = getNeighbors(graphDb, warmupQueries[i % warmupQueries.length]);
+                List<Long> neighbors = getNeighbors(graphDb, warmupQueries[i % warmupQueries.length]);
                 if (neighbors.size() == 0)
                     System.err.println("Error: no results found in neo4j neighbor throughput benchmarking");
                 i++;
@@ -117,7 +119,7 @@ public class BenchNeighbor {
                     tx = graphDb.beginTx();
                 }
                 long queryStart = System.nanoTime();
-                List<Node> neighbors = getNeighbors(graphDb, queries[i % queries.length]);
+                List<Long> neighbors = getNeighbors(graphDb, queries[i % queries.length]);
                 long queryEnd = System.nanoTime();
                 if (neighbors.size() == 0)
                     System.err.println("Error: no results found in neo4j neighbor throughput benchmarking");
@@ -134,7 +136,7 @@ public class BenchNeighbor {
             i = 0;
             long cooldownStart = System.nanoTime();
             while (System.nanoTime() - cooldownStart < COOLDOWN_TIME) {
-                List<Node> neighbors = getNeighbors(graphDb, warmupQueries[i % warmupQueries.length]);
+                List<Long> neighbors = getNeighbors(graphDb, warmupQueries[i % warmupQueries.length]);
                 i++;
             }
 
@@ -150,12 +152,21 @@ public class BenchNeighbor {
         }
     }
 
-    private static List<Node> getNeighbors(GraphDatabaseService graphDb, long id) {
-        Node n = graphDb.getNodeById(id);
-        List<Node> neighbors = new LinkedList<>();
-        for (Relationship r : n.getRelationships(Direction.OUTGOING)) {
-            neighbors.add(r.getOtherNode(n));
+    private static List<Long> getNeighbors(GraphDatabaseService graphDb, long id) {
+        List<Long> neighbors = new LinkedList<>();
+//	long t0 = System.nanoTime();
+	Node n = graphDb.getNodeById(id);
+        Iterable<Relationship> rels = n.getRelationships(Direction.OUTGOING);
+//	long t1 = System.nanoTime();
+//int count = 0;
+        for (Relationship r : rels) {
+            neighbors.add(r.getOtherNode(n).getId());
+//count++;
         }
+//	long t2 = System.nanoTime();
+//long diff1 = (t1 - t0);
+//double diff2 = (t2 - t1);
+//System.out.println(diff1 + "," + count + "," + diff2);
         return neighbors;
     }
 

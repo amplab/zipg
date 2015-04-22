@@ -1,11 +1,14 @@
 #!/usr/bin/env bash
 dir=..
 bin=../bin
-data=../data
-nodes=( 10000 100000 1000000 10000000 )
+data=../freq1000_attr10_len32_deg20
+nodes=( 1000000 10000000 ) #20000000 )
 freq=1000
 attributes=10
 attribute_length=32
-warmup_n=20000
-measure_n=100000
-cooldown_n=1000
+warmup_node=1000
+measure_node=10000
+cooldown_node=1000
+warmup_neighbor=200000
+measure_neighbor=200000
+cooldown_neighbor=1000

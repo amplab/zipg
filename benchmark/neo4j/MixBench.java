@@ -26,7 +26,7 @@ public class MixBench {
     private static int MEASURE_N = 100000;
     private static int COOLDOWN_N = 1000;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         String db_path = args[0];
         String warmup_node_file = args[1];
         String query_node_file = args[2];
@@ -36,13 +36,8 @@ public class MixBench {
         MEASURE_N = Integer.parseInt(args[6]);
         COOLDOWN_N = Integer.parseInt(args[7]);
         String output_file = args[8];
-        nameThroughput(db_path, warmup_node_file, query_node_file,
-            warmup_neighbor_file, query_neighbor_file, output_file);
-    }
-
-    private static void nameThroughput(String DB_PATH,
-            String warmup_node_file, String query_node_file,
-            String warmup_neighbor_file, String query_neighbor_file, String output_file) {
+ 
+        PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(output_file)));
 
         List<Integer> warmup_neighbor_indices = new ArrayList<Integer>();
         List<Integer> neighbor_indices = new ArrayList<Integer>();
@@ -56,11 +51,19 @@ public class MixBench {
         getNodeQueries(warmup_node_file, warmup_node_attributes, warmup_node_queries);
         getNodeQueries(query_node_file, node_attributes, node_queries);
 
+        mixThroughput(db_path, warmup_neighbor_indices, neighbor_indices,
+            warmup_node_attributes, warmup_node_queries, node_attributes, node_queries, out);
+    }
+
+    private static void mixThroughput(String DB_PATH, PrintWriter out,
+            List<Integer> warmup_neighbor_indices, List<Integer> neighbor_indices,
+            List<Integer> warmup_node_attributes, List<Integer> warmup_node_queries,
+            List<Integer> node_attributes, List<Integer> node_queries) {
+
         // START SNIPPET: startDb
         GraphDatabaseService graphDb = new GraphDatabaseFactory()
                 .newEmbeddedDatabase(DB_PATH);
         registerShutdownHook(graphDb);
-        IndexDefinition indexDefinition;
         Label label = DynamicLabel.label("Node");
         Transaction tx = graphDb.beginTx();
         try {
@@ -83,17 +86,17 @@ public class MixBench {
                         System.exit(0);
                     }
                 }
-                if (i > 0 && i % 1000 == 0) {
-                    tx.success();
-                    tx.finish();
-                    tx = graphDb.beginTx();
-                }
             }
 
             // measure
             System.out.println("Measure queries");
             double totalSeconds = 0;
             for (int i = 0; i < MEASURE_N; i++) {
+                if (i % 10000 == 0) {
+                    tx.success();
+                    tx.finish();
+                    tx = graphDb.beginTx();
+                }
                 long queryStart; long queryEnd;
                 if (i % 2 == 0) {
                     int idx = neighbor_indices.get(i/2 % size);
@@ -108,22 +111,13 @@ public class MixBench {
                     queryEnd = System.nanoTime();
                 }
                 totalSeconds += (queryEnd - queryStart) / ((double) 1E9);
-                if (i > 0 && i % 1000 == 0) {
-                    tx.success();
-                    tx.finish();
-                    tx = graphDb.beginTx();
-                }
             }
             double thput = ((double) MEASURE_N) / totalSeconds;
 
             System.out.println("Mixed throughput: " + thput);
-            try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(output_file, true)))) {
-                out.println(DB_PATH);
-                out.println("throughput: " + thput);
-                out.println("queries: " + MEASURE_N + ", total time: " + totalSeconds + "\n");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            out.println(DB_PATH);
+            out.println("throughput: " + thput);
+            out.println("queries: " + MEASURE_N + ", total time: " + totalSeconds + "\n");
 
             // cooldown
             for (int i = 0; i < COOLDOWN_N; i++) {
@@ -132,11 +126,6 @@ public class MixBench {
                 } else {
                     List<Long> results = getNodes(graphDb, label, warmup_node_attributes.get(i/2 % warmup_size),
                             warmup_node_queries.get(i/2 % warmup_size));
-                }
-                if (i > 0 && i % 1000 == 0) {
-                    tx.success();
-                    tx.finish();
-                    tx = graphDb.beginTx();
                 }
             }
             tx.success();

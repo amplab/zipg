@@ -52,7 +52,9 @@ public:
         for(uint64_t i = 0; i < WARMUP_N; i++) {
             std::set<int64_t> result;
             this->graph->search_nodes(result, warmup_attr[i], warmup_queries[i]);
-            assert(result.size() != 0 && "No result found in benchmarking node latency");
+            if (result.size() == 0) {
+                std::cout << warmup_attr[i] << ", " << warmup_queries[i] << "\n";
+            }
         }
         fprintf(stderr, "Warmup complete.\n");
 
@@ -63,9 +65,12 @@ public:
             t0 = get_timestamp();
             this->graph->search_nodes(result, queries_attr[i], queries[i]);
             t1 = get_timestamp();
-            assert(result.size() != 0 && "No result found in benchmarking node latency");
-            double millisecs = (t1 - t0) / 1000.0;
-            res_stream << queries_attr[i] << "," << queries[i] << "," << result.size() << "," << millisecs << "\n";
+            if (result.size() == 0) {
+                std::cout << queries_attr[i] << ", " << queries[i] << "\n";
+            } else {
+                double millisecs = (t1 - t0) / 1000.0;
+                res_stream << queries_attr[i] << "," << queries[i] << "," << result.size() << "," << millisecs << "\n";
+            }
         }
         fprintf(stderr, "Measure complete.\n");
 

@@ -98,6 +98,7 @@ public:
                 graph->get_neighbors(result, queries[i % queries.size()]);
                 time_t query_end = get_timestamp();
                 totsecs += (double) (query_end - query_start) / (1E6);
+std::cout << result.length() << "," << (query_end - query_start) << std::endl;
                 edges += result.size();
                 i++;
             }
