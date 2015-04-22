@@ -177,7 +177,7 @@ public class BenchNode {
 
     private static List<Long> getNodes(GraphDatabaseService graphDb,
             Label label, int attr, String search) {
-	ResourceIterator<Node> nodes = graphDb.findNodes(label, "name" + attr,search);
+        ResourceIterator<Node> nodes = graphDb.findNodes(label, "name" + attr,search);
         try {
             ArrayList<Long> userIds = new ArrayList<>();
             while (nodes.hasNext()) {
