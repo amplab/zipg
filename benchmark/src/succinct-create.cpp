@@ -63,15 +63,17 @@ void create_succinct_file(std::string node_file, std::string edge_file) {
 void generate_neighbor_queries(int64_t nodes, int warmup_size, int query_size, std::string warmup_query_file, std::string query_file) {
     std::random_device rd;
     std::mt19937 rng(rd());
-    std::uniform_int_distribution<int64_t> uni(0, nodes - 1);
+    std::uniform_int_distribution<int64_t> uni(0, nodes / 3);
 
     std::ofstream warmup_out(warmup_query_file);
     std::ofstream query_out(query_file);
     for(int64_t i = 0; i < warmup_size; i++) {
         warmup_out << uni(rng) << std::endl;
     }
+
+    std::uniform_int_distribution<int64_t> uni2(nodes / 3 + 1, nodes - 1);
     for(int64_t i = 0; i < query_size; i++) {
-        query_out << uni(rng) << std::endl;
+        query_out << uni2(rng) << std::endl;
     }
     warmup_out.close();
     query_out.close();
@@ -97,20 +99,22 @@ void generate_node_queries(std::string node_file, int warmup_size, int query_siz
     size_t num_attributes = attributes->at(0)->size();
     std::random_device rd;
     std::mt19937 rng(rd());
-    std::uniform_int_distribution<int64_t> uni(0, nodes - 1);
+    std::uniform_int_distribution<int64_t> uni_node(0, nodes - 1);
+    std::uniform_int_distribution<int> uni_attr(0, num_attributes / 3);
     std::string value;
 
     std::ofstream warmup_out(warmup_query_file);
     std::ofstream query_out(query_file);
     for(int64_t i = 0; i < warmup_size; i++) {
-        int attr = rand() % num_attributes;
-        value = attributes->at(uni(rng))->at(attr);
+        int attr = uni_attr(rng);
+        value = attributes->at(uni_node(rng))->at(attr);
         warmup_out << attr << "," << value << std::endl;
     }
 
+    std::uniform_int_distribution<int> uni_attr2(num_attributes / 3 + 1, num_attributes - 1);
     for(int64_t i = 0; i < query_size; i++) {
-        int attr = rand() % num_attributes;
-        value = attributes->at(uni(rng))->at(attr);
+        int attr = uni_attr2(rng);
+        value = attributes->at(uni_node(rng))->at(attr);
         query_out << attr << "," << value << std::endl;
     }
     warmup_out.close();
