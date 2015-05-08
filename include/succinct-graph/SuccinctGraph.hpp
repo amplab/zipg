@@ -38,7 +38,7 @@ public:
     void search_nodes(std::set<int64_t>& result, int attr, std::string search_key);
     void get_neighbors(std::string& result, int64_t key);
 
-    size_t serialize(std::ostream& out);
+    size_t serialize();
 
 private:
     static const std::string NAME_DELIMINATOR;
