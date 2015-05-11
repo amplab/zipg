@@ -28,7 +28,7 @@ private:
 
 public:
     SuccinctGraph(std::string node_file, std::string edge_file);
-    SuccinctGraph(std::string graph_file);
+    SuccinctGraph(std::string succinct_dir);
 
     int64_t num_nodes();
     int64_t num_edges();
@@ -38,13 +38,12 @@ public:
     void search_nodes(std::set<int64_t>& result, int attr, std::string search_key);
     void get_neighbors(std::string& result, int64_t key);
 
+    size_t storage_size();
     size_t serialize();
 
 private:
     static const std::string NAME_DELIMINATOR;
-
     std::string format_input_data(std::string node_file, std::string edge_file);
-    size_t lines_in_file(std::string file_path);
 };
 
 #endif

@@ -14,11 +14,10 @@ SuccinctGraph::SuccinctGraph(std::string node_file, std::string edge_file) {
     this->shard = new SuccinctShard(0, this->graph_file, SuccinctMode::CONSTRUCT_IN_MEMORY);
 }
 
-SuccinctGraph::SuccinctGraph(std::string graph_file) {
-    this->graph_file = graph_file;
+SuccinctGraph::SuccinctGraph(std::string succinct_dir) {
+    this->shard = new SuccinctShard(0, succinct_dir, SuccinctMode::LOAD_MEMORY_MAPPED);
     //TODO: also find a way of computing edges when we do not construct
-    this->nodes = lines_in_file(graph_file);
-    this->shard = new SuccinctShard(0, graph_file, SuccinctMode::LOAD_MEMORY_MAPPED);
+    this->nodes = this->shard->num_keys();
 }
 
 int64_t SuccinctGraph::num_nodes() {
@@ -99,16 +98,11 @@ std::string SuccinctGraph::format_input_data(std::string node_file, std::string 
     return graph_file;
 }
 
+size_t SuccinctGraph::storage_size() {
+    return shard->storage_size();
+}
+
 size_t SuccinctGraph::serialize() {
     return shard->serialize();
 }
 
-size_t SuccinctGraph::lines_in_file(std::string file_path) {
-    std::ifstream file(file_path);
-    size_t lines = 0;
-    std::string line;
-    while (std::getline(file, line)) {
-        lines++;
-    }
-    return lines;
-}

@@ -8,7 +8,7 @@
 #include "../include/MixBenchmark.hpp"
 
 void print_usage(char *exec) {
-    fprintf(stderr, "Usage: %s [-t type] [-x warmup_n] [-y measure_n] [-z cooldown_n] [-w warmup_file] [-q query_file] [-a neighbor_warmup ] [-b neighbor_query] [-o output_file] [graph_file]\n", exec);
+    fprintf(stderr, "Usage: %s [-t type] [-x warmup_n] [-y measure_n] [-z cooldown_n] [-w warmup_file] [-q query_file] [-a neighbor_warmup ] [-b neighbor_query] [-o output_file] [succinct_dir]\n", exec);
 }
 
 int main(int argc, char **argv) {
@@ -62,12 +62,12 @@ int main(int argc, char **argv) {
         return -1;
     }
 
-    std::string graph_file = std::string(argv[optind]);
-    SuccinctGraph * graph = new SuccinctGraph(graph_file);
+    std::string succinct_dir = std::string(argv[optind]);
+    SuccinctGraph * graph = new SuccinctGraph(succinct_dir);
 
     std::ofstream result_file(result_file_name, std::ios_base::app);
 
-    std::cout << "Benching " << graph_file << std::endl;
+    std::cout << "Benching " << succinct_dir << std::endl;
     if (type == "neighbor-latency") {
         NeighborBenchmark bench(graph, warmup_query_file, measure_query_file);
         bench.benchmark_neighbor_latency(result_file_name, warmup_n, measure_n, cooldown_n);
@@ -89,6 +89,11 @@ int main(int argc, char **argv) {
                 warmup_neighbor_file, measure_neighbor_file);
         double thput = m_bench.benchmark();
         result_file << "Mix throughput: " << thput << "\n\n";
+    } else if (type == "mix-latency") {
+        MixBenchmark m_bench(graph, warmup_n, measure_n, cooldown_n,
+                warmup_query_file, measure_query_file,
+                warmup_neighbor_file, measure_neighbor_file);
+        m_bench.benchmark_mix_latency(result_file_name);
     } else {
         assert(0); // Not supported
     }
