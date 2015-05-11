@@ -74,14 +74,12 @@ public:
                     graph->get_neighbors(result, warmup_neighbor_indices[i % warmup_size]);
                     if (result.length() == 0) {
                         printf("Error getting neighbors for %d\n", warmup_neighbor_indices[i % warmup_size]);
-                        std::exit(1);
                     }
                 } else {
                     std::set<int64_t> result;
                     graph->search_nodes(result, warmup_attr[i % warmup_size], warmup_queries[i % warmup_size]);
                     if (result.size() == 0) {
                         printf("Error searching for attr %d for %s\n", warmup_attr[i % warmup_size], warmup_queries[i % warmup_size].c_str());
-                        std::exit(1);
                     }
                 }
             }
@@ -95,13 +93,21 @@ public:
                     time_t query_start = get_timestamp();
                     graph->get_neighbors(result, neighbor_indices[i % size]);
                     time_t query_end = get_timestamp();
-                    res_stream << result.size() << "," <<  (query_end - query_start) << "\n";
+                    if (result.size() == 0) {
+                        printf("Error getting neighbors for %d\n", neighbor_indices[i % size]);
+                    } else {
+                        res_stream << result.size() << "," <<  (query_end - query_start) << "\n";
+                    }
                 } else {
                     std::set<int64_t> result;
                     time_t query_start = get_timestamp();
                     graph->search_nodes(result, queries_attr[i % size], queries[i % size]);
                     time_t query_end = get_timestamp();
-                    res_stream << result.size() << "," <<  (query_end - query_start) << "\n";
+                    if (result.size() == 0) {
+                        printf("Error searching for attr %d for %s\n", queries_attr[i % size], queries[i % size].c_str());
+                    } else {
+                        res_stream << result.size() << "," <<  (query_end - query_start) << "\n";
+                    }
                 }
             }
 
