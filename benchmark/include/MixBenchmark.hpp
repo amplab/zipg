@@ -8,9 +8,9 @@
 class MixBenchmark : public Benchmark {
 
 private:
-    int WARMUP_N = 20000;
-    int MEASURE_N = 100000;
-    int COOLDOWN_N = 1000;
+    int WARMUP_N;
+    int MEASURE_N;
+    int COOLDOWN_N;
 
     void read_node_queries(std::string warmup_node_file, std::string query_node_file) {
         std::ifstream warmup_input(warmup_node_file);
