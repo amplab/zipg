@@ -9,9 +9,11 @@ const std::string DELIMINATORS = "<>()#$%&*+";
 SuccinctGraph::SuccinctGraph(std::string node_file, std::string edge_file) {
     this->nodes = 0;
     this->edges = 0;
-    this->graph_file = format_input_data(node_file, edge_file);
+    this->graph_file = node_file;
+    //this->graph_file = format_input_data(node_file, edge_file);
     //TODO: generalize id so we can create multiple succinct graphs
-    this->shard = new SuccinctShard(0, this->graph_file, SuccinctMode::CONSTRUCT_IN_MEMORY);
+    this->shard = new SuccinctShard(0, this->graph_file, SuccinctMode::CONSTRUCT_IN_MEMORY, 32, 32, 256);
+    this->nodes = this->shard->num_keys();
 }
 
 SuccinctGraph::SuccinctGraph(std::string succinct_dir) {
