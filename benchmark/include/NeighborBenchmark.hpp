@@ -57,8 +57,7 @@ public:
             this->graph->get_neighbors(result, queries[i]);
             t1 = get_timestamp();
             assert(result.length() != 0 && "No result found in benchmarking node latency");
-            double millisecs = (t1 - t0) / 1000.0;
-            res_stream << queries[i] << "," << result.length() << "," << millisecs << "\n";
+            res_stream << queries[i] << "," << result.length() << "," << t1 - t0 << "\n";
         }
         fprintf(stderr, "Measure complete.\n");
 

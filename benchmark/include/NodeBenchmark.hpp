@@ -68,8 +68,7 @@ public:
             if (result.size() == 0) {
                 std::cout << queries_attr[i] << ", " << queries[i] << "\n";
             } else {
-                double millisecs = (t1 - t0) / 1000.0;
-                res_stream << queries_attr[i] << "," << queries[i] << "," << result.size() << "," << millisecs << "\n";
+                res_stream << queries_attr[i] << "," << queries[i] << "," << result.size() << "," << t1 - t0 << "\n";
             }
         }
         fprintf(stderr, "Measure complete.\n");
