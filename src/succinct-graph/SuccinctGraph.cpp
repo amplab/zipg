@@ -3,14 +3,13 @@
 #include <limits>
 #include <sstream>
 
-const int ATTR_SIZE = 32;
-const std::string DELIMINATORS = "<>()#$%&*+";
+const int ATTR_SIZE = 8;
+const std::string DELIMINATORS = "<>()#$%&*+[]{}^-|~;? \"',./:=@\\_~\x02\x03\x04\x05\x06\x07\x08\x09";
 
 SuccinctGraph::SuccinctGraph(std::string node_file, std::string edge_file) {
     this->nodes = 0;
     this->edges = 0;
-    this->graph_file = node_file;
-    //this->graph_file = format_input_data(node_file, edge_file);
+    this->graph_file = format_input_data(node_file, edge_file);
     //TODO: generalize id so we can create multiple succinct graphs
     this->shard = new SuccinctShard(0, this->graph_file, SuccinctMode::CONSTRUCT_IN_MEMORY, 32, 32, 256);
     this->nodes = this->shard->num_keys();

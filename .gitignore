@@ -33,4 +33,5 @@
 *.graph
 *.txt
 *.xlsx
+*.swp
 .DS_STORE
