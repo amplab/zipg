@@ -68,7 +68,7 @@ public:
             if (result.size() == 0) {
                 std::cout << queries_attr[i] << ", " << queries[i] << "\n";
             } else {
-                res_stream << queries_attr[i] << "," << queries[i] << "," << result.size() << "," << t1 - t0 << "\n";
+                res_stream << queries_attr[i] << "," << result.size() << "," << t1 - t0 << "\n";
             }
         }
         fprintf(stderr, "Measure complete.\n");

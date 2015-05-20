@@ -68,6 +68,11 @@ public class BenchNode {
             System.out.println("Warming up queries");
             int warmupSize = warmupAttributes.size();
             for (int i = 0; i < warmup_n; i++) {
+                if (i % 10000 == 0) {
+                    tx.success();
+                    tx.finish();
+                    tx = graphDb.beginTx();
+                }
                 List<Long> nodes = getNodes(graphDb, label, warmupAttributes.get(i % warmupSize),
                         warmupQueries.get(i % warmupSize));
                 if (nodes.size() == 0) {
@@ -92,7 +97,7 @@ public class BenchNode {
                 List<Long> nodes = getNodes(graphDb, label, attr, query);
                 long queryEnd = System.nanoTime();
                 double microsecs = (queryEnd - queryStart) / ((double) 1000);
-                out.println(attr + "," + query + "," + nodes.size() + "," +  microsecs);
+                out.println(attr + "," + nodes.size() + "," +  microsecs);
             }
 
             // cooldown

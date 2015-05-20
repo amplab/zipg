@@ -66,7 +66,7 @@ public:
         std::ofstream res_stream(res_path);
         try {
             // Warmup phase
-            std::cout << "Warming up for " << WARMUP_N << " trials\n";
+            fprintf(stderr, "Warming up for %lu queries...\n", WARMUP_N);
             int warmup_size = warmup_queries.size();
             for (int i = 0; i < WARMUP_N; i++) {
                 if (i % 2 == 0) {
@@ -83,9 +83,10 @@ public:
                     }
                 }
             }
+            fprintf(stderr, "Warmup complete.\n");
 
             // Measure phase
-            std::cout << "Measuring latency, " << MEASURE_N << " trials\n";
+            fprintf(stderr, "Measuring for %lu queries...\n", MEASURE_N);
             int size = queries.size();
             for (int i = 0; i < MEASURE_N; i++) {
                 if (i % 2 == 0) {
@@ -110,8 +111,10 @@ public:
                     }
                 }
             }
+            fprintf(stderr, "Measure complete.\n");
 
             // Cooldown phase
+            fprintf(stderr, "Cooling down for %lu queries...\n", COOLDOWN_N);
             for (int i = 0; i < COOLDOWN_N; i++) {
                 if (i % 2 == 0) {
                     std::string result;
@@ -121,6 +124,7 @@ public:
                     graph->search_nodes(result, warmup_attr[i % warmup_size], warmup_queries[i % warmup_size]);
                 }
             }
+            fprintf(stderr, "Cooldown complete.\n");
 
         } catch (std::exception &e) {
             fprintf(stderr, "Throughput test ends...\n");

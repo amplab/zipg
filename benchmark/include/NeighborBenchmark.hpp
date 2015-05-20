@@ -45,7 +45,7 @@ public:
         for(uint64_t i = 0; i < WARMUP_N; i++) {
             std::string result;
             this->graph->get_neighbors(result, warmup_queries[i]);
-            assert(result.length() != 0 && "No result found in benchmarking node latency");
+            assert(result.length() != 0 && "No result found in benchmarking neighbor latency");
         }
         fprintf(stderr, "Warmup complete.\n");
 

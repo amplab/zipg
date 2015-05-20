@@ -50,6 +50,11 @@ public class BenchNeighbor {
             // warmup
             System.out.println("warmup");
             for (int i = 0; i < warmup_n; i++) {
+                if (i % 10000 == 0) {
+                    tx.success();
+                    tx.finish();
+                    tx = graphDb.beginTx();
+                }
                 List<Long> neighbors = getNeighbors(graphDb, warmupQueries[i % warmupQueries.length]);
                 if (neighbors.size() == 0) {
                     System.err.println("Error: no results for neighbor of " + warmupQueries[i % warmupQueries.length]);
