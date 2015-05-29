@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
-source config.sh
-for num_nodes in ${nodes[@]} 
+SCRIPT_DIR=$(dirname $0)
+source ${SCRIPT_DIR}/config.sh
+mkdir -p ${EDGE_DIR}
+for num_nodes in ${nodes[@]}
 do
-    echo "Creating edge/${num_nodes}.edge"
-    ${dir}/../graphs/generate_graphs ${num_nodes}
-    mv ${num_nodes}.edge ${data}/edges
+    echo "Creating ${EDGE_DIR}/${num_nodes}.edge"
+    ${BIN_DIR}/generate_graphs ${num_nodes} $((deg * num_nodes))
+    mv ${num_nodes}.edge ${EDGE_DIR}
 done
