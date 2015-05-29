@@ -26,6 +26,10 @@ succinct:
 	git submodule update --init
 	cd $(SUCCINCTDIR) && $(MAKE)
 
+graph_generator:
+	cd external/graphs && $(MAKE)
+	mv external/graphs/generate_graphs $(BINDIR)
+
 graph: $(TARGET)
 
 $(TARGET): $(OBJECTS)
@@ -44,5 +48,6 @@ bench: graph
 clean:
 	echo "Cleaning...";
 	cd $(SUCCINCTDIR) && $(MAKE) clean
+	cd external/graphs && $(MAKE) clean
 	rm -rf $(BINDIR)/*  $(BUILDDIR)/* $(LIBDIR)/*
 
