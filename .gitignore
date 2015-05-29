@@ -4,6 +4,8 @@
 *.o
 *.obj
 *.class
+*.cmi
+*.cmx
 
 # Precompiled Headers
 *.gch
@@ -32,6 +34,7 @@
 *.succinct
 *.graph
 *.txt
+*.csv
 *.xlsx
 *.swp
 .DS_STORE
