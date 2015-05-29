@@ -1,38 +1,23 @@
 #ifndef SUCCINCT_GRAPH_H
 #define SUCCINCT_GRAPH_H
 
-#include <string>
-#include <vector>
-#include <set>
-#include <unordered_map>
-#include <list>
-
-#include <sys/mman.h>
-#include <sys/types.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <sys/stat.h>
-
-#include <string>
-#include <fstream>
-#include <streambuf>
-
 #include "../succinct/SuccinctShard.hpp"
 
 class SuccinctGraph {
 private:
     SuccinctShard * shard;
-    std::string graph_file;
+    std::string succinct_dir;
 
     int64_t nodes, edges;
 
 public:
-    SuccinctGraph(std::string node_file, std::string edge_file);
-    SuccinctGraph(std::string succinct_dir);
+    SuccinctGraph(std::string file, bool construct);
 
+    std::string succinct_directory();
     int64_t num_nodes();
     int64_t num_edges();
     int64_t num_attributes();
+    const static std::string DELIMINATORS;
 
     void get_attribute(std::string& result, int64_t key, int attr);
     void search_nodes(std::set<int64_t>& result, int attr, std::string search_key);
@@ -41,9 +26,6 @@ public:
     size_t storage_size();
     size_t serialize();
 
-private:
-    static const std::string NAME_DELIMINATOR;
-    std::string format_input_data(std::string node_file, std::string edge_file);
 };
 
 #endif

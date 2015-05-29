@@ -3,6 +3,9 @@
 #include <fstream>
 #include <unistd.h>
 #include <random>
+#include <vector>
+#include <list>
+
 #include "succinct-graph/SuccinctGraph.hpp"
 
 constexpr char alphanum[] =
@@ -47,15 +50,57 @@ void create_node_names(int nodes, int num_attr, int freq, int len) {
         s_out << std::endl;
     }
     s_out.close();
-    printf("Created node file: %s\n", node_file.c_str());
 }
 
-void create_succinct_file(std::string node_file, std::string edge_file) {
-    SuccinctGraph * graph = new SuccinctGraph(node_file, edge_file);
-    std::string succinct_file = node_file.substr(0, node_file.find(".node")) + ".graph.succinct";
-    // Serialize and save to file
+void create_graph_file(std::string node_file, std::string edge_file, std::string graph_file) {
+    std::ifstream node_input(node_file);
+    std::ifstream edge_input(edge_file);
+    std::vector<std::string> node_names;
+    std::string line;
+
+    int nodes;
+    for(nodes = 0; !node_input.eof(); nodes++) {
+        std::getline(node_input, line, '\n');
+        if (line.length() == 0)
+            break;
+        line = ',' + line; //prepend each data element with a comma
+        int pos = -1;
+        for (char delim: SuccinctGraph::DELIMINATORS) {
+            pos = line.find(',', pos + 1);
+            line[pos] = delim;
+        }
+        node_names.push_back(line);
+    }
+
+    std::vector< std::list<int> > neighbor_list(nodes);
+    for(int edges = 0; !edge_input.eof(); edges++) {
+        std::getline(edge_input, line, '\n');
+        if (line.length() == 0)
+            break;
+        int split_pos = line.find(' ');
+        int from_node = std::atoi(line.substr(0, split_pos).c_str());
+        int to_node = std::atoi(line.substr(split_pos + 1).c_str());
+        neighbor_list[from_node].push_back(to_node);
+    }
+    node_input.close();
+    edge_input.close();
+
+    std::ofstream s_out(graph_file);
+    for (int node = 0; node < nodes; node++) {
+        std::list<int> neighbors = neighbor_list[node];
+        neighbors.sort();
+        s_out << node_names[node];
+        for (int n: neighbors) {
+            s_out << " " << n;
+        }
+        s_out << "\n";
+    }
+    s_out.close();
+}
+
+void create_succinct_file(std::string graph_file) {
+    SuccinctGraph * graph = new SuccinctGraph(graph_file, true);
     graph->serialize();
-    printf("Created succinct graph: %s\n", succinct_file.c_str());
 }
 
 void generate_neighbor_queries(int64_t nodes, int warmup_size, int query_size, std::string warmup_query_file, std::string query_file) {
@@ -74,7 +119,6 @@ void generate_neighbor_queries(int64_t nodes, int warmup_size, int query_size, s
     }
     warmup_out.close();
     query_out.close();
-    printf("Created Neighbor query files: %s, %s\n", warmup_query_file.c_str(), query_file.c_str());
 }
 
 void generate_node_queries(std::string node_file, int warmup_size, int query_size, std::string warmup_query_file, std::string query_file) {
@@ -115,7 +159,6 @@ void generate_node_queries(std::string node_file, int warmup_size, int query_siz
     }
     warmup_out.close();
     query_out.close();
-    printf("Created node files: %s, %s\n", warmup_query_file.c_str(), query_file.c_str());
 }
 
 int main(int argc, char **argv) {
@@ -126,10 +169,14 @@ int main(int argc, char **argv) {
         int freq = atoi(argv[4]);
         int len = atoi(argv[5]);
         create_node_names(nodes, attributes, freq, len);
-    } else if (type == "succinct") {
+    } else if (type == "graph") {
         std::string node_file = argv[2];
         std::string edge_file = argv[3];
-        create_succinct_file(node_file, edge_file);
+        std::string graph_file = node_file.substr(0, node_file.find(".node")) + ".graph";
+        create_graph_file(node_file, edge_file, graph_file);
+    } else if (type == "succinct") {
+        std::string graph_file = argv[2];
+        create_succinct_file(graph_file);
     } else if (type == "node-queries") {
         std::string node_file = argv[2];
         int warmup_size = atoi(argv[3]);

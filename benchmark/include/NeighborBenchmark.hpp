@@ -36,7 +36,7 @@ public:
         read_queries(warmup_query_file, query_file);
     }
 
-    void benchmark_neighbor_latency(std::string res_path, count_t WARMUP_N, count_t MEASURE_N, count_t COOLDOWN_N) {
+    void benchmark_neighbor_latency(std::string res_path, count_t WARMUP_N, count_t MEASURE_N) {
         time_t t0, t1;
         std::ofstream res_stream(res_path);
 
@@ -97,7 +97,6 @@ public:
                 graph->get_neighbors(result, queries[i % queries.size()]);
                 time_t query_end = get_timestamp();
                 totsecs += (double) (query_end - query_start) / (1E6);
-std::cout << result.length() << "," << (query_end - query_start) << std::endl;
                 edges += result.size();
                 i++;
             }

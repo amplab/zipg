@@ -8,7 +8,7 @@
 #include "../include/MixBenchmark.hpp"
 
 void print_usage(char *exec) {
-    fprintf(stderr, "Usage: %s [-t type] [-x warmup_n] [-y measure_n] [-z cooldown_n] [-w warmup_file] [-q query_file] [-a neighbor_warmup ] [-b neighbor_query] [-o output_file] [succinct_dir]\n", exec);
+    fprintf(stderr, "Usage: %s [-t type] [-x warmup_n] [-y measure_n] [-w warmup_file] [-q query_file] [-a neighbor_warmup ] [-b neighbor_query] [-o output_file] [succinct_dir]\n", exec);
 }
 
 int main(int argc, char **argv) {
@@ -19,7 +19,7 @@ int main(int argc, char **argv) {
 
     int c;
     std::string type = "neighbor-throughput";
-    int warmup_n = 20000; int measure_n = 100000; int cooldown_n = 1000;
+    int warmup_n = 20000; int measure_n = 100000;
     std::string warmup_query_file = "warmup.txt";
     std::string measure_query_file = "query_file.txt";
     std::string warmup_neighbor_file = "warmup.txt";
@@ -35,9 +35,6 @@ int main(int argc, char **argv) {
             break;
         case 'y':
             measure_n = std::stoi(std::string(optarg));
-            break;
-        case 'z':
-            cooldown_n = std::stoi(std::string(optarg));
             break;
         case 'w':
             warmup_query_file = std::string(optarg);
@@ -63,14 +60,14 @@ int main(int argc, char **argv) {
     }
 
     std::string succinct_dir = std::string(argv[optind]);
-    SuccinctGraph * graph = new SuccinctGraph(succinct_dir);
+    SuccinctGraph * graph = new SuccinctGraph(succinct_dir, false);
 
     std::ofstream result_file(result_file_name, std::ios_base::app);
 
     std::cout << "Benching " << succinct_dir << std::endl;
     if (type == "neighbor-latency") {
         NeighborBenchmark bench(graph, warmup_query_file, measure_query_file);
-        bench.benchmark_neighbor_latency(result_file_name, warmup_n, measure_n, cooldown_n);
+        bench.benchmark_neighbor_latency(result_file_name, warmup_n, measure_n);
     } else if (type == "neighbor-throughput") {
         NeighborBenchmark s_bench(graph, warmup_query_file, measure_query_file);
         std::pair<double, double> thput_pair = s_bench.benchmark_neighbor_throughput();
@@ -78,19 +75,19 @@ int main(int argc, char **argv) {
         result_file << "Get Edges Throughput: " << thput_pair.second << "\n";
     } else if (type == "node-latency") {
         NodeBenchmark bench(graph, warmup_query_file, measure_query_file);
-        bench.benchmark_node_latency(result_file_name, warmup_n, measure_n, cooldown_n);
+        bench.benchmark_node_latency(result_file_name, warmup_n, measure_n);
     } else if (type == "node-throughput") {
         NodeBenchmark s_bench(graph, warmup_query_file, measure_query_file);
         double thput = s_bench.benchmark_node_throughput();
         result_file << "Get Name Throughput: " << thput << "\n\n";
     } else if (type == "mix-throughput") {
-        MixBenchmark m_bench(graph, warmup_n, measure_n, cooldown_n,
+        MixBenchmark m_bench(graph, warmup_n, measure_n,
                 warmup_query_file, measure_query_file,
                 warmup_neighbor_file, measure_neighbor_file);
         double thput = m_bench.benchmark();
         result_file << "Mix throughput: " << thput << "\n\n";
     } else if (type == "mix-latency") {
-        MixBenchmark m_bench(graph, warmup_n, measure_n, cooldown_n,
+        MixBenchmark m_bench(graph, warmup_n, measure_n,
                 warmup_query_file, measure_query_file,
                 warmup_neighbor_file, measure_neighbor_file);
         m_bench.benchmark_mix_latency(result_file_name);

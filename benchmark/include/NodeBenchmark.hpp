@@ -1,51 +1,23 @@
 #ifndef SUCCINCT_GRAPH_NODE_BENCHMARK_H
 #define SUCCINCT_GRAPH_NODE_BENCHMARK_H
 
-#include <random>
-#include "../../external/succinct-cpp/benchmark/include/Benchmark.hpp"
+#include "GraphBenchmark.hpp"
 #include "../../include/succinct-graph/SuccinctGraph.hpp"
 
-class NodeBenchmark : public Benchmark {
-
-private:
-    static const count_t WARMUP_T = 60 * 1E6;
-    static const count_t MEASURE_T = 120 * 1E6;
-    static const count_t COOLDOWN_T = 30 * 1E6;
-
-    void read_queries(std::string warmup_query_file, std::string query_file) {
-        std::ifstream warmup_input(warmup_query_file);
-        std::ifstream query_input(query_file);
-
-        std::string line;
-        while (getline(warmup_input, line)) {
-            int split_pos = line.find(',');
-            int attr = std::atoi(line.substr(0, split_pos).c_str());
-            std::string search = line.substr(split_pos + 1);
-            warmup_attr.push_back(attr);
-            warmup_queries.push_back(search);
-        }
-        while (getline(query_input, line)) {
-            int split_pos = line.find(',');
-            int attr = std::atoi(line.substr(0, split_pos).c_str());
-            std::string search = line.substr(split_pos + 1);
-            queries_attr.push_back(attr);
-            queries.push_back(search);
-        }
-        warmup_input.close();
-        query_input.close();
-    }
+class NodeBenchmark : public GraphBenchmark {
 
 public:
 
     NodeBenchmark(SuccinctGraph *graph, std::string warmup_query_file,
-            std::string query_file) : Benchmark() {
+            std::string query_file) : GraphBenchmark() {
         this->graph = graph;
-        read_queries(warmup_query_file, query_file);
+        read_node_queries(warmup_query_file, query_file);
     }
 
-    void benchmark_node_latency(std::string res_path, count_t WARMUP_N, count_t MEASURE_N, count_t COOLDOWN_N) {
+    void benchmark_node_latency(std::string res_path, count_t WARMUP_N, count_t MEASURE_N) {
         time_t t0, t1;
         std::ofstream res_stream(res_path);
+        fprintf(stderr, "Benchmarking getNode latency of %s\n", this->graph->succinct_directory().c_str());
 
         // Warmup
         fprintf(stderr, "Warming up for %lu queries...\n", WARMUP_N);
