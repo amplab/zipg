@@ -4,6 +4,7 @@
 
 //TODO: make ATTR_SIZE a parameter to be passed in
 const int ATTR_SIZE = 32;
+const int NUM_ATTRIBUTES = 10;
 const std::string SuccinctGraph::DELIMINATORS = "<>()#$%&*+[]{}^-|~;? \"',./:=@\\_~\x02\x03\x04\x05\x06\x07\x08\x09";
 
 SuccinctGraph::SuccinctGraph(std::string file, bool construct) {
@@ -15,7 +16,8 @@ SuccinctGraph::SuccinctGraph(std::string file, bool construct) {
         this->shard = new SuccinctShard(0, this->succinct_dir, SuccinctMode::LOAD_MEMORY_MAPPED);
     }
     //TODO: also find a way of computing edges when we do not construct
-    this->nodes = this->shard->num_keys();
+    //FIXME: this seems to return +1 higher than the real value
+    this->nodes = this->shard->num_keys() - 1;
 }
 
 std::string SuccinctGraph::succinct_directory() {
@@ -31,7 +33,7 @@ int64_t SuccinctGraph::num_edges() {
 }
 
 int64_t SuccinctGraph::num_attributes() {
-    return DELIMINATORS.size();
+    return NUM_ATTRIBUTES;
 }
 
 void SuccinctGraph::get_neighbors(std::set<int64_t>& result, int64_t node_id) {

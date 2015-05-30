@@ -84,7 +84,7 @@ int main(int argc, char **argv) {
         MixBenchmark m_bench(graph, warmup_n, measure_n,
                 warmup_query_file, measure_query_file,
                 warmup_neighbor_file, measure_neighbor_file);
-        double thput = m_bench.benchmark();
+        double thput = m_bench.benchmark_mix_throughput();
         result_file << "Mix throughput: " << thput << "\n\n";
     } else if (type == "mix-latency") {
         MixBenchmark m_bench(graph, warmup_n, measure_n,

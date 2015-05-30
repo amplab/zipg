@@ -9,6 +9,7 @@
 
 class GraphBenchmark : public Benchmark {
 protected:
+    SuccinctGraph * graph;
     count_t WARMUP_N; count_t MEASURE_N;
     static const count_t COOLDOWN_N = 500;
 

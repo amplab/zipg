@@ -142,20 +142,63 @@ void generate_node_queries(std::string node_file, int warmup_size, int query_siz
     std::mt19937 rng(rd());
     std::uniform_int_distribution<int64_t> uni_node(0, nodes - 1);
     std::uniform_int_distribution<int> uni_attr(0, num_attributes - 1);
-    std::string value;
 
     std::ofstream warmup_out(warmup_query_file);
     std::ofstream query_out(query_file);
     for(int64_t i = 0; i < warmup_size; i++) {
-        int attr = uni_attr(rng);
-        value = attributes->at(uni_node(rng))->at(attr);
-        warmup_out << attr << "," << value << std::endl;
+        int node_id = uni_node(rng);
+        int attr1 = uni_attr(rng);
+        std::string search_key1 = attributes->at(node_id)->at(attr1);
+        int attr2 = uni_attr(rng);
+        std::string search_key2 = attributes->at(node_id)->at(attr2);
+        warmup_out << attr1 << "," << search_key1 << "," << attr2 << "," << search_key2 << "\n";
     }
 
     for(int64_t i = 0; i < query_size; i++) {
+        int node_id = uni_node(rng);
+        int attr1 = uni_attr(rng);
+        std::string search_key1 = attributes->at(node_id)->at(attr1);
+        int attr2 = uni_attr(rng);
+        std::string search_key2 = attributes->at(node_id)->at(attr2);
+        query_out << attr1 << "," << search_key1 << "," << attr2 << "," << search_key2 << "\n";
+    }
+    warmup_out.close();
+    query_out.close();
+}
+
+void generate_neighbor_node_queries(std::string succinct_dir, int warmup_size, int query_size, std::string warmup_query_file, std::string query_file) {
+    SuccinctGraph * graph = new SuccinctGraph(succinct_dir, false);
+    std::random_device rd;
+    std::mt19937 rng(rd());
+    std::uniform_int_distribution<int64_t> uni_node(0, graph->num_nodes() - 1);
+    std::uniform_int_distribution<int> uni_attr(0, graph->num_attributes() - 1);
+
+    std::ofstream warmup_out(warmup_query_file);
+    std::ofstream query_out(query_file);
+    for(int64_t i = 0; i < warmup_size; i++) {
+        int node_id = uni_node(rng);
         int attr = uni_attr(rng);
-        value = attributes->at(uni_node(rng))->at(attr);
-        query_out << attr << "," << value << std::endl;
+        std::set<int64_t> neighbors;
+        graph->get_neighbors(neighbors, node_id);
+        std::set<int64_t>::const_iterator it(neighbors.begin());
+        int neighbor_idx = rand() % neighbors.size();
+        std::advance(it, neighbor_idx);
+        std::string search_key;
+        graph->get_attribute(search_key, *it, attr);
+        warmup_out << node_id << "," << attr << "," << search_key << "\n";
+    }
+
+    for(int64_t i = 0; i < query_size; i++) {
+        int node_id = uni_node(rng);
+        int attr = uni_attr(rng);
+        std::set<int64_t> neighbors;
+        graph->get_neighbors(neighbors, node_id);
+        std::set<int64_t>::const_iterator it(neighbors.begin());
+        int neighbor_idx = rand() % neighbors.size();
+        std::advance(it, neighbor_idx);
+        std::string search_key;
+        graph->get_attribute(search_key, *it, attr);
+        query_out << node_id << "," << attr << "," << search_key << "\n";
     }
     warmup_out.close();
     query_out.close();
@@ -191,6 +234,13 @@ int main(int argc, char **argv) {
         std::string warmup_file = argv[5];
         std::string query_file = argv[6];
         generate_neighbor_queries(nodes, warmup_size, query_size, warmup_file, query_file);
+    } else if (type == "neighbor-node-queries"){
+        std::string succinct_dir = argv[2];
+        int warmup_size = atoi(argv[3]);
+        int query_size = atoi(argv[4]);
+        std::string warmup_file = argv[5];
+        std::string query_file = argv[6];
+        generate_neighbor_node_queries(succinct_dir, warmup_size, query_size, warmup_file, query_file);
     } else {
         assert(1); // not supported
     }

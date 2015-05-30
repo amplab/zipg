@@ -22,3 +22,5 @@ warmup_node=50000
 measure_node=100000
 warmup_mix=100000
 measure_mix=100000
+warmup_neighbor_node=100000
+measure_neighbor_node=200000
