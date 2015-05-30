@@ -24,9 +24,9 @@ public:
             fprintf(stderr, "Warming up for %lu queries...\n", WARMUP_N);
             for (int i = 0; i < WARMUP_N; i++) {
                 if (i % 2 == 0) {
-                    std::string result;
+                    std::set<int64_t> result;
                     graph->get_neighbors(result, warmup_neighbor_indices[i/2]);
-                    if (result.length() == 0) {
+                    if (result.size() == 0) {
                         fprintf(stderr, "Error getting neighbors for %d.\n", warmup_neighbor_indices[i/2]);
                     }
                 } else {
@@ -43,7 +43,7 @@ public:
             fprintf(stderr, "Measuring for %lu queries...\n", MEASURE_N);
             for (int i = 0; i < MEASURE_N; i++) {
                 if (i % 2 == 0) {
-                    std::string result;
+                    std::set<int64_t> result;
                     time_t query_start = get_timestamp();
                     graph->get_neighbors(result, neighbor_indices[i/2]);
                     time_t query_end = get_timestamp();
@@ -70,7 +70,7 @@ public:
             fprintf(stderr, "Cooling down for %lu queries...\n", COOLDOWN_N);
             for (int i = 0; i < COOLDOWN_N; i++) {
                 if (i % 2 == 0) {
-                    std::string result;
+                    std::set<int64_t> result;
                     graph->get_neighbors(result, warmup_neighbor_indices[i/2]);
                 } else {
                     std::set<int64_t> result;
@@ -93,9 +93,9 @@ public:
             int warmup_size = warmup_queries.size();
             for (int i = 0; i < WARMUP_N; i++) {
                 if (i % 2 == 0) {
-                    std::string result;
+                    std::set<int64_t> result;
                     graph->get_neighbors(result, warmup_neighbor_indices[i % warmup_size]);
-                    if (result.length() == 0) {
+                    if (result.size() == 0) {
                         printf("Error getting neighbors for %d\n", warmup_neighbor_indices[i % warmup_size]);
                         std::exit(1);
                     }
@@ -116,7 +116,7 @@ public:
             for (int i = 0; i < MEASURE_N; i++) {
                 time_t query_start = get_timestamp();
                 if (i % 2 == 0) {
-                    std::string result;
+                    std::set<int64_t> result;
                     graph->get_neighbors(result, neighbor_indices[i % size]);
                 } else {
                     std::set<int64_t> result;
@@ -131,7 +131,7 @@ public:
             // Cooldown phase
             for (int i = 0; i < COOLDOWN_N; i++) {
                 if (i % 2 == 0) {
-                    std::string result;
+                    std::set<int64_t> result;
                     graph->get_neighbors(result, warmup_neighbor_indices[i % warmup_size]);
                 } else {
                     std::set<int64_t> result;

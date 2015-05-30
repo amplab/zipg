@@ -43,28 +43,28 @@ public:
         // Warmup
         fprintf(stderr, "Warming up for %lu queries...\n", WARMUP_N);
         for(uint64_t i = 0; i < WARMUP_N; i++) {
-            std::string result;
+            std::set<int64_t> result;
             this->graph->get_neighbors(result, warmup_queries[i]);
-            assert(result.length() != 0 && "No result found in benchmarking neighbor latency");
+            assert(result.size() != 0 && "No result found in benchmarking neighbor latency");
         }
         fprintf(stderr, "Warmup complete.\n");
 
         // Measure
         fprintf(stderr, "Measuring for %lu queries...\n", MEASURE_N);
         for(uint64_t i = 0; i < MEASURE_N; i++) {
-            std::string result;
+            std::set<int64_t> result;
             t0 = get_timestamp();
             this->graph->get_neighbors(result, queries[i]);
             t1 = get_timestamp();
-            assert(result.length() != 0 && "No result found in benchmarking node latency");
-            res_stream << queries[i] << "," << result.length() << "," << t1 - t0 << "\n";
+            assert(result.size() != 0 && "No result found in benchmarking node latency");
+            res_stream << queries[i] << "," << result.size() << "," << t1 - t0 << "\n";
         }
         fprintf(stderr, "Measure complete.\n");
 
         // Cooldown
         fprintf(stderr, "Cooling down for %lu queries...\n", COOLDOWN_N);
         for(uint64_t i = 0; i < COOLDOWN_N; i++) {
-            std::string result;
+            std::set<int64_t> result;
             this->graph->get_neighbors(result, warmup_queries[i]);
         }
         fprintf(stderr, "Cooldown complete.\n");
@@ -81,7 +81,7 @@ public:
             long i = 0;
             time_t warmup_start = get_timestamp();
             while (get_timestamp() - warmup_start < WARMUP_T) {
-                std::string result;
+                std::set<int64_t> result;
                 graph->get_neighbors(result, warmup_queries[i % warmup_queries.size()]);
                 i++;
             }
@@ -92,7 +92,7 @@ public:
             double totsecs = 0;
             time_t start = get_timestamp();
             while (get_timestamp() - start < MEASURE_T) {
-                std::string result;
+                std::set<int64_t> result;
                 time_t query_start = get_timestamp();
                 graph->get_neighbors(result, queries[i % queries.size()]);
                 time_t query_end = get_timestamp();
@@ -106,7 +106,7 @@ public:
             i = 0;
             time_t cooldown_start = get_timestamp();
             while (get_timestamp() - cooldown_start < COOLDOWN_T) {
-                std::string result;
+                std::set<int64_t> result;
                 graph->get_neighbors(result, warmup_queries[i % warmup_queries.size()]);
                 i++;
             }
