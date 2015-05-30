@@ -19,9 +19,13 @@ public:
     int64_t num_attributes();
     const static std::string DELIMINATORS;
 
-    void get_attribute(std::string& result, int64_t key, int attr);
-    void search_nodes(std::set<int64_t>& result, int attr, std::string search_key);
     void get_neighbors(std::set<int64_t>& result, int64_t key);
+    void get_attribute(std::string& result, int64_t node_id, int attr);
+    void search_nodes(std::set<int64_t>& result, int attr, std::string search_key);
+    void search_nodes(std::set<int64_t>& result, int attr1, std::string search_key1,
+                                                 int attr2, std::string search_key2);
+    void get_neighbors_of_node(std::set<int64_t>& result, int64_t node_id,
+                                    int attr, std::string search_key);
 
     size_t storage_size();
     size_t serialize();
