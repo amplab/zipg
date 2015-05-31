@@ -3,9 +3,7 @@
 #include <unistd.h>
 
 #include "succinct-graph/SuccinctGraph.hpp"
-#include "../include/NeighborBenchmark.hpp"
-#include "../include/NodeBenchmark.hpp"
-#include "../include/MixBenchmark.hpp"
+#include "../include/GraphBenchmark.hpp"
 
 void print_usage(char *exec) {
     fprintf(stderr, "Usage: %s [-t type] [-x warmup_n] [-y measure_n] [-w warmup_file] [-q query_file] [-a neighbor_warmup ] [-b neighbor_query] [-o output_file] [succinct_dir]\n", exec);
@@ -64,33 +62,36 @@ int main(int argc, char **argv) {
 
     std::ofstream result_file(result_file_name, std::ios_base::app);
 
-    std::cout << "Benching " << succinct_dir << std::endl;
+    GraphBenchmark bench(graph);
     if (type == "neighbor-latency") {
-        NeighborBenchmark bench(graph, warmup_query_file, measure_query_file);
-        bench.benchmark_neighbor_latency(result_file_name, warmup_n, measure_n);
+        bench.benchmark_neighbor_latency(result_file_name, warmup_n, measure_n,
+                warmup_query_file, measure_query_file);
     } else if (type == "neighbor-throughput") {
-        NeighborBenchmark s_bench(graph, warmup_query_file, measure_query_file);
-        std::pair<double, double> thput_pair = s_bench.benchmark_neighbor_throughput();
+        std::pair<double, double> thput_pair = bench.benchmark_neighbor_throughput(
+                warmup_query_file, measure_query_file);
         result_file << "Get Neighbor Throughput: " << thput_pair.first << "\n";
         result_file << "Get Edges Throughput: " << thput_pair.second << "\n";
     } else if (type == "node-latency") {
-        NodeBenchmark bench(graph, warmup_query_file, measure_query_file);
-        bench.benchmark_node_latency(result_file_name, warmup_n, measure_n);
+        bench.benchmark_node_latency(result_file_name, warmup_n, measure_n,
+                warmup_query_file, measure_query_file);
     } else if (type == "node-throughput") {
-        NodeBenchmark s_bench(graph, warmup_query_file, measure_query_file);
-        double thput = s_bench.benchmark_node_throughput();
+        double thput = bench.benchmark_node_throughput(warmup_query_file, measure_query_file);
         result_file << "Get Name Throughput: " << thput << "\n\n";
     } else if (type == "mix-throughput") {
-        MixBenchmark m_bench(graph, warmup_n, measure_n,
-                warmup_query_file, measure_query_file,
-                warmup_neighbor_file, measure_neighbor_file);
-        double thput = m_bench.benchmark_mix_throughput();
+        double thput = bench.benchmark_mix_throughput(
+                warmup_neighbor_file, measure_neighbor_file,
+                warmup_query_file, measure_query_file);
         result_file << "Mix throughput: " << thput << "\n\n";
     } else if (type == "mix-latency") {
-        MixBenchmark m_bench(graph, warmup_n, measure_n,
-                warmup_query_file, measure_query_file,
-                warmup_neighbor_file, measure_neighbor_file);
-        m_bench.benchmark_mix_latency(result_file_name);
+        bench.benchmark_mix_latency(result_file_name, warmup_n, measure_n,
+                warmup_neighbor_file, measure_neighbor_file,
+                warmup_query_file, measure_query_file);
+    } else if (type == "node-node-latency") {
+        bench.benchmark_node_node_latency(result_file_name, warmup_n, measure_n,
+                warmup_query_file, measure_query_file);
+    } else if (type == "neighbor-node-latency") {
+        bench.benchmark_neighbor_node_latency(result_file_name, warmup_n, measure_n,
+                warmup_query_file, measure_query_file);
     } else {
         assert(0); // Not supported
     }
