@@ -4,9 +4,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.FileWriter;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -164,19 +162,11 @@ public class BenchNeighbor {
 
     private static List<Long> getNeighbors(GraphDatabaseService graphDb, long id) {
         List<Long> neighbors = new LinkedList<>();
-//	long t0 = System.nanoTime();
-	Node n = graphDb.getNodeById(id);
+        Node n = graphDb.getNodeById(id);
         Iterable<Relationship> rels = n.getRelationships(Direction.OUTGOING);
-//	long t1 = System.nanoTime();
-//int count = 0;
         for (Relationship r : rels) {
             neighbors.add(r.getOtherNode(n).getId());
-//count++;
         }
-//	long t2 = System.nanoTime();
-//long diff1 = (t1 - t0);
-//double diff2 = (t2 - t1);
-//System.out.println(diff1 + "," + count + "," + diff2);
         return neighbors;
     }
 

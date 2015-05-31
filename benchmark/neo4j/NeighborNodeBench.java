@@ -4,10 +4,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
 
 import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -93,8 +90,14 @@ public class NeighborNodeBench {
                 List<Long> result = getNeighborNode(graphDb, label, neighbor_indices.get(i),
                         node_attributes.get(i), node_queries.get(i));
                 long queryEnd = System.nanoTime();
-                out.println(result.size() + "," + (queryEnd - queryStart) / 1000);
+                if (result.size() == 0) {
+                    System.out.printf("Error: no neighbor nodes for node id: %d, attr %d, search %s\n",
+                            neighbor_indices.get(i), node_attributes.get(i), node_queries.get(i));
+                } else {
+                    out.println(result.size() + "," + (queryEnd - queryStart) / 1000);
+                }
             }
+            out.close();
 
             // cooldown
             System.out.println("Cooldown for " + COOLDOWN_N + " queries");
