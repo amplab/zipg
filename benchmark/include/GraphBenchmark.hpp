@@ -17,6 +17,7 @@ public:
     void benchmark_neighbor_latency(std::string res_path, count_t WARMUP_N, count_t MEASURE_N,
             std::string warmup_query_file, std::string query_file) {
         time_t t0, t1;
+        fprintf(stderr, "Benchmarking getNeighbor latency of %s\n", this->graph->succinct_directory().c_str());
         read_neighbor_queries(warmup_query_file, query_file);
         std::ofstream res_stream(res_path);
 
