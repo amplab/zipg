@@ -20,36 +20,40 @@ public class BenchNeighbor {
     private static final long MEASURE_TIME = (long) (120 * 1E9); // 120 seconds
     private static final long COOLDOWN_TIME = (long) (10 * 1E9); // 10 seconds
 
+    private static int WARMUP_N = 500000;
+    private static int MEASURE_N = 500000;
+    private static int COOLDOWN_N = 500;
+
     public static void main(String[] args) {
         String type = args[0];
         String db_path = args[1];
         String warmup_query_path = args[2];
         String query_path = args[3];
         String output_file = args[4];
-        int warmup_n = Integer.parseInt(args[5]);
-        int measure_n = Integer.parseInt(args[6]);
-        int cooldown_n = Integer.parseInt(args[7]);
+        WARMUP_N = Integer.parseInt(args[5]);
+        MEASURE_N = Integer.parseInt(args[6]);
+
         int[] warmupQueries = getQueries(warmup_query_path);
         int[] queries = getQueries(query_path);
         if (type.equals("neighbor-latency"))
-            benchNeighborLatency(db_path, warmup_n, measure_n, cooldown_n, warmupQueries, queries, output_file);
+            benchNeighborLatency(db_path, warmupQueries, queries, output_file);
         else if (type.equals("neighbor-throughput"))
             benchNeighborThroughput(db_path, warmupQueries, queries, output_file);
     }
 
     private static void benchNeighborLatency(String db_path,
-            int warmup_n, int measure_n, int cooldown_n,
             int[] warmupQueries, int[] queries, String output_file) {
 
+        System.out.println("Benchmarking getNeighbor queries");
         GraphDatabaseService graphDb = new GraphDatabaseFactory()
                 .newEmbeddedDatabase(db_path);
         registerShutdownHook(graphDb);
         Transaction tx = graphDb.beginTx();
         try {
             PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(output_file)));
-            // warmup
-            System.out.println("warmup");
-            for (int i = 0; i < warmup_n; i++) {
+
+            System.out.println("Warming up for " + WARMUP_N + " queries");
+            for (int i = 0; i < WARMUP_N; i++) {
                 if (i % 10000 == 0) {
                     tx.success();
                     tx.finish();
@@ -61,9 +65,9 @@ public class BenchNeighbor {
                 }
             }
 
-            System.out.println("measure");
+            System.out.println("Measuring for " + MEASURE_N + " queries");
             // measure
-            for (int i = 0; i < measure_n; i++) {
+            for (int i = 0; i < MEASURE_N; i++) {
                 if (i % 10000 == 0) {
                     tx.success();
                     tx.finish();
@@ -73,11 +77,12 @@ public class BenchNeighbor {
                 List<Long> neighbors = getNeighbors(graphDb, queries[i % queries.length]);
                 long queryEnd = System.nanoTime();
                 double microsecs = (queryEnd - queryStart) / ((double) 1000);
-                out.println(queries[i % queries.length] + "," + neighbors.size() + "," + microsecs);
+                out.println(neighbors.size() + "," + microsecs);
             }
 
             // cooldown
-            for (int i = 0; i < cooldown_n; i++) {
+            System.out.println("Cooldown for " + COOLDOWN_N + " queries");
+            for (int i = 0; i < COOLDOWN_N; i++) {
                 List<Long> neighbors = getNeighbors(graphDb, warmupQueries[i % warmupQueries.length]);
             }
 

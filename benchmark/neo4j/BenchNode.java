@@ -4,9 +4,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
 
 import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -23,37 +21,46 @@ public class BenchNode {
     private static final long MEASURE_TIME = (long) (120 * 1E9); // 120 seconds
     private static final long COOLDOWN_TIME = (long) (30 * 1E9); // 30 seconds
 
+    private static int WARMUP_N = 100000;
+    private static int MEASURE_N = 100000;
+    private static int COOLDOWN_N = 500;
+
     public static void main(String[] args) {
         String type = args[0];
         String db_path = args[1];
         String warmup_query_path = args[2];
         String query_path = args[3];
         String output_file = args[4];
-        int warmup_n = Integer.parseInt(args[5]);
-        int measure_n = Integer.parseInt(args[6]);
-        int cooldown_n = Integer.parseInt(args[7]);
+        WARMUP_N = Integer.parseInt(args[5]);
+        MEASURE_N = Integer.parseInt(args[6]);
 
-        List<Integer> warmupAttributes = new ArrayList<Integer>();
-        List<String> warmupQueries = new ArrayList<String>();
-        List<Integer> attributes = new ArrayList<Integer>();
-        List<String> queries = new ArrayList<String>();
-        getQueries(warmup_query_path, warmupAttributes, warmupQueries);
-        getQueries(query_path, attributes, queries);
+        List<Integer> warmupAttributes1 = new ArrayList<Integer>();
+        List<Integer> warmupAttributes2 = new ArrayList<Integer>();
+        List<String> warmupQueries1 = new ArrayList<String>();
+        List<String> warmupQueries2 = new ArrayList<String>();
+        List<Integer> attributes1 = new ArrayList<Integer>();
+        List<Integer> attributes2 = new ArrayList<Integer>();
+        List<String> queries1 = new ArrayList<String>();
+        List<String> queries2 = new ArrayList<String>();
+        getQueries(warmup_query_path, warmupAttributes1, warmupAttributes2, warmupQueries1, warmupQueries2);
+        getQueries(query_path, attributes1, attributes2, queries1, queries2);
 
         if (type.equals("node-throughput"))
-            nodeThroughput(db_path, warmupAttributes, warmupQueries, attributes, queries, output_file);
+            nodeThroughput(db_path, warmupAttributes1, warmupQueries1, attributes1, queries1, output_file);
         else if (type.equals("node-latency"))
-            nodeLatency(db_path, warmup_n, measure_n, cooldown_n,
-                warmupAttributes, warmupQueries, attributes, queries, output_file);
+            nodeLatency(db_path, warmupAttributes1, warmupQueries1, attributes1, queries1, output_file);
+        else if (type.equals("node-node-latency"))
+            nodeNodeLatency(db_path, warmupAttributes1, warmupAttributes2, warmupQueries1, warmupQueries2,
+                    attributes1, attributes2, queries1, queries2, output_file);
         else
             System.out.println("No type " + type + " is supported!");
     }
 
     private static void nodeLatency(String DB_PATH,
-            int warmup_n, int measure_n, int cooldown_n,
             List<Integer> warmupAttributes, List<String> warmupQueries,
             List<Integer> attributes, List<String> queries, String output_file) {
 
+        System.out.println("Benchmarking getNode queries");
         // START SNIPPET: startDb
         GraphDatabaseService graphDb = new GraphDatabaseFactory()
                 .newEmbeddedDatabase(DB_PATH);
@@ -65,9 +72,9 @@ public class BenchNode {
             PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(output_file)));
 
             // warmup
-            System.out.println("Warming up queries");
+            System.out.println("Warming up for " + WARMUP_N + " queries");
             int warmupSize = warmupAttributes.size();
-            for (int i = 0; i < warmup_n; i++) {
+            for (int i = 0; i < WARMUP_N; i++) {
                 if (i % 10000 == 0) {
                     tx.success();
                     tx.finish();
@@ -83,9 +90,9 @@ public class BenchNode {
             }
 
             // measure
-            System.out.println("Measure queries");
+            System.out.println("Measuring for " + MEASURE_N + " queries");
             int size = attributes.size();
-            for (int i = 0; i < measure_n; i++) {
+            for (int i = 0; i < MEASURE_N; i++) {
                 if (i % 10000 == 0) {
                     tx.success();
                     tx.finish();
@@ -97,13 +104,83 @@ public class BenchNode {
                 List<Long> nodes = getNodes(graphDb, label, attr, query);
                 long queryEnd = System.nanoTime();
                 double microsecs = (queryEnd - queryStart) / ((double) 1000);
-                out.println(attr + "," + nodes.size() + "," +  microsecs);
+                out.println(nodes.size() + "," +  microsecs);
             }
 
             // cooldown
-            for (int i = 0; i < cooldown_n; i++) {
+            System.out.println("Cooldown for " + COOLDOWN_N + " queries");
+            for (int i = 0; i < COOLDOWN_N; i++) {
                 List<Long> nodes = getNodes(graphDb, label, warmupAttributes.get(i % warmupSize),
                         warmupQueries.get(i % warmupSize));
+            }
+            tx.success();
+            out.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            System.out.println("Shutting down database ...");
+            graphDb.shutdown();
+        }
+    }
+
+    private static void nodeNodeLatency(String DB_PATH,
+            List<Integer> warmupAttributes1, List<Integer> warmupAttributes2,
+            List<String> warmupQueries1, List<String> warmupQueries2,
+            List<Integer> attributes1, List<Integer> attributes2,
+            List<String> queries1, List<String> queries2, String output_file) {
+
+        System.out.println("Benchmarking getNodeNode queries");
+        // START SNIPPET: startDb
+        GraphDatabaseService graphDb = new GraphDatabaseFactory()
+                .newEmbeddedDatabase(DB_PATH);
+        registerShutdownHook(graphDb);
+        IndexDefinition indexDefinition;
+        Label label = DynamicLabel.label("Node");
+        Transaction tx = graphDb.beginTx();
+        try {
+            PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(output_file)));
+
+            // warmup
+            System.out.println("Warming up for " + WARMUP_N + " queries");
+            for (int i = 0; i < WARMUP_N; i++) {
+                if (i % 10000 == 0) {
+                    tx.success();
+                    tx.finish();
+                    tx = graphDb.beginTx();
+                }
+                List<Long> nodes = getNodes(graphDb, label,
+                        warmupAttributes1.get(i), warmupQueries1.get(i),
+                        warmupAttributes2.get(i), warmupQueries2.get(i));
+                if (nodes.size() == 0) {
+                    System.out.printf("Error: no results for attr1 %d search %s, attr2 %d, search %s\n",
+                            warmupAttributes1.get(i), warmupQueries1.get(i), warmupAttributes2.get(i), warmupQueries2.get(i));
+                    System.exit(0);
+                }
+            }
+
+            // measure
+            System.out.println("Measuring for " + MEASURE_N + " queries");
+            for (int i = 0; i < MEASURE_N; i++) {
+                if (i % 10000 == 0) {
+                    tx.success();
+                    tx.finish();
+                    tx = graphDb.beginTx();
+                }
+                long queryStart = System.nanoTime();
+                List<Long> nodes = getNodes(graphDb, label,
+                        attributes1.get(i), queries1.get(i),
+                        attributes2.get(i), queries2.get(i));
+                long queryEnd = System.nanoTime();
+                double microsecs = (queryEnd - queryStart) / ((double) 1000);
+                out.println(nodes.size() + "," +  microsecs);
+            }
+
+            // cooldown
+            System.out.println("Cooldown for " + COOLDOWN_N + " queries");
+            for (int i = 0; i < COOLDOWN_N; i++) {
+                List<Long> nodes = getNodes(graphDb, label,
+                        warmupAttributes1.get(i), warmupQueries1.get(i),
+                        warmupAttributes2.get(i), warmupQueries2.get(i));
             }
             tx.success();
             out.close();
@@ -195,14 +272,39 @@ public class BenchNode {
         }
     }
 
-    private static void getQueries(String file, List<Integer> indices, List<String> queries) {
+    private static List<Long> getNodes(GraphDatabaseService graphDb,
+            Label label, int attr1, String search1, int attr2, String search2) {
+        ResourceIterator<Node> nodes = graphDb.findNodes(label, "name" + attr1, search1);
+        ResourceIterator<Node> nodes2 = graphDb.findNodes(label, "name" + attr2, search2);
+        try {
+            Set<Long> s1 = new HashSet<Long>();
+            while (nodes.hasNext()) {
+                s1.add(nodes.next().getId());
+            }
+            Set<Long> s2 = new HashSet<Long>();
+            while (nodes2.hasNext()) {
+                s2.add(nodes2.next().getId());
+            }
+            s1.retainAll(s2);
+            List<Long> ans = new ArrayList<>(s1);
+            return ans;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private static void getQueries(String file, List<Integer> indices1, List<Integer> indices2,
+            List<String> queries1, List<String> queries2) {
         try {
             BufferedReader br = new BufferedReader(new FileReader(file));
             String line = br.readLine();
             while (line != null) {
                 String[] tokens = line.split(",");
-                indices.add(Integer.parseInt(tokens[0]));
-                queries.add(tokens[1]);
+                indices1.add(Integer.parseInt(tokens[0]));
+                queries1.add(tokens[1]);
+                indices2.add(Integer.parseInt(tokens[2]));
+                queries2.add(tokens[3]);
                 line = br.readLine();
             }
         } catch (IOException e) {

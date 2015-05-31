@@ -33,10 +33,9 @@ public class MixBench {
         String query_node_file = args[3];
         String warmup_neighbor_file = args[4];
         String query_neighbor_file = args[5];
-        WARMUP_N = Integer.parseInt(args[6]);
-        MEASURE_N = Integer.parseInt(args[7]);
-        COOLDOWN_N = Integer.parseInt(args[8]);
-        String output_file = args[9];
+        String output_file = args[6];
+        WARMUP_N = Integer.parseInt(args[7]);
+        MEASURE_N = Integer.parseInt(args[8]);
 
         PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(output_file)));
 
