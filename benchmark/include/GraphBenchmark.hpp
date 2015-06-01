@@ -14,7 +14,7 @@ public:
     }
 
     // BENCHMARKING NEIGHBOR QUERIES
-    void benchmark_neighbor_latency(std::string res_path, count_t WARMUP_N, count_t MEASURE_N,
+    void benchmark_neighbor_latency(std::string res_path, count_t warmup_n, count_t measure_n,
             std::string warmup_query_file, std::string query_file) {
         time_t t0, t1;
         fprintf(stderr, "Benchmarking getNeighbor latency of %s\n", this->graph->succinct_directory().c_str());
@@ -22,8 +22,8 @@ public:
         std::ofstream res_stream(res_path);
 
         // Warmup
-        fprintf(stderr, "Warming up for %lu queries...\n", WARMUP_N);
-        for(uint64_t i = 0; i < WARMUP_N; i++) {
+        fprintf(stderr, "Warming up for %lu queries...\n", warmup_n);
+        for(uint64_t i = 0; i < warmup_n; i++) {
             std::set<int64_t> result;
             this->graph->get_neighbors(result, warmup_neighbor_indices[i]);
             assert(result.size() != 0 && "No result found in benchmarking neighbor latency");
@@ -31,8 +31,8 @@ public:
         fprintf(stderr, "Warmup complete.\n");
 
         // Measure
-        fprintf(stderr, "Measuring for %lu queries...\n", MEASURE_N);
-        for(uint64_t i = 0; i < MEASURE_N; i++) {
+        fprintf(stderr, "Measuring for %lu queries...\n", measure_n);
+        for(uint64_t i = 0; i < measure_n; i++) {
             std::set<int64_t> result;
             t0 = get_timestamp();
             this->graph->get_neighbors(result, neighbor_indices[i]);
@@ -43,8 +43,8 @@ public:
         fprintf(stderr, "Measure complete.\n");
 
         // Cooldown
-        fprintf(stderr, "Cooling down for %lu queries...\n", COOLDOWN_N);
-        for(uint64_t i = 0; i < COOLDOWN_N; i++) {
+        fprintf(stderr, "Cooling down for %lu queries...\n", cooldown_n);
+        for(uint64_t i = 0; i < cooldown_n; i++) {
             std::set<int64_t> result;
             this->graph->get_neighbors(result, warmup_neighbor_indices[i]);
         }
@@ -102,7 +102,7 @@ public:
     }
 
     // NODE BENCHMARKING
-    void benchmark_node_latency(std::string res_path, count_t WARMUP_N, count_t MEASURE_N,
+    void benchmark_node_latency(std::string res_path, count_t warmup_n, count_t measure_n,
             std::string warmup_query_file, std::string query_file) {
         time_t t0, t1;
         read_node_queries(warmup_query_file, query_file);
@@ -110,8 +110,8 @@ public:
         fprintf(stderr, "Benchmarking getNode latency of %s\n", this->graph->succinct_directory().c_str());
 
         // Warmup
-        fprintf(stderr, "Warming up for %lu queries...\n", WARMUP_N);
-        for(uint64_t i = 0; i < WARMUP_N; i++) {
+        fprintf(stderr, "Warming up for %lu queries...\n", warmup_n);
+        for(uint64_t i = 0; i < warmup_n; i++) {
             std::set<int64_t> result;
             this->graph->search_nodes(result, warmup_node_attributes[i], warmup_node_queries[i]);
             assert(result.size() != 0 && "No result found in benchmarking node latency");
@@ -119,8 +119,8 @@ public:
         fprintf(stderr, "Warmup complete.\n");
 
         // Measure
-        fprintf(stderr, "Measuring for %lu queries...\n", MEASURE_N);
-        for(uint64_t i = 0; i < MEASURE_N; i++) {
+        fprintf(stderr, "Measuring for %lu queries...\n", measure_n);
+        for(uint64_t i = 0; i < measure_n; i++) {
             std::set<int64_t> result;
             t0 = get_timestamp();
             this->graph->search_nodes(result, node_attributes[i], node_queries[i]);
@@ -131,8 +131,8 @@ public:
         fprintf(stderr, "Measure complete.\n");
 
         // Cooldown
-        fprintf(stderr, "Cooling down for %lu queries...\n", COOLDOWN_N);
-        for(uint64_t i = 0; i < COOLDOWN_N; i++) {
+        fprintf(stderr, "Cooling down for %lu queries...\n", cooldown_n);
+        for(uint64_t i = 0; i < cooldown_n; i++) {
             std::set<int64_t> result;
             this->graph->search_nodes(result, warmup_node_attributes[i], warmup_node_queries[i]);
         }
@@ -141,7 +141,7 @@ public:
         res_stream.close();
     }
 
-    void benchmark_node_node_latency(std::string res_path, count_t WARMUP_N, count_t MEASURE_N,
+    void benchmark_node_node_latency(std::string res_path, count_t warmup_n, count_t measure_n,
             std::string warmup_query_file, std::string query_file) {
         read_node_queries(warmup_query_file, query_file);
         time_t t0, t1;
@@ -149,8 +149,8 @@ public:
         fprintf(stderr, "Benchmarking getNode with two attributes latency of %s\n", this->graph->succinct_directory().c_str());
 
         // Warmup
-        fprintf(stderr, "Warming up for %lu queries...\n", WARMUP_N);
-        for(uint64_t i = 0; i < WARMUP_N; i++) {
+        fprintf(stderr, "Warming up for %lu queries...\n", warmup_n);
+        for(uint64_t i = 0; i < warmup_n; i++) {
             std::set<int64_t> result;
             this->graph->search_nodes(result, warmup_node_attributes[i], warmup_node_queries[i],
                                               warmup_node_attributes2[i], warmup_node_queries2[i]);
@@ -159,8 +159,8 @@ public:
         fprintf(stderr, "Warmup complete.\n");
 
         // Measure
-        fprintf(stderr, "Measuring for %lu queries...\n", MEASURE_N);
-        for(uint64_t i = 0; i < MEASURE_N; i++) {
+        fprintf(stderr, "Measuring for %lu queries...\n", measure_n);
+        for(uint64_t i = 0; i < measure_n; i++) {
             std::set<int64_t> result;
             t0 = get_timestamp();
             this->graph->search_nodes(result, node_attributes[i], node_queries[i],
@@ -172,8 +172,8 @@ public:
         fprintf(stderr, "Measure complete.\n");
 
         // Cooldown
-        fprintf(stderr, "Cooling down for %lu queries...\n", COOLDOWN_N);
-        for(uint64_t i = 0; i < COOLDOWN_N; i++) {
+        fprintf(stderr, "Cooling down for %lu queries...\n", cooldown_n);
+        for(uint64_t i = 0; i < cooldown_n; i++) {
             std::set<int64_t> result;
             this->graph->search_nodes(result, warmup_node_attributes[i], warmup_node_queries[i],
                                               warmup_node_attributes2[i], warmup_node_queries2[i]);
@@ -234,7 +234,7 @@ public:
     }
 
     // BENCHMARKING MIX QUERIES
-    void benchmark_mix_latency(std::string res_path, count_t WARMUP_N, count_t MEASURE_N,
+    void benchmark_mix_latency(std::string res_path, count_t warmup_n, count_t measure_n,
             std::string warmup_neighbor_query_file, std::string neighbor_query_file,
             std::string warmup_node_query_file, std::string node_query_file) {
         std::ofstream res_stream(res_path);
@@ -244,8 +244,8 @@ public:
         fprintf(stderr, "Benchmarking mixQuery latency of %s\n", this->graph->succinct_directory().c_str());
         try {
             // Warmup phase
-            fprintf(stderr, "Warming up for %lu queries...\n", WARMUP_N);
-            for (int i = 0; i < WARMUP_N; i++) {
+            fprintf(stderr, "Warming up for %lu queries...\n", warmup_n);
+            for (int i = 0; i < warmup_n; i++) {
                 if (i % 2 == 0) {
                     std::set<int64_t> result;
                     this->graph->get_neighbors(result, warmup_neighbor_indices[i/2]);
@@ -263,8 +263,8 @@ public:
             fprintf(stderr, "Warmup complete.\n");
 
             // Measure phase
-            fprintf(stderr, "Measuring for %lu queries...\n", MEASURE_N);
-            for (int i = 0; i < MEASURE_N; i++) {
+            fprintf(stderr, "Measuring for %lu queries...\n", measure_n);
+            for (int i = 0; i < measure_n; i++) {
                 if (i % 2 == 0) {
                     std::set<int64_t> result;
                     time_t query_start = get_timestamp();
@@ -290,8 +290,8 @@ public:
             fprintf(stderr, "Measure complete.\n");
 
             // Cooldown phase
-            fprintf(stderr, "Cooling down for %lu queries...\n", COOLDOWN_N);
-            for (int i = 0; i < COOLDOWN_N; i++) {
+            fprintf(stderr, "Cooling down for %lu queries...\n", cooldown_n);
+            for (int i = 0; i < cooldown_n; i++) {
                 if (i % 2 == 0) {
                     std::set<int64_t> result;
                     this->graph->get_neighbors(result, warmup_neighbor_indices[i/2]);
@@ -307,7 +307,7 @@ public:
         }
     }
 
-    void benchmark_neighbor_node_latency(std::string res_path, count_t WARMUP_N, count_t MEASURE_N,
+    void benchmark_neighbor_node_latency(std::string res_path, count_t warmup_n, count_t measure_n,
             std::string warmup_query_file, std::string query_file) {
         read_neighbor_node_queries(warmup_query_file, query_file);
         time_t t0, t1;
@@ -315,8 +315,8 @@ public:
         fprintf(stderr, "Benchmarking getNeighborOfNode latency of %s\n", this->graph->succinct_directory().c_str());
 
         // Warmup
-        fprintf(stderr, "Warming up for %lu queries...\n", WARMUP_N);
-        for(uint64_t i = 0; i < WARMUP_N; i++) {
+        fprintf(stderr, "Warming up for %lu queries...\n", warmup_n);
+        for(uint64_t i = 0; i < warmup_n; i++) {
             std::set<int64_t> result;
             this->graph->get_neighbors_of_node(result, warmup_neighbor_indices[i], warmup_node_attributes[i], warmup_node_queries[i]);
             assert(result.size() != 0 && "No result found in benchmarking getNeighborOfNode latency");
@@ -324,8 +324,8 @@ public:
         fprintf(stderr, "Warmup complete.\n");
 
         // Measure
-        fprintf(stderr, "Measuring for %lu queries...\n", MEASURE_N);
-        for(uint64_t i = 0; i < MEASURE_N; i++) {
+        fprintf(stderr, "Measuring for %lu queries...\n", measure_n);
+        for(uint64_t i = 0; i < measure_n; i++) {
             std::set<int64_t> result;
             t0 = get_timestamp();
             this->graph->get_neighbors_of_node(result, neighbor_indices[i], node_attributes[i], node_queries[i]);
@@ -336,8 +336,8 @@ public:
         fprintf(stderr, "Measure complete.\n");
 
         // Cooldown
-        fprintf(stderr, "Cooling down for %lu queries...\n", COOLDOWN_N);
-        for(uint64_t i = 0; i < COOLDOWN_N; i++) {
+        fprintf(stderr, "Cooling down for %lu queries...\n", cooldown_n);
+        for(uint64_t i = 0; i < cooldown_n; i++) {
             std::set<int64_t> result;
             this->graph->get_neighbors_of_node(result, warmup_neighbor_indices[i], warmup_node_attributes[i], warmup_node_queries[i]);
         }
@@ -356,7 +356,7 @@ public:
             // Warmup phase
             std::cout << "Warming up" << std::endl;
             int warmup_size = warmup_node_queries.size();
-            for (int i = 0; i < WARMUP_N; i++) {
+            for (int i = 0; i < warmup_n; i++) {
                 if (i % 2 == 0) {
                     std::set<int64_t> result;
                     this->graph->get_neighbors(result, warmup_neighbor_indices[i % warmup_size]);
@@ -378,7 +378,7 @@ public:
             double totsecs = 0;
             std::cout << "Measuring throughput" << std::endl;
             int size = node_attributes.size();
-            for (int i = 0; i < MEASURE_N; i++) {
+            for (int i = 0; i < measure_n; i++) {
                 time_t query_start = get_timestamp();
                 if (i % 2 == 0) {
                     std::set<int64_t> result;
@@ -390,11 +390,11 @@ public:
                 time_t query_end = get_timestamp();
                 totsecs += (double) (query_end - query_start) / (double(1E6));
             }
-            thput = ((double) MEASURE_N / totsecs);
-            printf("Throughput: %f\n total queries: %lu, total time: %f\n\n", thput, MEASURE_N, totsecs);
+            thput = ((double) measure_n / totsecs);
+            printf("Throughput: %f\n total queries: %lu, total time: %f\n\n", thput, measure_n, totsecs);
 
             // Cooldown phase
-            for (int i = 0; i < COOLDOWN_N; i++) {
+            for (int i = 0; i < cooldown_n; i++) {
                 if (i % 2 == 0) {
                     std::set<int64_t> result;
                     this->graph->get_neighbors(result, warmup_neighbor_indices[i % warmup_size]);
@@ -414,8 +414,6 @@ public:
 
 protected:
     SuccinctGraph * graph;
-    count_t WARMUP_N; count_t MEASURE_N;
-    static const count_t COOLDOWN_N = 500;
 
     std::vector<int> warmup_neighbor_indices;
     std::vector<int> neighbor_indices;
