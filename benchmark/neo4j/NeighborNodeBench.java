@@ -61,13 +61,12 @@ public class NeighborNodeBench {
         GraphDatabaseService graphDb = new GraphDatabaseFactory()
                 .newEmbeddedDatabase(DB_PATH);
         registerShutdownHook(graphDb);
-        Label label = DynamicLabel.label("Node");
         Transaction tx = graphDb.beginTx();
         try {
             // warmup
             System.out.println("Warming up for " + WARMUP_N + " queries");
             for (int i = 0; i < WARMUP_N; i++) {
-                List<Long> result = getNeighborNode(graphDb, label, warmup_neighbor_indices.get(i),
+                List<Long> result = getNeighborNode(graphDb, warmup_neighbor_indices.get(i),
                         warmup_node_attributes.get(i), warmup_node_queries.get(i));
                 if (result.size() == 0) {
                     System.out.printf("Error: no neighbor nodes for node id: %d, attr %d, search %s\n",
@@ -87,7 +86,7 @@ public class NeighborNodeBench {
                 }
                 int idx = neighbor_indices.get(i);
                 long queryStart = System.nanoTime();
-                List<Long> result = getNeighborNode(graphDb, label, neighbor_indices.get(i),
+                List<Long> result = getNeighborNode(graphDb, neighbor_indices.get(i),
                         node_attributes.get(i), node_queries.get(i));
                 long queryEnd = System.nanoTime();
                 if (result.size() == 0) {
@@ -102,7 +101,7 @@ public class NeighborNodeBench {
             // cooldown
             System.out.println("Cooldown for " + COOLDOWN_N + " queries");
             for (int i = 0; i < COOLDOWN_N; i++) {
-                List<Long> result = getNeighborNode(graphDb, label, warmup_neighbor_indices.get(i),
+                List<Long> result = getNeighborNode(graphDb, warmup_neighbor_indices.get(i),
                         warmup_node_attributes.get(i), warmup_node_queries.get(i));
             }
             tx.success();
@@ -114,7 +113,7 @@ public class NeighborNodeBench {
     }
 
     private static List<Long> getNeighborNode(GraphDatabaseService graphDb,
-            Label label, long node_id, int attr, String search) {
+            long node_id, int attr, String search) {
         Node n = graphDb.getNodeById(node_id);
         List<Long> result = new LinkedList<>();
         for (Relationship r : n.getRelationships(Direction.OUTGOING)) {
