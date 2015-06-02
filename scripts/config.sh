@@ -13,11 +13,19 @@ CSV_DIR=${DATA_DIR}/csv
 NEO4J_DIR=${DATA_DIR}/neo4j
 QUERY_DIR=${DATA_DIR}/queries
 
+# graph construction configs
 nodes=( 100000 ) # list of num_nodes to bench
 deg=20
 freq=100
 attributes=10
 attribute_length=32
+
+# succinct construction configs
+sa_sampling_rate=32
+isa_sampling_rate=32
+npa_sampling_rate=128
+
+# benchmark configs
 warmup_neighbor=100000
 measure_neighbor=200000
 neo4j_warmup_neighbor=500000

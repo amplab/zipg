@@ -11,7 +11,10 @@ private:
     int64_t nodes, edges;
 
 public:
-    SuccinctGraph(std::string file, bool construct);
+    SuccinctGraph(std::string file, bool construct,
+        uint32_t sa_sampling_rate = 32,
+        uint32_t isa_sampling_rate = 32,
+        uint32_t npa_sampling_rate = 128);
 
     std::string succinct_directory();
     int64_t num_nodes();

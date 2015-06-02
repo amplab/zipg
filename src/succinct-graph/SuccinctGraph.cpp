@@ -7,10 +7,15 @@ const int ATTR_SIZE = 32;
 const int NUM_ATTRIBUTES = 10;
 const std::string SuccinctGraph::DELIMINATORS = "<>()#$%&*+[]{}^-|~;? \"',./:=@\\_~\x02\x03\x04\x05\x06\x07\x08\x09";
 
-SuccinctGraph::SuccinctGraph(std::string file, bool construct) {
+SuccinctGraph::SuccinctGraph(std::string file, bool construct,
+    uint32_t sa_sampling_rate,
+    uint32_t isa_sampling_rate,
+    uint32_t npa_sampling_rate) {
+
     if (construct) {
         //TODO: generalize id so we can create multiple succinct graphs
-        this->shard = new SuccinctShard(0, file, SuccinctMode::CONSTRUCT_IN_MEMORY);
+        this->shard = new SuccinctShard(0, file, SuccinctMode::CONSTRUCT_IN_MEMORY,
+            sa_sampling_rate, isa_sampling_rate, npa_sampling_rate);
     } else {
         this->succinct_dir = file;
         this->shard = new SuccinctShard(0, this->succinct_dir, SuccinctMode::LOAD_MEMORY_MAPPED);

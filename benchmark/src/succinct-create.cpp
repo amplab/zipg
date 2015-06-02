@@ -103,8 +103,8 @@ void create_graph_file(std::string node_file, std::string edge_file, std::string
     s_out.close();
 }
 
-void create_succinct_file(std::string graph_file) {
-    SuccinctGraph * graph = new SuccinctGraph(graph_file, true);
+void create_succinct_file(std::string graph_file, int sa_sr, int isa_sr, int npa_sr) {
+    SuccinctGraph * graph = new SuccinctGraph(graph_file, true, sa_sr, isa_sr, npa_sr);
     graph->serialize();
 }
 
@@ -227,7 +227,13 @@ int main(int argc, char **argv) {
         create_graph_file(node_file, edge_file, graph_file);
     } else if (type == "succinct") {
         std::string graph_file = argv[2];
-        create_succinct_file(graph_file);
+        int sa_sr = 32, isa_sr = 32, npa_sr = 128;
+        if (argc >= 6) {
+            sa_sr = std::stoi(argv[3]);
+            isa_sr = std::stoi(argv[4]);
+            npa_sr = std::stoi(argv[5]);
+        }
+        create_succinct_file(graph_file, sa_sr, isa_sr, npa_sr);
     } else if (type == "node-queries") {
         std::string node_file = argv[2];
         int warmup_size = atoi(argv[3]);
