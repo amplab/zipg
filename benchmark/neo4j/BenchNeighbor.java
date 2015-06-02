@@ -45,7 +45,7 @@ public class BenchNeighbor {
         System.out.println("Benchmarking getNeighbor queries");
         GraphDatabaseService graphDb = new GraphDatabaseFactory()
                 .newEmbeddedDatabase(db_path);
-        registerShutdownHook(graphDb);
+        BenchUtils.registerShutdownHook(graphDb);
         Transaction tx = graphDb.beginTx();
         try {
             PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(output_file)));
@@ -99,7 +99,7 @@ public class BenchNeighbor {
 
         GraphDatabaseService graphDb = new GraphDatabaseFactory()
                 .newEmbeddedDatabase(db_path);
-        registerShutdownHook(graphDb);
+        BenchUtils.registerShutdownHook(graphDb);
         Transaction tx = graphDb.beginTx();
         try {
             PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(output_file, true)));
@@ -191,11 +191,4 @@ public class BenchNeighbor {
         }
     }
 
-    private static void registerShutdownHook(final GraphDatabaseService graphDb) {
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            public void run() {
-                graphDb.shutdown();
-            }
-        });
-    }
 }

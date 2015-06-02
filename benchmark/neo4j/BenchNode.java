@@ -64,7 +64,7 @@ public class BenchNode {
         // START SNIPPET: startDb
         GraphDatabaseService graphDb = new GraphDatabaseFactory()
                 .newEmbeddedDatabase(DB_PATH);
-        registerShutdownHook(graphDb);
+        BenchUtils.registerShutdownHook(graphDb);
         IndexDefinition indexDefinition;
         Label label = DynamicLabel.label("Node");
         Transaction tx = graphDb.beginTx();
@@ -133,7 +133,7 @@ public class BenchNode {
         // START SNIPPET: startDb
         GraphDatabaseService graphDb = new GraphDatabaseFactory()
                 .newEmbeddedDatabase(DB_PATH);
-        registerShutdownHook(graphDb);
+        BenchUtils.registerShutdownHook(graphDb);
         IndexDefinition indexDefinition;
         Label label = DynamicLabel.label("Node");
         Transaction tx = graphDb.beginTx();
@@ -199,10 +199,12 @@ public class BenchNode {
         // START SNIPPET: startDb
         GraphDatabaseService graphDb = new GraphDatabaseFactory()
                 .newEmbeddedDatabase(DB_PATH);
-        registerShutdownHook(graphDb);
+        BenchUtils.registerShutdownHook(graphDb);
         IndexDefinition indexDefinition;
         Label label = DynamicLabel.label("Node");
         try (Transaction tx = graphDb.beginTx()) {
+            BenchUtils.awaitIndexes(graphDb);
+
             // warmup
             int i = 0;
             System.out.println("Warming up queries");
@@ -310,13 +312,5 @@ public class BenchNode {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    private static void registerShutdownHook(final GraphDatabaseService graphDb) {
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            public void run() {
-                graphDb.shutdown();
-            }
-        });
     }
 }

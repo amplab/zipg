@@ -69,10 +69,12 @@ public class MixBench {
         // START SNIPPET: startDb
         GraphDatabaseService graphDb = new GraphDatabaseFactory()
                 .newEmbeddedDatabase(DB_PATH);
-        registerShutdownHook(graphDb);
+        BenchUtils.registerShutdownHook(graphDb);
         Label label = DynamicLabel.label("Node");
         Transaction tx = graphDb.beginTx();
         try {
+            BenchUtils.awaitIndexes(graphDb);
+
             // warmup
             System.out.println("Warming up queries");
             int warmup_size = warmup_neighbor_indices.size();
@@ -146,10 +148,12 @@ public class MixBench {
         // START SNIPPET: startDb
         GraphDatabaseService graphDb = new GraphDatabaseFactory()
                 .newEmbeddedDatabase(DB_PATH);
-        registerShutdownHook(graphDb);
+        BenchUtils.registerShutdownHook(graphDb);
         Label label = DynamicLabel.label("Node");
         Transaction tx = graphDb.beginTx();
         try {
+            BenchUtils.awaitIndexes(graphDb);
+
             // warmup
             System.out.println("Warming up queries");
             int warmup_size = warmup_neighbor_indices.size();
@@ -266,13 +270,5 @@ public class MixBench {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    private static void registerShutdownHook(final GraphDatabaseService graphDb) {
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            public void run() {
-                graphDb.shutdown();
-            }
-        });
     }
 }

@@ -5,6 +5,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -46,11 +47,12 @@ public class NeighborNodeBench {
         List<String> node_queries = new ArrayList<String>();
         getNeighborNodeQueries(query_file, neighbor_indices, node_attributes, node_queries);
 
-        if (type.equals("latency"))
+        if (type.equals("latency")) {
             neighborNodeLatency(db_path, out, warmup_neighbor_indices, neighbor_indices,
-                    warmup_node_attributes, warmup_node_queries, node_attributes, node_queries);
-        else
+                warmup_node_attributes, warmup_node_queries, node_attributes, node_queries);
+        } else {
             System.out.println("No type " + type + " is supported!");
+        }
     }
 
     private static void neighborNodeLatency(String DB_PATH, PrintWriter out,
@@ -60,11 +62,12 @@ public class NeighborNodeBench {
 
         System.out.println("Benchmarking getNeighborNode queries");
         // START SNIPPET: startDb
-        GraphDatabaseService graphDb = new GraphDatabaseFactory()
-                .newEmbeddedDatabase(DB_PATH);
-        registerShutdownHook(graphDb);
+        GraphDatabaseService graphDb = new GraphDatabaseFactory().newEmbeddedDatabase(DB_PATH);
+        BenchUtils.registerShutdownHook(graphDb);
         Transaction tx = graphDb.beginTx();
         try {
+            BenchUtils.awaitIndexes(graphDb);
+
             // warmup
             System.out.println("Warming up for " + WARMUP_N + " queries");
             for (int i = 0; i < WARMUP_N; i++) {
@@ -127,7 +130,6 @@ public class NeighborNodeBench {
         return result;
     }
 
-    // TODO: check findNodes() is using index?
     private static List<Long> getNeighborNodeUsingIndex(
         GraphDatabaseService graphDb, long node_id, int attr, String search) {
 
@@ -163,13 +165,5 @@ public class NeighborNodeBench {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    private static void registerShutdownHook(final GraphDatabaseService graphDb) {
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            public void run() {
-                graphDb.shutdown();
-            }
-        });
     }
 }
