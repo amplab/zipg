@@ -14,10 +14,17 @@ do
 
     sed 's/\([0-9]*\) \([0-9]*\)/\1,\2,E/' ${EDGE_DIR}/${num_nodes}.edge > ${CSV_DIR}/${num_nodes}_edge.csv
     awk '{printf("%d,%s\n", NR-1, $0)}' ${NODE_DIR}/${num_nodes}.node > ${CSV_DIR}/${num_nodes}_node.csv
-    ${HOME_DIR}/external/neo4j/bin/neo4j-import --into ${NEO4J_DIR}/${num_nodes} --nodes:Node ${CSV_DIR}/nodes-header.csv,${CSV_DIR}/${num_nodes}_node.csv --relationships ${CSV_DIR}/edges-header.csv,${CSV_DIR}/${num_nodes}_edge.csv --id-type INTEGER
+    ${HOME_DIR}/external/neo4j/bin/neo4j-import --into ${NEO4J_DIR}/${num_nodes} \
+        --nodes:Node ${CSV_DIR}/nodes-header.csv,${CSV_DIR}/${num_nodes}_node.csv \
+        --relationships ${CSV_DIR}/edges-header.csv,${CSV_DIR}/${num_nodes}_edge.csv \
+        --id-type INTEGER
+
+    # create indexes on all attributes
     for (( i = 0; i < ${attributes}; i++ ))
     do
-        ${HOME_DIR}/external/neo4j/bin/neo4j-shell -path ${NEO4J_DIR}/${num_nodes} -c "CREATE INDEX ON :Node(name${i});"
+        ${HOME_DIR}/external/neo4j/bin/neo4j-shell -path ${NEO4J_DIR}/${num_nodes} \
+            -c "CREATE INDEX ON :Node(name${i});"
     done
-    ${HOME_DIR}/external/neo4j/bin/neo4j-shell -path ${NEO4J_DIR}/${num_nodes} -c "schema await -l Node"
+    ${HOME_DIR}/external/neo4j/bin/neo4j-shell -path ${NEO4J_DIR}/${num_nodes} \
+        -c "schema await -l Node"
 done
