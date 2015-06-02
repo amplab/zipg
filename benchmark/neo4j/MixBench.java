@@ -99,7 +99,7 @@ public class MixBench {
             for (int i = 0; i < MEASURE_N; i++) {
                 if (i % 10000 == 0) {
                     tx.success();
-                    tx.finish();
+                    tx.close();
                     tx = graphDb.beginTx();
                 }
                 if (i % 2 == 0) {
@@ -132,7 +132,7 @@ public class MixBench {
             }
             tx.success();
         } finally {
-            tx.finish();
+            tx.close();
         }
         System.out.println("Shutting down database ...");
         graphDb.shutdown();
@@ -177,7 +177,7 @@ public class MixBench {
             for (int i = 0; i < MEASURE_N; i++) {
                 if (i % 10000 == 0) {
                     tx.success();
-                    tx.finish();
+                    tx.close();
                     tx = graphDb.beginTx();
                 }
                 long queryStart; long queryEnd;
@@ -213,7 +213,7 @@ public class MixBench {
             }
             tx.success();
         } finally {
-            tx.finish();
+            tx.close();
         }
         System.out.println("Shutting down database ...");
         graphDb.shutdown();

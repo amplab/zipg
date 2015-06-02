@@ -54,7 +54,7 @@ public class BenchNeighbor {
             for (int i = 0; i < WARMUP_N; i++) {
                 if (i % 10000 == 0) {
                     tx.success();
-                    tx.finish();
+                    tx.close();
                     tx = graphDb.beginTx();
                 }
                 List<Long> neighbors = getNeighbors(graphDb, warmupQueries[i % warmupQueries.length]);
@@ -68,7 +68,7 @@ public class BenchNeighbor {
             for (int i = 0; i < MEASURE_N; i++) {
                 if (i % 10000 == 0) {
                     tx.success();
-                    tx.finish();
+                    tx.close();
                     tx = graphDb.beginTx();
                 }
                 long queryStart = System.nanoTime();
@@ -123,7 +123,7 @@ public class BenchNeighbor {
             while (System.nanoTime() - start < MEASURE_TIME) {
                 if (i % 10000 == 0) {
                     tx.success();
-                    tx.finish();
+                    tx.close();
                     tx = graphDb.beginTx();
                 }
                 long queryStart = System.nanoTime();

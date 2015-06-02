@@ -81,7 +81,7 @@ public class NeighborNodeBench {
             for (int i = 0; i < MEASURE_N; i++) {
                 if (i % 10000 == 0) {
                     tx.success();
-                    tx.finish();
+                    tx.close();
                     tx = graphDb.beginTx();
                 }
                 int idx = neighbor_indices.get(i);
@@ -106,7 +106,7 @@ public class NeighborNodeBench {
             }
             tx.success();
         } finally {
-            tx.finish();
+            tx.close();
         }
         System.out.println("Shutting down database ...");
         graphDb.shutdown();

@@ -77,7 +77,7 @@ public class BenchNode {
             for (int i = 0; i < WARMUP_N; i++) {
                 if (i % 10000 == 0) {
                     tx.success();
-                    tx.finish();
+                    tx.close();
                     tx = graphDb.beginTx();
                 }
                 List<Long> nodes = getNodes(graphDb, label, warmupAttributes.get(i % warmupSize),
@@ -95,7 +95,7 @@ public class BenchNode {
             for (int i = 0; i < MEASURE_N; i++) {
                 if (i % 10000 == 0) {
                     tx.success();
-                    tx.finish();
+                    tx.close();
                     tx = graphDb.beginTx();
                 }
                 int attr = attributes.get(i % size);
@@ -145,7 +145,7 @@ public class BenchNode {
             for (int i = 0; i < WARMUP_N; i++) {
                 if (i % 10000 == 0) {
                     tx.success();
-                    tx.finish();
+                    tx.close();
                     tx = graphDb.beginTx();
                 }
                 List<Long> nodes = getNodes(graphDb, label,
@@ -163,7 +163,7 @@ public class BenchNode {
             for (int i = 0; i < MEASURE_N; i++) {
                 if (i % 10000 == 0) {
                     tx.success();
-                    tx.finish();
+                    tx.close();
                     tx = graphDb.beginTx();
                 }
                 long queryStart = System.nanoTime();
