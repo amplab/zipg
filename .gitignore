@@ -38,3 +38,6 @@
 *.xlsx
 *.swp
 .DS_STORE
+
+bin/
+.idea/
