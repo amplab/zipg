@@ -149,8 +149,10 @@ public class BenchNode {
                     tx = graphDb.beginTx();
                 }
                 List<Long> nodes = getNodes(graphDb, label,
-                        warmupAttributes1.get(i), warmupQueries1.get(i),
-                        warmupAttributes2.get(i), warmupQueries2.get(i));
+                        warmupAttributes1.get(i % warmupAttributes1.size()),
+                        warmupQueries1.get(i % warmupQueries1.size()),
+                        warmupAttributes2.get(i % warmupAttributes2.size()),
+                        warmupQueries2.get(i % warmupQueries2.size()));
                 if (nodes.size() == 0) {
                     System.out.printf("Error: no results for attr1 %d search %s, attr2 %d, search %s\n",
                             warmupAttributes1.get(i), warmupQueries1.get(i), warmupAttributes2.get(i), warmupQueries2.get(i));
@@ -168,20 +170,15 @@ public class BenchNode {
                 }
                 long queryStart = System.nanoTime();
                 List<Long> nodes = getNodes(graphDb, label,
-                        attributes1.get(i), queries1.get(i),
-                        attributes2.get(i), queries2.get(i));
+                        attributes1.get(i % attributes1.size()),
+                        queries1.get(i % queries1.size()),
+                        attributes2.get(i % attributes2.size()),
+                        queries2.get(i % queries2.size()));
                 long queryEnd = System.nanoTime();
                 double microsecs = (queryEnd - queryStart) / ((double) 1000);
                 out.println(nodes.size() + "," +  microsecs);
             }
 
-            // cooldown
-            System.out.println("Cooldown for " + COOLDOWN_N + " queries");
-            for (int i = 0; i < COOLDOWN_N; i++) {
-                List<Long> nodes = getNodes(graphDb, label,
-                        warmupAttributes1.get(i), warmupQueries1.get(i),
-                        warmupAttributes2.get(i), warmupQueries2.get(i));
-            }
             tx.success();
             out.close();
         } catch (Exception e) {
