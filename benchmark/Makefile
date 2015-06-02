@@ -21,7 +21,7 @@ all: create bench
 create: $(TARGET_C)
 
 bench: $(TARGET_S) bench_java_src
-	javac \
+	@javac \
 	  -Xlint:deprecation \
 	  -cp .:`find ${NEO4JDIR}/lib -name "*.jar" | tr "\n" ":"` \
 	  ${NEO4JDIR}/*.java

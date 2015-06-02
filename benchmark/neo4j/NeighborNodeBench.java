@@ -23,6 +23,8 @@ public class NeighborNodeBench {
     private static int MEASURE_N = 100000;
     private static int COOLDOWN_N = 500;
 
+    private static Label NODE_LABEL = DynamicLabel.label("Node");
+
     public static void main(String[] args) throws Exception {
         String type = args[0];
         String db_path = args[1];
@@ -120,6 +122,28 @@ public class NeighborNodeBench {
             Node neighbor = r.getOtherNode(n);
             if (search.equals(neighbor.getProperty("name" + attr))) {
                 result.add(neighbor.getId());
+            }
+        }
+        return result;
+    }
+
+    // TODO: check findNodes() is using index?
+    private static List<Long> getNeighborNodeUsingIndex(
+        GraphDatabaseService graphDb, long node_id, int attr, String search) {
+
+        // populate neighbors
+        Set<Node> neighbors = new HashSet<Node>();
+        Node n = graphDb.getNodeById(node_id);
+        for (Relationship rel : n.getRelationships(Direction.OUTGOING))
+            neighbors.add(rel.getOtherNode(n));
+
+        List<Long> result = new LinkedList<>();
+        try (ResourceIterator<Node> nodes = graphDb.findNodes(
+                 NODE_LABEL, "name" + attr, search)) {
+            while (nodes.hasNext()) {
+                Node validNode = nodes.next();
+                if (neighbors.contains(validNode))
+                    result.add(validNode.getId());
             }
         }
         return result;
