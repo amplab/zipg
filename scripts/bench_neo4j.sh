@@ -1,4 +1,6 @@
 #!/bin/bash
+set -e
+
 SCRIPT_DIR=$(dirname $0)
 source ${SCRIPT_DIR}/config.sh
 neo4j_dir=${HOME_DIR}/benchmark/neo4j
@@ -9,50 +11,64 @@ javac -cp ${classpath} ${neo4j_dir}/*.java
 for num_nodes in ${nodes[@]}
 do
     echo "Benching nodes: ${num_nodes}"
-    sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
-    java -XX:+UseConcMarkSweepGC -Xmx3000m -cp ${classpath} BenchNeighbor neighbor-latency \
-		${neO4J_DIR}/${num_nodes} \
-		${QUERY_DIR}/neighbor_warmup_${num_nodes}.txt \
-		${QUERY_DIR}/neighbor_query_${num_nodes}.txt \
-		${HOME_DIR}/neo4j_${num_nodes}_neighbor_latency.txt \
-		${neo4j_warmup_neighbor} \
-		${neo4j_measure_neighbor}
+    # sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+    java -XX:+UseConcMarkSweepGC -Xmx3000m -cp ${classpath} \
+       benchmark.neo4j.BenchNeighbor neighbor-latency \
+       ${NEO4J_DIR}/${num_nodes} \
+       ${QUERY_DIR}/neighbor_warmup_${num_nodes}.txt \
+       ${QUERY_DIR}/neighbor_query_${num_nodes}.txt \
+       ${HOME_DIR}/neo4j_${num_nodes}_neighbor_latency.txt \
+       ${neo4j_warmup_neighbor} \
+       ${neo4j_measure_neighbor}
 
-    sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
-    java -XX:+UseConcMarkSweepGC -Xmx3000m -cp ${classpath} BenchNode node-latency \
-		${neO4J_DIR}/${num_nodes} \
-		${QUERY_DIR}/node_warmup_${num_nodes}.txt \
-		${QUERY_DIR}/node_query_${num_nodes}.txt \
-		${HOME_DIR}/neo4j_${num_nodes}_node_latency.txt \
-		${neo4j_warmup_node} \
-		${neo4j_measure_node}
+    # sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+    java -XX:+UseConcMarkSweepGC -Xmx3000m -cp ${classpath} \
+       benchmark.neo4j.BenchNode node-latency \
+       ${NEO4J_DIR}/${num_nodes} \
+       ${QUERY_DIR}/node_warmup_${num_nodes}.txt \
+       ${QUERY_DIR}/node_query_${num_nodes}.txt \
+       ${HOME_DIR}/neo4j_${num_nodes}_node_latency.txt \
+       ${neo4j_warmup_node} \
+       ${neo4j_measure_node}
 
-    sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
-    java -XX:+UseConcMarkSweepGC -Xmx3000m -cp ${classpath} MixBench latency \
-		${neO4J_DIR}/${num_nodes} \
-		${QUERY_DIR}/node_warmup_${num_nodes}.txt \
-		${QUERY_DIR}/node_query_${num_nodes}.txt \
-		${QUERY_DIR}/neighbor_warmup_${num_nodes}.txt \
-		${QUERY_DIR}/neighbor_query_${num_nodes}.txt \
-		${HOME_DIR}/neo4j_${num_nodes}_mix_latency.txt \
-		${neo4j_warmup_mix} \
-		${neo4j_measure_mix}
+    # sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+    java -XX:+UseConcMarkSweepGC -Xmx3000m -cp ${classpath} \
+       benchmark.neo4j.MixBench latency \
+       ${NEO4J_DIR}/${num_nodes} \
+       ${QUERY_DIR}/node_warmup_${num_nodes}.txt \
+       ${QUERY_DIR}/node_query_${num_nodes}.txt \
+       ${QUERY_DIR}/neighbor_warmup_${num_nodes}.txt \
+       ${QUERY_DIR}/neighbor_query_${num_nodes}.txt \
+       ${HOME_DIR}/neo4j_${num_nodes}_mix_latency.txt \
+       ${neo4j_warmup_mix} \
+       ${neo4j_measure_mix}
 
-    sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
-    java -XX:+UseConcMarkSweepGC -Xmx3000m -cp ${classpath} BenchNode node-node-latency \
-		${neO4J_DIR}/${num_nodes} \
-		${QUERY_DIR}/node_warmup_${num_nodes}.txt \
-		${QUERY_DIR}/node_query_${num_nodes}.txt \
-		${HOME_DIR}/neo4j_${num_nodes}_node_node_latency.txt \
-		${neo4j_warmup_node} \
-		${neo4j_measure_node}
+    # sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+    java -XX:+UseConcMarkSweepGC -Xmx3000m -cp ${classpath} \
+       benchmark.neo4j.BenchNode node-node-latency \
+       ${NEO4J_DIR}/${num_nodes} \
+       ${QUERY_DIR}/node_warmup_${num_nodes}.txt \
+       ${QUERY_DIR}/node_query_${num_nodes}.txt \
+       ${HOME_DIR}/neo4j_${num_nodes}_node_node_latency.txt \
+       ${neo4j_warmup_node} \
+       ${neo4j_measure_node}
 
-    sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
-    java -XX:+UseConcMarkSweepGC -Xmx3000m -cp ${classpath} NeighborNodeBench latency \
-		${neO4J_DIR}/${num_nodes} \
+    # sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+    java -XX:+UseConcMarkSweepGC -Xmx3000m -cp ${classpath} \
+        benchmark.neo4j.NeighborNodeBench latency \
+		${NEO4J_DIR}/${num_nodes} \
 		${QUERY_DIR}/neighbor_node_warmup_${num_nodes}.txt \
 		${QUERY_DIR}/neighbor_node_query_${num_nodes}.txt \
 		${HOME_DIR}/neo4j_${num_nodes}_neighbor_node_latency.txt \
+		${neo4j_warmup_neighbor_node} \
+		${neo4j_measure_neighbor_node}
+
+    java -XX:+UseConcMarkSweepGC -Xmx3000m -cp ${classpath} \
+        benchmark.neo4j.NeighborNodeBench latency \
+		${NEO4J_DIR}/${num_nodes} \
+		${QUERY_DIR}/neighbor_node_warmup_${num_nodes}.txt \
+		${QUERY_DIR}/neighbor_node_query_${num_nodes}.txt \
+		${HOME_DIR}/neo4j_${num_nodes}_neighbor_node_latency_index.txt \
 		${neo4j_warmup_neighbor_node} \
 		${neo4j_measure_neighbor_node}
 done

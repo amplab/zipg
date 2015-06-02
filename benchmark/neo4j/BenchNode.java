@@ -1,3 +1,5 @@
+package benchmark.neo4j;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileReader;
@@ -15,6 +17,8 @@ import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.graphdb.schema.IndexDefinition;
 import org.neo4j.graphdb.schema.Schema;
+
+import static benchmark.neo4j.BenchUtils.*;
 
 public class BenchNode {
     private static final long WARMUP_TIME = (long) (60 * 1E9); // 60 seconds
@@ -80,11 +84,12 @@ public class BenchNode {
                     tx.close();
                     tx = graphDb.beginTx();
                 }
-                List<Long> nodes = getNodes(graphDb, label, warmupAttributes.get(i % warmupSize),
-                        warmupQueries.get(i % warmupSize));
+                List<Long> nodes = getNodes(graphDb, label, modGet(warmupAttributes, i),
+                        modGet(warmupQueries, i));
                 if (nodes.size() == 0) {
-                    System.out.println("Error: no results for attribute " + warmupAttributes.get(i)
-                            + ", searching for " + warmupQueries.get(i));
+                    System.out.println("Error: no results for attribute " +
+                        modGet(warmupAttributes, i) + ", searching for " +
+                        modGet(warmupQueries, i));
                     System.exit(0);
                 }
             }
@@ -98,8 +103,8 @@ public class BenchNode {
                     tx.close();
                     tx = graphDb.beginTx();
                 }
-                int attr = attributes.get(i % size);
-                String query = queries.get(i % size);
+                int attr = modGet(attributes, i);
+                String query = modGet(queries, i);
                 long queryStart = System.nanoTime();
                 List<Long> nodes = getNodes(graphDb, label, attr, query);
                 long queryEnd = System.nanoTime();
@@ -110,8 +115,8 @@ public class BenchNode {
             // cooldown
             System.out.println("Cooldown for " + COOLDOWN_N + " queries");
             for (int i = 0; i < COOLDOWN_N; i++) {
-                List<Long> nodes = getNodes(graphDb, label, warmupAttributes.get(i % warmupSize),
-                        warmupQueries.get(i % warmupSize));
+                List<Long> nodes = getNodes(graphDb, label, modGet(warmupAttributes, i),
+                        modGet(warmupQueries, i));
             }
             tx.success();
             out.close();
@@ -149,13 +154,14 @@ public class BenchNode {
                     tx = graphDb.beginTx();
                 }
                 List<Long> nodes = getNodes(graphDb, label,
-                        warmupAttributes1.get(i % warmupAttributes1.size()),
-                        warmupQueries1.get(i % warmupQueries1.size()),
-                        warmupAttributes2.get(i % warmupAttributes2.size()),
-                        warmupQueries2.get(i % warmupQueries2.size()));
+                        modGet(warmupAttributes1, i),
+                        modGet(warmupQueries1, i),
+                        modGet(warmupAttributes2, i),
+                        modGet(warmupQueries2, i));
                 if (nodes.size() == 0) {
                     System.out.printf("Error: no results for attr1 %d search %s, attr2 %d, search %s\n",
-                            warmupAttributes1.get(i), warmupQueries1.get(i), warmupAttributes2.get(i), warmupQueries2.get(i));
+                                             modGet(warmupAttributes1, i), modGet(warmupQueries1, i),
+                                             modGet(warmupAttributes2, i), modGet(warmupQueries2, i));
                     System.exit(0);
                 }
             }
@@ -170,10 +176,10 @@ public class BenchNode {
                 }
                 long queryStart = System.nanoTime();
                 List<Long> nodes = getNodes(graphDb, label,
-                        attributes1.get(i % attributes1.size()),
-                        queries1.get(i % queries1.size()),
-                        attributes2.get(i % attributes2.size()),
-                        queries2.get(i % queries2.size()));
+                        modGet(attributes1, i),
+                        modGet(queries1, i),
+                        modGet(attributes2, i),
+                        modGet(queries2, i));
                 long queryEnd = System.nanoTime();
                 double microsecs = (queryEnd - queryStart) / ((double) 1000);
                 out.println(nodes.size() + "," +  microsecs);
@@ -208,10 +214,11 @@ public class BenchNode {
             long warmupStart = System.nanoTime();
             int warmupSize = warmupAttributes.size();
             while (System.nanoTime() - warmupStart < WARMUP_TIME) {
-                List<Long> nodes = getNodes(graphDb, label, warmupAttributes.get(i % warmupSize),
-                        warmupQueries.get(i % warmupSize));
+                List<Long> nodes = getNodes(graphDb, label, modGet(warmupAttributes, i),
+                    modGet(warmupQueries, i));
                 if (nodes.size() == 0) {
-                    System.out.println("wtf " + warmupAttributes.get(i) + " " + warmupQueries.get(i));
+                    System.out.println("wtf " + modGet(warmupAttributes, i) + " " +
+                        modGet(warmupQueries, i));
                     System.exit(0);
                 }
                 i++;
@@ -226,8 +233,8 @@ public class BenchNode {
             int size = attributes.size();
             while (System.nanoTime() - start < MEASURE_TIME) {
                 long queryStart = System.nanoTime();
-                List<Long> nodes = getNodes(graphDb, label, attributes.get(i % size),
-                        queries.get(i % size));
+                List<Long> nodes = getNodes(graphDb, label, modGet(attributes, i),
+                    modGet(queries, i));
                 long queryEnd = System.nanoTime();
                 totalSeconds += (queryEnd - queryStart) / ((double) 1E9);
                 i++;
@@ -246,8 +253,8 @@ public class BenchNode {
             i = 0;
             long cooldownStart = System.nanoTime();
             while (System.nanoTime() - cooldownStart < COOLDOWN_TIME) {
-                List<Long> nodes = getNodes(graphDb, label, warmupAttributes.get(i % warmupSize),
-                        warmupQueries.get(i % warmupSize));
+                List<Long> nodes = getNodes(graphDb, label, modGet(warmupAttributes, i),
+                    modGet(warmupQueries, i));
                 i++;
             }
             tx.success();

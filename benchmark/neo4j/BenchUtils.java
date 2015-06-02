@@ -1,6 +1,9 @@
+package benchmark.neo4j;
+
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.schema.Schema;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class BenchUtils {
@@ -21,6 +24,10 @@ public class BenchUtils {
             System.err.println("indexes not all online after 60 seconds: " + e.getMessage());
             throw e;
         }
+    }
+
+    public static <T> T modGet(List<T> xs, int i) {
+        return xs.get(i % xs.size());
     }
 
 }

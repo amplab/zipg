@@ -1,9 +1,12 @@
+package benchmark.neo4j;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.System;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -18,6 +21,8 @@ import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.graphdb.schema.IndexDefinition;
 import org.neo4j.graphdb.schema.Schema;
+
+import static benchmark.neo4j.BenchUtils.*;
 
 public class NeighborNodeBench {
     private static int WARMUP_N = 20000;
@@ -49,7 +54,11 @@ public class NeighborNodeBench {
 
         if (type.equals("latency")) {
             neighborNodeLatency(db_path, out, warmup_neighbor_indices, neighbor_indices,
-                warmup_node_attributes, warmup_node_queries, node_attributes, node_queries);
+                                       warmup_node_attributes, warmup_node_queries, node_attributes, node_queries, false);
+        } else if (type.equals("latency-index")) {
+
+            neighborNodeLatency(db_path, out, warmup_neighbor_indices, neighbor_indices,
+                                       warmup_node_attributes, warmup_node_queries, node_attributes, node_queries, true);
         } else {
             System.out.println("No type " + type + " is supported!");
         }
@@ -58,7 +67,8 @@ public class NeighborNodeBench {
     private static void neighborNodeLatency(String DB_PATH, PrintWriter out,
             List<Integer> warmup_neighbor_indices, List<Integer> neighbor_indices,
             List<Integer> warmup_node_attributes, List<String> warmup_node_queries,
-            List<Integer> node_attributes, List<String> node_queries) {
+            List<Integer> node_attributes, List<String> node_queries,
+            boolean useIndex) {
 
         System.out.println("Benchmarking getNeighborNode queries");
         // START SNIPPET: startDb
@@ -71,11 +81,17 @@ public class NeighborNodeBench {
             // warmup
             System.out.println("Warming up for " + WARMUP_N + " queries");
             for (int i = 0; i < WARMUP_N; i++) {
-                List<Long> result = getNeighborNode(graphDb, warmup_neighbor_indices.get(i),
-                        warmup_node_attributes.get(i), warmup_node_queries.get(i));
+                List<Long> result;
+                if (!useIndex) {
+                    result = getNeighborNode(graphDb, modGet(warmup_neighbor_indices, i),
+                                 modGet(warmup_node_attributes, i), modGet(warmup_node_queries, i));
+                } else {
+                    result = getNeighborNodeUsingIndex(graphDb, modGet(warmup_neighbor_indices, i),
+                                 modGet(warmup_node_attributes, i), modGet(warmup_node_queries, i));
+                }
                 if (result.size() == 0) {
                     System.out.printf("Error: no neighbor nodes for node id: %d, attr %d, search %s\n",
-                            warmup_neighbor_indices.get(i), warmup_node_attributes.get(i), warmup_node_queries.get(i));
+                        modGet(warmup_neighbor_indices, i), modGet(warmup_node_attributes, i), modGet(warmup_node_queries, i));
                     System.exit(0);
                 }
             }
@@ -89,26 +105,28 @@ public class NeighborNodeBench {
                     tx.close();
                     tx = graphDb.beginTx();
                 }
-                int idx = neighbor_indices.get(i);
-                long queryStart = System.nanoTime();
-                List<Long> result = getNeighborNode(graphDb, neighbor_indices.get(i),
-                        node_attributes.get(i), node_queries.get(i));
-                long queryEnd = System.nanoTime();
+                int idx = modGet(neighbor_indices, i);
+                long queryStart, queryEnd;
+                List<Long> result;
+                if (!useIndex) {
+                    queryStart = System.nanoTime();
+                    result = getNeighborNode(graphDb, modGet(warmup_neighbor_indices, i),
+                                                    modGet(warmup_node_attributes, i), modGet(warmup_node_queries, i));
+                    queryEnd = System.nanoTime();
+                } else {
+                    queryStart = System.nanoTime();
+                    result = getNeighborNodeUsingIndex(graphDb, modGet(warmup_neighbor_indices, i),
+                                                              modGet(warmup_node_attributes, i), modGet(warmup_node_queries, i));
+                    queryEnd = System.nanoTime();
+                }
                 if (result.size() == 0) {
                     System.out.printf("Error: no neighbor nodes for node id: %d, attr %d, search %s\n",
-                            neighbor_indices.get(i), node_attributes.get(i), node_queries.get(i));
+                        modGet(neighbor_indices, i), modGet(node_attributes, i), modGet(node_queries, i));
                 } else {
                     out.println(result.size() + "," + (queryEnd - queryStart) / 1000);
                 }
             }
             out.close();
-
-            // cooldown
-            System.out.println("Cooldown for " + COOLDOWN_N + " queries");
-            for (int i = 0; i < COOLDOWN_N; i++) {
-                List<Long> result = getNeighborNode(graphDb, warmup_neighbor_indices.get(i),
-                        warmup_node_attributes.get(i), warmup_node_queries.get(i));
-            }
             tx.success();
         } finally {
             tx.close();

@@ -1,3 +1,5 @@
+package benchmark.neo4j;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileReader;
@@ -20,6 +22,8 @@ import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.graphdb.schema.IndexDefinition;
 import org.neo4j.graphdb.schema.Schema;
+
+import static benchmark.neo4j.BenchUtils.*;
 
 public class MixBench {
     private static int WARMUP_N = 20000;
@@ -87,20 +91,20 @@ public class MixBench {
             for (int i = 0; i < WARMUP_N; i++) {
                 if (i % 2 == 0) {
                     List<Long> neighbors = getNeighbors(
-                        graphDb, warmup_neighbor_indices.get((i / 2) % warmupNbhrSize));
+                        graphDb, modGet(warmup_neighbor_indices, i / 2));
                     if (neighbors.size() == 0) {
                         System.out.println("error: no neighbors for node " +
-                            warmup_neighbor_indices.get((i / 2) % warmupNbhrSize));
+                            modGet(warmup_neighbor_indices, i / 2));
                         System.exit(0);
                     }
                 } else {
                     List<Long> result = getNodes(graphDb, label,
-                            warmup_node_attributes.get((i / 2) % warmupNodeAttrSize),
-                            warmup_node_queries.get((i / 2) % warmupNodeQuerySize));
+                            modGet(warmup_node_attributes, i / 2),
+                            modGet(warmup_node_queries, i / 2));
                     if (result.size() == 0) {
                         System.out.println("error: no nodes for query " +
-                            warmup_node_attributes.get((i / 2) % warmupNodeAttrSize) + " " +
-                            warmup_node_queries.get(i/2 % warmupNodeQuerySize));
+                            modGet(warmup_node_attributes, i / 2) + " " +
+                            modGet(warmup_node_queries, i / 2));
                         System.exit(0);
                     }
                 }
@@ -115,15 +119,15 @@ public class MixBench {
                     tx = graphDb.beginTx();
                 }
                 if (i % 2 == 0) {
-                    int idx = neighbor_indices.get((i / 2) % nbhrSize);
+                    int idx = modGet(neighbor_indices, i / 2);
                     long queryStart = System.nanoTime();
                     List<Long> neighbors = getNeighbors(graphDb, idx);
                     long queryEnd = System.nanoTime();
                     double microsecs = (queryEnd - queryStart) / ((double) 1000);
                     out.println(neighbors.size() + "," + microsecs);
                 } else {
-                    int attr = node_attributes.get((i / 2) % nodeAttrSize);
-                    String query = node_queries.get((i / 2) % nodeQuerySize);
+                    int attr = modGet(node_attributes, i / 2);
+                    String query = modGet(node_queries, i / 2);
                     long queryStart = System.nanoTime();
                     List<Long> results = getNodes(graphDb, label, attr, query);
                     long queryEnd = System.nanoTime();
@@ -161,16 +165,21 @@ public class MixBench {
             int size = neighbor_indices.size();
             for (int i = 0; i < WARMUP_N; i++) {
                 if (i % 2 == 0) {
-                    List<Long> neighbors = getNeighbors(graphDb, warmup_neighbor_indices.get(i/2 % warmup_size));
+                    List<Long> neighbors = getNeighbors(graphDb,
+                        modGet(warmup_neighbor_indices, i / 2));
                     if (neighbors.size() == 0) {
-                        System.out.println("error: no neighbors for node " + warmup_neighbor_indices.get(i/2 % warmup_size));
+                        System.out.println("error: no neighbors for node " +
+                            modGet(warmup_neighbor_indices, i / 2));
                         System.exit(0);
                     }
                 } else {
-                    List<Long> result = getNodes(graphDb, label, warmup_node_attributes.get(i/2 % warmup_size),
-                            warmup_node_queries.get(i/2 % warmup_size));
+                    List<Long> result = getNodes(graphDb, label,
+                                                        modGet(warmup_node_attributes, i / 2),
+                        modGet(warmup_node_queries, i / 2));
                     if (result.size() == 0) {
-                        System.out.println("error: no nodes for query " + warmup_node_attributes.get(i/2 % warmup_size) + " " + warmup_node_queries.get(i/2 % warmup_size));
+                        System.out.println("error: no nodes for query " +
+                            modGet(warmup_node_attributes, i / 2) + " " +
+                            modGet(warmup_node_queries, i / 2));
                         System.exit(0);
                     }
                 }
@@ -187,13 +196,13 @@ public class MixBench {
                 }
                 long queryStart; long queryEnd;
                 if (i % 2 == 0) {
-                    int idx = neighbor_indices.get(i/2 % size);
+                    int idx = modGet(neighbor_indices, i / 2);
                     queryStart = System.nanoTime();
                     List<Long> neighbors = getNeighbors(graphDb, idx);
                     queryEnd = System.nanoTime();
                 } else {
-                    int attr = node_attributes.get(i/2 % size);
-                    String query = node_queries.get(i/2 % size);
+                    int attr = modGet(node_attributes, i / 2);
+                    String query = modGet(node_queries, i / 2);
                     queryStart = System.nanoTime();
                     List<Long> results = getNodes(graphDb, label, attr, query);
                     queryEnd = System.nanoTime();
@@ -210,10 +219,12 @@ public class MixBench {
             // cooldown
             for (int i = 0; i < COOLDOWN_N; i++) {
                 if (i % 2 == 0) {
-                    List<Long> neighbors = getNeighbors(graphDb, warmup_neighbor_indices.get(i/2 % warmup_size));
+                    List<Long> neighbors = getNeighbors(graphDb,
+                        modGet(warmup_neighbor_indices, i / 2));
                 } else {
-                    List<Long> results = getNodes(graphDb, label, warmup_node_attributes.get(i/2 % warmup_size),
-                            warmup_node_queries.get(i/2 % warmup_size));
+                    List<Long> results = getNodes(graphDb, label,
+                        modGet(warmup_node_attributes, i / 2),
+                        modGet(warmup_node_queries, i / 2));
                 }
             }
             tx.success();

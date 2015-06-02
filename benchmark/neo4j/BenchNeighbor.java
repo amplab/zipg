@@ -1,3 +1,5 @@
+package benchmark.neo4j;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileReader;
@@ -12,6 +14,8 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
+
+import static benchmark.neo4j.BenchUtils.*;
 
 public class BenchNeighbor {
     private static final long WARMUP_TIME = (long) (60 * 1E9); // 60 seconds
