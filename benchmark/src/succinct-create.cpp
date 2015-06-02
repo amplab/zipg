@@ -112,7 +112,7 @@ void create_succinct_file(std::string graph_file) {
 void generate_neighbor_queries(int64_t nodes, int warmup_size, int query_size, std::string warmup_query_file, std::string query_file) {
     std::random_device rd;
     std::mt19937 rng(rd());
-    std::uniform_int_distribution<int64_t> uni(0, nodes);
+    std::uniform_int_distribution<int64_t> uni(0, nodes - 1);
 
     std::ofstream warmup_out(warmup_query_file);
     std::ofstream query_out(query_file);
