@@ -10,7 +10,4 @@ echo "edges, nodes, queries done"
 bash ${SCRIPT_DIR}/create_neo4j.sh &
 bash ${SCRIPT_DIR}/create_succinct.sh && bash ${SCRIPT_DIR}/create_queries.sh &
 wait
-
-echo "neo4j, succinct done"
-bash ${SCRIPT_DIR}/create_queries.sh
 echo "all done"
