@@ -26,6 +26,7 @@ isa_sampling_rate=32
 npa_sampling_rate=128
 
 # benchmark configs
+JVM_HEAP=16g
 warmup_neighbor=100000
 measure_neighbor=200000
 neo4j_warmup_neighbor=500000
