@@ -53,6 +53,8 @@ public class BenchNeighbor {
         Transaction tx = graphDb.beginTx();
         try {
             PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(output_file)));
+            PrintWriter resOut = new PrintWriter(
+                new BufferedWriter(new FileWriter(output_file + ".neo4j_result")));
 
             System.out.println("Warming up for " + WARMUP_N + " queries");
             for (int i = 0; i < WARMUP_N; i++) {
@@ -80,16 +82,15 @@ public class BenchNeighbor {
                 long queryEnd = System.nanoTime();
                 double microsecs = (queryEnd - queryStart) / ((double) 1000);
                 out.println(neighbors.size() + "," + microsecs);
-            }
 
-            // cooldown
-            System.out.println("Cooldown for " + COOLDOWN_N + " queries");
-            for (int i = 0; i < COOLDOWN_N; i++) {
-                List<Long> neighbors = getNeighbors(graphDb, warmupQueries[i % warmupQueries.length]);
+                // correctness validation
+                Collections.sort(neighbors);
+                BenchUtils.print(queries[i % queries.length], neighbors, resOut);
             }
 
             tx.success();
             out.close();
+            resOut.close();
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -135,6 +136,8 @@ public class BenchNeighbor {
                 long queryEnd = System.nanoTime();
                 if (neighbors.size() == 0)
                     System.err.println("Error: no results found in neo4j neighbor throughput benchmarking");
+
+
 
                 totalSeconds += (queryEnd - queryStart) / ((double) 1E9);
                 edges += neighbors.size();

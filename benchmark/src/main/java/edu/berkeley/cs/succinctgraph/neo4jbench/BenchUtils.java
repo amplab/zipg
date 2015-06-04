@@ -3,6 +3,7 @@ package edu.berkeley.cs.succinctgraph.neo4jbench;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.schema.Schema;
 
+import java.io.PrintWriter;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -29,6 +30,14 @@ public class BenchUtils {
 
     public static <T> T modGet(List<T> xs, int i) {
         return xs.get(i % xs.size());
+    }
+
+    public static <T> void print(int query, List<T> xs, PrintWriter out) {
+        out.printf("node id: %d\n", query);
+        for (T x : xs) {
+            out.printf("%s ", x);
+        }
+        out.println();
     }
 
 }
