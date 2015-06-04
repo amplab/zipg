@@ -11,7 +11,6 @@ import static edu.berkeley.cs.succinctgraph.neo4jbench.BenchUtils.modGet;
 public class NeighborNodeBench {
     private static int WARMUP_N = 20000;
     private static int MEASURE_N = 100000;
-    private static int COOLDOWN_N = 500;
 
     private static Label NODE_LABEL = DynamicLabel.label("Node");
 
@@ -86,25 +85,23 @@ public class NeighborNodeBench {
 
             // measure
             System.out.println("Measuring for " + MEASURE_N + " queries");
-            double totalSeconds = 0;
             for (int i = 0; i < MEASURE_N; i++) {
                 if (i % 10000 == 0) {
                     tx.success();
                     tx.close();
                     tx = graphDb.beginTx();
                 }
-                int idx = modGet(neighbor_indices, i);
                 long queryStart, queryEnd;
                 List<Long> result;
                 if (!useIndex) {
                     queryStart = System.nanoTime();
-                    result = getNeighborNode(graphDb, modGet(warmup_neighbor_indices, i),
-                        modGet(warmup_node_attributes, i), modGet(warmup_node_queries, i));
+                    result = getNeighborNode(graphDb, modGet(neighbor_indices, i),
+                        modGet(node_attributes, i), modGet(node_queries, i));
                     queryEnd = System.nanoTime();
                 } else {
                     queryStart = System.nanoTime();
-                    result = getNeighborNodeUsingIndex(graphDb, modGet(warmup_neighbor_indices, i),
-                        modGet(warmup_node_attributes, i), modGet(warmup_node_queries, i));
+                    result = getNeighborNodeUsingIndex(graphDb, modGet(neighbor_indices, i),
+                        modGet(node_attributes, i), modGet(node_queries, i));
                     queryEnd = System.nanoTime();
                 }
                 if (result.size() == 0) {
