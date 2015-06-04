@@ -23,8 +23,6 @@ object SuccinctGraphBuild extends Build {
     version := "0.1.0-SNAPSHOT",
     organization := "edu.berkeley.cs",
 
-    assemblyOption in assembly := (assemblyOption in assembly).value.copy(includeScala = false),
-
     resolvers ++= Seq(
      "Local Maven Repository" at Path.userHome.asFile.toURI.toURL + ".m2/repository",
       "Typesafe" at "http://repo.typesafe.com/typesafe/releases",
