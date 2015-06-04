@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 SCRIPT_DIR=$(dirname $0)
 source ${SCRIPT_DIR}/config.sh
 
@@ -15,5 +16,6 @@ do
         $sa_sampling_rate $isa_sampling_rate $npa_sampling_rate
 
     mv ${NODE_DIR}/${num_nodes}.graph ${GRAPH_DIR}
-    mv ${NODE_DIR}/${num_nodes}.graph.succinct ${SUCCINCT_DIR}
+    rsync -a ${NODE_DIR}/${num_nodes}.graph.succinct ${SUCCINCT_DIR}
+    rm -rf ${NODE_DIR}/${num_nodes}.graph.succinct
 done
