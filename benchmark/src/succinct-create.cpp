@@ -178,6 +178,8 @@ void generate_neighbor_node_queries(std::string succinct_dir, int warmup_size, i
     SuccinctGraph * graph = new SuccinctGraph(succinct_dir, false);
     std::random_device rd;
     std::mt19937 rng(rd());
+
+    // TODO: -1 twice?
     std::uniform_int_distribution<int64_t> uni_node(0, graph->num_nodes() - 1);
     std::uniform_int_distribution<int> uni_attr(0, graph->num_attributes() - 1);
 

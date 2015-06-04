@@ -20,8 +20,9 @@ public class BenchUtils {
         Schema schema = graphDb.schema();
         try {
             schema.awaitIndexesOnline(60, TimeUnit.SECONDS);
+            System.out.println("Indexes online");
         } catch (IllegalStateException e) {
-            System.err.println("indexes not all online after 60 seconds: " + e.getMessage());
+            System.err.println("Indexes not all online after 60 seconds: " + e.getMessage());
             throw e;
         }
     }
