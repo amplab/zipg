@@ -1,4 +1,4 @@
-package benchmark.neo4j;
+package edu.berkeley.cs.succinctgraph.neo4jbench;
 
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.schema.Schema;

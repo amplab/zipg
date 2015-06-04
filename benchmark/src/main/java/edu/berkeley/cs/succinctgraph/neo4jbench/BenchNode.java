@@ -1,4 +1,4 @@
-package benchmark.neo4j;
+package edu.berkeley.cs.succinctgraph.neo4jbench;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -18,7 +18,7 @@ import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.graphdb.schema.IndexDefinition;
 import org.neo4j.graphdb.schema.Schema;
 
-import static benchmark.neo4j.BenchUtils.*;
+import static edu.berkeley.cs.succinctgraph.neo4jbench.BenchUtils.*;
 
 public class BenchNode {
     private static final long WARMUP_TIME = (long) (60 * 1E9); // 60 seconds
