@@ -1,28 +1,12 @@
 package edu.berkeley.cs.succinctgraph.neo4jbench;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.lang.System;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-
-import org.neo4j.graphdb.DynamicLabel;
-import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Label;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Direction;
-import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.ResourceIterator;
-import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.*;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
-import org.neo4j.graphdb.schema.IndexDefinition;
-import org.neo4j.graphdb.schema.Schema;
 
-import static edu.berkeley.cs.succinctgraph.neo4jbench.BenchUtils.*;
+import java.io.*;
+import java.util.*;
+
+import static edu.berkeley.cs.succinctgraph.neo4jbench.BenchUtils.modGet;
 
 public class NeighborNodeBench {
     private static int WARMUP_N = 20000;
@@ -45,7 +29,8 @@ public class NeighborNodeBench {
         List<Integer> warmup_neighbor_indices = new ArrayList<Integer>();
         List<Integer> warmup_node_attributes = new ArrayList<Integer>();
         List<String> warmup_node_queries = new ArrayList<String>();
-        getNeighborNodeQueries(warmup_file, warmup_neighbor_indices, warmup_node_attributes, warmup_node_queries);
+        getNeighborNodeQueries(
+            warmup_file, warmup_neighbor_indices, warmup_node_attributes, warmup_node_queries);
 
         List<Integer> neighbor_indices = new ArrayList<Integer>();
         List<Integer> node_attributes = new ArrayList<Integer>();
@@ -54,21 +39,21 @@ public class NeighborNodeBench {
 
         if (type.equals("latency")) {
             neighborNodeLatency(db_path, out, warmup_neighbor_indices, neighbor_indices,
-                                       warmup_node_attributes, warmup_node_queries, node_attributes, node_queries, false);
+                warmup_node_attributes, warmup_node_queries, node_attributes, node_queries, false);
         } else if (type.equals("latency-index")) {
-
             neighborNodeLatency(db_path, out, warmup_neighbor_indices, neighbor_indices,
-                                       warmup_node_attributes, warmup_node_queries, node_attributes, node_queries, true);
+                warmup_node_attributes, warmup_node_queries, node_attributes, node_queries, true);
         } else {
             System.out.println("No type " + type + " is supported!");
         }
     }
 
-    private static void neighborNodeLatency(String DB_PATH, PrintWriter out,
-            List<Integer> warmup_neighbor_indices, List<Integer> neighbor_indices,
-            List<Integer> warmup_node_attributes, List<String> warmup_node_queries,
-            List<Integer> node_attributes, List<String> node_queries,
-            boolean useIndex) {
+    private static void neighborNodeLatency(
+        String DB_PATH, PrintWriter out,
+        List<Integer> warmup_neighbor_indices, List<Integer> neighbor_indices,
+        List<Integer> warmup_node_attributes, List<String> warmup_node_queries,
+        List<Integer> node_attributes, List<String> node_queries,
+        boolean useIndex) {
 
         System.out.println("Benchmarking getNeighborNode queries");
         // START SNIPPET: startDb
@@ -84,14 +69,17 @@ public class NeighborNodeBench {
                 List<Long> result;
                 if (!useIndex) {
                     result = getNeighborNode(graphDb, modGet(warmup_neighbor_indices, i),
-                                 modGet(warmup_node_attributes, i), modGet(warmup_node_queries, i));
+                        modGet(warmup_node_attributes, i), modGet(warmup_node_queries, i));
                 } else {
                     result = getNeighborNodeUsingIndex(graphDb, modGet(warmup_neighbor_indices, i),
-                                 modGet(warmup_node_attributes, i), modGet(warmup_node_queries, i));
+                        modGet(warmup_node_attributes, i), modGet(warmup_node_queries, i));
                 }
                 if (result.size() == 0) {
-                    System.out.printf("Error: no neighbor nodes for node id: %d, attr %d, search %s\n",
-                        modGet(warmup_neighbor_indices, i), modGet(warmup_node_attributes, i), modGet(warmup_node_queries, i));
+                    System.out.printf(
+                        "Error: no neighbor nodes for node id: %d, attr %d, search %s\n",
+                        modGet(warmup_neighbor_indices, i),
+                        modGet(warmup_node_attributes, i),
+                        modGet(warmup_node_queries, i));
                     System.exit(0);
                 }
             }
@@ -111,17 +99,20 @@ public class NeighborNodeBench {
                 if (!useIndex) {
                     queryStart = System.nanoTime();
                     result = getNeighborNode(graphDb, modGet(warmup_neighbor_indices, i),
-                                                    modGet(warmup_node_attributes, i), modGet(warmup_node_queries, i));
+                        modGet(warmup_node_attributes, i), modGet(warmup_node_queries, i));
                     queryEnd = System.nanoTime();
                 } else {
                     queryStart = System.nanoTime();
                     result = getNeighborNodeUsingIndex(graphDb, modGet(warmup_neighbor_indices, i),
-                                                              modGet(warmup_node_attributes, i), modGet(warmup_node_queries, i));
+                        modGet(warmup_node_attributes, i), modGet(warmup_node_queries, i));
                     queryEnd = System.nanoTime();
                 }
                 if (result.size() == 0) {
-                    System.out.printf("Error: no neighbor nodes for node id: %d, attr %d, search %s\n",
-                        modGet(neighbor_indices, i), modGet(node_attributes, i), modGet(node_queries, i));
+                    System.out.printf(
+                        "Error: no neighbor nodes for node id: %d, attr %d, search %s\n",
+                        modGet(neighbor_indices, i),
+                        modGet(node_attributes, i),
+                        modGet(node_queries, i));
                 } else {
                     out.println(result.size() + "," + (queryEnd - queryStart) / 1000);
                 }
@@ -136,13 +127,38 @@ public class NeighborNodeBench {
     }
 
     private static List<Long> getNeighborNode(GraphDatabaseService graphDb,
-            long node_id, int attr, String search) {
+                                              long node_id, int attr, String search) {
         Node n = graphDb.getNodeById(node_id);
         List<Long> result = new LinkedList<>();
+//        System.err.printf("nbhr of node %d:", n.getId());
         for (Relationship r : n.getRelationships(Direction.OUTGOING)) {
             Node neighbor = r.getOtherNode(n);
+//            System.err.printf(" %d", neighbor.getId());
             if (search.equals(neighbor.getProperty("name" + attr))) {
                 result.add(neighbor.getId());
+            }
+        }
+//        System.err.printf("\n");
+        return result;
+    }
+
+    private static List<Long> getNeighborNodeUsingIndex0(
+        GraphDatabaseService graphDb, long node_id, int attr, String search) {
+
+        Set<Long> neighbors = new HashSet<Long>();
+        Node n = graphDb.getNodeById(node_id);
+        for (Relationship rel : n.getRelationships(Direction.OUTGOING)) {
+            neighbors.add(rel.getOtherNode(n).getId());
+        }
+        System.out.println("getting nbhr done");
+        List<Long> result = new LinkedList<Long>();
+
+        try (ResourceIterator<Node> nodes = graphDb.findNodes(
+            NODE_LABEL, "name" + attr, search)) {
+            while (nodes.hasNext()) {
+                long validNode = nodes.next().getId();
+                if (neighbors.contains(validNode))
+                    result.add(validNode);
             }
         }
         return result;
@@ -150,26 +166,30 @@ public class NeighborNodeBench {
 
     private static List<Long> getNeighborNodeUsingIndex(
         GraphDatabaseService graphDb, long node_id, int attr, String search) {
+        List<Long> result = new LinkedList<Long>();
 
-        // populate neighbors
-        Set<Node> neighbors = new HashSet<Node>();
-        Node n = graphDb.getNodeById(node_id);
-        for (Relationship rel : n.getRelationships(Direction.OUTGOING))
-            neighbors.add(rel.getOtherNode(n));
+        String queryString = String.format("START n=node(%d)\n" +
+            "MATCH (m:Node)\n" +
+            "WHERE m.name%d = '%s' AND n-->m\n" +
+            "RETURN m;\n" +
+            "\n", node_id, attr, search);
 
-        List<Long> result = new LinkedList<>();
-        try (ResourceIterator<Node> nodes = graphDb.findNodes(
-                 NODE_LABEL, "name" + attr, search)) {
-            while (nodes.hasNext()) {
-                Node validNode = nodes.next();
-                if (neighbors.contains(validNode))
-                    result.add(validNode.getId());
+        try ( Result queryResult = graphDb.execute(queryString) ) {
+            while (queryResult.hasNext()) {
+                Map<String,Object> row = queryResult.next();
+                for (Map.Entry<String, Object> column : row.entrySet()) {
+                    result.add(((Node) column.getValue()).getId());
+                }
             }
         }
+//        System.out.println("Query: " + queryString);
+//        System.out.println("Result:\n" + queryResult.resultAsString());
+//        System.out.println("Plan:\n" + queryResult.getExecutionPlanDescription());
         return result;
     }
 
-    private static void getNeighborNodeQueries(String file, List<Integer> indices, List<Integer> attributes, List<String> queries) {
+    private static void getNeighborNodeQueries(
+        String file, List<Integer> indices, List<Integer> attributes, List<String> queries) {
         try {
             BufferedReader br = new BufferedReader(new FileReader(file));
             String line = br.readLine();
