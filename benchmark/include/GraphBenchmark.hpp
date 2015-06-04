@@ -20,11 +20,12 @@ public:
         fprintf(stderr, "Benchmarking getNeighbor latency of %s\n", this->graph->succinct_directory().c_str());
         read_neighbor_queries(warmup_query_file, query_file);
         std::ofstream res_stream(res_path);
+        std::ofstream query_res_stream(res_path + ".succinct_result");
 
         // Warmup
         fprintf(stderr, "Warming up for %lu queries...\n", WARMUP_N);
         for(uint64_t i = 0; i < WARMUP_N; i++) {
-            std::set<int64_t> result;
+            std::vector<int64_t> result;
             this->graph->get_neighbors(result, warmup_neighbor_indices[i]);
             assert(result.size() != 0 && "No result found in benchmarking neighbor latency");
         }
@@ -33,24 +34,24 @@ public:
         // Measure
         fprintf(stderr, "Measuring for %lu queries...\n", MEASURE_N);
         for(uint64_t i = 0; i < MEASURE_N; i++) {
-            std::set<int64_t> result;
+            std::vector<int64_t> result;
             t0 = get_timestamp();
             this->graph->get_neighbors(result, neighbor_indices[i]);
             t1 = get_timestamp();
             assert(result.size() != 0 && "No result found in benchmarking node latency");
             res_stream << result.size() << "," << t1 - t0 << "\n";
+
+            // correctness validation
+            query_res_stream << "node id: " << neighbor_indices[i] << "\n";
+            for (auto it = result.begin(); it != result.end(); ++it) {
+                query_res_stream << *it << " ";
+            }
+            query_res_stream << "\n";
         }
         fprintf(stderr, "Measure complete.\n");
 
-        // Cooldown
-        fprintf(stderr, "Cooling down for %lu queries...\n", COOLDOWN_N);
-        for(uint64_t i = 0; i < COOLDOWN_N; i++) {
-            std::set<int64_t> result;
-            this->graph->get_neighbors(result, warmup_neighbor_indices[i]);
-        }
-        fprintf(stderr, "Cooldown complete.\n");
-
         res_stream.close();
+        query_res_stream.close();
     }
 
     std::pair<double, double> benchmark_neighbor_throughput(
@@ -64,7 +65,7 @@ public:
             long i = 0;
             time_t warmup_start = get_timestamp();
             while (get_timestamp() - warmup_start < WARMUP_T) {
-                std::set<int64_t> result;
+                std::vector<int64_t> result;
                 this->graph->get_neighbors(result, warmup_neighbor_indices[i % warmup_neighbor_indices.size()]);
                 i++;
             }
@@ -75,7 +76,7 @@ public:
             double totsecs = 0;
             time_t start = get_timestamp();
             while (get_timestamp() - start < MEASURE_T) {
-                std::set<int64_t> result;
+                std::vector<int64_t> result;
                 time_t query_start = get_timestamp();
                 this->graph->get_neighbors(result, neighbor_indices[i % neighbor_indices.size()]);
                 time_t query_end = get_timestamp();
@@ -85,15 +86,6 @@ public:
             }
             get_neighbor_thput = ((double) i / totsecs);
             edges_thput = ((double) edges / totsecs);
-
-            i = 0;
-            time_t cooldown_start = get_timestamp();
-            while (get_timestamp() - cooldown_start < COOLDOWN_T) {
-                std::set<int64_t> result;
-                this->graph->get_neighbors(result, warmup_neighbor_indices[i % warmup_neighbor_indices.size()]);
-                i++;
-            }
-
         } catch (std::exception &e) {
             fprintf(stderr, "Throughput test ends...\n");
         }
@@ -130,14 +122,6 @@ public:
         }
         fprintf(stderr, "Measure complete.\n");
 
-        // Cooldown
-        fprintf(stderr, "Cooling down for %lu queries...\n", COOLDOWN_N);
-        for(uint64_t i = 0; i < COOLDOWN_N; i++) {
-            std::set<int64_t> result;
-            this->graph->search_nodes(result, warmup_node_attributes[i], warmup_node_queries[i]);
-        }
-        fprintf(stderr, "Cooldown complete.\n");
-
         res_stream.close();
     }
 
@@ -170,15 +154,6 @@ public:
             res_stream << result.size() << "," << t1 - t0 << "\n";
         }
         fprintf(stderr, "Measure complete.\n");
-
-        // Cooldown
-        fprintf(stderr, "Cooling down for %lu queries...\n", COOLDOWN_N);
-        for(uint64_t i = 0; i < COOLDOWN_N; i++) {
-            std::set<int64_t> result;
-            this->graph->search_nodes(result, warmup_node_attributes[i], warmup_node_queries[i],
-                                              warmup_node_attributes2[i], warmup_node_queries2[i]);
-        }
-        fprintf(stderr, "Cooldown complete.\n");
 
         res_stream.close();
     }
@@ -247,7 +222,7 @@ public:
             fprintf(stderr, "Warming up for %lu queries...\n", WARMUP_N);
             for (int i = 0; i < WARMUP_N; i++) {
                 if (i % 2 == 0) {
-                    std::set<int64_t> result;
+                    std::vector<int64_t> result;
                     this->graph->get_neighbors(result, warmup_neighbor_indices[i/2]);
                     if (result.size() == 0) {
                         fprintf(stderr, "Error getting neighbors for %d.\n", warmup_neighbor_indices[i/2]);
@@ -266,7 +241,7 @@ public:
             fprintf(stderr, "Measuring for %lu queries...\n", MEASURE_N);
             for (int i = 0; i < MEASURE_N; i++) {
                 if (i % 2 == 0) {
-                    std::set<int64_t> result;
+                    std::vector<int64_t> result;
                     time_t query_start = get_timestamp();
                     this->graph->get_neighbors(result, neighbor_indices[i/2]);
                     time_t query_end = get_timestamp();
@@ -288,20 +263,6 @@ public:
                 }
             }
             fprintf(stderr, "Measure complete.\n");
-
-            // Cooldown phase
-            fprintf(stderr, "Cooling down for %lu queries...\n", COOLDOWN_N);
-            for (int i = 0; i < COOLDOWN_N; i++) {
-                if (i % 2 == 0) {
-                    std::set<int64_t> result;
-                    this->graph->get_neighbors(result, warmup_neighbor_indices[i/2]);
-                } else {
-                    std::set<int64_t> result;
-                    this->graph->search_nodes(result, warmup_node_attributes[i/2], warmup_node_queries[i/2]);
-                }
-            }
-            fprintf(stderr, "Cooldown complete.\n");
-
         } catch (std::exception &e) {
             fprintf(stderr, "Throughput test ends...\n");
         }
@@ -317,7 +278,7 @@ public:
         // Warmup
         fprintf(stderr, "Warming up for %lu queries...\n", WARMUP_N);
         for(uint64_t i = 0; i < WARMUP_N; i++) {
-            std::set<int64_t> result;
+            std::vector<int64_t> result;
             this->graph->get_neighbors_of_node(result, warmup_neighbor_indices[i], warmup_node_attributes[i], warmup_node_queries[i]);
             assert(result.size() != 0 && "No result found in benchmarking getNeighborOfNode latency");
         }
@@ -326,7 +287,7 @@ public:
         // Measure
         fprintf(stderr, "Measuring for %lu queries...\n", MEASURE_N);
         for(uint64_t i = 0; i < MEASURE_N; i++) {
-            std::set<int64_t> result;
+            std::vector<int64_t> result;
             t0 = get_timestamp();
             this->graph->get_neighbors_of_node(result, neighbor_indices[i], node_attributes[i], node_queries[i]);
             t1 = get_timestamp();
@@ -334,14 +295,6 @@ public:
             res_stream << result.size() << "," << t1 - t0 << "\n";
         }
         fprintf(stderr, "Measure complete.\n");
-
-        // Cooldown
-        fprintf(stderr, "Cooling down for %lu queries...\n", COOLDOWN_N);
-        for(uint64_t i = 0; i < COOLDOWN_N; i++) {
-            std::set<int64_t> result;
-            this->graph->get_neighbors_of_node(result, warmup_neighbor_indices[i], warmup_node_attributes[i], warmup_node_queries[i]);
-        }
-        fprintf(stderr, "Cooldown complete.\n");
 
         res_stream.close();
     }
@@ -358,7 +311,7 @@ public:
             int warmup_size = warmup_node_queries.size();
             for (int i = 0; i < WARMUP_N; i++) {
                 if (i % 2 == 0) {
-                    std::set<int64_t> result;
+                    std::vector<int64_t> result;
                     this->graph->get_neighbors(result, warmup_neighbor_indices[i % warmup_size]);
                     if (result.size() == 0) {
                         printf("Error getting neighbors for %d\n", warmup_neighbor_indices[i % warmup_size]);
@@ -381,7 +334,7 @@ public:
             for (int i = 0; i < MEASURE_N; i++) {
                 time_t query_start = get_timestamp();
                 if (i % 2 == 0) {
-                    std::set<int64_t> result;
+                    std::vector<int64_t> result;
                     this->graph->get_neighbors(result, neighbor_indices[i % size]);
                 } else {
                     std::set<int64_t> result;
@@ -392,18 +345,6 @@ public:
             }
             thput = ((double) MEASURE_N / totsecs);
             printf("Throughput: %f\n total queries: %lu, total time: %f\n\n", thput, MEASURE_N, totsecs);
-
-            // Cooldown phase
-            for (int i = 0; i < COOLDOWN_N; i++) {
-                if (i % 2 == 0) {
-                    std::set<int64_t> result;
-                    this->graph->get_neighbors(result, warmup_neighbor_indices[i % warmup_size]);
-                } else {
-                    std::set<int64_t> result;
-                    this->graph->search_nodes(result, warmup_node_attributes[i % warmup_size], warmup_node_queries[i % warmup_size]);
-                }
-            }
-
         } catch (std::exception &e) {
             fprintf(stderr, "Throughput test ends...\n");
         }

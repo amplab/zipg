@@ -188,9 +188,9 @@ void generate_neighbor_node_queries(std::string succinct_dir, int warmup_size, i
     for(int64_t i = 0; i < warmup_size; i++) {
         int node_id = uni_node(rng);
         int attr = uni_attr(rng);
-        std::set<int64_t> neighbors;
+        std::vector<int64_t> neighbors;
         graph->get_neighbors(neighbors, node_id);
-        std::set<int64_t>::const_iterator it(neighbors.begin());
+        std::vector<int64_t>::const_iterator it(neighbors.begin());
         int neighbor_idx = rand() % neighbors.size();
         std::advance(it, neighbor_idx);
         std::string search_key;
@@ -201,9 +201,9 @@ void generate_neighbor_node_queries(std::string succinct_dir, int warmup_size, i
     for(int64_t i = 0; i < query_size; i++) {
         int node_id = uni_node(rng);
         int attr = uni_attr(rng);
-        std::set<int64_t> neighbors;
+        std::vector<int64_t> neighbors;
         graph->get_neighbors(neighbors, node_id);
-        std::set<int64_t>::const_iterator it(neighbors.begin());
+        std::vector<int64_t>::const_iterator it(neighbors.begin());
         int neighbor_idx = rand() % neighbors.size();
         std::advance(it, neighbor_idx);
         std::string search_key;

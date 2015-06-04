@@ -41,14 +41,14 @@ int64_t SuccinctGraph::num_attributes() {
     return NUM_ATTRIBUTES;
 }
 
-void SuccinctGraph::get_neighbors(std::set<int64_t>& result, int64_t node_id) {
+void SuccinctGraph::get_neighbors(std::vector<int64_t>& result, int64_t node_id) {
     std::string line;
     this->shard->access(line, node_id, this->num_attributes() * (ATTR_SIZE + 1) + 1, std::numeric_limits<int32_t>::max());
     std::istringstream iss(line);
     std::string token;
     // TOOO: make edge deliminators not necessarily blank space
     while (getline(iss, token, ' ')) {
-        result.insert(std::strtoll(token.c_str(), NULL, 10));
+        result.push_back(std::strtoll(token.c_str(), NULL, 10));
     }
 }
 
@@ -70,11 +70,11 @@ void SuccinctGraph::search_nodes(std::set<int64_t>& result, int attr1, std::stri
                           std::inserter(result, result.begin()));
 }
 
-void SuccinctGraph::get_neighbors_of_node(std::set<int64_t>& result, int64_t node_id,
+void SuccinctGraph::get_neighbors_of_node(std::vector<int64_t>& result, int64_t node_id,
                                           int attr, std::string search_key) {
     this->get_neighbors(result, node_id);
     std::string attribute;
-    for (std::set<int64_t>::iterator it = result.begin(); it != result.end(); ) {
+    for (std::vector<int64_t>::iterator it = result.begin(); it != result.end(); ) {
         this->get_attribute(attribute, *it, attr);
         if (search_key.compare(attribute) == 0) {
             ++it;
