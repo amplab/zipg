@@ -130,19 +130,17 @@ public class NeighborNodeBench {
                                               long node_id, int attr, String search) {
         Node n = graphDb.getNodeById(node_id);
         List<Long> result = new LinkedList<>();
-//        System.err.printf("nbhr of node %d:", n.getId());
         for (Relationship r : n.getRelationships(Direction.OUTGOING)) {
             Node neighbor = r.getOtherNode(n);
-//            System.err.printf(" %d", neighbor.getId());
             if (search.equals(neighbor.getProperty("name" + attr))) {
                 result.add(neighbor.getId());
             }
         }
-//        System.err.printf("\n");
         return result;
     }
 
-    private static List<Long> getNeighborNodeUsingIndex0(
+    // slow
+    private static List<Long> getNeighborNodeUsingIndex(
         GraphDatabaseService graphDb, long node_id, int attr, String search) {
 
         Set<Long> neighbors = new HashSet<Long>();
@@ -150,9 +148,10 @@ public class NeighborNodeBench {
         for (Relationship rel : n.getRelationships(Direction.OUTGOING)) {
             neighbors.add(rel.getOtherNode(n).getId());
         }
-        System.out.println("getting nbhr done");
+//        System.out.println("getting nbhr done");
         List<Long> result = new LinkedList<Long>();
 
+        // .findNodes() *should* be able to use index
         try (ResourceIterator<Node> nodes = graphDb.findNodes(
             NODE_LABEL, "name" + attr, search)) {
             while (nodes.hasNext()) {
@@ -164,7 +163,8 @@ public class NeighborNodeBench {
         return result;
     }
 
-    private static List<Long> getNeighborNodeUsingIndex(
+    // cypher version: slow
+    private static List<Long> getNeighborNodeUsingIndex0(
         GraphDatabaseService graphDb, long node_id, int attr, String search) {
         List<Long> result = new LinkedList<Long>();
 
