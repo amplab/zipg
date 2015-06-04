@@ -99,6 +99,7 @@ public:
         time_t t0, t1;
         read_node_queries(warmup_query_file, query_file);
         std::ofstream res_stream(res_path);
+        std::ofstream query_res_stream(res_path + ".succinct_result");
         fprintf(stderr, "Benchmarking getNode latency of %s\n", this->graph->succinct_directory().c_str());
 
         // Warmup
@@ -119,10 +120,17 @@ public:
             t1 = get_timestamp();
             assert(result.size() != 0 && "No result found in benchmarking node latency");
             res_stream << result.size() << "," << t1 - t0 << "\n";
+
+            // correctness validation
+            query_res_stream << "attr " << node_attributes[i] << ": " << node_queries[i] << "\n";
+            for (auto it = result.begin(); it != result.end(); ++it)
+                query_res_stream << *it << " "; // sets are sorted (hopefully)
+            query_res_stream << "\n";
         }
         fprintf(stderr, "Measure complete.\n");
 
         res_stream.close();
+        query_res_stream.close();
     }
 
     void benchmark_node_node_latency(std::string res_path, count_t WARMUP_N, count_t MEASURE_N,

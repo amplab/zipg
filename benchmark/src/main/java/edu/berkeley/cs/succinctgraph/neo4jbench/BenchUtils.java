@@ -32,8 +32,8 @@ public class BenchUtils {
         return xs.get(i % xs.size());
     }
 
-    public static <T> void print(int query, List<T> xs, PrintWriter out) {
-        out.printf("node id: %d\n", query);
+    public static <T> void print(String header, List<T> xs, PrintWriter out) {
+        out.println(header);
         for (T x : xs) {
             out.printf("%s ", x);
         }

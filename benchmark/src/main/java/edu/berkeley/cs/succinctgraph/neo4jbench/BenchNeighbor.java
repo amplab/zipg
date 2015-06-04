@@ -85,7 +85,7 @@ public class BenchNeighbor {
 
                 // correctness validation
                 Collections.sort(neighbors);
-                BenchUtils.print(queries[i % queries.length], neighbors, resOut);
+                BenchUtils.print("node id: " + queries[i % queries.length], neighbors, resOut);
             }
 
             tx.success();

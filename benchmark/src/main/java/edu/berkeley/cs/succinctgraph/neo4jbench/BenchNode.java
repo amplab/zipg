@@ -69,11 +69,12 @@ public class BenchNode {
         GraphDatabaseService graphDb = new GraphDatabaseFactory()
                 .newEmbeddedDatabase(DB_PATH);
         BenchUtils.registerShutdownHook(graphDb);
-        IndexDefinition indexDefinition;
         Label label = DynamicLabel.label("Node");
         Transaction tx = graphDb.beginTx();
         try {
             PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(output_file)));
+            PrintWriter resOut = new PrintWriter(new BufferedWriter(
+                new FileWriter(output_file + ".neo4j_result")));
 
             // warmup
             System.out.println("Warming up for " + WARMUP_N + " queries");
@@ -110,16 +111,15 @@ public class BenchNode {
                 long queryEnd = System.nanoTime();
                 double microsecs = (queryEnd - queryStart) / ((double) 1000);
                 out.println(nodes.size() + "," +  microsecs);
+
+                // correctness
+                Collections.sort(nodes);
+                BenchUtils.print(String.format("attr %d: %s", attr, query), nodes, resOut);
             }
 
-            // cooldown
-            System.out.println("Cooldown for " + COOLDOWN_N + " queries");
-            for (int i = 0; i < COOLDOWN_N; i++) {
-                List<Long> nodes = getNodes(graphDb, label, modGet(warmupAttributes, i),
-                        modGet(warmupQueries, i));
-            }
             tx.success();
             out.close();
+            resOut.close();
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
