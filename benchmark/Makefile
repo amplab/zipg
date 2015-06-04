@@ -20,14 +20,7 @@ all: create bench
 
 create: $(TARGET_C)
 
-bench: $(TARGET_S) bench_java_src
-	@javac \
-	  -Xlint:deprecation \
-	  -cp .:`find ${NEO4JDIR}/lib -name "*.jar" | tr "\n" ":"` \
-	  ${NEO4JDIR}/*.java
-
-bench_java_src: $(NEO4JDIR)
-
+bench: $(TARGET_S)
 
 $(TARGET_C): $(OBJ_C) $(OBJ)
 	@echo "Linking create file..."
