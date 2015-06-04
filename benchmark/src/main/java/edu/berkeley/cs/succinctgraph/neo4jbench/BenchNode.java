@@ -134,6 +134,8 @@ public class BenchNode {
         Transaction tx = graphDb.beginTx();
         try {
             PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(output_file)));
+            PrintWriter resOut = new PrintWriter(new BufferedWriter(
+                new FileWriter(output_file + ".neo4j_result")));
 
             // warmup
             System.out.println("Warming up for " + WARMUP_N + " queries");
@@ -174,10 +176,20 @@ public class BenchNode {
                 long queryEnd = System.nanoTime();
                 double microsecs = (queryEnd - queryStart) / ((double) 1000);
                 out.println(nodes.size() + "," + microsecs);
+
+                // correctness
+                String header = String.format("attr1 %d: %s; attr2 %d: %s",
+                    modGet(attributes1, i),
+                    modGet(queries1, i),
+                    modGet(attributes2, i),
+                    modGet(queries2, i));
+                Collections.sort(nodes);
+                BenchUtils.print(header, nodes, resOut);
             }
 
             tx.success();
             out.close();
+            resOut.close();
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
