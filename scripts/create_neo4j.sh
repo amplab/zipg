@@ -43,10 +43,12 @@ re-run this script"
         awk '{printf("%d,%s\n", NR-1, $0)}' ${NODE_DIR}/${num_nodes}.node > $NODE_CSV
     fi
 
+    sleep 5
+
     ${HOME_DIR}/external/neo4j/bin/neo4j-import --into ${NEO4J_DIR}/${num_nodes} \
         --nodes:Node "${CSV_DIR}/nodes-header.csv,${CSV_DIR}/${num_nodes}_node.csv" \
         --relationships "${CSV_DIR}/edges-header.csv,${CSV_DIR}/${num_nodes}_edge.csv" \
-        --id-type INTEGER --stacktrace
+        --id-type INTEGER --stacktrace --bad-tolerance 0
 
     # create indexes on all attributes
     for (( i = 0; i < ${attributes}; i++ ))
