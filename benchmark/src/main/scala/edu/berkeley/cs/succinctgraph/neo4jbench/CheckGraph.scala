@@ -9,7 +9,10 @@ import scala.collection.JavaConverters._
 
 object CheckGraph {
 
-  def setDiff(set1: JHashSet[(Int, Int)], set2: JHashSet[(Int, Int)]): String = {
+  @inline
+  def pack(v: Int, w: Int): Long = (v << 32) | w
+
+  def setDiff(set1: JHashSet[Long], set2: JHashSet[Long]): String = {
     val setA = if (set1.size() < set2.size()) set1 else set2
     val setB = if (set1.size() < set2.size()) set2 else set1
     val sb = new StringBuilder()
@@ -22,13 +25,13 @@ object CheckGraph {
   def checkEdges(neo4jPath: String, graphPath: String) = {
     val edges = buildEdgesFromNeo4j(neo4jPath)
     println("building edges from neo4j: done")
-    val graphEdges = new JHashSet[(Int, Int)]()
+    val graphEdges = new JHashSet[Long]()
 
     var numRelationships = 0
     var numBuilt = 0
     scala.io.Source.fromFile(graphPath).getLines().foreach { line =>
       val splits = line.split(",")
-      val edge = (splits(0).toInt, splits(1).toInt)
+      val edge = pack(splits(0).toInt, splits(1).toInt)
       if (!edges.contains(edge)) {
         sys.error(s"neo4j does not contain edge $edge!")
       }
@@ -38,7 +41,7 @@ object CheckGraph {
       }
 
       numBuilt += 1
-      if (numBuilt % 10000 == 0) println(s"num built $numBuilt")
+      if (numBuilt % 100000 == 0) println(s"num built $numBuilt")
     }
     if (numRelationships != edges.size()) {
       println(s"edge.csv has $numRelationships unique edges, but neo4j has ${edges.size()}")
@@ -48,7 +51,7 @@ object CheckGraph {
     }
   }
 
-  def buildEdgesFromNeo4j(neo4jPath: String): JHashSet[(Int, Int)] = {
+  def buildEdgesFromNeo4j(neo4jPath: String): JHashSet[Long] = {
     val graphDb = new GraphDatabaseFactory().newEmbeddedDatabase(neo4jPath)
     BenchUtils.registerShutdownHook(graphDb)
 
@@ -59,15 +62,15 @@ object CheckGraph {
         .getAllRelationships
         .asScala
 
-      val edgeTable = new JHashSet[(Int, Int)]()
+      val edgeTable = new JHashSet[Long]()
       var numBuilt = 0
       for (relationship <- allRels) {
         val v = relationship.getStartNode.getId.toInt
         val w = relationship.getEndNode.getId.toInt
-        edgeTable.add((v, w))
+        edgeTable.add(pack(v, w))
 
         numBuilt += 1
-        if (numBuilt % 10000 == 0) println(s"num built $numBuilt")
+        if (numBuilt % 100000 == 0) println(s"num built $numBuilt")
       }
 
       edgeTable
