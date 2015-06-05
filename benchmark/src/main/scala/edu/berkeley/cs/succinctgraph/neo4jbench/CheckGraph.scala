@@ -21,9 +21,11 @@ object CheckGraph {
 
   def checkEdges(neo4jPath: String, graphPath: String) = {
     val edges = buildEdgesFromNeo4j(neo4jPath)
+    println("building edges from neo4j: done")
     val graphEdges = new JHashSet[(Int, Int)]()
 
     var numRelationships = 0
+    var numBuilt = 0
     scala.io.Source.fromFile(graphPath).getLines().foreach { line =>
       val splits = line.split(" ")
       val edge = (splits(0).toInt, splits(1).toInt)
@@ -34,6 +36,9 @@ object CheckGraph {
         numRelationships += 1
         graphEdges.add(edge)
       }
+
+      numBuilt += 1
+      if (numBuilt % 10000 == 0) println(s"num built $numBuilt")
     }
     if (numRelationships != edges.size()) {
       println(s".edge has $numRelationships unique edges, but neo4j has ${edges.size()}")
@@ -55,11 +60,14 @@ object CheckGraph {
         .asScala
 
       val edgeTable = new JHashSet[(Int, Int)]()
-
+      var numBuilt = 0
       for (relationship <- allRels) {
         val v = relationship.getStartNode.getId.toInt
         val w = relationship.getEndNode.getId.toInt
         edgeTable.add((v, w))
+
+        numBuilt += 1
+        if (numBuilt % 10000 == 0) println(s"num built $numBuilt")
       }
 
       edgeTable
