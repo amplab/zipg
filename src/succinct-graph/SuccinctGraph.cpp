@@ -43,7 +43,14 @@ int64_t SuccinctGraph::num_attributes() {
 
 void SuccinctGraph::get_neighbors(std::vector<int64_t>& result, int64_t node_id) {
     std::string line;
-    this->shard->access(line, node_id, this->num_attributes() * (ATTR_SIZE + 1) + 1, std::numeric_limits<int32_t>::max());
+    try {
+        this->shard->access(line, node_id, this->num_attributes() * (ATTR_SIZE + 1) + 1, std::numeric_limits<int32_t>::max());
+    } catch (std::exception& e) {
+        // lone node?
+        fprintf(stderr, "get_neighbors(): shard->access() throws an exception\n");
+        result.clear();
+        return;
+    }
     std::istringstream iss(line);
     std::string token;
     // TOOO: make edge deliminators not necessarily blank space
