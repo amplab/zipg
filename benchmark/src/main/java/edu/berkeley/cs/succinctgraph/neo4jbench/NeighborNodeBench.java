@@ -24,6 +24,8 @@ public class NeighborNodeBench {
         MEASURE_N = Integer.parseInt(args[6]);
 
         PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(output_file)));
+        PrintWriter resOut = new PrintWriter(new BufferedWriter(
+            new FileWriter(output_file + ".neo4j_result")));
 
         List<Integer> warmup_neighbor_indices = new ArrayList<Integer>();
         List<Integer> warmup_node_attributes = new ArrayList<Integer>();
@@ -37,10 +39,10 @@ public class NeighborNodeBench {
         getNeighborNodeQueries(query_file, neighbor_indices, node_attributes, node_queries);
 
         if (type.equals("latency")) {
-            neighborNodeLatency(db_path, out, warmup_neighbor_indices, neighbor_indices,
+            neighborNodeLatency(db_path, out, resOut, warmup_neighbor_indices, neighbor_indices,
                 warmup_node_attributes, warmup_node_queries, node_attributes, node_queries, false);
         } else if (type.equals("latency-index")) {
-            neighborNodeLatency(db_path, out, warmup_neighbor_indices, neighbor_indices,
+            neighborNodeLatency(db_path, out, resOut, warmup_neighbor_indices, neighbor_indices,
                 warmup_node_attributes, warmup_node_queries, node_attributes, node_queries, true);
         } else {
             System.out.println("No type " + type + " is supported!");
@@ -48,7 +50,7 @@ public class NeighborNodeBench {
     }
 
     private static void neighborNodeLatency(
-        String DB_PATH, PrintWriter out,
+        String DB_PATH, PrintWriter out, PrintWriter resOut,
         List<Integer> warmup_neighbor_indices, List<Integer> neighbor_indices,
         List<Integer> warmup_node_attributes, List<String> warmup_node_queries,
         List<Integer> node_attributes, List<String> node_queries,
@@ -113,10 +115,19 @@ public class NeighborNodeBench {
                 } else {
                     out.println(result.size() + "," + (queryEnd - queryStart) / 1000);
                 }
+
+                // correctness check
+                String header = String.format("id %d attr %d query %s",
+                    modGet(neighbor_indices, i),
+                    modGet(node_attributes, i),
+                    modGet(node_queries, i));
+                Collections.sort(result);
+                BenchUtils.print(header, result, resOut);
             }
-            out.close();
             tx.success();
         } finally {
+            out.close();
+            resOut.close();
             tx.close();
         }
         System.out.println("Shutting down database ...");
