@@ -26,12 +26,13 @@ re-run this script"
 
     EDGE_CSV=${CSV_DIR}/${num_nodes}_edge.csv
     # TODO: this sed is very slow, can just patch the OCaml program
-    sed 's/\([0-9]*\) \([0-9]*\)/\1,\2,E/' ${EDGE_DIR}/${num_nodes}.edge > $EDGE_CSV
+    sed 's/\([0-9]*\) \([0-9]*\)/\1,\2,E/' ${EDGE_DIR}/${num_nodes}.edge > $EDGE_CSV &
 
     NODE_CSV=${CSV_DIR}/${num_nodes}_node.csv
     # input (line i): [attr]
     # output (line i): i-1, [attr]
-    awk '{printf("%d,%s\n", NR-1, $0)}' ${NODE_DIR}/${num_nodes}.node > $NODE_CSV
+    awk '{printf("%d,%s\n", NR-1, $0)}' ${NODE_DIR}/${num_nodes}.node > $NODE_CSV &
+    wait
 
     sleep 5
 
