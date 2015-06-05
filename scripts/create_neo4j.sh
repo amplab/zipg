@@ -25,23 +25,13 @@ re-run this script"
     echo $node_header > ${CSV_DIR}/nodes-header.csv
 
     EDGE_CSV=${CSV_DIR}/${num_nodes}_edge.csv
-    if [ -s $EDGE_CSV ]
-    then
-        echo $EDGE_CSV already exists, using it instead of generating from .edge
-    else
-        # TODO: this sed is very slow, can just patch the OCaml program
-        sed 's/\([0-9]*\) \([0-9]*\)/\1,\2,E/' ${EDGE_DIR}/${num_nodes}.edge > $EDGE_CSV
-    fi
+    # TODO: this sed is very slow, can just patch the OCaml program
+    sed 's/\([0-9]*\) \([0-9]*\)/\1,\2,E/' ${EDGE_DIR}/${num_nodes}.edge > $EDGE_CSV
 
     NODE_CSV=${CSV_DIR}/${num_nodes}_node.csv
-    if [ -s $NODE_CSV ]
-    then
-        echo $NODE_CSV already exists, using it instead of generating from .node
-    else
-        # input (line i): [attr]
-        # output (line i): i-1, [attr]
-        awk '{printf("%d,%s\n", NR-1, $0)}' ${NODE_DIR}/${num_nodes}.node > $NODE_CSV
-    fi
+    # input (line i): [attr]
+    # output (line i): i-1, [attr]
+    awk '{printf("%d,%s\n", NR-1, $0)}' ${NODE_DIR}/${num_nodes}.node > $NODE_CSV
 
     sleep 5
 

@@ -6,7 +6,7 @@ bash ${SCRIPT_DIR}/create_edges.sh &
 bash ${SCRIPT_DIR}/create_nodes.sh &
 wait
 
-echo "edges, nodes, queries done"
+echo "edges, nodes done"
 sleep 5
 bash ${SCRIPT_DIR}/create_neo4j.sh &
 bash ${SCRIPT_DIR}/create_succinct.sh && bash ${SCRIPT_DIR}/create_queries.sh
