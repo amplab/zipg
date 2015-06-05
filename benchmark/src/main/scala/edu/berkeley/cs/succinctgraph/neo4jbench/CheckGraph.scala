@@ -27,7 +27,7 @@ object CheckGraph {
     var numRelationships = 0
     var numBuilt = 0
     scala.io.Source.fromFile(graphPath).getLines().foreach { line =>
-      val splits = line.split(" ")
+      val splits = line.split(",")
       val edge = (splits(0).toInt, splits(1).toInt)
       if (!edges.contains(edge)) {
         sys.error(s"neo4j does not contain edge $edge!")
@@ -41,7 +41,7 @@ object CheckGraph {
       if (numBuilt % 10000 == 0) println(s"num built $numBuilt")
     }
     if (numRelationships != edges.size()) {
-      println(s".edge has $numRelationships unique edges, but neo4j has ${edges.size()}")
+      println(s"edge.csv has $numRelationships unique edges, but neo4j has ${edges.size()}")
       println(s"Larger - Smaller: ${setDiff(edges, graphEdges)}")
     } else {
       println("OK: Edges are the same (ignoring node properties).")
@@ -80,7 +80,7 @@ object CheckGraph {
     val neo4jPath = args(0)
     val graphPath = args(1)
     println(s"neo4j path: $neo4jPath")
-    println(s".edge path: $graphPath")
+    println(s"edge.csv path: $graphPath")
     checkEdges(neo4jPath, graphPath)
   }
 
