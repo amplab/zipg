@@ -33,13 +33,11 @@
 # Misc
 *.succinct
 *.graph
-*.txt
 *.csv
 *.xlsx
-*.swp
+*.sw*
 .DS_STORE
 
-bin/
 .idea/
 .idea_modules/
 
@@ -48,4 +46,4 @@ project/project/
 target/
 
 # local neo4j database
-external/neo4j/data
+external/neo4j*/data/
