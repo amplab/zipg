@@ -63,6 +63,7 @@ public class BenchNode {
         BenchUtils.registerShutdownHook(graphDb);
         Label label = DynamicLabel.label("Node");
         Transaction tx = graphDb.beginTx();
+        BenchUtils.awaitIndexes(graphDb);
         try {
             PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(output_file)));
             PrintWriter resOut = null;
@@ -137,6 +138,7 @@ public class BenchNode {
         BenchUtils.registerShutdownHook(graphDb);
         Label label = DynamicLabel.label("Node");
         Transaction tx = graphDb.beginTx();
+        BenchUtils.awaitIndexes(graphDb);
         try {
             PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(output_file)));
             PrintWriter resOut = null;
