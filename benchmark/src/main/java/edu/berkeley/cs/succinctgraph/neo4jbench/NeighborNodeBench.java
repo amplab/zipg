@@ -24,8 +24,11 @@ public class NeighborNodeBench {
         MEASURE_N = Integer.parseInt(args[6]);
 
         PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(output_file)));
-        PrintWriter resOut = new PrintWriter(new BufferedWriter(
-            new FileWriter(output_file + ".neo4j_result")));
+        PrintWriter resOut = null;
+        if (System.getenv("BENCH_PRINT_RESULTS") != null) {
+            resOut = new PrintWriter(new BufferedWriter(
+                new FileWriter(output_file + ".neo4j_result")));
+        }
 
         List<Integer> warmup_neighbor_indices = new ArrayList<Integer>();
         List<Integer> warmup_node_attributes = new ArrayList<Integer>();
@@ -118,17 +121,19 @@ public class NeighborNodeBench {
                 }
 
                 // correctness check
-                String header = String.format("id %d attr %d query %s",
-                    modGet(neighbor_indices, i),
-                    modGet(node_attributes, i),
-                    modGet(node_queries, i));
-                Collections.sort(result);
-                BenchUtils.print(header, result, resOut);
+                if (resOut != null) {
+                    String header = String.format("id %d attr %d query %s",
+                        modGet(neighbor_indices, i),
+                        modGet(node_attributes, i),
+                        modGet(node_queries, i));
+                    Collections.sort(result);
+                    BenchUtils.print(header, result, resOut);
+                }
             }
             tx.success();
         } finally {
             out.close();
-            resOut.close();
+            if (resOut != null) resOut.close();
             tx.close();
         }
         System.out.println("Shutting down database ...");

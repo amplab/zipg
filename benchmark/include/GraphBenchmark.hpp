@@ -22,7 +22,10 @@ public:
         fprintf(stderr, "Benchmarking getNeighbor latency of %s\n", this->graph->succinct_directory().c_str());
         read_neighbor_queries(warmup_query_file, query_file);
         std::ofstream res_stream(res_path);
+
+#ifdef BENCH_PRINT_RESULTS
         std::ofstream query_res_stream(res_path + ".succinct_result");
+#endif
 
         // Warmup
         fprintf(stderr, "Warming up for %lu queries...\n", WARMUP_N);
@@ -43,17 +46,22 @@ public:
             assert(result.size() != 0 && "No result found in benchmarking node latency");
             res_stream << result.size() << "," << t1 - t0 << "\n";
 
+#ifdef BENCH_PRINT_RESULTS
             // correctness validation
             query_res_stream << "node id: " << modGet(neighbor_indices, i) << "\n";
             for (auto it = result.begin(); it != result.end(); ++it) {
                 query_res_stream << *it << " ";
             }
             query_res_stream << "\n";
+#endif
         }
         fprintf(stderr, "Measure complete.\n");
 
         res_stream.close();
+
+#ifdef BENCH_PRINT_RESULTS
         query_res_stream.close();
+#endif
     }
 
     std::pair<double, double> benchmark_neighbor_throughput(
@@ -101,7 +109,11 @@ public:
         time_t t0, t1;
         read_node_queries(warmup_query_file, query_file);
         std::ofstream res_stream(res_path);
+
+#ifdef BENCH_PRINT_RESULTS
         std::ofstream query_res_stream(res_path + ".succinct_result");
+#endif
+
         fprintf(stderr, "Benchmarking getNode latency of %s\n",
             this->graph->succinct_directory().c_str());
 
@@ -125,16 +137,20 @@ public:
             assert(result.size() != 0 && "No result found in benchmarking node latency");
             res_stream << result.size() << "," << t1 - t0 << "\n";
 
+#ifdef BENCH_PRINT_RESULTS
             // correctness validation
             query_res_stream << "attr " << modGet(node_attributes, i) << ": " << modGet(node_queries, i) << "\n";
             for (auto it = result.begin(); it != result.end(); ++it)
                 query_res_stream << *it << " "; // sets are sorted (hopefully)
             query_res_stream << "\n";
+#endif
         }
         fprintf(stderr, "Measure complete.\n");
 
         res_stream.close();
+#ifdef BENCH_PRINT_RESULTS
         query_res_stream.close();
+#endif
     }
 
     void benchmark_node_node_latency(std::string res_path, count_t WARMUP_N, count_t MEASURE_N,
@@ -142,7 +158,11 @@ public:
         read_node_queries(warmup_query_file, query_file);
         time_t t0, t1;
         std::ofstream res_stream(res_path);
+
+#ifdef BENCH_PRINT_RESULTS
         std::ofstream query_res_stream(res_path + ".succinct_result");
+#endif
+
         fprintf(stderr, "Benchmarking getNode with two attributes latency of %s\n", this->graph->succinct_directory().c_str());
 
         // Warmup
@@ -167,17 +187,22 @@ public:
             assert(result.size() != 0 && "No result found in benchmarking node two attributes latency");
             res_stream << result.size() << "," << t1 - t0 << "\n";
 
+#ifdef BENCH_PRINT_RESULTS
             // correctness
             query_res_stream << "attr1 " << modGet(node_attributes, i) << ": " << modGet(node_queries, i) << "; ";
             query_res_stream << "attr2 " << modGet(node_attributes2, i) << ": " << modGet(node_queries2, i) << "\n";
             for (auto it = result.begin(); it != result.end(); ++it)
                 query_res_stream << *it << " "; // sets are sorted (hopefully)
             query_res_stream << "\n";
+#endif
         }
         fprintf(stderr, "Measure complete.\n");
 
         res_stream.close();
+
+#ifdef BENCH_PRINT_RESULTS
         query_res_stream.close();
+#endif
     }
 
     double benchmark_node_throughput(std::string warmup_query_file, std::string query_file) {
@@ -294,7 +319,11 @@ public:
         read_neighbor_node_queries(warmup_query_file, query_file);
         time_t t0, t1;
         std::ofstream res_stream(res_path);
+
+#ifdef BENCH_PRINT_RESULTS
         std::ofstream query_res_stream(res_path + ".succinct_result");
+#endif
+
         fprintf(stderr, "Benchmarking getNeighborOfNode latency of %s\n", this->graph->succinct_directory().c_str());
 
         // Warmup
@@ -318,17 +347,23 @@ public:
             assert(result.size() != 0 && "No result found in benchmarking getNeighborOfNode latency");
             res_stream << result.size() << "," << t1 - t0 << "\n";
 
+#ifdef BENCH_PRINT_RESULTS
             // correctness
             query_res_stream << "id " << modGet(neighbor_indices, i) << " attr " << modGet(node_attributes, i);
             query_res_stream << " query " << modGet(node_queries, i) << "\n";
             for (auto it = result.begin(); it != result.end(); ++it)
                 query_res_stream << *it << " "; // sets are sorted (hopefully)
             query_res_stream << "\n";
+#endif
         }
+
         fprintf(stderr, "Measure complete.\n");
 
         res_stream.close();
+
+#ifdef BENCH_PRINT_RESULTS
         query_res_stream.close();
+#endif
     }
 
     double benchmark_mix_throughput(std::string warmup_neighbor_query_file, std::string neighbor_query_file,

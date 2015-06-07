@@ -65,8 +65,11 @@ public class BenchNode {
         Transaction tx = graphDb.beginTx();
         try {
             PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(output_file)));
-            PrintWriter resOut = new PrintWriter(new BufferedWriter(
-                new FileWriter(output_file + ".neo4j_result")));
+            PrintWriter resOut = null;
+            if (System.getenv("BENCH_PRINT_RESULTS") != null) {
+                resOut = new PrintWriter(new BufferedWriter(
+                    new FileWriter(output_file + ".neo4j_result")));
+            }
 
             // warmup
             System.out.println("Warming up for " + WARMUP_N + " queries");
@@ -103,13 +106,15 @@ public class BenchNode {
                 out.println(nodes.size() + "," + microsecs);
 
                 // correctness
-                Collections.sort(nodes);
-                BenchUtils.print(String.format("attr %d: %s", attr, query), nodes, resOut);
+                if (resOut != null) {
+                    Collections.sort(nodes);
+                    BenchUtils.print(String.format("attr %d: %s", attr, query), nodes, resOut);
+                }
             }
 
             tx.success();
             out.close();
-            resOut.close();
+            if (resOut != null) resOut.close();
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -134,8 +139,11 @@ public class BenchNode {
         Transaction tx = graphDb.beginTx();
         try {
             PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(output_file)));
-            PrintWriter resOut = new PrintWriter(new BufferedWriter(
-                new FileWriter(output_file + ".neo4j_result")));
+            PrintWriter resOut = null;
+            if (System.getenv("BENCH_PRINT_RESULTS") != null) {
+                resOut = new PrintWriter(new BufferedWriter(
+                    new FileWriter(output_file + ".neo4j_result")));
+            }
 
             // warmup
             System.out.println("Warming up for " + WARMUP_N + " queries");
@@ -177,19 +185,21 @@ public class BenchNode {
                 double microsecs = (queryEnd - queryStart) / ((double) 1000);
                 out.println(nodes.size() + "," + microsecs);
 
-                // correctness
-                String header = String.format("attr1 %d: %s; attr2 %d: %s",
-                    modGet(attributes1, i),
-                    modGet(queries1, i),
-                    modGet(attributes2, i),
-                    modGet(queries2, i));
-                Collections.sort(nodes);
-                BenchUtils.print(header, nodes, resOut);
+                if (resOut != null) {
+                    // correctness
+                    String header = String.format("attr1 %d: %s; attr2 %d: %s",
+                        modGet(attributes1, i),
+                        modGet(queries1, i),
+                        modGet(attributes2, i),
+                        modGet(queries2, i));
+                    Collections.sort(nodes);
+                    BenchUtils.print(header, nodes, resOut);
+                }
             }
 
             tx.success();
             out.close();
-            resOut.close();
+            if (resOut != null) resOut.close();
         } catch (Exception e) {
             e.printStackTrace();
         } finally {

@@ -53,8 +53,11 @@ public class BenchNeighbor {
         Transaction tx = graphDb.beginTx();
         try {
             PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(output_file)));
-            PrintWriter resOut = new PrintWriter(
-                new BufferedWriter(new FileWriter(output_file + ".neo4j_result")));
+            PrintWriter resOut = null;
+            if (System.getenv("BENCH_PRINT_RESULTS") != null) {
+                resOut = new PrintWriter(new BufferedWriter(
+                    new FileWriter(output_file + ".neo4j_result")));
+            }
 
             System.out.println("Warming up for " + WARMUP_N + " queries");
             for (int i = 0; i < WARMUP_N; i++) {
@@ -83,14 +86,16 @@ public class BenchNeighbor {
                 double microsecs = (queryEnd - queryStart) / ((double) 1000);
                 out.println(neighbors.size() + "," + microsecs);
 
-                // correctness validation
-                Collections.sort(neighbors);
-                BenchUtils.print("node id: " + queries[i % queries.length], neighbors, resOut);
+                if (resOut != null) {
+                    // correctness validation
+                    Collections.sort(neighbors);
+                    BenchUtils.print("node id: " + queries[i % queries.length], neighbors, resOut);
+                }
             }
 
             tx.success();
             out.close();
-            resOut.close();
+            if (resOut != null) resOut.close();
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
