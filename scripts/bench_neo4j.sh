@@ -6,6 +6,8 @@ source ${SCRIPT_DIR}/config.sh
 neo4j_dir=${HOME_DIR}/benchmark/neo4j
 classpath=target/scala-2.10/succinctgraph-assembly-0.1.0-SNAPSHOT.jar
 
+echo "Setting -Xmx to $JVM_HEAP"
+
 for num_nodes in ${nodes[@]}
 do
     echo "Benching nodes: ${num_nodes}"
