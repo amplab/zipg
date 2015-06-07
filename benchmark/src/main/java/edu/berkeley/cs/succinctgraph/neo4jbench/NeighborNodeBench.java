@@ -81,7 +81,8 @@ public class NeighborNodeBench {
                         modGet(warmup_neighbor_indices, i),
                         modGet(warmup_node_attributes, i),
                         modGet(warmup_node_queries, i));
-                    System.exit(0);
+                    // For now, just ignore...
+                    // System.exit(0);
                 }
             }
 
