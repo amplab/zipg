@@ -24,6 +24,7 @@ public class BenchNode {
         String output_file = args[4];
         WARMUP_N = Integer.parseInt(args[5]);
         MEASURE_N = Integer.parseInt(args[6]);
+        String conf_path = args[7];
 
         List<Integer> warmupAttributes1 = new ArrayList<Integer>();
         List<Integer> warmupAttributes2 = new ArrayList<Integer>();
@@ -41,7 +42,7 @@ public class BenchNode {
             nodeThroughput(db_path, warmupAttributes1, warmupQueries1,
                 attributes1, queries1, output_file);
         else if (type.equals("node-latency"))
-            nodeLatency(db_path, warmupAttributes1, warmupQueries1,
+            nodeLatency(db_path, conf_path, warmupAttributes1, warmupQueries1,
                 attributes1, queries1, output_file);
         else if (type.equals("node-node-latency"))
             nodeNodeLatency(db_path, warmupAttributes1, warmupAttributes2,
@@ -52,14 +53,17 @@ public class BenchNode {
     }
 
     private static void nodeLatency(
-        String DB_PATH,
+        String DB_PATH, String CONF_PATH,
         List<Integer> warmupAttributes, List<String> warmupQueries,
         List<Integer> attributes, List<String> queries, String output_file) {
 
         System.out.println("Benchmarking getNode queries");
+        System.out.println("Using conf file: " + CONF_PATH);
         // START SNIPPET: startDb
         GraphDatabaseService graphDb = new GraphDatabaseFactory()
-            .newEmbeddedDatabase(DB_PATH);
+            .newEmbeddedDatabaseBuilder(DB_PATH)
+            .loadPropertiesFromFile(CONF_PATH)
+            .newGraphDatabase();
         BenchUtils.registerShutdownHook(graphDb);
         Label label = DynamicLabel.label("Node");
         Transaction tx = graphDb.beginTx();
