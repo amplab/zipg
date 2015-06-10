@@ -2,6 +2,7 @@ package edu.berkeley.cs.succinctgraph.neo4jbench;
 
 import org.neo4j.graphdb.*;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
+import org.neo4j.graphdb.factory.GraphDatabaseSettings;
 
 import java.io.*;
 import java.util.*;
@@ -24,7 +25,9 @@ public class BenchNode {
         String output_file = args[4];
         WARMUP_N = Integer.parseInt(args[5]);
         MEASURE_N = Integer.parseInt(args[6]);
-        String conf_path = args[7];
+        String neo4jPageCacheMemory;
+        if (args.length >= 8) neo4jPageCacheMemory = args[7];
+        else neo4jPageCacheMemory = GraphDatabaseSettings.pagecache_memory.getDefaultValue();
 
         List<Integer> warmupAttributes1 = new ArrayList<Integer>();
         List<Integer> warmupAttributes2 = new ArrayList<Integer>();
@@ -42,7 +45,7 @@ public class BenchNode {
             nodeThroughput(db_path, warmupAttributes1, warmupQueries1,
                 attributes1, queries1, output_file);
         else if (type.equals("node-latency"))
-            nodeLatency(db_path, conf_path, warmupAttributes1, warmupQueries1,
+            nodeLatency(db_path, neo4jPageCacheMemory, warmupAttributes1, warmupQueries1,
                 attributes1, queries1, output_file);
         else if (type.equals("node-node-latency"))
             nodeNodeLatency(db_path, warmupAttributes1, warmupAttributes2,
@@ -53,16 +56,16 @@ public class BenchNode {
     }
 
     private static void nodeLatency(
-        String DB_PATH, String CONF_PATH,
+        String DB_PATH, String neo4jPageCacheMem,
         List<Integer> warmupAttributes, List<String> warmupQueries,
         List<Integer> attributes, List<String> queries, String output_file) {
 
         System.out.println("Benchmarking getNode queries");
-        System.out.println("Using conf file: " + CONF_PATH);
+        System.out.println("Setting neo4j's dbms.pagecache.memory: " + neo4jPageCacheMem);
         // START SNIPPET: startDb
         GraphDatabaseService graphDb = new GraphDatabaseFactory()
             .newEmbeddedDatabaseBuilder(DB_PATH)
-            .loadPropertiesFromFile(CONF_PATH)
+            .setConfig(GraphDatabaseSettings.pagecache_memory, neo4jPageCacheMem)
             .newGraphDatabase();
         BenchUtils.registerShutdownHook(graphDb);
         Label label = DynamicLabel.label("Node");

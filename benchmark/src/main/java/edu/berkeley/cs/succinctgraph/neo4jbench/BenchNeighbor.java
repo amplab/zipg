@@ -14,6 +14,7 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
+import org.neo4j.graphdb.factory.GraphDatabaseSettings;
 
 import static edu.berkeley.cs.succinctgraph.neo4jbench.BenchUtils.*;
 
@@ -34,21 +35,28 @@ public class BenchNeighbor {
         String output_file = args[4];
         WARMUP_N = Integer.parseInt(args[5]);
         MEASURE_N = Integer.parseInt(args[6]);
+        String neo4jPageCacheMemory;
+        if (args.length >= 8) neo4jPageCacheMemory = args[7];
+        else neo4jPageCacheMemory = GraphDatabaseSettings.pagecache_memory.getDefaultValue();
 
         int[] warmupQueries = getQueries(warmup_query_path);
         int[] queries = getQueries(query_path);
         if (type.equals("neighbor-latency"))
-            benchNeighborLatency(db_path, warmupQueries, queries, output_file);
+            benchNeighborLatency(db_path, neo4jPageCacheMemory, warmupQueries, queries, output_file);
         else if (type.equals("neighbor-throughput"))
             benchNeighborThroughput(db_path, warmupQueries, queries, output_file);
     }
 
-    private static void benchNeighborLatency(String db_path,
+    private static void benchNeighborLatency(String db_path, String neo4jPageCacheMem,
             int[] warmupQueries, int[] queries, String output_file) {
 
         System.out.println("Benchmarking getNeighbor queries");
+        System.out.println("Setting neo4j's dbms.pagecache.memory: " + neo4jPageCacheMem);
         GraphDatabaseService graphDb = new GraphDatabaseFactory()
-                .newEmbeddedDatabase(db_path);
+            .newEmbeddedDatabaseBuilder(db_path)
+            .setConfig(GraphDatabaseSettings.pagecache_memory, neo4jPageCacheMem)
+            .newGraphDatabase();
+
         BenchUtils.registerShutdownHook(graphDb);
         Transaction tx = graphDb.beginTx();
         try {
