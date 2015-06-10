@@ -30,12 +30,12 @@ JVM_HEAP=16g
 
 warmup_neighbor=100000
 measure_neighbor=200000
-neo4j_warmup_neighbor=500000
-neo4j_measure_neighbor=500000
+neo4j_warmup_neighbor=20000 # 5k is not sufficient
+neo4j_measure_neighbor=100000
 
 warmup_node=5000
 measure_node=10000
-neo4j_warmup_node=100000
+neo4j_warmup_node=20000 # 5k is not sufficient
 neo4j_measure_node=100000
 
 warmup_neighbor_node=100000
