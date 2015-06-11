@@ -2,26 +2,44 @@
 #define SUCCINCT_GRAPH_H
 
 #include "../succinct/SuccinctShard.hpp"
+#include "../succinct/SuccinctFile.hpp"
 
 class SuccinctGraph {
-private:
-    SuccinctShard * shard;
-    std::string succinct_dir;
-
-    int64_t nodes, edges;
-
 public:
-    SuccinctGraph(std::string file, bool construct,
-        uint32_t sa_sampling_rate = 32,
-        uint32_t isa_sampling_rate = 32,
-        uint32_t npa_sampling_rate = 128);
+    // Constructor.  This doesn't actually build the internal data structures.
+    SuccinctGraph(std::string succinct_dir = 0,
+                  bool construct = false,
+                  uint32_t sa_sampling_rate = 32,
+                  uint32_t isa_sampling_rate = 32,
+                  uint32_t npa_sampling_rate = 128);
+
+    /** Setters that can modify default settings. */
+    SuccinctGraph& set_npa_sampling_rate(uint32_t sampling_rate);
+    SuccinctGraph& set_sa_sampling_rate(uint32_t sampling_rate);
+    SuccinctGraph& set_isa_sampling_rate(uint32_t sampling_rate);
+
+    // Constructs or reads in the internal data structures, using previously
+    // specified (possibly default) settings.
+    //
+    //   node_file: each row contains attributes (bytes) for a node
+    //              (with ID == row number - 1)
+    // FIXME: probably makes sense to add & to params
+    SuccinctGraph& build(
+        std::string node_file,
+        std::string edge_file,
+        bool construct);
 
     std::string succinct_directory();
+
     int64_t num_nodes();
     int64_t num_edges();
     int64_t num_attributes();
-    const static std::string DELIMINATORS;
 
+    size_t storage_size();
+    size_t serialize();
+
+    /**************** Old APIs ****************/
+    // TODO: clean up GraphBenchmark so that we can remove these.
     void get_attribute(std::string& result, int64_t node_id, int attr);
 
     void get_neighbors(std::vector<int64_t>& result, int64_t key);
@@ -32,8 +50,44 @@ public:
     void search_nodes(std::set<int64_t>& result, int attr1, std::string search_key1,
                                                  int attr2, std::string search_key2);
 
-    size_t storage_size();
-    size_t serialize();
+    /**************** TAO-like APIs ****************/
+
+    // Gets the attribute data of node `obj_id` into `result`.
+    void obj_get(std::string& result, int64_t obj_id);
+
+    void assoc_range(int64_t src, int32_t atype, int32_t off, int32_t len);
+
+    void assoc_get(
+        int64_t src,
+        int32_t atype,
+        std::set<int64_t> dst_id_set,
+        int64_t t_low,
+        int64_t t_high);
+
+    void assoc_count(int64_t src, int32_t atype);
+
+    void assoc_time_range(
+        int64_t src,
+        int32_t atype,
+        int64_t t_low,
+        int64_t t_high,
+        int32_t len);
+
+    /**************** Fields ****************/
+
+    const static std::string DELIMINATORS;
+
+    // Succinct compression params: currently same for node table & edge table.
+    uint32_t sa_sampling_rate = 64;
+    uint32_t isa_sampling_rate = 64;
+    uint32_t npa_sampling_rate = 256;
+
+private:
+    SuccinctShard *node_table;
+    SuccinctFile *edge_table;
+
+    std::string succinct_dir;
+    int64_t nodes, edges;
 
 };
 

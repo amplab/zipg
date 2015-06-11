@@ -10,9 +10,9 @@ void print_usage(char *exec) {
 }
 
 int main(int argc, char **argv) {
-    if(argc < 2) {
+    if (argc < 2) {
         print_usage(argv[0]);
-        return -1;
+        // return -1;
     }
 
     int c;
@@ -23,7 +23,7 @@ int main(int argc, char **argv) {
     std::string warmup_neighbor_file = "warmup.txt";
     std::string measure_neighbor_file = "query_file.txt";
     std::string result_file_name = "benchmark_results.txt";
-    while((c = getopt(argc, argv, "t:x:y:z:w:q:a:b:o:")) != -1) {
+    while ((c = getopt(argc, argv, "t:x:y:z:w:q:a:b:o:")) != -1) {
         switch(c) {
         case 't':
             type = std::string(optarg);
@@ -52,13 +52,14 @@ int main(int argc, char **argv) {
         }
     }
 
-    if(optind == argc) {
+    if (optind == argc) {
         print_usage(argv[0]);
-        return -1;
+        // return -1;
     }
 
     std::string succinct_dir = std::string(argv[optind]);
-    SuccinctGraph * graph = new SuccinctGraph(succinct_dir, false);
+    SuccinctGraph* graph = new SuccinctGraph(succinct_dir, false);
+    graph->build(succinct_dir, succinct_dir, false);
 
     std::ofstream result_file(result_file_name, std::ios_base::app);
 
@@ -92,6 +93,18 @@ int main(int argc, char **argv) {
     } else if (type == "neighbor-node-latency") {
         bench.benchmark_neighbor_node_latency(result_file_name, warmup_n, measure_n,
                 warmup_query_file, measure_query_file);
+    } else if (type == "test") {
+        graph = new SuccinctGraph(succinct_dir, true);
+        graph->build(succinct_dir, succinct_dir, true);
+
+        printf("SuccinctGraph construction done\n");
+        printf("Testing obj_get():\n");
+
+        for (int i = 0; i < graph->num_nodes(); ++i) {
+            std::string res;
+            graph->obj_get(res, i);
+            fprintf(stderr, "node %d attrs: <%s>\n", i, res.c_str());
+        }
     } else {
         assert(0); // Not supported
     }
