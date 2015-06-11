@@ -2,6 +2,7 @@ package edu.berkeley.cs.succinctgraph.neo4jbench;
 
 import org.neo4j.graphdb.*;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
+import org.neo4j.graphdb.factory.GraphDatabaseSettings;
 
 import java.io.*;
 import java.util.*;
@@ -22,6 +23,9 @@ public class NeighborNodeBench {
         String output_file = args[4];
         WARMUP_N = Integer.parseInt(args[5]);
         MEASURE_N = Integer.parseInt(args[6]);
+        String neo4jPageCacheMemory;
+        if (args.length >= 8) neo4jPageCacheMemory = args[7];
+        else neo4jPageCacheMemory = GraphDatabaseSettings.pagecache_memory.getDefaultValue();
 
         PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(output_file)));
         PrintWriter resOut = null;
@@ -42,10 +46,10 @@ public class NeighborNodeBench {
         getNeighborNodeQueries(query_file, neighbor_indices, node_attributes, node_queries);
 
         if (type.equals("latency")) {
-            neighborNodeLatency(db_path, out, resOut, warmup_neighbor_indices, neighbor_indices,
+            neighborNodeLatency(db_path, neo4jPageCacheMemory, out, resOut, warmup_neighbor_indices, neighbor_indices,
                 warmup_node_attributes, warmup_node_queries, node_attributes, node_queries, false);
         } else if (type.equals("latency-index")) {
-            neighborNodeLatency(db_path, out, resOut, warmup_neighbor_indices, neighbor_indices,
+            neighborNodeLatency(db_path, neo4jPageCacheMemory, out, resOut, warmup_neighbor_indices, neighbor_indices,
                 warmup_node_attributes, warmup_node_queries, node_attributes, node_queries, true);
         } else {
             System.out.println("No type " + type + " is supported!");
@@ -53,7 +57,7 @@ public class NeighborNodeBench {
     }
 
     private static void neighborNodeLatency(
-        String DB_PATH, PrintWriter out, PrintWriter resOut,
+        String DB_PATH, String neo4jPageCacheMemory, PrintWriter out, PrintWriter resOut,
         List<Integer> warmup_neighbor_indices, List<Integer> neighbor_indices,
         List<Integer> warmup_node_attributes, List<String> warmup_node_queries,
         List<Integer> node_attributes, List<String> node_queries,
@@ -61,7 +65,11 @@ public class NeighborNodeBench {
 
         System.out.println("Benchmarking getNeighborNode queries");
         // START SNIPPET: startDb
-        GraphDatabaseService graphDb = new GraphDatabaseFactory().newEmbeddedDatabase(DB_PATH);
+        GraphDatabaseService graphDb = new GraphDatabaseFactory()
+            .newEmbeddedDatabaseBuilder(DB_PATH)
+            .setConfig(GraphDatabaseSettings.pagecache_memory, neo4jPageCacheMemory)
+            .newGraphDatabase();
+
         BenchUtils.registerShutdownHook(graphDb);
         Transaction tx = graphDb.beginTx();
         try {
@@ -79,11 +87,11 @@ public class NeighborNodeBench {
                         modGet(warmup_node_attributes, i), modGet(warmup_node_queries, i));
                 }
                 if (result.size() == 0) {
-                    System.out.printf(
-                        "Error: no neighbor nodes for node id: %d, attr %d, search %s\n",
-                        modGet(warmup_neighbor_indices, i),
-                        modGet(warmup_node_attributes, i),
-                        modGet(warmup_node_queries, i));
+//                    System.out.printf(
+//                        "Error: no neighbor nodes for node id: %d, attr %d, search %s\n",
+//                        modGet(warmup_neighbor_indices, i),
+//                        modGet(warmup_node_attributes, i),
+//                        modGet(warmup_node_queries, i));
                     // For now, just ignore...
                     // System.exit(0);
                 }
@@ -111,11 +119,11 @@ public class NeighborNodeBench {
                     queryEnd = System.nanoTime();
                 }
                 if (result.size() == 0) {
-                    System.out.printf(
-                        "Error: no neighbor nodes for node id: %d, attr %d, search %s\n",
-                        modGet(neighbor_indices, i),
-                        modGet(node_attributes, i),
-                        modGet(node_queries, i));
+//                    System.out.printf(
+//                        "Error: no neighbor nodes for node id: %d, attr %d, search %s\n",
+//                        modGet(neighbor_indices, i),
+//                        modGet(node_attributes, i),
+//                        modGet(node_queries, i));
                 } else {
                     out.println(result.size() + "," + (queryEnd - queryStart) / 1000);
                 }

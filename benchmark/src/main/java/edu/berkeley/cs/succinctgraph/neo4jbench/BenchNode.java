@@ -48,7 +48,7 @@ public class BenchNode {
             nodeLatency(db_path, neo4jPageCacheMemory, warmupAttributes1, warmupQueries1,
                 attributes1, queries1, output_file);
         else if (type.equals("node-node-latency"))
-            nodeNodeLatency(db_path, warmupAttributes1, warmupAttributes2,
+            nodeNodeLatency(db_path, neo4jPageCacheMemory, warmupAttributes1, warmupAttributes2,
                 warmupQueries1, warmupQueries2,
                 attributes1, attributes2, queries1, queries2, output_file);
         else
@@ -132,7 +132,7 @@ public class BenchNode {
     }
 
     private static void nodeNodeLatency(
-        String DB_PATH,
+        String DB_PATH, String neo4jPageCacheMem,
         List<Integer> warmupAttributes1, List<Integer> warmupAttributes2,
         List<String> warmupQueries1, List<String> warmupQueries2,
         List<Integer> attributes1, List<Integer> attributes2,
@@ -141,7 +141,9 @@ public class BenchNode {
         System.out.println("Benchmarking getNodeNode queries");
         // START SNIPPET: startDb
         GraphDatabaseService graphDb = new GraphDatabaseFactory()
-            .newEmbeddedDatabase(DB_PATH);
+            .newEmbeddedDatabaseBuilder(DB_PATH)
+            .setConfig(GraphDatabaseSettings.pagecache_memory, neo4jPageCacheMem)
+            .newGraphDatabase();
         BenchUtils.registerShutdownHook(graphDb);
         Label label = DynamicLabel.label("Node");
         Transaction tx = graphDb.beginTx();
