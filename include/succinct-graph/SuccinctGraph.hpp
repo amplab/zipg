@@ -89,6 +89,21 @@ private:
     std::string succinct_dir;
     int64_t nodes, edges;
 
+    typedef int64_t NodeId;
+    typedef int64_t Timestamp;
+    typedef int32_t AType;
+    typedef std::pair<NodeId, AType> AssocListKey;
+    struct Assoc {
+        NodeId dst_id;
+        Timestamp time;
+        std::string attr;
+    };
+    typedef std::map<AssocListKey, std::vector<Assoc>> AssocMap;
+    typedef std::map<AssocListKey, std::vector<Assoc>>::iterator AssocMapIt;
+    static bool cmp_assoc_by_decreasing_time(const Assoc &a, const Assoc &b) {
+        return a.time > b.time;
+    }
+
 };
 
 #endif

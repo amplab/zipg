@@ -94,13 +94,15 @@ int main(int argc, char **argv) {
         bench.benchmark_neighbor_node_latency(result_file_name, warmup_n, measure_n,
                 warmup_query_file, measure_query_file);
     } else if (type == "test") {
+        std::string assoc_file = std::string(argv[optind + 1]);
+
         graph = new SuccinctGraph(succinct_dir, true);
-        graph->build(succinct_dir, succinct_dir, true);
+        graph->build(succinct_dir, assoc_file, true);
 
         printf("SuccinctGraph construction done\n");
         printf("Testing obj_get():\n");
 
-        for (int i = 0; i < graph->num_nodes(); ++i) {
+        for (int i = 0; i < 1; ++i) {
             std::string res;
             graph->obj_get(res, i);
             fprintf(stderr, "node %d attrs: <%s>\n", i, res.c_str());

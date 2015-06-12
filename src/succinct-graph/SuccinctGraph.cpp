@@ -47,6 +47,54 @@ SuccinctGraph& SuccinctGraph::build(
             isa_sampling_rate,
             npa_sampling_rate
         );
+
+        fprintf(stderr, "Initializing edge table (SuccinctFile)\n");
+
+        AssocMap assoc_map;
+
+        std::ifstream edge_file_stream(edge_file);
+        std::string line, token;
+        NodeId src_id, dst_id;
+        AType atype;
+        Timestamp time;
+        while (std::getline(edge_file_stream, line)) {
+            std::stringstream ss(line);
+            int token_idx = 0;
+            while (std::getline(ss, token, ' ')) {
+                ++token_idx;
+                if (token_idx == 1) src_id = std::stoi(token);
+                else if (token_idx == 2) dst_id = std::stoi(token);
+                else if (token_idx == 3) atype = std::stoi(token);
+                else if (token_idx == 4) time = std::stoi(token);
+                else break;
+                token.clear();
+            }
+            std::getline(ss, token); // rest of the data is attr
+            Assoc assoc = { dst_id, time, token };
+            assoc_map[std::make_pair(src_id, atype)].push_back(assoc);
+        }
+
+        for (AssocMapIt it = assoc_map.begin(); it != assoc_map.end(); ++it) {
+            std::sort(it->second.begin(),
+                      it->second.end(),
+                      cmp_assoc_by_decreasing_time);
+        }
+
+        printf("\n");
+        for (AssocMapIt it = assoc_map.begin(); it != assoc_map.end(); ++it) {
+            std::vector<Assoc> assocs = it->second;
+            printf("[node %lld, atype %d]: ",
+                (it->first).first, (it->first).second);
+            for (auto it2 = assocs.begin(); it2 != assocs.end(); ++it2) {
+                printf(" (dst %lld, time %lld, attr %s)",
+                       it2->dst_id,
+                       it2->time,
+                       (it2->attr).c_str());
+            }
+            printf("\n");
+        }
+        printf("\n");
+
     } else {
     }
     return *this;
@@ -61,7 +109,7 @@ std::string SuccinctGraph::succinct_directory() {
 }
 
 int64_t SuccinctGraph::num_nodes() {
-    return this->node_table->num_keys();
+    return this->node_table->num_keys() - 1; // FIXME: what's the last key?
 }
 
 int64_t SuccinctGraph::num_edges() {
