@@ -18,16 +18,13 @@ public:
     SuccinctGraph& set_sa_sampling_rate(uint32_t sampling_rate);
     SuccinctGraph& set_isa_sampling_rate(uint32_t sampling_rate);
 
-    // Constructs or reads in the internal data structures, using previously
-    // specified (possibly default) settings.
+    // Constructs the node/edge tables and Succinct-encodes them, using
+    // previously specified (possibly default) settings.
     //
     //   node_file: each row contains attributes (bytes) for a node
     //              (with ID == row number - 1)
     // FIXME: probably makes sense to add & to params
-    SuccinctGraph& build(
-        std::string node_file,
-        std::string edge_file,
-        bool construct);
+    SuccinctGraph& construct(std::string node_file, std::string edge_file);
 
     std::string succinct_directory();
 
@@ -89,6 +86,8 @@ private:
     std::string succinct_dir;
     int64_t nodes, edges;
 
+    /**************** Internal formats ****************/
+
     typedef int64_t NodeId;
     typedef int64_t Timestamp;
     typedef int32_t AType;
@@ -103,6 +102,9 @@ private:
     static bool cmp_assoc_by_decreasing_time(const Assoc &a, const Assoc &b) {
         return a.time > b.time;
     }
+
+    static const int WIDTH_TIMESTAMP = 8; // encoded in alphabet of size 64
+    static const int WIDTH_NODE_ID = 8; // encoded in alphabet of size 64
 
 };
 

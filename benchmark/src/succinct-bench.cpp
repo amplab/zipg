@@ -59,7 +59,6 @@ int main(int argc, char **argv) {
 
     std::string succinct_dir = std::string(argv[optind]);
     SuccinctGraph* graph = new SuccinctGraph(succinct_dir, false);
-    graph->build(succinct_dir, succinct_dir, false);
 
     std::ofstream result_file(result_file_name, std::ios_base::app);
 
@@ -94,10 +93,11 @@ int main(int argc, char **argv) {
         bench.benchmark_neighbor_node_latency(result_file_name, warmup_n, measure_n,
                 warmup_query_file, measure_query_file);
     } else if (type == "test") {
+        std::string node_file = succinct_dir; // hacky naming
         std::string assoc_file = std::string(argv[optind + 1]);
 
-        graph = new SuccinctGraph(succinct_dir, true);
-        graph->build(succinct_dir, assoc_file, true);
+        graph = new SuccinctGraph(succinct_dir, true); // ignored
+        graph->construct(node_file, assoc_file);
 
         printf("SuccinctGraph construction done\n");
         printf("Testing obj_get():\n");
