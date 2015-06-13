@@ -72,12 +72,12 @@ public:
 
     /**************** Fields ****************/
 
-    const static std::string DELIMINATORS;
-
     // Succinct compression params: currently same for node table & edge table.
     uint32_t sa_sampling_rate = 64;
     uint32_t isa_sampling_rate = 64;
     uint32_t npa_sampling_rate = 256;
+
+    const static std::string DELIMINATORS;
 
 private:
     SuccinctShard *node_table;

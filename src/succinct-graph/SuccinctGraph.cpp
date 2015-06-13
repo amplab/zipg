@@ -129,13 +129,39 @@ SuccinctGraph& SuccinctGraph::construct(
 
         // timestamps
         for (auto it2 = assoc_list.begin(); it2 != assoc_list.end(); ++it2) {
-//            it2->time
+            std::string encoded = SuccinctGraphSerde::encode_int64(
+                it2->time, WIDTH_TIMESTAMP);
+
+            if (SuccinctGraphSerde::decode_int64(encoded) != it2->time) {
+                printf("Failed: time = [%lld], encoded = [%s], decoded = [%lld]\n",
+                    it2->time, encoded.c_str(), SuccinctGraphSerde::decode_int64(encoded));
+                assert(0);
+            }
+
+            edge_file_out << encoded;
+        }
+        // dst node ids
+        for (auto it2 = assoc_list.begin(); it2 != assoc_list.end(); ++it2) {
+            std::string encoded = SuccinctGraphSerde::encode_int64(
+                it2->dst_id, WIDTH_TIMESTAMP);
+
+            if (SuccinctGraphSerde::decode_int64(encoded) != it2->dst_id) {
+                printf("Failed: dst_id = [%lld], encoded = [%s], decoded = [%lld]\n",
+                    it2->dst_id, encoded.c_str(), SuccinctGraphSerde::decode_int64(encoded));
+                assert(0);
+            }
+
+            edge_file_out << dst_id;
+        }
+        // edge attributes
+        for (auto it2 = assoc_list.begin(); it2 != assoc_list.end(); ++it2) {
+            std::string attr = it2->attr;
+            assert(attr.length() == edge_width);
+            edge_file_out << attr;
         }
         edge_file_out << "\n"; // TODO: this is not necessary
     }
     edge_file_out.close();
-
-
     return *this;
 }
 
