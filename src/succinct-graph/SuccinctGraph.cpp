@@ -38,7 +38,6 @@ SuccinctGraph& SuccinctGraph::set_isa_sampling_rate(uint32_t sampling_rate) {
 SuccinctGraph& SuccinctGraph::construct(
     std::string node_file,
     std::string edge_file) {
-    // TODO: close the streams
 
     fprintf(stderr, "Initializing node table (SuccinctShard)\n");
 
@@ -62,8 +61,6 @@ SuccinctGraph& SuccinctGraph::construct(
     Timestamp time;
     NodeId src_id, dst_id;
 
-    // format: srcId dstId atype time [everything left is attr]
-
     while (std::getline(edge_file_stream, line)) {
         std::stringstream ss(line);
         int token_idx = 0;
@@ -80,6 +77,7 @@ SuccinctGraph& SuccinctGraph::construct(
         Assoc assoc = { dst_id, time, token };
         assoc_map[std::make_pair(src_id, atype)].push_back(assoc);
     }
+    edge_file_stream.close();
 
     for (AssocMapIt it = assoc_map.begin(); it != assoc_map.end(); ++it) {
         std::sort(it->second.begin(),
@@ -87,21 +85,21 @@ SuccinctGraph& SuccinctGraph::construct(
                   cmp_assoc_by_decreasing_time);
     }
 
-    // just debug messages TODO: remove
-    printf("\n");
-    for (AssocMapIt it = assoc_map.begin(); it != assoc_map.end(); ++it) {
-        std::vector<Assoc> assocs = it->second;
-        printf("[node %lld, atype %d]: ",
-            (it->first).first, (it->first).second);
-        for (auto it2 = assocs.begin(); it2 != assocs.end(); ++it2) {
-            printf(" (dst %lld, time %lld, attr '%s')",
-                   it2->dst_id,
-                   it2->time,
-                   (it2->attr).c_str());
-        }
-        printf("\n");
-    }
-    printf("\n");
+    // just debug messages
+//    printf("\n");
+//    for (AssocMapIt it = assoc_map.begin(); it != assoc_map.end(); ++it) {
+//        std::vector<Assoc> assocs = it->second;
+//        printf("[node %lld, atype %d]: ",
+//            (it->first).first, (it->first).second);
+//        for (auto it2 = assocs.begin(); it2 != assocs.end(); ++it2) {
+//            printf(" (dst %lld, time %lld, attr '%s')",
+//                   it2->dst_id,
+//                   it2->time,
+//                   (it2->attr).c_str());
+//        }
+//        printf("\n");
+//    }
+//    printf("\n");
 
     // Serialize to an .edge_table file (flat file layout)
 
@@ -121,8 +119,6 @@ SuccinctGraph& SuccinctGraph::construct(
         int32_t edge_width = assoc_list.begin()->attr.length();
         int64_t data_width = assoc_list.size() *
             (WIDTH_TIMESTAMP + WIDTH_NODE_ID + edge_width);
-
-        printf("edge_width is %d\n", edge_width);
 
         edge_file_out << SuccinctGraphSerde::pad_int32(edge_width)
             << SuccinctGraphSerde::pad_int64(data_width);
@@ -159,7 +155,6 @@ SuccinctGraph& SuccinctGraph::construct(
             assert(attr.length() == edge_width);
             edge_file_out << attr;
         }
-        edge_file_out << "\n"; // TODO: this is not necessary
     }
     edge_file_out.close();
     return *this;
@@ -174,7 +169,7 @@ std::string SuccinctGraph::succinct_directory() {
 }
 
 int64_t SuccinctGraph::num_nodes() {
-    return this->node_table->num_keys() - 1; // FIXME: what's the last key?
+    return this->node_table->num_keys() - 1; // FIXME: a bug in SuccinctShard
 }
 
 int64_t SuccinctGraph::num_edges() {

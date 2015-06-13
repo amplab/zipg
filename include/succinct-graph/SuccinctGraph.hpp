@@ -21,8 +21,10 @@ public:
     // Constructs the node/edge tables and Succinct-encodes them, using
     // previously specified (possibly default) settings.
     //
-    //   node_file: each row contains attributes (bytes) for a node
-    //              (with ID == row number - 1)
+    //   node_file: each row contains attributes (bytes) for the node
+    //              whose ID is current row number - 1
+    //   edge_file: each row represents one association, in format
+    //              srcId dstId atype time [everything from here to \n is attr]
     // FIXME: probably makes sense to add & to params
     SuccinctGraph& construct(std::string node_file, std::string edge_file);
 
