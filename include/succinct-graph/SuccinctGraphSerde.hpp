@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <map>
 #include <string>
+#include <vector>
 
 class SuccinctGraphSerde {
 public:
@@ -14,11 +15,14 @@ public:
     static std::string pad_int64(int64_t x);
 
     // Encodes decimal input to base alphabet, optionally padding the result
-    // according to max_result_width (with leading 0).
-    static std::string encode_int64(int64_t x, int max_result_width);
+    // according to padded_width (with leading 0).
+    static std::string encode_int64(int64_t x, int padded_width);
 
-    // Decodes from base alphabet to decimal.
-    static int64_t decode_int64(std::string& encoded);
+    // Decodes from base alphabet to decimal, treating as a single encoded elem.
+    static int64_t decode_int64(const std::string& encoded);
+
+    static std::vector<int64_t> decode_multi_int64(const std::string& encoded,
+                                                   int padded_width);
 
     const static int WIDTH_INT32_PADDED = 10;
     const static int WIDTH_INT64_PADDED = 20;

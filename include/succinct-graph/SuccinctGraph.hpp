@@ -55,10 +55,27 @@ public:
 
     /**************** TAO-like APIs ****************/
 
+    // dst_id, timestamp, attr
+    typedef std::tuple<uint64_t, uint64_t, std::string> AssocResult;
+
+    static void
+    print_assoc_results(const std::vector<AssocResult>& assoc_results) {
+        for (auto it = assoc_results.begin(); it != assoc_results.end(); ++it) {
+            printf("[id=%lld,time=%lld,attr='%s'] ",
+                   std::get<0>(*it),
+                   std::get<1>(*it),
+                   std::get<2>(*it).c_str());
+        }
+        printf("\n");
+    }
+
     // Gets the attribute data of node `obj_id` into `result`.
     void obj_get(std::string& result, int64_t obj_id);
 
-    void assoc_range(int64_t src, int32_t atype, int32_t off, int32_t len);
+    std::vector<AssocResult> assoc_range(int64_t src,
+                                         int32_t atype,
+                                         int32_t off,
+                                         int32_t len);
 
     void assoc_get(
         int64_t src,
@@ -90,7 +107,7 @@ private:
     SuccinctFile *edge_table;
 
     std::string succinct_dir;
-    int64_t nodes, edges;
+    int64_t edges;
 
     /**************** Internal formats ****************/
     // TODO: rethink types/fields c.f. the LinkBench paper

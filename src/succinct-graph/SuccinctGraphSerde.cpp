@@ -30,10 +30,10 @@ std::string SuccinctGraphSerde::pad_int64(int64_t x) {
     return std::string(res);
 }
 
-std::string SuccinctGraphSerde::encode_int64(int64_t x, int max_result_width) {
+std::string SuccinctGraphSerde::encode_int64(int64_t x, int padded_width) {
     assert(INT64_ENCODE_ALPHABET.length() == SIZE_INT64_ENCODE_ALPHABET);
-    std::string res((size_t) max_result_width, '0');
-    int i = max_result_width - 1;
+    std::string res((size_t) padded_width, '0');
+    int i = padded_width - 1;
     while (x != 0) {
         res[i] = INT64_ENCODE_ALPHABET[x % SIZE_INT64_ENCODE_ALPHABET];
         x /= SIZE_INT64_ENCODE_ALPHABET;
@@ -43,12 +43,26 @@ std::string SuccinctGraphSerde::encode_int64(int64_t x, int max_result_width) {
     return res;
 }
 
-int64_t SuccinctGraphSerde::decode_int64(std::string& encoded) {
+int64_t SuccinctGraphSerde::decode_int64(const std::string& encoded) {
     int64_t res = 0;
     int len = encoded.size();
     for (int i = 0; i < len; ++i) {
         res = res * SIZE_INT64_ENCODE_ALPHABET +
             alphabet_char2pos.at(encoded[i]);
+    }
+    return res;
+}
+
+std::vector<int64_t>
+SuccinctGraphSerde::decode_multi_int64(const std::string& encoded,
+                                       int padded_width) {
+    int len = encoded.length();
+    assert(len >= padded_width);
+    if (len > padded_width) assert(len % padded_width == 0);
+
+    std::vector<int64_t> res;
+    for (int i = 0; i < len; i += padded_width) {
+        res.push_back(decode_int64(encoded.substr(i, padded_width)));
     }
     return res;
 }

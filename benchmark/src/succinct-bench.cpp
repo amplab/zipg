@@ -100,27 +100,17 @@ int main(int argc, char **argv) {
     } else if (type == "neighbor-node-latency") {
         bench.benchmark_neighbor_node_latency(result_file_name, warmup_n, measure_n,
                 warmup_query_file, measure_query_file);
-    } else if (type == "test") {
+    } else if (type == "graph-construct") {
         // case: construct from node & edge file
         std::string node_file = succinct_dir; // hacky naming
         std::string assoc_file = std::string(argv[optind + 1]);
-
-//        SuccinctFile* f = new SuccinctFile(node_file);
-//        printf("count (should be 10) = %d\n",
-//            f->count("5PN2qmWqBlQ9wQj99nsQzldVI5ZuGXbE"));
 
         graph = new SuccinctGraph(succinct_dir, true); // no-op
         graph->construct(node_file, assoc_file);
 
         printf("SuccinctGraph construction done\n");
-        printf("Testing obj_get():\n");
 
-        for (int i = 0; i < 1; ++i) {
-            std::string res;
-            graph->obj_get(res, i);
-            fprintf(stderr, "node %d attrs: <%s>\n", i, res.c_str());
-        }
-    } else if (type == "test2") {
+    } else if (type == "graph-test") {
         // case: load (mmap) constructed files
         std::string node_succinct_dir = succinct_dir;
         std::string edge_succinct_dir = std::string(argv[optind + 1]);
@@ -128,10 +118,10 @@ int main(int argc, char **argv) {
         graph->load(node_succinct_dir, edge_succinct_dir);
         printf("Loaded SuccinctGraph from files.\n");
 
-        graph->assoc_range(0, 0, 0, 1); // offset should be 0
-//        graph->assoc_range(0, 0, 1, 10); // offset should be 0
-        graph->assoc_range(0, 2, 0, 2); // offset should be 87
-        graph->assoc_range(6, 1, 0, 1); // offset should be 185
+        SuccinctGraph::print_assoc_results(graph->assoc_range(0, 0, 0, 1));
+        SuccinctGraph::print_assoc_results(graph->assoc_range(0, 2, 0, 2));
+        SuccinctGraph::print_assoc_results(graph->assoc_range(0, 2, 2, 1));
+        SuccinctGraph::print_assoc_results(graph->assoc_range(6, 1, 0, 1));
     } else {
         assert(0); // Not supported
     }
