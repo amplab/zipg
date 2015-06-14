@@ -66,7 +66,7 @@ public:
                    std::get<1>(*it),
                    std::get<2>(*it).c_str());
         }
-        printf("\n");
+        printf("\n\n");
     }
 
     // Gets the attribute data of node `obj_id` into `result`.
@@ -84,7 +84,9 @@ public:
         int64_t t_low,
         int64_t t_high);
 
-    void assoc_count(int64_t src, int32_t atype);
+    // Returns number of associations in the association list (src, atype).
+    // Undefined behavior if (src, atype) doesn't exist.
+    uint64_t assoc_count(int64_t src, int32_t atype);
 
     void assoc_time_range(
         int64_t src,

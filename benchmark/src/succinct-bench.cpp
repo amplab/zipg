@@ -112,6 +112,7 @@ int main(int argc, char **argv) {
 
     } else if (type == "graph-test") {
         // case: load (mmap) constructed files
+        // TODO: write as an automatic test suite (e.g. write out tmp file)
         std::string node_succinct_dir = succinct_dir;
         std::string edge_succinct_dir = std::string(argv[optind + 1]);
         graph = new SuccinctGraph(succinct_dir, true); // no-op
@@ -122,6 +123,11 @@ int main(int argc, char **argv) {
         SuccinctGraph::print_assoc_results(graph->assoc_range(0, 2, 0, 2));
         SuccinctGraph::print_assoc_results(graph->assoc_range(0, 2, 2, 1));
         SuccinctGraph::print_assoc_results(graph->assoc_range(6, 1, 0, 1));
+
+        printf("assoc_count(0, 0) = %llu\n", graph->assoc_count(0, 0)); // 1
+        printf("assoc_count(0, 2) = %llu\n", graph->assoc_count(0, 2)); // 3
+        printf("assoc_count(6, 1) = %llu\n", graph->assoc_count(6, 1)); // 1
+
     } else {
         assert(0); // Not supported
     }

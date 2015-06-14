@@ -238,7 +238,7 @@ std::vector<SuccinctGraph::AssocResult> SuccinctGraph::assoc_range(
 
     assert(std::stoi(data_width) %
         (WIDTH_TIMESTAMP + WIDTH_NODE_ID + edge_width) == 0);
-    uint64_t cnt = std::stoi(data_width) * 1.0 /
+    uint64_t cnt = std::stoi(data_width) /
         (WIDTH_TIMESTAMP + WIDTH_NODE_ID + edge_width);
     assert(off + len <= cnt);
     printf("cnt = %llu\n", cnt);
@@ -280,8 +280,29 @@ void SuccinctGraph::assoc_get(
     int64_t t_high) {
 }
 
-// TODO
-void SuccinctGraph::assoc_count(int64_t src, int32_t atype) {
+uint64_t SuccinctGraph::assoc_count(int64_t src, int32_t atype) {
+    uint64_t curr_off = get_edge_table_offset(src, atype);
+
+    curr_off += 1 + // node delim
+        SuccinctGraphSerde::WIDTH_INT64_PADDED + // padded node id
+        1 + // atype delim
+        SuccinctGraphSerde::WIDTH_INT32_PADDED; // padded atype
+
+    std::string edge_width_str;
+    this->edge_table->extract(
+        edge_width_str, curr_off, SuccinctGraphSerde::WIDTH_INT32_PADDED);
+    int edge_width = std::stoi(edge_width_str); // TODO: int is the right type?
+
+    std::string data_width;
+    curr_off += SuccinctGraphSerde::WIDTH_INT32_PADDED;
+    this->edge_table->extract(
+        data_width, curr_off, SuccinctGraphSerde::WIDTH_INT64_PADDED);
+
+    assert(std::stoi(data_width) %
+        (WIDTH_TIMESTAMP + WIDTH_NODE_ID + edge_width) == 0);
+    uint64_t cnt = std::stoi(data_width) /
+        (WIDTH_TIMESTAMP + WIDTH_NODE_ID + edge_width);
+    return cnt;
 }
 
 // TODO
