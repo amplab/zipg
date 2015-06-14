@@ -164,6 +164,7 @@ public class NeighborNodeBench {
         }
 //        System.out.println("getting nbhr done");
         List<Long> result = new LinkedList<Long>();
+        graphDb.findNodes()
 
         // .findNodes() *should* be able to use index
         try (ResourceIterator<Node> nodes = graphDb.findNodes(

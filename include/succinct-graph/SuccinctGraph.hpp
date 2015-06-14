@@ -28,6 +28,10 @@ public:
     // FIXME: probably makes sense to add & to params
     SuccinctGraph& construct(std::string node_file, std::string edge_file);
 
+    // Loads the previously constructed node table & edge table.
+    SuccinctGraph& load(std::string node_succinct_dir,
+                        std::string edge_succinct_dir);
+
     std::string succinct_directory();
 
     int64_t num_nodes();
@@ -89,24 +93,30 @@ private:
     int64_t nodes, edges;
 
     /**************** Internal formats ****************/
+    // TODO: rethink types/fields c.f. the LinkBench paper
 
-    typedef int64_t NodeId;
-    typedef int64_t Timestamp;
-    typedef int32_t AType;
+    typedef uint64_t NodeId;
+    typedef uint64_t Timestamp;
+    typedef uint32_t AType;
     typedef std::pair<NodeId, AType> AssocListKey;
     struct Assoc {
-        NodeId dst_id;
-        Timestamp time;
-        std::string attr;
+        NodeId dst_id; // 8 bytes
+        Timestamp time; // 8 bytes
+        std::string attr; // variable bytes
     };
-    typedef std::map<AssocListKey, std::vector<Assoc>> AssocMap;
-    typedef std::map<AssocListKey, std::vector<Assoc>>::iterator AssocMapIt;
+
     static bool cmp_assoc_by_decreasing_time(const Assoc &a, const Assoc &b) {
         return a.time > b.time;
     }
 
-    static const int WIDTH_TIMESTAMP = 8; // encoded in alphabet of size 64
-    static const int WIDTH_NODE_ID = 8; // encoded in alphabet of size 64
+    // Rule: 64 bit mapped to 8 chars, 32 bit mapped to 4 chars.
+//    static const int WIDTH_ATYPE = 4; // encoded in str alphabet of size 64
+    static const int WIDTH_TIMESTAMP = 8; // encoded in str alphabet of size 64
+    static const int WIDTH_NODE_ID = 8; // encoded in str alphabet of size 64
+//    static const int WIDTH_EDGEWIDTH = 4;
+//    static const int WIDTH_DATAWIDTH = 8;
+
+    uint64_t get_edge_table_offset(NodeId id, AType atype);
 
 };
 

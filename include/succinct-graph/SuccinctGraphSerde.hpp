@@ -20,6 +20,9 @@ public:
     // Decodes from base alphabet to decimal.
     static int64_t decode_int64(std::string& encoded);
 
+    const static int WIDTH_INT32_PADDED = 10;
+    const static int WIDTH_INT64_PADDED = 20;
+
 private:
     const static std::string INT64_ENCODE_ALPHABET;
     const static int SIZE_INT64_ENCODE_ALPHABET;
