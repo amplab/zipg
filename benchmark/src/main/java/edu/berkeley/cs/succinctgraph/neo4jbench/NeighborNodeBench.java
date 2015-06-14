@@ -78,6 +78,12 @@ public class NeighborNodeBench {
             // warmup
             System.out.println("Warming up for " + WARMUP_N + " queries");
             for (int i = 0; i < WARMUP_N; i++) {
+                if (i % 10000 == 0) {
+                    System.out.println("warmup batch done, query " + i);
+                    tx.success();
+                    tx.close();
+                    tx = graphDb.beginTx();
+                }
                 List<Long> result;
                 if (!useIndex) {
                     result = getNeighborNode(graphDb, modGet(warmup_neighbor_indices, i),
@@ -101,6 +107,7 @@ public class NeighborNodeBench {
             System.out.println("Measuring for " + MEASURE_N + " queries");
             for (int i = 0; i < MEASURE_N; i++) {
                 if (i % 10000 == 0) {
+                    System.out.println("batch done, query " + i);
                     tx.success();
                     tx.close();
                     tx = graphDb.beginTx();
@@ -151,7 +158,7 @@ public class NeighborNodeBench {
     private static List<Long> getNeighborNode(GraphDatabaseService graphDb,
                                               long node_id, int attr, String search) {
         Node n = graphDb.getNodeById(node_id);
-        List<Long> result = new LinkedList<>();
+        List<Long> result = new ArrayList<>();
         for (Relationship r : n.getRelationships(Direction.OUTGOING)) {
             Node neighbor = r.getOtherNode(n);
             if (search.equals(neighbor.getProperty("name" + attr))) {
@@ -171,7 +178,7 @@ public class NeighborNodeBench {
             neighbors.add(rel.getOtherNode(n).getId());
         }
 //        System.out.println("getting nbhr done");
-        List<Long> result = new LinkedList<Long>();
+        List<Long> result = new ArrayList<Long>();
 
         // .findNodes() *should* be able to use index
         try (ResourceIterator<Node> nodes = graphDb.findNodes(
