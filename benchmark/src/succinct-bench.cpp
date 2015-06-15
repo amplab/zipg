@@ -128,6 +128,18 @@ int main(int argc, char **argv) {
         printf("assoc_count(0, 2) = %llu\n", graph->assoc_count(0, 2)); // 3
         printf("assoc_count(6, 1) = %llu\n", graph->assoc_count(6, 1)); // 1
 
+        std::set<int64_t> dst_id_set;
+        dst_id_set.insert(1618);
+
+        // [id=1618,time=93244,attr='sup']
+        SuccinctGraph::print_assoc_results(
+            graph->assoc_get(0, 2, dst_id_set, 9324, 93245));
+
+        // [id=1618,time=93244,attr='sup'] AND [id=1,time=9324,attr='suc']
+        dst_id_set.insert(1);
+        SuccinctGraph::print_assoc_results(
+            graph->assoc_get(0, 2, dst_id_set, 9324, 93245));
+
     } else {
         assert(0); // Not supported
     }

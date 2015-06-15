@@ -77,12 +77,11 @@ public:
                                          int32_t off,
                                          int32_t len);
 
-    void assoc_get(
-        int64_t src,
-        int32_t atype,
-        std::set<int64_t> dst_id_set,
-        int64_t t_low,
-        int64_t t_high);
+    std::vector<AssocResult> assoc_get(int64_t src,
+                                       int32_t atype,
+                                       std::set<int64_t> dst_id_set,
+                                       int64_t t_low,
+                                       int64_t t_high);
 
     // Returns number of associations in the association list (src, atype).
     // Undefined behavior if (src, atype) doesn't exist.

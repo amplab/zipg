@@ -229,19 +229,19 @@ std::vector<SuccinctGraph::AssocResult> SuccinctGraph::assoc_range(
         data_width, curr_off, SuccinctGraphSerde::WIDTH_INT64_PADDED);
     printf("extracted data width = '%s'\n", data_width.c_str());
 
-    std::string timestamps;
-    curr_off += SuccinctGraphSerde::WIDTH_INT64_PADDED;
-    this->edge_table->extract(timestamps,
-                              curr_off + off * WIDTH_TIMESTAMP,
-                              len * WIDTH_TIMESTAMP);
-    printf("extracted timestamps = '%s'\n", timestamps.c_str());
-
     assert(std::stoi(data_width) %
         (WIDTH_TIMESTAMP + WIDTH_NODE_ID + edge_width) == 0);
     uint64_t cnt = std::stoi(data_width) /
         (WIDTH_TIMESTAMP + WIDTH_NODE_ID + edge_width);
     assert(off + len <= cnt);
     printf("cnt = %llu\n", cnt);
+
+    std::string timestamps;
+    curr_off += SuccinctGraphSerde::WIDTH_INT64_PADDED;
+    this->edge_table->extract(timestamps,
+                              curr_off + off * WIDTH_TIMESTAMP,
+                              len * WIDTH_TIMESTAMP);
+    printf("extracted timestamps = '%s'\n", timestamps.c_str());
 
     curr_off += cnt * WIDTH_TIMESTAMP;
     std::string dst_ids;
@@ -271,13 +271,135 @@ std::vector<SuccinctGraph::AssocResult> SuccinctGraph::assoc_range(
     return result;
 }
 
-// TODO
-void SuccinctGraph::assoc_get(
+// Basic impl idea: performs binary search on the timestamps.
+std::vector<SuccinctGraph::AssocResult> SuccinctGraph::assoc_get(
     int64_t src,
     int32_t atype,
     std::set<int64_t> dst_id_set,
     int64_t t_low,
     int64_t t_high) {
+
+    printf("assoc_get(src = %lld, atype = %d, dst_id_set=...,low=%lld,high=%lld): ",
+        src, atype, t_low, t_high);
+    uint64_t curr_off = get_edge_table_offset(src, atype);
+    printf("edge table offset = %llu\n", curr_off);
+
+    curr_off += 1 + // node delim
+        SuccinctGraphSerde::WIDTH_INT64_PADDED + // padded node id
+        1 + // atype delim
+        SuccinctGraphSerde::WIDTH_INT32_PADDED; // padded atype
+
+    std::string edge_width_str;
+    this->edge_table->extract(
+        edge_width_str, curr_off, SuccinctGraphSerde::WIDTH_INT32_PADDED);
+    printf("extracted edge width = '%s'\n", edge_width_str.c_str());
+    int edge_width = std::stoi(edge_width_str); // TODO: int is the right type?
+
+    std::string data_width;
+    curr_off += SuccinctGraphSerde::WIDTH_INT32_PADDED;
+    this->edge_table->extract(
+        data_width, curr_off, SuccinctGraphSerde::WIDTH_INT64_PADDED);
+    printf("extracted data width = '%s'\n", data_width.c_str());
+
+    curr_off += SuccinctGraphSerde::WIDTH_INT64_PADDED;
+
+    assert(std::stoi(data_width) %
+        (WIDTH_TIMESTAMP + WIDTH_NODE_ID + edge_width) == 0);
+    uint64_t cnt = std::stoi(data_width) /
+        (WIDTH_TIMESTAMP + WIDTH_NODE_ID + edge_width);
+    printf("cnt = %llu\n", cnt);
+
+    int range_left, range_right; // in-range: [left, right]
+
+    // binary search: locates smallest t s.t. t >= t_low
+    // invariant: target in [l, r)
+    int l = 0, r = cnt, m; // TODO: check t_l >= t_low
+    std::string timestamp;
+    int64_t ts;
+    //
+    while (l + 1 < r) {
+        m = (l + r) / 2;
+        timestamp.clear();
+        this->edge_table->extract(
+            timestamp, curr_off + m * WIDTH_TIMESTAMP, WIDTH_TIMESTAMP);
+        ts = SuccinctGraphSerde::decode_int64(timestamp);
+        if (ts >= t_low) l = m; // note timestamps are decreasing
+        else r = m;
+    }
+    assert(l + 1 == r);
+    range_right = l;
+
+    // binary search: locates largest t s.t. t <= t_high
+    // invariant: target in (l, r]
+    l = -1;
+    r = cnt - 1; // TODO: check
+    while (l + 1 < r) {
+        m = (l + r) / 2;
+        timestamp.clear();
+        this->edge_table->extract(
+            timestamp, curr_off + m * WIDTH_TIMESTAMP, WIDTH_TIMESTAMP);
+        ts = SuccinctGraphSerde::decode_int64(timestamp);
+        if (ts > t_high) l = m;
+        else r = m;
+    }
+    assert(l + 1 == r);
+    range_left = r;
+
+    printf("range left: %d, range right: %d, cnt: %d\n", range_left, range_right, cnt);
+
+    // extract in-range timestamps
+    std::string timestamps;
+    this->edge_table->extract(timestamps,
+                              curr_off + range_left * WIDTH_TIMESTAMP,
+                              (range_right - range_left + 1) * WIDTH_TIMESTAMP);
+    printf("extracted timestamps = '%s'\n", timestamps.c_str());
+
+    // extract in-range dst ids: i.e. whose idx in [range_left, range_right]
+    curr_off += cnt * WIDTH_TIMESTAMP;
+    std::string dst_ids;
+    this->edge_table->extract(dst_ids,
+                              curr_off + range_left * WIDTH_NODE_ID,
+                              (range_right - range_left + 1) * WIDTH_NODE_ID);
+    printf("extracted dst ids: '%s'\n", dst_ids.c_str());
+
+    std::vector<int64_t> decoded_dst_ids =
+        SuccinctGraphSerde::decode_multi_int64(dst_ids, WIDTH_NODE_ID);
+
+    // filter
+    std::vector<int64_t> in_set_indexes;
+    for (int i = 0; i < decoded_dst_ids.size(); ++i) {
+        printf("decoded_dst_id[i=%d] = %d\n", i, decoded_dst_ids[i]);
+
+        if (dst_id_set.count(decoded_dst_ids[i]) != 0) {
+            in_set_indexes.push_back(range_left + i);
+            printf("pass filter id: %d, decoded_dst_id[i] = %d\n", range_left + i, decoded_dst_ids[i]);
+        }
+    }
+
+    // TODO: another choice is to do a single extract then filter; evaluate?
+    // Now extract only the in-set (and in-range) attrs
+    curr_off += cnt * WIDTH_NODE_ID;
+    std::vector<std::string> valid_attrs;
+    int idx;
+    for (int i = 0; i < in_set_indexes.size(); ++i) {
+        idx = in_set_indexes[i];
+        std::string attr;
+        this->edge_table->extract(attr, curr_off + idx * edge_width, edge_width);
+        valid_attrs.push_back(attr);
+    }
+
+    std::vector<int64_t> decoded_timestamps =
+        SuccinctGraphSerde::decode_multi_int64(timestamps, WIDTH_TIMESTAMP);
+    std::vector<AssocResult> result;
+    for (int i = 0; i < in_set_indexes.size(); ++i) {
+        idx = in_set_indexes[i];
+        // decoded dst ids and timestamps start w/ absolute idx range_left
+        result.push_back(
+            std::make_tuple(decoded_dst_ids[idx - range_left],
+                            decoded_timestamps[idx - range_left],
+                            valid_attrs[i]));
+    }
+    return result;
 }
 
 uint64_t SuccinctGraph::assoc_count(int64_t src, int32_t atype) {
