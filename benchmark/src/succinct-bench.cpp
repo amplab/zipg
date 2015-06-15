@@ -140,6 +140,20 @@ int main(int argc, char **argv) {
         SuccinctGraph::print_assoc_results(
             graph->assoc_get(0, 2, dst_id_set, 9324, 93245));
 
+        SuccinctGraph::print_assoc_results(
+            graph->assoc_time_range(6, 1, 1, 99999999, 10)); // 1 edge
+//        SuccinctGraph::print_assoc_results(
+//            graph->assoc_time_range(0, 0, 0, 1, 10)); // 0 edge // FIXME
+
+        SuccinctGraph::print_assoc_results(
+            graph->assoc_time_range(0, 2, 900, 93244, 2)); // 2 edges
+        SuccinctGraph::print_assoc_results(
+            graph->assoc_time_range(0, 2, 900, 93244, 1)); // 1 edge
+        SuccinctGraph::print_assoc_results(
+            graph->assoc_time_range(0, 2, -1, 99999999999, 1)); // 1 edge
+        SuccinctGraph::print_assoc_results(
+            graph->assoc_time_range(0, 2, -1, 99999999999, 100)); // 3 edges
+
     } else {
         assert(0); // Not supported
     }

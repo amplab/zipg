@@ -87,7 +87,7 @@ public:
     // Undefined behavior if (src, atype) doesn't exist.
     uint64_t assoc_count(int64_t src, int32_t atype);
 
-    void assoc_time_range(
+    std::vector<AssocResult> assoc_time_range(
         int64_t src,
         int32_t atype,
         int64_t t_low,
