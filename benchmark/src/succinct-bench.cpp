@@ -119,9 +119,13 @@ int main(int argc, char **argv) {
         graph->load(node_succinct_dir, edge_succinct_dir);
         printf("Loaded SuccinctGraph from files.\n");
 
+        // [id=2,time=9324,attr='succinct is cool']
         SuccinctGraph::print_assoc_results(graph->assoc_range(0, 0, 0, 1));
+        // [id=1,time=41842148,attr='a b'] [id=1618,time=93244,attr='sup']
         SuccinctGraph::print_assoc_results(graph->assoc_range(0, 2, 0, 2));
+        // [id=1,time=9324,attr='suc']
         SuccinctGraph::print_assoc_results(graph->assoc_range(0, 2, 2, 1));
+        // [id=1,time=111111,attr='abcd']
         SuccinctGraph::print_assoc_results(graph->assoc_range(6, 1, 0, 1));
 
         printf("assoc_count(0, 0) = %llu\n", graph->assoc_count(0, 0)); // 1
@@ -140,17 +144,25 @@ int main(int argc, char **argv) {
         SuccinctGraph::print_assoc_results(
             graph->assoc_get(0, 2, dst_id_set, 9324, 93245));
 
+        // [id=1,time=111111,attr='abcd']
         SuccinctGraph::print_assoc_results(
             graph->assoc_time_range(6, 1, 1, 99999999, 10)); // 1 edge
 //        SuccinctGraph::print_assoc_results(
 //            graph->assoc_time_range(0, 0, 0, 1, 10)); // 0 edge // FIXME
 
+        // [id=1618,time=93244,attr='sup'] [id=1,time=9324,attr='suc']
         SuccinctGraph::print_assoc_results(
             graph->assoc_time_range(0, 2, 900, 93244, 2)); // 2 edges
+
+        // [id=1618,time=93244,attr='sup']
         SuccinctGraph::print_assoc_results(
             graph->assoc_time_range(0, 2, 900, 93244, 1)); // 1 edge
+
+        // [id=1,time=41842148,attr='a b']
         SuccinctGraph::print_assoc_results(
             graph->assoc_time_range(0, 2, -1, 99999999999, 1)); // 1 edge
+
+        // [id=1,time=41842148,attr='a b'] [id=1618,time=93244,attr='sup'] [id=1,time=9324,attr='suc']
         SuccinctGraph::print_assoc_results(
             graph->assoc_time_range(0, 2, -1, 99999999999, 100)); // 3 edges
 

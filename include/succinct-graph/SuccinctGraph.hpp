@@ -111,12 +111,14 @@ private:
     int64_t edges;
 
     /**************** Internal formats ****************/
-    // TODO: rethink types/fields c.f. the LinkBench paper
+    // C.f. the LinkBench paper, Sigmoid 2013
 
     typedef uint64_t NodeId;
-    typedef uint64_t Timestamp;
-    typedef uint32_t AType;
+    typedef uint32_t Timestamp; // TODO: paper 32, code 64
+    typedef uint64_t AType;
+
     typedef std::pair<NodeId, AType> AssocListKey;
+
     struct Assoc {
         NodeId dst_id; // 8 bytes
         Timestamp time; // 8 bytes
@@ -126,14 +128,6 @@ private:
     static bool cmp_assoc_by_decreasing_time(const Assoc &a, const Assoc &b) {
         return a.time > b.time;
     }
-
-    // Rule: 64 bit mapped to 8 chars, 32 bit mapped to 4 chars.
-//    static const int WIDTH_ATYPE = 4; // encoded in str alphabet of size 64
-    static const int WIDTH_TIMESTAMP = 8; // encoded in str alphabet of size 64
-    static const int WIDTH_NODE_ID = 8; // encoded in str alphabet of size 64
-//    static const int WIDTH_EDGEWIDTH = 4;
-//    static const int WIDTH_DATAWIDTH = 8;
-
     uint64_t get_edge_table_offset(NodeId id, AType atype);
 
 };
