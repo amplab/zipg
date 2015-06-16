@@ -45,11 +45,13 @@ public:
     // TODO: clean up GraphBenchmark so that we can remove these.
     void get_attribute(std::string& result, int64_t node_id, int attr);
 
-    void get_neighbors(std::vector<int64_t>& result, int64_t key);
+    void get_neighbors(std::vector<int64_t>& result, int64_t node);
+
     void get_neighbors_of_node(std::vector<int64_t>& result, int64_t node_id,
         int attr, std::string search_key);
 
     void search_nodes(std::set<int64_t>& result, int attr, std::string search_key);
+
     void search_nodes(std::set<int64_t>& result, int attr1, std::string search_key1,
                                                  int attr2, std::string search_key2);
 
@@ -128,6 +130,7 @@ private:
     static bool cmp_assoc_by_decreasing_time(const Assoc &a, const Assoc &b) {
         return a.time > b.time;
     }
+
     uint64_t get_edge_table_offset(NodeId id, AType atype);
 
 };

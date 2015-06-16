@@ -19,6 +19,15 @@ const char ATYPE_DELIM = '\x03';
 //const char ATYPE_DELIM = 'B';
 const std::string SuccinctGraph::DELIMINATORS = "<>()#$%&*+[]{}^-|~;? \"',./:=@\\_~\x02\x03\x04\x05\x06\x07\x08\x09";
 
+inline uint64_t skip_init_node_atype(uint64_t curr_off) {
+    return curr_off +
+        1 + // node delim
+        SuccinctGraphSerde::WIDTH_NODE_ID_PADDED + // padded node id
+        1 + // atype delim
+        SuccinctGraphSerde::WIDTH_ATYPE_PADDED; // padded atype
+}
+
+
 SuccinctGraph::SuccinctGraph(
     std::string succinct_dir,
     bool construct,
@@ -225,10 +234,7 @@ std::vector<SuccinctGraph::AssocResult> SuccinctGraph::assoc_range(
     uint64_t curr_off = get_edge_table_offset(src, atype);
     printf("edge table offset = %llu\n", curr_off);
 
-    curr_off += 1 + // node delim
-        SuccinctGraphSerde::WIDTH_NODE_ID_PADDED + // padded node id
-        1 + // atype delim
-        SuccinctGraphSerde::WIDTH_ATYPE_PADDED; // padded atype
+    curr_off = skip_init_node_atype(curr_off);
 
     std::string edge_width_str;
     this->edge_table->extract(
@@ -301,10 +307,7 @@ std::vector<SuccinctGraph::AssocResult> SuccinctGraph::assoc_get(
     uint64_t curr_off = get_edge_table_offset(src, atype);
     printf("edge table offset = %llu\n", curr_off);
 
-    curr_off += 1 + // node delim
-        SuccinctGraphSerde::WIDTH_NODE_ID_PADDED + // padded node id
-        1 + // atype delim
-        SuccinctGraphSerde::WIDTH_ATYPE_PADDED; // padded atype
+    curr_off = skip_init_node_atype(curr_off);
 
     std::string edge_width_str;
     this->edge_table->extract(
@@ -422,10 +425,7 @@ std::vector<SuccinctGraph::AssocResult> SuccinctGraph::assoc_get(
 int64_t SuccinctGraph::assoc_count(int64_t src, int32_t atype) {
     uint64_t curr_off = get_edge_table_offset(src, atype);
 
-    curr_off += 1 + // node delim
-        SuccinctGraphSerde::WIDTH_NODE_ID_PADDED + // padded node id
-        1 + // atype delim
-        SuccinctGraphSerde::WIDTH_ATYPE_PADDED; // padded atype
+    curr_off = skip_init_node_atype(curr_off);
 
     std::string edge_width_str;
     this->edge_table->extract(
@@ -456,10 +456,7 @@ std::vector<SuccinctGraph::AssocResult> SuccinctGraph::assoc_time_range(
     uint64_t curr_off = get_edge_table_offset(src, atype);
     printf("edge table offset = %llu\n", curr_off);
 
-    curr_off += 1 + // node delim
-        SuccinctGraphSerde::WIDTH_NODE_ID_PADDED + // padded node id
-        1 + // atype delim
-        SuccinctGraphSerde::WIDTH_ATYPE_PADDED; // padded atype
+    curr_off = skip_init_node_atype(curr_off);
 
     std::string edge_width_str;
     this->edge_table->extract(
@@ -581,12 +578,33 @@ size_t SuccinctGraph::serialize() {
 }
 
 /******* Old API *******/
-void SuccinctGraph:: get_attribute(std::string& result, int64_t node_id, int attr) { }
 
-void SuccinctGraph:: get_neighbors(std::vector<int64_t>& result, int64_t key) { }
-void SuccinctGraph:: get_neighbors_of_node(std::vector<int64_t>& result, int64_t node_id,
-    int attr, std::string search_key) { }
+void SuccinctGraph::get_attribute(
+    std::string& result,
+    int64_t node_id,
+    int attr) {
+}
 
-void SuccinctGraph:: search_nodes(std::set<int64_t>& result, int attr, std::string search_key) { }
-void SuccinctGraph:: search_nodes(std::set<int64_t>& result, int attr1, std::string search_key1,
-                                             int attr2, std::string search_key2) { }
+void SuccinctGraph::get_neighbors(std::vector<int64_t>& result, int64_t node) {
+}
+
+void SuccinctGraph::get_neighbors_of_node(
+    std::vector<int64_t>& result,
+    int64_t node_id,
+    int attr,
+    std::string search_key) {
+}
+
+void SuccinctGraph::search_nodes(
+    std::set<int64_t>& result,
+    int attr,
+    std::string search_key) {
+}
+
+void SuccinctGraph::search_nodes(
+    std::set<int64_t>& result,
+    int attr1,
+    std::string search_key1,
+    int attr2,
+    std::string search_key2) {
+}
