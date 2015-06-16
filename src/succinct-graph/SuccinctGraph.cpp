@@ -240,7 +240,7 @@ std::vector<SuccinctGraph::AssocResult> SuccinctGraph::assoc_range(
     this->edge_table->extract(
         edge_width_str, curr_off, SuccinctGraphSerde::WIDTH_EDGE_WIDTH_PADDED);
     printf("extracted edge width = '%s'\n", edge_width_str.c_str());
-    int edge_width = std::stoi(edge_width_str); // TODO: int is the right type?
+    int32_t edge_width = std::stoi(edge_width_str);
 
     std::string data_width;
     curr_off += SuccinctGraphSerde::WIDTH_EDGE_WIDTH_PADDED;
@@ -313,7 +313,7 @@ std::vector<SuccinctGraph::AssocResult> SuccinctGraph::assoc_get(
     this->edge_table->extract(
         edge_width_str, curr_off, SuccinctGraphSerde::WIDTH_EDGE_WIDTH_PADDED);
     printf("extracted edge width = '%s'\n", edge_width_str.c_str());
-    int edge_width = std::stoi(edge_width_str); // TODO: int is the right type?
+    int32_t edge_width = std::stoi(edge_width_str);
 
     std::string data_width;
     curr_off += SuccinctGraphSerde::WIDTH_EDGE_WIDTH_PADDED;
@@ -430,7 +430,7 @@ int64_t SuccinctGraph::assoc_count(int64_t src, int32_t atype) {
     std::string edge_width_str;
     this->edge_table->extract(
         edge_width_str, curr_off, SuccinctGraphSerde::WIDTH_EDGE_WIDTH_PADDED);
-    int edge_width = std::stoi(edge_width_str); // TODO: int is the right type?
+    int32_t edge_width = std::stoi(edge_width_str);
 
     std::string data_width;
     curr_off += SuccinctGraphSerde::WIDTH_EDGE_WIDTH_PADDED;
@@ -462,7 +462,7 @@ std::vector<SuccinctGraph::AssocResult> SuccinctGraph::assoc_time_range(
     this->edge_table->extract(
         edge_width_str, curr_off, SuccinctGraphSerde::WIDTH_EDGE_WIDTH_PADDED);
     printf("extracted edge width = '%s'\n", edge_width_str.c_str());
-    int edge_width = std::stoi(edge_width_str); // TODO: int is the right type?
+    int32_t edge_width = std::stoi(edge_width_str);
 
     std::string data_width;
     curr_off += SuccinctGraphSerde::WIDTH_EDGE_WIDTH_PADDED;
