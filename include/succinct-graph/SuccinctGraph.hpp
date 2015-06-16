@@ -56,7 +56,7 @@ public:
     /**************** TAO-like APIs ****************/
 
     // dst_id, timestamp, attr
-    typedef std::tuple<uint64_t, uint64_t, std::string> AssocResult;
+    typedef std::tuple<int64_t, int64_t, std::string> AssocResult;
 
     static void
     print_assoc_results(const std::vector<AssocResult>& assoc_results) {
@@ -85,7 +85,7 @@ public:
 
     // Returns number of associations in the association list (src, atype).
     // Undefined behavior if (src, atype) doesn't exist.
-    uint64_t assoc_count(int64_t src, int32_t atype);
+    int64_t assoc_count(int64_t src, int32_t atype);
 
     std::vector<AssocResult> assoc_time_range(
         int64_t src,
@@ -113,9 +113,9 @@ private:
     /**************** Internal formats ****************/
     // C.f. the LinkBench paper, Sigmoid 2013
 
-    typedef uint64_t NodeId;
-    typedef uint32_t Timestamp; // TODO: paper 32, code 64
-    typedef uint64_t AType;
+    typedef int64_t NodeId;
+    typedef int32_t Timestamp; // TODO: paper 32, code 64
+    typedef int64_t AType;
 
     typedef std::pair<NodeId, AType> AssocListKey;
 

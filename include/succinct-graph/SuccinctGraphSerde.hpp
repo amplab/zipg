@@ -12,18 +12,18 @@ public:
 
     /********** padding: left-pad with 0 **********/
 
-    static std::string pad_node_id(uint64_t x);
-    static std::string pad_atype(uint64_t x);
+    static std::string pad_node_id(int64_t x);
+    static std::string pad_atype(int64_t x);
     static std::string pad_edge_width(int32_t x);
     static std::string pad_data_width(int64_t x);
 
     /********** encoding: encode into alphabet & left-pad with 0 **********/
 
-    static std::string encode_timestamp(uint32_t timestamp);
-    static uint32_t decode_timestamp(const std::string& encoded);
+    static std::string encode_timestamp(int32_t timestamp);
+    static int32_t decode_timestamp(const std::string& encoded);
 
-    static std::string encode_node_id(uint64_t node_id);
-    static uint64_t decode_node_id(const std::string& encoded);
+    static std::string encode_node_id(int64_t node_id);
+    static int64_t decode_node_id(const std::string& encoded);
 
     static std::vector<int64_t> decode_multi_int64(const std::string& encoded,
                                                    int padded_width);

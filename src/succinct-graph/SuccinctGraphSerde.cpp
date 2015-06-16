@@ -6,11 +6,11 @@ const int SuccinctGraphSerde::SIZE_ENCODE_ALPHABET = 64; // 10+26+26+2
 const std::string SuccinctGraphSerde::ENCODE_ALPHABET =
     "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz\x03\x04";
 
-std::string SuccinctGraphSerde::pad_node_id(uint64_t x) {
+std::string SuccinctGraphSerde::pad_node_id(int64_t x) {
     return pad_int64(x);
 }
 
-std::string SuccinctGraphSerde::pad_atype(uint64_t x) {
+std::string SuccinctGraphSerde::pad_atype(int64_t x) {
     return pad_int64(x);
 }
 
@@ -22,19 +22,19 @@ std::string SuccinctGraphSerde::pad_data_width(int64_t x) {
     return pad_int64(x);
 }
 
-std::string SuccinctGraphSerde::encode_timestamp(uint32_t timestamp) {
+std::string SuccinctGraphSerde::encode_timestamp(int32_t timestamp) {
     return encode_int32(timestamp, WIDTH_TIMESTAMP);
 }
 
-uint32_t SuccinctGraphSerde::decode_timestamp(const std::string& encoded) {
+int32_t SuccinctGraphSerde::decode_timestamp(const std::string& encoded) {
     return decode_int32(encoded);
 }
 
-std::string SuccinctGraphSerde::encode_node_id(uint64_t node_id) {
+std::string SuccinctGraphSerde::encode_node_id(int64_t node_id) {
     return encode_int64(node_id, WIDTH_NODE_ID);
 }
 
-uint64_t SuccinctGraphSerde::decode_node_id(const std::string& encoded) {
+int64_t SuccinctGraphSerde::decode_node_id(const std::string& encoded) {
     return decode_int64(encoded);
 }
 

@@ -244,7 +244,7 @@ std::vector<SuccinctGraph::AssocResult> SuccinctGraph::assoc_range(
 
     assert(std::stoi(data_width) %
         (WIDTH_TIMESTAMP + WIDTH_NODE_ID + edge_width) == 0);
-    uint64_t cnt = std::stoi(data_width) /
+    int64_t cnt = std::stoi(data_width) /
         (WIDTH_TIMESTAMP + WIDTH_NODE_ID + edge_width);
     assert(off + len <= cnt);
     printf("cnt = %llu\n", cnt);
@@ -322,7 +322,7 @@ std::vector<SuccinctGraph::AssocResult> SuccinctGraph::assoc_get(
 
     assert(std::stoi(data_width) %
         (WIDTH_TIMESTAMP + WIDTH_NODE_ID + edge_width) == 0);
-    uint64_t cnt = std::stoi(data_width) /
+    int64_t cnt = std::stoi(data_width) /
         (WIDTH_TIMESTAMP + WIDTH_NODE_ID + edge_width);
     printf("cnt = %llu\n", cnt);
 
@@ -419,7 +419,7 @@ std::vector<SuccinctGraph::AssocResult> SuccinctGraph::assoc_get(
     return result;
 }
 
-uint64_t SuccinctGraph::assoc_count(int64_t src, int32_t atype) {
+int64_t SuccinctGraph::assoc_count(int64_t src, int32_t atype) {
     uint64_t curr_off = get_edge_table_offset(src, atype);
 
     curr_off += 1 + // node delim
@@ -439,7 +439,7 @@ uint64_t SuccinctGraph::assoc_count(int64_t src, int32_t atype) {
 
     assert(std::stoi(data_width) %
         (WIDTH_TIMESTAMP + WIDTH_NODE_ID + edge_width) == 0);
-    uint64_t cnt = std::stoi(data_width) /
+    int64_t cnt = std::stoi(data_width) /
         (WIDTH_TIMESTAMP + WIDTH_NODE_ID + edge_width);
     return cnt;
 }
@@ -477,7 +477,7 @@ std::vector<SuccinctGraph::AssocResult> SuccinctGraph::assoc_time_range(
 
     assert(std::stoi(data_width) %
         (WIDTH_TIMESTAMP + WIDTH_NODE_ID + edge_width) == 0);
-    uint64_t cnt = std::stoi(data_width) /
+    int64_t cnt = std::stoi(data_width) /
         (WIDTH_TIMESTAMP + WIDTH_NODE_ID + edge_width);
     printf("cnt = %llu\n", cnt);
 
