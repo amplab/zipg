@@ -22,12 +22,12 @@ std::string SuccinctGraphSerde::pad_data_width(int64_t x) {
     return pad_int64(x);
 }
 
-std::string SuccinctGraphSerde::encode_timestamp(int32_t timestamp) {
-    return encode_int32(timestamp, WIDTH_TIMESTAMP);
+std::string SuccinctGraphSerde::encode_timestamp(int64_t timestamp) {
+    return encode_int64(timestamp, WIDTH_TIMESTAMP);
 }
 
-int32_t SuccinctGraphSerde::decode_timestamp(const std::string& encoded) {
-    return decode_int32(encoded);
+int64_t SuccinctGraphSerde::decode_timestamp(const std::string& encoded) {
+    return decode_int64(encoded);
 }
 
 std::string SuccinctGraphSerde::encode_node_id(int64_t node_id) {

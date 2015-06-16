@@ -99,7 +99,7 @@ SuccinctGraph& SuccinctGraph::construct(
         printf("[node %lld, atype %lld]: ",
             (it->first).first, (it->first).second);
         for (auto it2 = assocs.begin(); it2 != assocs.end(); ++it2) {
-            printf(" (dst %lld, time %d, attr '%s')",
+            printf(" (dst %lld, time %lld, attr '%s')",
                    it2->dst_id,
                    it2->time,
                    (it2->attr).c_str());
@@ -145,7 +145,7 @@ SuccinctGraph& SuccinctGraph::construct(
             printf("encoded = '%s'\n", encoded.c_str());
 
             if (SuccinctGraphSerde::decode_timestamp(encoded) != it2->time) {
-                printf("Failed: time = [%d], encoded = [%s], decoded = [%d]\n",
+                printf("Failed: time = [%lld], encoded = [%s], decoded = [%lld]\n",
                     it2->time, encoded.c_str(), SuccinctGraphSerde::decode_timestamp(encoded));
                 assert(0);
             }

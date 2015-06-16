@@ -19,8 +19,8 @@ public:
 
     /********** encoding: encode into alphabet & left-pad with 0 **********/
 
-    static std::string encode_timestamp(int32_t timestamp);
-    static int32_t decode_timestamp(const std::string& encoded);
+    static std::string encode_timestamp(int64_t timestamp);
+    static int64_t decode_timestamp(const std::string& encoded);
 
     static std::string encode_node_id(int64_t node_id);
     static int64_t decode_node_id(const std::string& encoded);
@@ -36,7 +36,7 @@ public:
 
     // Widths of encoded fields.
     // Rule: (alphabetSize)^width > 2^32 (or 2^64, respectively)
-    static const int WIDTH_TIMESTAMP = 6; // encoded in str alphabet of size 64
+    static const int WIDTH_TIMESTAMP = 11; // encoded in str alphabet of size 64
     static const int WIDTH_NODE_ID = 11; // encoded in str alphabet of size 64
 
 private:

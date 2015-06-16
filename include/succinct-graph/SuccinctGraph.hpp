@@ -114,7 +114,7 @@ private:
     // C.f. the LinkBench paper, Sigmoid 2013
 
     typedef int64_t NodeId;
-    typedef int32_t Timestamp; // TODO: paper 32, code 64
+    typedef int64_t Timestamp;
     typedef int64_t AType;
 
     typedef std::pair<NodeId, AType> AssocListKey;
