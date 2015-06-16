@@ -20,13 +20,18 @@ public:
     /********** encoding: encode into alphabet & left-pad with 0 **********/
 
     static std::string encode_timestamp(int64_t timestamp);
+
     static int64_t decode_timestamp(const std::string& encoded);
 
+    static std::vector<int64_t> decode_multi_timestamps(
+        const std::string& encoded);
+
     static std::string encode_node_id(int64_t node_id);
+
     static int64_t decode_node_id(const std::string& encoded);
 
-    static std::vector<int64_t> decode_multi_int64(const std::string& encoded,
-                                                   int padded_width);
+    static std::vector<int64_t> decode_multi_node_ids(
+        const std::string& encoded);
 
     // Widths of padded fields.
     const static int WIDTH_NODE_ID_PADDED = 20;
@@ -56,6 +61,9 @@ private:
 
     static std::string encode_int32(int32_t x, int padded_width);
     static int32_t decode_int32(const std::string& encoded);
+
+    static std::vector<int64_t> decode_multi_int64(const std::string& encoded,
+                                                   int padded_width);
 
     const static std::string ENCODE_ALPHABET;
     const static int SIZE_ENCODE_ALPHABET;

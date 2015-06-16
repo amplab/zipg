@@ -273,11 +273,11 @@ std::vector<SuccinctGraph::AssocResult> SuccinctGraph::assoc_range(
     printf("extracted attrs = '%s'\n", attrs.c_str());
 
     std::vector<int64_t> decoded_timestamps =
-        SuccinctGraphSerde::decode_multi_int64(
-            timestamps, WIDTH_TIMESTAMP);
+        SuccinctGraphSerde::decode_multi_timestamps(timestamps);
+
     std::vector<int64_t> decoded_dst_ids =
-        SuccinctGraphSerde::decode_multi_int64(
-            dst_ids, WIDTH_NODE_ID);
+        SuccinctGraphSerde::decode_multi_node_ids(dst_ids);
+
     std::vector<AssocResult> result;
     for (int i = 0; i < decoded_timestamps.size(); ++i) {
         result.push_back(
@@ -380,7 +380,7 @@ std::vector<SuccinctGraph::AssocResult> SuccinctGraph::assoc_get(
     printf("extracted dst ids: '%s'\n", dst_ids.c_str());
 
     std::vector<int64_t> decoded_dst_ids =
-        SuccinctGraphSerde::decode_multi_int64(dst_ids, WIDTH_NODE_ID);
+        SuccinctGraphSerde::decode_multi_node_ids(dst_ids);
 
     // filter
     std::vector<int64_t> in_set_indexes;
@@ -406,7 +406,7 @@ std::vector<SuccinctGraph::AssocResult> SuccinctGraph::assoc_get(
     }
 
     std::vector<int64_t> decoded_timestamps =
-        SuccinctGraphSerde::decode_multi_int64(timestamps, WIDTH_TIMESTAMP);
+        SuccinctGraphSerde::decode_multi_timestamps(timestamps);
     std::vector<AssocResult> result;
     for (int i = 0; i < in_set_indexes.size(); ++i) {
         idx = in_set_indexes[i];
@@ -545,9 +545,9 @@ std::vector<SuccinctGraph::AssocResult> SuccinctGraph::assoc_time_range(
     printf("extracted attrs = '%s'\n", attrs.c_str());
 
     std::vector<int64_t> decoded_timestamps =
-        SuccinctGraphSerde::decode_multi_int64(timestamps, WIDTH_TIMESTAMP);
+        SuccinctGraphSerde::decode_multi_timestamps(timestamps);
     std::vector<int64_t> decoded_dst_ids =
-        SuccinctGraphSerde::decode_multi_int64(dst_ids, WIDTH_NODE_ID);
+        SuccinctGraphSerde::decode_multi_node_ids(dst_ids);
     std::vector<AssocResult> result;
     for (int i = 0; i < decoded_timestamps.size(); ++i) {
         result.push_back(

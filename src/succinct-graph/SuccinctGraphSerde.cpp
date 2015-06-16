@@ -30,12 +30,22 @@ int64_t SuccinctGraphSerde::decode_timestamp(const std::string& encoded) {
     return decode_int64(encoded);
 }
 
+std::vector<int64_t> SuccinctGraphSerde::decode_multi_timestamps(
+        const std::string& encoded) {
+    return decode_multi_int64(encoded, WIDTH_TIMESTAMP);
+}
+
 std::string SuccinctGraphSerde::encode_node_id(int64_t node_id) {
     return encode_int64(node_id, WIDTH_NODE_ID);
 }
 
 int64_t SuccinctGraphSerde::decode_node_id(const std::string& encoded) {
     return decode_int64(encoded);
+}
+
+std::vector<int64_t> SuccinctGraphSerde::decode_multi_node_ids(
+        const std::string& encoded) {
+    return decode_multi_int64(encoded, WIDTH_NODE_ID);
 }
 
 std::map<char, int> SuccinctGraphSerde::alphabet_char2pos =
