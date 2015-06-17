@@ -6,6 +6,7 @@
 #include <sstream>
 #include <vector>
 
+// Private helper func
 std::string gen_random_string(const int len) {
     static const char alphanum[] =
         "0123456789"
@@ -16,6 +17,23 @@ std::string gen_random_string(const int len) {
         res[i] = alphanum[std::rand() % (sizeof(alphanum) - 1)];
     }
     return res;
+}
+
+// Private helper func
+std::vector<std::string> gen_random_strings(int num_str, int freq, int len) {
+    std::string name = std::string(len, '0');
+    std::vector<std::string> attrs;
+    while (num_str > 0) {
+        std::string attr = gen_random_string(len);
+        int i = 0;
+        while (num_str > 0 && i < freq) {
+            attrs.push_back(attr);
+            num_str--;
+            i++;
+        }
+    }
+    std::random_shuffle(attrs.begin(), attrs.end());
+    return attrs;
 }
 
 void GraphFormatter::format_node_file(const std::string& node_file) {
@@ -44,6 +62,30 @@ void GraphFormatter::format_node_file(const std::string& node_file) {
     std::ofstream s_out(node_out_file);
     for (auto it = node_attrs.begin(); it != node_attrs.end(); ++it) {
         s_out << *it << "\n";
+    }
+    s_out.close();
+}
+
+void GraphFormatter::create_random_node_table(
+    const std::string& node_file,
+    int num_nodes,
+    int num_attr,
+    int freq,
+    int len) {
+
+    printf("in call\n");
+
+    std::ofstream s_out(node_file);
+    std::vector<std::vector<std::string>> attributes;
+    for (int attr = 0; attr < num_attr; attr++) {
+        attributes.push_back(gen_random_strings(num_nodes, freq, len));
+    }
+    for (int i = 0; i < num_nodes; i++) {
+        for (int attr = 0; attr < num_attr; attr++) {
+            s_out << SuccinctGraph::DELIMINATORS[attr]
+                  << attributes[attr][i];
+        }
+        s_out << "\n";
     }
     s_out.close();
 }

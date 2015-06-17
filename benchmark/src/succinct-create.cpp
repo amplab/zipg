@@ -19,8 +19,8 @@ void generate_name(std::string& name, int len) {
     }
 }
 
-/** Generates `num_names` random strings of length `len`, where each string
-    appears `freq` number of times except possibly the last. */
+// Generates `num_names` random strings of length `len`, where each string
+// appears `freq` number of times, except possibly the last.
 std::vector<std::string> create_names(int num_names, int freq, int len) {
     std::string name = std::string(len, '0');
     std::vector<std::string> names;
@@ -37,9 +37,8 @@ std::vector<std::string> create_names(int num_names, int freq, int len) {
     return names;
 }
 
-/** Generates random attributes for all nodes. */
-void create_node_names(int nodes, int num_attr, int freq, int len) {
-    std::string node_file = std::to_string(nodes) + ".node";
+// Generates random attributes for all nodes.
+void create_node_names(int nodes, int num_attr, int freq, int len, const std::string& node_file) {
     std::ofstream s_out(node_file);
     std::vector<std::vector<std::string>> attributes;
     for (int attr = 0; attr < num_attr; attr++ ) {
@@ -55,7 +54,7 @@ void create_node_names(int nodes, int num_attr, int freq, int len) {
     s_out.close();
 }
 
-/** Format: [delim-separated attrs], <space>, [space-separated sorted nbhr ids]. */
+// Format: [delim-separated attrs], <space>, [space-separated sorted nbhr ids].
 void create_graph_file(std::string node_file, std::string edge_file, std::string graph_file) {
     std::ifstream node_input(node_file);
     std::ifstream edge_input(edge_file);
@@ -108,7 +107,7 @@ void create_succinct_file(std::string graph_file, int sa_sr, int isa_sr, int npa
     graph->serialize();
 }
 
-/** format: randomNodeId. */
+// Format: randomNodeId.
 void generate_neighbor_queries(int64_t nodes, int warmup_size, int query_size, std::string warmup_query_file, std::string query_file) {
     std::random_device rd;
     std::mt19937 rng(rd());
@@ -127,7 +126,7 @@ void generate_neighbor_queries(int64_t nodes, int warmup_size, int query_size, s
     query_out.close();
 }
 
-/** format: attrIdx1,attrKey1,attrIdx2,attrKey2. */
+// Format: attrIdx1,attrKey1,attrIdx2,attrKey2.
 void generate_node_queries(std::string node_file, int warmup_size, int query_size, std::string warmup_query_file, std::string query_file) {
     int64_t nodes = 0;
     std::ifstream node_input(node_file);
@@ -173,7 +172,7 @@ void generate_node_queries(std::string node_file, int warmup_size, int query_siz
     query_out.close();
 }
 
-/** format: randomNodeId,attrIdx,attrKey. */
+// Format: randomNodeId,attrIdx,attrKey.
 void generate_neighbor_node_queries(std::string succinct_dir, int warmup_size, int query_size, std::string warmup_query_file, std::string query_file) {
     SuccinctGraph * graph = new SuccinctGraph(succinct_dir, false);
     std::random_device rd;
@@ -221,7 +220,9 @@ int main(int argc, char **argv) {
         int attributes = atoi(argv[3]);
         int freq = atoi(argv[4]);
         int len = atoi(argv[5]);
-        create_node_names(nodes, attributes, freq, len);
+        std::string node_file = std::to_string(nodes) + ".node";
+        if (argc > 6) node_file = argv[6];
+        create_node_names(nodes, attributes, freq, len, node_file);
     } else if (type == "graph") {
         std::string node_file = argv[2];
         std::string edge_file = argv[3];

@@ -123,8 +123,27 @@ int main(int argc, char **argv) {
         GraphFormatter::format_node_file(succinct_dir);
         printf("Node file formatted\n");
     } else if (type == "higgs-format") {
+        std::string in_file = succinct_dir;
+        std::string assoc_out_file = std::string(argv[optind + 1]);
+
         GraphFormatter::format_higgs_activity_file(
-            succinct_dir, std::string(argv[optind + 1]), 128);
+            in_file, assoc_out_file, 128);
+
+        // 456626 + 1, since unclear if original data is 0-indexed
+        int num_nodes = 456627;
+        int num_attr = 4;
+        int freq = 1000;
+        int len = 200; // so total node attr = 800 bytes
+
+        printf("about to call\n");
+        GraphFormatter::create_random_node_table(
+            std::string(argv[optind + 2]),
+            num_nodes,
+            num_attr,
+            freq,
+            len
+        );
+
     } else if (type == "graph-test") {
         // case: load (mmap) constructed files
         // TODO: write as an automatic test suite (e.g. write out tmp file)

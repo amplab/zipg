@@ -13,6 +13,15 @@ public:
     //         pre-defined unique delimiters
     static void format_node_file(const std::string& node_file);
 
+    // Outputs random node table, where each line's attributes are properly
+    // separated by unique delimiters.
+    static void create_random_node_table(
+        const std::string& node_file,
+        int num_nodes,
+        int num_attr,
+        int freq,
+        int len);
+
     // Each line is of the form "176481 2417 1341102251 MT". We map
     // MT->0, RE->1, RT->2 as atypes.  Output random bytes for each
     // edge as attribute.  The output edge file can be fed into
