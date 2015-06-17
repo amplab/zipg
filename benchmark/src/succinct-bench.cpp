@@ -2,6 +2,7 @@
 #include <fstream>
 #include <unistd.h>
 
+#include "succinct-graph/GraphFormatter.hpp"
 #include "succinct-graph/SuccinctGraph.hpp"
 #include "../include/GraphBenchmark.hpp"
 
@@ -116,6 +117,11 @@ int main(int argc, char **argv) {
         graph->construct(node_file, assoc_file);
 
         printf("SuccinctGraph construction done\n");
+
+    } else if (type == "graph-format") {
+
+        GraphFormatter::format_node_file(succinct_dir);
+        printf("Node file formatted\n");
 
     } else if (type == "graph-test") {
         // case: load (mmap) constructed files
