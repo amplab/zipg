@@ -1,5 +1,6 @@
-#include <iostream>
+#include <cassert>
 #include <fstream>
+#include <iostream>
 #include <unistd.h>
 
 #include "succinct-graph/GraphFormatter.hpp"
@@ -201,6 +202,27 @@ int main(int argc, char **argv) {
 
         graph->get_neighbors(nbhrs, 0, 0, "WILL NOT HIT");
         print_vector("getNeibors(0, attr_that_won't_hit): ", nbhrs);
+
+        std::set<int64_t> nodes;
+        graph->get_nodes(nodes, 0, "5PN2qmWqBlQ9wQj99nsQzldVI5ZuGXbE");
+        assert(nodes.size() == 10);
+        printf("get_nodes(attr that will hit) returns all nodes: ok\n");
+
+        graph->get_nodes(nodes, 0, "WILL NOT HIT");
+        assert(nodes.size() == 0);
+        printf("get_nodes(attr that won't hit) returns no nodes: ok\n");
+
+        graph->get_nodes(nodes,
+            0, "5PN2qmWqBlQ9wQj99nsQzldVI5ZuGXbE",
+            8, "lnTipx7wXZAqJZR5Y4M9k8AIyGE9CpuX");
+        assert(nodes.size() == 10);
+        printf("get_nodes(attr1 (hit), attr2 (hit)) returns all nodes: ok\n");
+
+        graph->get_nodes(nodes,
+            0, "5PN2qmWqBlQ9wQj99nsQzldVI5ZuGXbE",
+            8, "WILL NOT HIT");
+        assert(nodes.size() == 0);
+        printf("get_nodes(attr1 (hit), attr2 (no hit)) returns no nodes: ok\n");
 
     } else {
         assert(0); // Not supported

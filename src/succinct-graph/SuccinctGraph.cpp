@@ -649,16 +649,26 @@ void SuccinctGraph::get_neighbors(
     }
 }
 
-void SuccinctGraph::search_nodes(
+void SuccinctGraph::get_nodes(
     std::set<int64_t>& result,
     int attr,
     std::string search_key) {
+
+    result.clear();
+    this->node_table->search(result, DELIMINATORS[attr] + search_key);
 }
 
-void SuccinctGraph::search_nodes(
+void SuccinctGraph::get_nodes(
     std::set<int64_t>& result,
     int attr1,
     std::string search_key1,
     int attr2,
     std::string search_key2) {
+
+    result.clear();
+    std::set<int64_t> s1, s2;
+    this->node_table->search(s1, DELIMINATORS[attr1] + search_key1);
+    this->node_table->search(s2, DELIMINATORS[attr2] + search_key2);
+    std::set_intersection(s1.begin(), s1.end(), s2.begin(), s2.end(),
+                          std::inserter(result, result.begin()));
 }

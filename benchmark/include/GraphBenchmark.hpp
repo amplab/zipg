@@ -121,7 +121,7 @@ public:
         fprintf(stderr, "Warming up for %lu queries...\n", WARMUP_N);
         for(uint64_t i = 0; i < WARMUP_N; i++) {
             std::set<int64_t> result;
-            this->graph->search_nodes(
+            this->graph->get_nodes(
                 result, modGet(warmup_node_attributes, i), modGet(warmup_node_queries, i));
             assert(result.size() != 0 && "No result found in benchmarking node latency");
         }
@@ -132,7 +132,7 @@ public:
         for(uint64_t i = 0; i < MEASURE_N; i++) {
             std::set<int64_t> result;
             t0 = get_timestamp();
-            this->graph->search_nodes(result, modGet(node_attributes, i), modGet(node_queries, i));
+            this->graph->get_nodes(result, modGet(node_attributes, i), modGet(node_queries, i));
             t1 = get_timestamp();
             assert(result.size() != 0 && "No result found in benchmarking node latency");
             res_stream << result.size() << "," << t1 - t0 << "\n";
@@ -169,7 +169,7 @@ public:
         fprintf(stderr, "Warming up for %lu queries...\n", WARMUP_N);
         for(uint64_t i = 0; i < WARMUP_N; i++) {
             std::set<int64_t> result;
-            this->graph->search_nodes(result,
+            this->graph->get_nodes(result,
                 modGet(warmup_node_attributes, i), modGet(warmup_node_queries, i),
                 modGet(warmup_node_attributes2, i), modGet(warmup_node_queries2, i));
             assert(result.size() != 0 && "No result found in benchmarking node two attributes latency");
@@ -181,7 +181,7 @@ public:
         for(uint64_t i = 0; i < MEASURE_N; i++) {
             std::set<int64_t> result;
             t0 = get_timestamp();
-            this->graph->search_nodes(result, modGet(node_attributes, i), modGet(node_queries, i),
+            this->graph->get_nodes(result, modGet(node_attributes, i), modGet(node_queries, i),
                                               modGet(node_attributes2, i), modGet(node_queries2, i));
             t1 = get_timestamp();
             assert(result.size() != 0 && "No result found in benchmarking node two attributes latency");
@@ -216,7 +216,7 @@ public:
             std::cout << "Warming up" << std::endl;
             while (get_timestamp() - warmup_start < WARMUP_T) {
                 std::set<int64_t> result;
-                this->graph->search_nodes(result,
+                this->graph->get_nodes(result,
                     modGet(warmup_node_attributes, i), modGet(warmup_node_queries, i));
                 assert(result.size() != 0 && "No result found in benchmarking node throughput");
             }
@@ -230,7 +230,7 @@ public:
             while (get_timestamp() - start < MEASURE_T) {
                 std::set<int64_t> result;
                 time_t query_start = get_timestamp();
-                this->graph->search_nodes(result, modGet(node_attributes, i), modGet(node_queries, i));
+                this->graph->get_nodes(result, modGet(node_attributes, i), modGet(node_queries, i));
                 time_t query_end = get_timestamp();
                 assert(result.size() != 0 && "No result found in benchmarking node throughput");
                 totsecs += (double) (query_end - query_start) / (double(1E6));
@@ -267,7 +267,7 @@ public:
                     }
                 } else {
                     std::set<int64_t> result;
-                    this->graph->search_nodes(result,
+                    this->graph->get_nodes(result,
                         modGet(warmup_node_attributes, i / 2),
                         modGet(warmup_node_queries, i / 2));
                     if (result.size() == 0) {
@@ -295,7 +295,7 @@ public:
                 } else {
                     std::set<int64_t> result;
                     time_t query_start = get_timestamp();
-                    this->graph->search_nodes(result,
+                    this->graph->get_nodes(result,
                         modGet(node_attributes, i / 2),
                         modGet(node_queries, i / 2));
                     time_t query_end = get_timestamp();
@@ -386,7 +386,7 @@ public:
                     }
                 } else {
                     std::set<int64_t> result;
-                    this->graph->search_nodes(result,
+                    this->graph->get_nodes(result,
                         modGet(warmup_node_attributes, i / 2),
                         modGet(warmup_node_queries, i / 2));
                     if (result.size() == 0) {
@@ -408,7 +408,7 @@ public:
                     this->graph->get_neighbors(result, modGet(neighbor_indices, i / 2));
                 } else {
                     std::set<int64_t> result;
-                    this->graph->search_nodes(result, modGet(node_attributes, i / 2), modGet(node_queries, i / 2));
+                    this->graph->get_nodes(result, modGet(node_attributes, i / 2), modGet(node_queries, i / 2));
                 }
                 time_t query_end = get_timestamp();
                 totsecs += (double) (query_end - query_start) / (double(1E6));
