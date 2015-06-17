@@ -184,13 +184,24 @@ int main(int argc, char **argv) {
         graph = new SuccinctGraph(succinct_dir, true); // no-op
         graph->load(node_succinct_dir, edge_succinct_dir);
 
-        std::vector<int64_t> nbhrs0, nbhrs6;
+        std::vector<int64_t> nbhrs;
 
-        graph->get_neighbors(nbhrs0, 0);
-        print_vector("neighbors of node 0: ", nbhrs0);
+        graph->get_neighbors(nbhrs, 0);
+        print_vector("neighbors of node 0: ", nbhrs);
 
-        graph->get_neighbors(nbhrs6, 6);
-        print_vector("neighbors of node 6: ", nbhrs6);
+        graph->get_neighbors(nbhrs, 6);
+        print_vector("neighbors of node 6: ", nbhrs);
+
+        // for toy dataset, this will hit every nbhr of 0
+        graph->get_neighbors(nbhrs, 0, 0, "5PN2qmWqBlQ9wQj99nsQzldVI5ZuGXbE");
+        print_vector("getNeibors(0, attr_that_will_hit): ", nbhrs);
+
+        graph->get_neighbors(nbhrs, 6, 0, "5PN2qmWqBlQ9wQj99nsQzldVI5ZuGXbE");
+        print_vector("getNeibors(6, attr_that_will_hit): ", nbhrs);
+
+        graph->get_neighbors(nbhrs, 0, 0, "WILL NOT HIT");
+        print_vector("getNeibors(0, attr_that_won't_hit): ", nbhrs);
+
     } else {
         assert(0); // Not supported
     }

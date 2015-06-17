@@ -22,9 +22,10 @@ public:
     // previously specified (possibly default) settings.
     //
     //   node_file: each row contains attributes (bytes) for the node
-    //              whose ID is current row number - 1
+    //              whose ID is current row number - 1, separated by
+    //              unique delimiters
     //   edge_file: each row represents one association, in format
-    //              srcId dstId atype time [everything from here to \n is attr]
+    //              srcId dstId atype time [everything from here to EOL is attr]
     // FIXME: probably makes sense to add & to params
     SuccinctGraph& construct(std::string node_file, std::string edge_file);
 
@@ -47,8 +48,11 @@ public:
 
     void get_neighbors(std::vector<int64_t>& result, int64_t node);
 
-    void get_neighbors_of_node(std::vector<int64_t>& result, int64_t node_id,
-        int attr, std::string search_key);
+    void get_neighbors(
+        std::vector<int64_t>& result,
+        int64_t node,
+        int attr,
+        std::string search_key);
 
     void search_nodes(std::set<int64_t>& result, int attr, std::string search_key);
 

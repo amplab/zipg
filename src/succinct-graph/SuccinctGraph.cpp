@@ -9,7 +9,8 @@
 
 // TODO: lots of code duplication among the functions
 
-// TODO: remove
+// TODO: make ATTR_SIZE a parameter to be passed in; or better way to organize
+const int ATTR_SIZE = 32;
 const int NUM_ATTRIBUTES = 10;
 
 // FIXME
@@ -579,10 +580,16 @@ size_t SuccinctGraph::serialize() {
 
 /******* Old API *******/
 
+// Assumes the values in node table have fixed number of attributes, each of
+// which has fixed width (ATTR_SIZE), and that each attr is prefixed by a
+// delimiter (in fact unique, but that fact is irrelevant here).
 void SuccinctGraph::get_attribute(
     std::string& result,
     int64_t node_id,
     int attr) {
+
+    this->node_table->access(
+        result, node_id, attr * (ATTR_SIZE + 1) + 1, ATTR_SIZE);
 }
 
 void SuccinctGraph::get_neighbors(std::vector<int64_t>& result, int64_t node) {
@@ -625,11 +632,21 @@ void SuccinctGraph::get_neighbors(std::vector<int64_t>& result, int64_t node) {
     }
 }
 
-void SuccinctGraph::get_neighbors_of_node(
+// Scans neighbors and looks for those that contain the desired attr.
+void SuccinctGraph::get_neighbors(
     std::vector<int64_t>& result,
     int64_t node_id,
     int attr,
     std::string search_key) {
+
+    std::vector<int64_t> nbhrs;
+    get_neighbors(nbhrs, node_id);
+    result.clear();
+    std::string attribute;
+    for (auto it = nbhrs.begin(); it != nbhrs.end(); ++it) {
+        get_attribute(attribute, *it, attr);
+        if (attribute == search_key) result.push_back(*it);
+    }
 }
 
 void SuccinctGraph::search_nodes(
