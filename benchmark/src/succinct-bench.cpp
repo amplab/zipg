@@ -120,10 +120,11 @@ int main(int argc, char **argv) {
         printf("SuccinctGraph construction done\n");
 
     } else if (type == "graph-format") {
-
         GraphFormatter::format_node_file(succinct_dir);
         printf("Node file formatted\n");
-
+    } else if (type == "higgs-format") {
+        GraphFormatter::format_higgs_activity_file(
+            succinct_dir, std::string(argv[optind + 1]), 128);
     } else if (type == "graph-test") {
         // case: load (mmap) constructed files
         // TODO: write as an automatic test suite (e.g. write out tmp file)

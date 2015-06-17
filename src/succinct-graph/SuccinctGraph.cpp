@@ -126,7 +126,6 @@ SuccinctGraph& SuccinctGraph::construct(
 
     for (auto it = assoc_map.begin(); it != assoc_map.end(); ++it) {
         auto src_id_and_atype = it->first;
-        printf("hi\n");
 
         edge_file_out << NODE_ID_DELIM
             << SuccinctGraphSerde::pad_node_id(src_id_and_atype.first);

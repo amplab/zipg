@@ -113,16 +113,8 @@ public:
 
     const static std::string DELIMINATORS;
 
-private:
-    SuccinctShard *node_table;
-    SuccinctFile *edge_table;
-
-    std::string succinct_dir;
-    int64_t edges;
-
     /**************** Internal formats ****************/
     // C.f. the LinkBench paper, Sigmoid 2013
-
     typedef int64_t NodeId;
     typedef int64_t Timestamp;
     typedef int64_t AType;
@@ -138,6 +130,13 @@ private:
     static bool cmp_assoc_by_decreasing_time(const Assoc &a, const Assoc &b) {
         return a.time > b.time;
     }
+
+private:
+    SuccinctShard *node_table;
+    SuccinctFile *edge_table;
+
+    std::string succinct_dir;
+    int64_t edges;
 
     uint64_t get_edge_table_offset(NodeId id, AType atype);
 
