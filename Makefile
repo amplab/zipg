@@ -23,7 +23,8 @@ all: succinct graph
 
 succinct:
 	mkdir -p $(LIBDIR)
-	git submodule update #--init
+	git submodule sync # make sure to fetch new updates
+	git submodule update 
 	cd $(SUCCINCTDIR) && $(MAKE)
 
 graph_generator:
