@@ -102,22 +102,6 @@ SuccinctGraph& SuccinctGraph::construct(
                   cmp_assoc_by_decreasing_time);
     }
 
-    // just debug messages
-//    printf("\n");
-    for (auto it = assoc_map.begin(); it != assoc_map.end(); ++it) {
-        std::vector<Assoc> assocs = it->second;
-        printf("[node %lld, atype %lld]: ",
-            (it->first).first, (it->first).second);
-        for (auto it2 = assocs.begin(); it2 != assocs.end(); ++it2) {
-            printf(" (dst %lld, time %lld, attr '%s')",
-                   it2->dst_id,
-                   it2->time,
-                   (it2->attr).c_str());
-        }
-        printf("\n");
-    }
-    printf("\n");
-
     // Serialize to an .edge_table file (flat file layout)
 
     std::string edge_file_name = edge_file.replace(
@@ -144,14 +128,10 @@ SuccinctGraph& SuccinctGraph::construct(
         edge_file_out << SuccinctGraphSerde::pad_edge_width(edge_width)
             << SuccinctGraphSerde::pad_data_width(data_width);
 
-        printf("written out metadata\n");
-
         // timestamps
         for (auto it2 = assoc_list.begin(); it2 != assoc_list.end(); ++it2) {
             std::string encoded = SuccinctGraphSerde::encode_timestamp(
                 it2->time);
-
-            printf("encoded = '%s'\n", encoded.c_str());
 
             if (SuccinctGraphSerde::decode_timestamp(encoded) != it2->time) {
                 printf("Failed: time = [%lld], encoded = [%s], decoded = [%lld]\n",
@@ -161,7 +141,6 @@ SuccinctGraph& SuccinctGraph::construct(
 
             edge_file_out << encoded;
         }
-        printf("written out timestamps\n");
         // dst node ids
         for (auto it2 = assoc_list.begin(); it2 != assoc_list.end(); ++it2) {
             std::string encoded = SuccinctGraphSerde::encode_node_id(

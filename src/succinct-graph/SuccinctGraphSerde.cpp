@@ -73,7 +73,6 @@ std::string SuccinctGraphSerde::pad_int64(int64_t x) {
 }
 
 std::string SuccinctGraphSerde::encode_int64(int64_t x, int padded_width) {
-printf("in encode_int64\n");
     assert(ENCODE_ALPHABET.length() == SIZE_ENCODE_ALPHABET);
     std::string res((size_t) padded_width, '0');
     int i = padded_width - 1;
@@ -82,7 +81,6 @@ printf("in encode_int64\n");
         x /= SIZE_ENCODE_ALPHABET;
         --i;
     }
-    printf("while loop done\n");
     assert(i >= 0);
     return res;
 }
@@ -102,7 +100,6 @@ std::string SuccinctGraphSerde::encode_int32(int32_t x, int padded_width) {
     std::string res((size_t) padded_width, '0');
     int i = padded_width - 1;
     while (x != 0) {
-    //printf("i = %d, x = %d\n", i, x);
         res[i] = ENCODE_ALPHABET[x % SIZE_ENCODE_ALPHABET];
         x /= SIZE_ENCODE_ALPHABET;
         --i;
