@@ -138,6 +138,7 @@ private:
     std::string succinct_dir;
     int64_t edges;
 
+    // Returns -1 iff the assoc list doesn't exist.
     uint64_t get_edge_table_offset(NodeId id, AType atype);
 
 };

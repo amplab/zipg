@@ -195,10 +195,9 @@ uint64_t SuccinctGraph::get_edge_table_offset(NodeId id, AType atype) {
     std::string key(1, NODE_ID_DELIM);
     key += SuccinctGraphSerde::pad_node_id(id) + ATYPE_DELIM +
         SuccinctGraphSerde::pad_atype(atype);
-    // printf("search key = '%s'\n", key.c_str());
     this->edge_table->search(res, key);
-    assert(res.size() == 1);
-    return res.at(0);
+    assert(res.size() <= 1);
+    return res.size() == 1 ? res.at(0) : -1;
 }
 
 void SuccinctGraph::obj_get(std::string& result, int64_t obj_id) {
@@ -211,6 +210,7 @@ std::vector<SuccinctGraph::AssocResult> SuccinctGraph::assoc_range(
     printf("assoc_range(src = %lld, atype = %d, off = %d, len = %d): ",
         src, atype, off, len);
     uint64_t curr_off = get_edge_table_offset(src, atype);
+    if (curr_off == -1) return std::vector<AssocResult>();
     printf("edge table offset = %llu\n", curr_off);
 
     curr_off = skip_init_node_atype(curr_off);
@@ -284,6 +284,7 @@ std::vector<SuccinctGraph::AssocResult> SuccinctGraph::assoc_get(
     printf("assoc_get(src = %lld, atype = %d, dst_id_set=...,low=%lld,high=%lld): ",
         src, atype, t_low, t_high);
     uint64_t curr_off = get_edge_table_offset(src, atype);
+    if (curr_off == -1) return std::vector<AssocResult>();
     printf("edge table offset = %llu\n", curr_off);
 
     curr_off = skip_init_node_atype(curr_off);
@@ -403,7 +404,7 @@ std::vector<SuccinctGraph::AssocResult> SuccinctGraph::assoc_get(
 
 int64_t SuccinctGraph::assoc_count(int64_t src, int32_t atype) {
     uint64_t curr_off = get_edge_table_offset(src, atype);
-
+    if (curr_off == -1) return 0;
     curr_off = skip_init_node_atype(curr_off);
 
     std::string edge_width_str;
@@ -433,6 +434,7 @@ std::vector<SuccinctGraph::AssocResult> SuccinctGraph::assoc_time_range(
     printf("assoc_time_range(src = %lld, atype = %d,low=%lld,high=%lld,len=%d): ",
         src, atype, t_low, t_high, len);
     uint64_t curr_off = get_edge_table_offset(src, atype);
+    if (curr_off == -1) return std::vector<AssocResult>();
     printf("edge table offset = %llu\n", curr_off);
 
     curr_off = skip_init_node_atype(curr_off);
