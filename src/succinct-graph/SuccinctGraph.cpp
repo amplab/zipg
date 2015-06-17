@@ -586,6 +586,43 @@ void SuccinctGraph::get_attribute(
 }
 
 void SuccinctGraph::get_neighbors(std::vector<int64_t>& result, int64_t node) {
+    std::vector<int64_t> offsets;
+    this->edge_table->search(
+        offsets, NODE_ID_DELIM + SuccinctGraphSerde::pad_node_id(node));
+
+    result.clear();
+    for (auto it = offsets.begin(); it != offsets.end(); ++it) {
+        uint64_t curr_off = *it;
+        curr_off = skip_init_node_atype(curr_off);
+
+        std::string edge_width_str;
+        this->edge_table->extract(
+            edge_width_str, curr_off, SuccinctGraphSerde::WIDTH_EDGE_WIDTH_PADDED);
+        int32_t edge_width = std::stoi(edge_width_str);
+
+        std::string data_width;
+        curr_off += SuccinctGraphSerde::WIDTH_EDGE_WIDTH_PADDED;
+        this->edge_table->extract(
+            data_width, curr_off, SuccinctGraphSerde::WIDTH_DATA_WIDTH_PADDED);
+
+        curr_off += SuccinctGraphSerde::WIDTH_DATA_WIDTH_PADDED;
+
+        assert(std::stoi(data_width) %
+            (WIDTH_TIMESTAMP + WIDTH_NODE_ID + edge_width) == 0);
+
+        int64_t cnt = std::stoi(data_width) /
+            (WIDTH_TIMESTAMP + WIDTH_NODE_ID + edge_width);
+
+        curr_off += cnt * WIDTH_TIMESTAMP;
+
+        std::string dst_ids;
+        this->edge_table->extract(dst_ids, curr_off, cnt * WIDTH_NODE_ID);
+
+        std::vector<int64_t> decoded =
+            SuccinctGraphSerde::decode_multi_node_ids(dst_ids);
+
+        result.insert(result.end(), decoded.begin(), decoded.end());
+    }
 }
 
 void SuccinctGraph::get_neighbors_of_node(

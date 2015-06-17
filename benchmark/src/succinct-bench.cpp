@@ -9,6 +9,13 @@ void print_usage(char *exec) {
     fprintf(stderr, "Usage: %s [-t type] [-x warmup_n] [-y measure_n] [-w warmup_file] [-q query_file] [-a neighbor_warmup ] [-b neighbor_query] [-o output_file] [succinct_dir]\n", exec);
 }
 
+void print_vector(const std::string& msg, const std::vector<int64_t>& vec) {
+    printf("%s[", msg.c_str());
+    for (auto it = vec.begin(); it != vec.end(); ++it)
+        printf(" %lld", *it);
+    printf(" ]\n");
+}
+
 int main(int argc, char **argv) {
     if (argc < 2) {
         print_usage(argv[0]);
@@ -165,7 +172,19 @@ int main(int argc, char **argv) {
         // [id=1,time=41842148,attr='a b'] [id=1618,time=93244,attr='sup'] [id=1,time=9324,attr='suc']
         SuccinctGraph::print_assoc_results(
             graph->assoc_time_range(0, 2, -1, 99999999999, 100)); // 3 edges
+    } else if (type == "old-api") {
+        std::string node_succinct_dir = succinct_dir;
+        std::string edge_succinct_dir = std::string(argv[optind + 1]);
+        graph = new SuccinctGraph(succinct_dir, true); // no-op
+        graph->load(node_succinct_dir, edge_succinct_dir);
 
+        std::vector<int64_t> nbhrs0, nbhrs6;
+
+        graph->get_neighbors(nbhrs0, 0);
+        print_vector("neighbors of node 0: ", nbhrs0);
+
+        graph->get_neighbors(nbhrs6, 6);
+        print_vector("neighbors of node 6: ", nbhrs6);
     } else {
         assert(0); // Not supported
     }
