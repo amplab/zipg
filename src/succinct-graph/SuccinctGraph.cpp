@@ -59,6 +59,8 @@ SuccinctGraph& SuccinctGraph::construct(
     fprintf(stderr, "Initializing node table (SuccinctShard)\n");
 
     // TODO: needs to call delete on the allocated object?
+    printf("constructing node table with npa %d, sa %d, isa %d\n",
+        npa_sampling_rate, sa_sampling_rate, isa_sampling_rate);
     this->node_table = new SuccinctShard(
         0,
         node_file,
@@ -165,8 +167,14 @@ SuccinctGraph& SuccinctGraph::construct(
     edge_file_out.close();
     printf("Edge table written out to disk, now to Succinct-encode it\n");
 
-    this->edge_table = new SuccinctFile(edge_file_name);
-//    printf("Constructed\n");
+    printf("constructing edge table with npa %d, sa %d, isa %d\n",
+        npa_sampling_rate, sa_sampling_rate, isa_sampling_rate);
+    this->edge_table = new SuccinctFile(
+        edge_file_name,
+        SuccinctMode::CONSTRUCT_IN_MEMORY,
+        sa_sampling_rate,
+        isa_sampling_rate,
+        npa_sampling_rate);
     size_t num_bytes = this->edge_table->serialize();
     printf("Succinct-encoded edge table, number of bytes written: %zu\n",
         num_bytes);
