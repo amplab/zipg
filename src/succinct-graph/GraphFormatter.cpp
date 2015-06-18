@@ -122,7 +122,7 @@ void GraphFormatter::format_higgs_activity_file(
             if (token_idx == 4) break;
         }
         SuccinctGraph::Assoc assoc =
-            { dst_id, time, gen_random_string(bytes_per_attr) };
+            { src_id, dst_id, atype, time, gen_random_string(bytes_per_attr) };
         assoc_map[std::make_pair(src_id, atype)].push_back(assoc);
     }
     in_stream.close();

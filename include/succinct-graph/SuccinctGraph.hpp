@@ -42,6 +42,26 @@ public:
     size_t storage_size();
     size_t serialize();
 
+    /**************** Internal formats ****************/
+    // C.f. the LinkBench paper, Sigmoid 2013
+    typedef int64_t NodeId;
+    typedef int64_t Timestamp;
+    typedef int64_t AType;
+
+    typedef std::pair<NodeId, AType> AssocListKey;
+
+    struct Assoc {
+        NodeId src_id; // 8 bytes
+        NodeId dst_id; // 8 bytes
+        AType atype; // 8 bytes
+        Timestamp time; // 8 bytes
+        std::string attr; // variable bytes
+    };
+
+    static bool cmp_assoc_by_decreasing_time(const Assoc &a, const Assoc &b) {
+        return a.time > b.time;
+    }
+
     /**************** Primitive APIs ****************/
 
     void get_attribute(std::string& result, int64_t node_id, int attr);
@@ -65,16 +85,11 @@ public:
 
     /**************** TAO-like APIs ****************/
 
-    // dst_id, timestamp, attr
-    typedef std::tuple<int64_t, int64_t, std::string> AssocResult;
-
     static void
-    print_assoc_results(const std::vector<AssocResult>& assoc_results) {
+    print_assoc_results(const std::vector<Assoc>& assoc_results) {
         for (auto it = assoc_results.begin(); it != assoc_results.end(); ++it) {
-            printf("[id=%lld,time=%lld,attr='%s'] ",
-                   std::get<0>(*it),
-                   std::get<1>(*it),
-                   std::get<2>(*it).c_str());
+            printf("[src %lld,dst %lld,atype %lld,time %lld,attr '%s'] ",
+                it->src_id, it->dst_id, it->atype, it->time, it->attr.c_str());
         }
         printf("\n\n");
     }
@@ -82,22 +97,24 @@ public:
     // Gets the attribute data of node `obj_id` into `result`.
     void obj_get(std::string& result, int64_t obj_id);
 
-    std::vector<AssocResult> assoc_range(int64_t src,
-                                         int32_t atype,
-                                         int32_t off,
-                                         int32_t len);
+    std::vector<Assoc> assoc_range(
+        int64_t src,
+        int32_t atype,
+        int32_t off,
+        int32_t len);
 
-    std::vector<AssocResult> assoc_get(int64_t src,
-                                       int32_t atype,
-                                       std::set<int64_t> dst_id_set,
-                                       int64_t t_low,
-                                       int64_t t_high);
+    std::vector<Assoc> assoc_get(
+        int64_t src,
+        int32_t atype,
+        std::set<int64_t> dst_id_set,
+        int64_t t_low,
+        int64_t t_high);
 
     // Returns number of associations in the association list (src, atype).
     // Undefined behavior if (src, atype) doesn't exist.
     int64_t assoc_count(int64_t src, int32_t atype);
 
-    std::vector<AssocResult> assoc_time_range(
+    std::vector<Assoc> assoc_time_range(
         int64_t src,
         int32_t atype,
         int64_t t_low,
@@ -112,24 +129,6 @@ public:
     uint32_t npa_sampling_rate = 256;
 
     const static std::string DELIMINATORS;
-
-    /**************** Internal formats ****************/
-    // C.f. the LinkBench paper, Sigmoid 2013
-    typedef int64_t NodeId;
-    typedef int64_t Timestamp;
-    typedef int64_t AType;
-
-    typedef std::pair<NodeId, AType> AssocListKey;
-
-    struct Assoc {
-        NodeId dst_id; // 8 bytes
-        Timestamp time; // 8 bytes
-        std::string attr; // variable bytes
-    };
-
-    static bool cmp_assoc_by_decreasing_time(const Assoc &a, const Assoc &b) {
-        return a.time > b.time;
-    }
 
 private:
     SuccinctShard *node_table;

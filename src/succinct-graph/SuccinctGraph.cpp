@@ -52,6 +52,7 @@ SuccinctGraph& SuccinctGraph::set_isa_sampling_rate(uint32_t sampling_rate) {
     return *this;
 }
 
+// FIXME: some stoi should be stol?
 SuccinctGraph& SuccinctGraph::construct(
     std::string node_file,
     std::string edge_file) {
@@ -93,7 +94,7 @@ SuccinctGraph& SuccinctGraph::construct(
             if (token_idx == 4) break;
         }
         std::getline(ss, token); // rest of the data is attr
-        Assoc assoc = { dst_id, time, token };
+        Assoc assoc = { src_id, dst_id, atype, time, token };
         assoc_map[std::make_pair(src_id, atype)].push_back(assoc);
     }
     edge_file_stream.close();
@@ -212,13 +213,13 @@ void SuccinctGraph::obj_get(std::string& result, int64_t obj_id) {
     this->node_table->get(result, obj_id);
 }
 
-std::vector<SuccinctGraph::AssocResult> SuccinctGraph::assoc_range(
+std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_range(
     int64_t src, int32_t atype, int32_t off, int32_t len) {
 
     printf("assoc_range(src = %lld, atype = %d, off = %d, len = %d): ",
         src, atype, off, len);
     uint64_t curr_off = get_edge_table_offset(src, atype);
-    if (curr_off == -1) return std::vector<AssocResult>();
+    if (curr_off == -1) return std::vector<Assoc>();
     printf("edge table offset = %llu\n", curr_off);
 
     curr_off = skip_init_node_atype(curr_off);
@@ -271,18 +272,21 @@ std::vector<SuccinctGraph::AssocResult> SuccinctGraph::assoc_range(
     std::vector<int64_t> decoded_dst_ids =
         SuccinctGraphSerde::decode_multi_node_ids(dst_ids);
 
-    std::vector<AssocResult> result;
+    std::vector<Assoc> result;
     for (int i = 0; i < decoded_timestamps.size(); ++i) {
-        result.push_back(
-            std::make_tuple(decoded_dst_ids[i],
-                            decoded_timestamps[i],
-                            attrs.substr(i * edge_width, edge_width)));
+        result.push_back( // FIXME
+            { -1,
+              decoded_dst_ids[i],
+              -1,
+              decoded_timestamps[i],
+              attrs.substr(i * edge_width, edge_width)
+            });
     }
     return result;
 }
 
 // Basic impl idea: performs binary search on the timestamps.
-std::vector<SuccinctGraph::AssocResult> SuccinctGraph::assoc_get(
+std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_get(
     int64_t src,
     int32_t atype,
     std::set<int64_t> dst_id_set,
@@ -292,7 +296,7 @@ std::vector<SuccinctGraph::AssocResult> SuccinctGraph::assoc_get(
     printf("assoc_get(src = %lld, atype = %d, dst_id_set=...,low=%lld,high=%lld): ",
         src, atype, t_low, t_high);
     uint64_t curr_off = get_edge_table_offset(src, atype);
-    if (curr_off == -1) return std::vector<AssocResult>();
+    if (curr_off == -1) return std::vector<Assoc>();
     printf("edge table offset = %llu\n", curr_off);
 
     curr_off = skip_init_node_atype(curr_off);
@@ -398,14 +402,17 @@ std::vector<SuccinctGraph::AssocResult> SuccinctGraph::assoc_get(
 
     std::vector<int64_t> decoded_timestamps =
         SuccinctGraphSerde::decode_multi_timestamps(timestamps);
-    std::vector<AssocResult> result;
+    std::vector<Assoc> result;
     for (int i = 0; i < in_set_indexes.size(); ++i) {
         idx = in_set_indexes[i];
         // decoded dst ids and timestamps start w/ absolute idx range_left
-        result.push_back(
-            std::make_tuple(decoded_dst_ids[idx - range_left],
-                            decoded_timestamps[idx - range_left],
-                            valid_attrs[i]));
+        result.push_back( // FIXME
+            { -1,
+              decoded_dst_ids[idx - range_left],
+              -1,
+              decoded_timestamps[idx - range_left],
+              valid_attrs[i]
+            });
     }
     return result;
 }
@@ -432,7 +439,7 @@ int64_t SuccinctGraph::assoc_count(int64_t src, int32_t atype) {
     return cnt;
 }
 
-std::vector<SuccinctGraph::AssocResult> SuccinctGraph::assoc_time_range(
+std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_time_range(
     int64_t src,
     int32_t atype,
     int64_t t_low,
@@ -442,7 +449,7 @@ std::vector<SuccinctGraph::AssocResult> SuccinctGraph::assoc_time_range(
     printf("assoc_time_range(src = %lld, atype = %d,low=%lld,high=%lld,len=%d): ",
         src, atype, t_low, t_high, len);
     uint64_t curr_off = get_edge_table_offset(src, atype);
-    if (curr_off == -1) return std::vector<AssocResult>();
+    if (curr_off == -1) return std::vector<Assoc>();
     printf("edge table offset = %llu\n", curr_off);
 
     curr_off = skip_init_node_atype(curr_off);
@@ -534,12 +541,15 @@ std::vector<SuccinctGraph::AssocResult> SuccinctGraph::assoc_time_range(
         SuccinctGraphSerde::decode_multi_timestamps(timestamps);
     std::vector<int64_t> decoded_dst_ids =
         SuccinctGraphSerde::decode_multi_node_ids(dst_ids);
-    std::vector<AssocResult> result;
+    std::vector<Assoc> result;
     for (int i = 0; i < decoded_timestamps.size(); ++i) {
-        result.push_back(
-            std::make_tuple(decoded_dst_ids[i],
-                            decoded_timestamps[i],
-                            attrs.substr(i * edge_width, edge_width)));
+        result.push_back( // FIXME
+            { -1,
+              decoded_dst_ids[i],
+              -1,
+              decoded_timestamps[i],
+              attrs.substr(i * edge_width, edge_width)
+            });
     }
     return result;
 }
