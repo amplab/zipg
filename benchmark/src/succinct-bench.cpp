@@ -290,34 +290,49 @@ int main(int argc, char **argv) {
         assert_eq(graph->assoc_get(-1, -1, dst_id_set, -1, 100000),
             { {0, 1618, 2, 93244, "sup"}, {0, 1, 2, 9324, "suc"} });
 
-        // TODO: add proper Assoc and AType to other query results
         // assoc_time_range() tests
 
-        // [id=1,time=111111,attr='abcd']
         SuccinctGraph::print_assoc_results(
             graph->assoc_time_range(6, 1, 1, 99999999, 10)); // 1 edge
 
-//        assert_eq(graph->assoc_time_range(6, 1, 1, 99999999, 10),
-//            { {6, 1, 1, 111111, "abcd"} });
+        assert_eq(graph->assoc_time_range(6, 1, 1, 99999999, 10),
+            { {6, 1, 1, 111111, "abcd"} });
 
-//        SuccinctGraph::print_assoc_results(
-//            graph->assoc_time_range(0, 0, 0, 1, 10)); // 0 edge // FIXME
+        // nothing
+        assert_eq(graph->assoc_time_range(0, 0, 0, 1, 10), { });
 
-        // [id=1618,time=93244,attr='sup'] [id=1,time=9324,attr='suc']
         SuccinctGraph::print_assoc_results(
             graph->assoc_time_range(0, 2, 900, 93244, 2)); // 2 edges
+        assert_eq(graph->assoc_time_range(0, 2, 900, 93244, 2),
+            { {0, 1618, 2, 93244, "sup"}, {0, 1, 2, 9324, "suc"} });
 
-        // [id=1618,time=93244,attr='sup']
         SuccinctGraph::print_assoc_results(
             graph->assoc_time_range(0, 2, 900, 93244, 1)); // 1 edge
+        assert_eq(graph->assoc_time_range(0, 2, 900, 93244, 1),
+            { {0, 1618, 2, 93244, "sup"} });
 
-        // [id=1,time=41842148,attr='a b']
         SuccinctGraph::print_assoc_results(
             graph->assoc_time_range(0, 2, -1, 99999999999, 1)); // 1 edge
+        assert_eq(graph->assoc_time_range(0, 2, -1, 99999999999, 1),
+            { {0, 1, 2, 41842148, "a b"} });
 
-        // [id=1,time=41842148,attr='a b'] [id=1618,time=93244,attr='sup'] [id=1,time=9324,attr='suc']
         SuccinctGraph::print_assoc_results(
             graph->assoc_time_range(0, 2, -1, 99999999999, 100)); // 3 edges
+        assert_eq(graph->assoc_time_range(0, 2, -1, 99999999999, 100),
+            { {0, 1, 2, 41842148, "a b"},
+              {0, 1618, 2, 93244, "sup"},
+              {0, 1, 2, 9324, "suc"}
+            });
+
+        // all edges <= time 999999999; at most 2 edges from each assoc list
+        assert_eq(graph->assoc_time_range(-1, -1, -1, 999999999, 2),
+            { {0, 2, 0, 9324, "succinct is cool"},
+              {0, 1, 2, 41842148, "a b"},
+              {0, 1618, 2, 93244, "sup"},
+              {6, 1, 1, 111111, "abcd"}
+            }
+        );
+
     } else if (type == "old-api") {
         std::string node_succinct_dir = succinct_dir;
         std::string edge_succinct_dir = std::string(argv[optind + 1]);
