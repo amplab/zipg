@@ -20,6 +20,15 @@
         atype = std::stoll(atype_str); \
         curr_off += SuccinctGraphSerde::WIDTH_ATYPE_PADDED;
 
+// Used in places where we don't need the src id and atype.
+inline int64_t skip_init_node_atype(int64_t curr_off) {
+    return curr_off +
+        1 + // node delim
+        SuccinctGraphSerde::WIDTH_NODE_ID_PADDED + // padded node id
+        1 + // atype delim
+        SuccinctGraphSerde::WIDTH_ATYPE_PADDED; // padded atype
+}
+
 // TODO: lots of code duplication among the functions
 
 // TODO: make ATTR_SIZE a parameter to be passed in; or better way to organize
@@ -32,16 +41,6 @@ const char ATYPE_DELIM = '\x03';
 //const char NODE_ID_DELIM = 'A';
 //const char ATYPE_DELIM = 'B';
 const std::string SuccinctGraph::DELIMINATORS = "<>()#$%&*+[]{}^-|~;? \"',./:=@\\_~\x02\x03\x04\x05\x06\x07\x08\x09";
-
-// TODO: remove
-inline int64_t skip_init_node_atype(int64_t curr_off) {
-    return curr_off +
-        1 + // node delim
-        SuccinctGraphSerde::WIDTH_NODE_ID_PADDED + // padded node id
-        1 + // atype delim
-        SuccinctGraphSerde::WIDTH_ATYPE_PADDED; // padded atype
-}
-
 
 SuccinctGraph::SuccinctGraph(
     std::string succinct_dir,
@@ -479,25 +478,28 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_get(
 }
 
 int64_t SuccinctGraph::assoc_count(int64_t src, int64_t atype) {
-    int64_t curr_off = get_edge_table_offsets(src, atype)[0]; // FIXME
-    if (curr_off == -1) return 0;
-    curr_off = skip_init_node_atype(curr_off);
+    std::vector<int64_t> eoffs = get_edge_table_offsets(src, atype);
+    int64_t total_cnt = 0;
+    std::string edge_width_str, data_width;
 
-    std::string edge_width_str;
-    this->edge_table->extract(
-        edge_width_str, curr_off, SuccinctGraphSerde::WIDTH_EDGE_WIDTH_PADDED);
-    int32_t edge_width = std::stoi(edge_width_str);
+    for (auto curr_off : eoffs) {
+        if (curr_off == -1) continue;
+        curr_off = skip_init_node_atype(curr_off);
 
-    std::string data_width;
-    curr_off += SuccinctGraphSerde::WIDTH_EDGE_WIDTH_PADDED;
-    this->edge_table->extract(
-        data_width, curr_off, SuccinctGraphSerde::WIDTH_DATA_WIDTH_PADDED);
+        this->edge_table->extract(
+            edge_width_str, curr_off, SuccinctGraphSerde::WIDTH_EDGE_WIDTH_PADDED);
+        int32_t edge_width = std::stoi(edge_width_str);
 
-    assert(std::stoi(data_width) %
-        (WIDTH_TIMESTAMP + WIDTH_NODE_ID + edge_width) == 0);
-    int64_t cnt = std::stoi(data_width) /
-        (WIDTH_TIMESTAMP + WIDTH_NODE_ID + edge_width);
-    return cnt;
+        curr_off += SuccinctGraphSerde::WIDTH_EDGE_WIDTH_PADDED;
+        this->edge_table->extract(
+            data_width, curr_off, SuccinctGraphSerde::WIDTH_DATA_WIDTH_PADDED);
+
+        assert(std::stoi(data_width) %
+            (WIDTH_TIMESTAMP + WIDTH_NODE_ID + edge_width) == 0);
+        total_cnt += std::stoi(data_width) /
+            (WIDTH_TIMESTAMP + WIDTH_NODE_ID + edge_width);
+    }
+    return total_cnt;
 }
 
 std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_time_range(

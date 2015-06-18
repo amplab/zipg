@@ -230,16 +230,30 @@ int main(int argc, char **argv) {
         assert_eq(graph->assoc_range(6, 1, 0, 1),
             { {6, 1, 1, 111111, "abcd"} });
 
-        // TODO: add proper Assoc and AType to other query results
-
         // assoc_count() tests
 
         printf("assoc_count(0, 0) = %llu\n", graph->assoc_count(0, 0)); // 1
         printf("assoc_count(0, 2) = %llu\n", graph->assoc_count(0, 2)); // 3
         printf("assoc_count(6, 1) = %llu\n", graph->assoc_count(6, 1)); // 1
+
         assert(graph->assoc_count(0, 0) == 1);
         assert(graph->assoc_count(0, 2) == 3);
         assert(graph->assoc_count(6, 1) == 1);
+
+        // count all edges
+        assert(graph->assoc_count(-1, -1) == 5);
+
+        // count all edges with a particular assoc type
+        assert(graph->assoc_count(-1, 2) == 3 &&
+               graph->assoc_count(-1, 0) == 1 &&
+               graph->assoc_count(-1, 1) == 1);
+
+        // count all edges that start from node 0
+        assert(graph->assoc_count(0, -1) == 4);
+
+        // count edges from non-existent node or that has non-existent atype
+        assert(graph->assoc_count(1618, -1) == 0 &&
+               graph->assoc_count(-1, 1618) == 0);
 
         // assoc_get() tests
 
@@ -276,6 +290,7 @@ int main(int argc, char **argv) {
         assert_eq(graph->assoc_get(-1, -1, dst_id_set, -1, 100000),
             { {0, 1618, 2, 93244, "sup"}, {0, 1, 2, 9324, "suc"} });
 
+        // TODO: add proper Assoc and AType to other query results
         // assoc_time_range() tests
 
         // [id=1,time=111111,attr='abcd']
