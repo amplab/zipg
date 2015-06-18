@@ -88,7 +88,7 @@ public:
     static void
     print_assoc_results(const std::vector<Assoc>& assoc_results) {
         for (auto it = assoc_results.begin(); it != assoc_results.end(); ++it) {
-            printf("[src %lld,dst %lld,atype %lld,time %lld,attr '%s'] ",
+            printf("[src %lld,dst %lld,atype %lld,time %lld,attr '%s']\n",
                 it->src_id, it->dst_id, it->atype, it->time, it->attr.c_str());
         }
         printf("\n\n");
@@ -99,24 +99,24 @@ public:
 
     std::vector<Assoc> assoc_range(
         int64_t src,
-        int32_t atype,
+        int64_t atype,
         int32_t off,
         int32_t len);
 
     std::vector<Assoc> assoc_get(
         int64_t src,
-        int32_t atype,
+        int64_t atype,
         std::set<int64_t> dst_id_set,
         int64_t t_low,
         int64_t t_high);
 
     // Returns number of associations in the association list (src, atype).
     // Undefined behavior if (src, atype) doesn't exist.
-    int64_t assoc_count(int64_t src, int32_t atype);
+    int64_t assoc_count(int64_t src, int64_t atype);
 
     std::vector<Assoc> assoc_time_range(
         int64_t src,
-        int32_t atype,
+        int64_t atype,
         int64_t t_low,
         int64_t t_high,
         int32_t len);
@@ -137,8 +137,10 @@ private:
     std::string succinct_dir;
     int64_t edges;
 
-    // Returns -1 iff the assoc list doesn't exist.
-    uint64_t get_edge_table_offset(NodeId id, AType atype);
+    // Returns a list of edge table offsets; result is a list since the two
+    // arguments can be omitted (i.e. as wildcards, represented as -1 for now).
+    // An edge table offset is -1 iff an assoc list doesn't exist.
+    std::vector<int64_t> get_edge_table_offsets(NodeId id, AType atype);
 
 };
 

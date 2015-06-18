@@ -7,6 +7,19 @@
 #define WIDTH_TIMESTAMP SuccinctGraphSerde::WIDTH_TIMESTAMP
 #define WIDTH_NODE_ID SuccinctGraphSerde::WIDTH_NODE_ID
 
+// Hacky: represents not-specified query arguments
+#define NONE -1
+
+// Assumes all variables defined; curr_off needs to be at start of an assoc list
+#define UNSAFE_EXTRACT_SRC_ATYPE_AND_INC_OFF() \
+        curr_off += 1; \
+        this->edge_table->extract(src_id_str, curr_off, SuccinctGraphSerde::WIDTH_NODE_ID_PADDED); \
+        curr_off += SuccinctGraphSerde::WIDTH_NODE_ID_PADDED + 1; \
+        this->edge_table->extract(atype_str, curr_off, SuccinctGraphSerde::WIDTH_ATYPE_PADDED); \
+        src = std::stoll(src_id_str); \
+        atype = std::stoll(atype_str); \
+        curr_off += SuccinctGraphSerde::WIDTH_ATYPE_PADDED;
+
 // TODO: lots of code duplication among the functions
 
 // TODO: make ATTR_SIZE a parameter to be passed in; or better way to organize
@@ -20,7 +33,8 @@ const char ATYPE_DELIM = '\x03';
 //const char ATYPE_DELIM = 'B';
 const std::string SuccinctGraph::DELIMINATORS = "<>()#$%&*+[]{}^-|~;? \"',./:=@\\_~\x02\x03\x04\x05\x06\x07\x08\x09";
 
-inline uint64_t skip_init_node_atype(uint64_t curr_off) {
+// TODO: remove
+inline int64_t skip_init_node_atype(int64_t curr_off) {
     return curr_off +
         1 + // node delim
         SuccinctGraphSerde::WIDTH_NODE_ID_PADDED + // padded node id
@@ -199,14 +213,33 @@ SuccinctGraph& SuccinctGraph::load(
     return *this;
 }
 
-uint64_t SuccinctGraph::get_edge_table_offset(NodeId id, AType atype) {
+std::vector<int64_t>
+SuccinctGraph::get_edge_table_offsets(NodeId id, AType atype) {
     std::vector<int64_t> res;
     std::string key(1, NODE_ID_DELIM);
-    key += SuccinctGraphSerde::pad_node_id(id) + ATYPE_DELIM +
-        SuccinctGraphSerde::pad_atype(atype);
-    this->edge_table->search(res, key);
-    assert(res.size() <= 1);
-    return res.size() == 1 ? res.at(0) : -1;
+
+    if (id == NONE && atype == NONE) {
+        this->edge_table->search(res, key);
+    } else if (atype == NONE) {
+        this->edge_table->search(
+            res, key + SuccinctGraphSerde::pad_node_id(id));
+    } else if (id == NONE) {
+        this->edge_table->search(
+            res,
+            std::string(1, ATYPE_DELIM) + SuccinctGraphSerde::pad_atype(atype));
+        // shift to start of each assoc list
+        for (int i = 0; i < res.size(); ++i) {
+            res[i] -= SuccinctGraphSerde::WIDTH_NODE_ID_PADDED;
+            res[i] -= 1; // delim
+        }
+    } else {
+        key += SuccinctGraphSerde::pad_node_id(id) +
+            ATYPE_DELIM +
+            SuccinctGraphSerde::pad_atype(atype);
+        this->edge_table->search(res, key);
+        assert(res.size() <= 1);
+    }
+    return res;
 }
 
 void SuccinctGraph::obj_get(std::string& result, int64_t obj_id) {
@@ -214,73 +247,88 @@ void SuccinctGraph::obj_get(std::string& result, int64_t obj_id) {
 }
 
 std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_range(
-    int64_t src, int32_t atype, int32_t off, int32_t len) {
+    int64_t src, int64_t atype, int32_t off, int32_t len) {
 
-    printf("assoc_range(src = %lld, atype = %d, off = %d, len = %d): ",
+    printf("assoc_range(src = %lld, atype = %lld, off = %d, len = %d): ",
         src, atype, off, len);
-    uint64_t curr_off = get_edge_table_offset(src, atype);
-    if (curr_off == -1) return std::vector<Assoc>();
-    printf("edge table offset = %llu\n", curr_off);
 
-    curr_off = skip_init_node_atype(curr_off);
-
-    std::string edge_width_str;
-    this->edge_table->extract(
-        edge_width_str, curr_off, SuccinctGraphSerde::WIDTH_EDGE_WIDTH_PADDED);
-    printf("extracted edge width = '%s'\n", edge_width_str.c_str());
-    int32_t edge_width = std::stoi(edge_width_str);
-
-    std::string data_width;
-    curr_off += SuccinctGraphSerde::WIDTH_EDGE_WIDTH_PADDED;
-    this->edge_table->extract(
-        data_width, curr_off, SuccinctGraphSerde::WIDTH_DATA_WIDTH_PADDED);
-    printf("extracted data width = '%s'\n", data_width.c_str());
-
-    assert(std::stoi(data_width) %
-        (WIDTH_TIMESTAMP + WIDTH_NODE_ID + edge_width) == 0);
-    int64_t cnt = std::stoi(data_width) /
-        (WIDTH_TIMESTAMP + WIDTH_NODE_ID + edge_width);
-    assert(off + len <= cnt);
-    printf("cnt = %llu\n", cnt);
-
-    std::string timestamps;
-    curr_off += SuccinctGraphSerde::WIDTH_DATA_WIDTH_PADDED;
-    this->edge_table->extract(
-        timestamps,
-        curr_off + off * WIDTH_TIMESTAMP,
-        len * WIDTH_TIMESTAMP);
-    printf("extracted timestamps = '%s'\n", timestamps.c_str());
-
-    curr_off += cnt * WIDTH_TIMESTAMP;
-    std::string dst_ids;
-    this->edge_table->extract(
-        dst_ids,
-        curr_off + off * WIDTH_NODE_ID,
-        len * WIDTH_NODE_ID);
-    printf("extracted dst ids: '%s'\n", dst_ids.c_str());
-
-    curr_off += cnt * WIDTH_NODE_ID;
-    std::string attrs;
-    this->edge_table->extract(attrs,
-                              curr_off + off * edge_width,
-                              len * edge_width);
-    printf("extracted attrs = '%s'\n", attrs.c_str());
-
-    std::vector<int64_t> decoded_timestamps =
-        SuccinctGraphSerde::decode_multi_timestamps(timestamps);
-
-    std::vector<int64_t> decoded_dst_ids =
-        SuccinctGraphSerde::decode_multi_node_ids(dst_ids);
+    std::vector<int64_t> eoffs = get_edge_table_offsets(src, atype);
 
     std::vector<Assoc> result;
-    for (int i = 0; i < decoded_timestamps.size(); ++i) {
-        result.push_back( // FIXME
-            { -1,
-              decoded_dst_ids[i],
-              -1,
-              decoded_timestamps[i],
-              attrs.substr(i * edge_width, edge_width)
-            });
+    std::string edge_width_str, data_width, timestamps, dst_ids, attrs;
+    std::string src_id_str, atype_str;
+    int32_t edge_width;
+    int64_t cnt, curr_off;
+
+    if (off == NONE) off = 0; // extract from head
+    int32_t len_saved = len;
+
+    for (auto it = eoffs.begin(); it != eoffs.end(); ++it) {
+        curr_off = *it;
+        printf("edge table offset = %llu\n", curr_off);
+        if (curr_off == -1) continue;
+
+        // Since the passed-in src and atype can be None, extract nonetheless
+        UNSAFE_EXTRACT_SRC_ATYPE_AND_INC_OFF();
+        printf("src id = %lld, atype = %lld, atype_str = '%s'\n", src, atype, atype_str.c_str());
+
+        this->edge_table->extract(
+            edge_width_str, curr_off, SuccinctGraphSerde::WIDTH_EDGE_WIDTH_PADDED);
+        printf("extracted edge width = '%s'\n", edge_width_str.c_str());
+        edge_width = std::stoi(edge_width_str);
+
+        curr_off += SuccinctGraphSerde::WIDTH_EDGE_WIDTH_PADDED;
+        this->edge_table->extract(
+            data_width, curr_off, SuccinctGraphSerde::WIDTH_DATA_WIDTH_PADDED);
+        printf("extracted data width = '%s'\n", data_width.c_str());
+
+        assert(std::stoi(data_width) %
+            (WIDTH_TIMESTAMP + WIDTH_NODE_ID + edge_width) == 0);
+        cnt = std::stoi(data_width) /
+            (WIDTH_TIMESTAMP + WIDTH_NODE_ID + edge_width);
+        printf("cnt = %llu\n", cnt);
+
+        // if len is wildcard, extract all that's left
+        if (len_saved == NONE) len = std::min(cnt, cnt - off);
+        assert(off + len <= cnt);
+        if (len <= 0) continue;
+
+        curr_off += SuccinctGraphSerde::WIDTH_DATA_WIDTH_PADDED;
+        this->edge_table->extract(
+            timestamps,
+            curr_off + off * WIDTH_TIMESTAMP,
+            len * WIDTH_TIMESTAMP);
+        printf("extracted timestamps = '%s'\n", timestamps.c_str());
+
+        curr_off += cnt * WIDTH_TIMESTAMP;
+        this->edge_table->extract(
+            dst_ids,
+            curr_off + off * WIDTH_NODE_ID,
+            len * WIDTH_NODE_ID);
+        printf("extracted dst ids: '%s'\n", dst_ids.c_str());
+
+        curr_off += cnt * WIDTH_NODE_ID;
+        this->edge_table->extract(attrs,
+                                  curr_off + off * edge_width,
+                                  len * edge_width);
+        printf("extracted attrs = '%s'\n", attrs.c_str());
+
+        std::vector<int64_t> decoded_timestamps =
+            SuccinctGraphSerde::decode_multi_timestamps(timestamps);
+
+        std::vector<int64_t> decoded_dst_ids =
+            SuccinctGraphSerde::decode_multi_node_ids(dst_ids);
+
+        for (int i = 0; i < decoded_timestamps.size(); ++i) {
+            result.push_back(
+                { src,
+                  decoded_dst_ids[i],
+                  atype,
+                  decoded_timestamps[i],
+                  attrs.substr(i * edge_width, edge_width)
+                });
+        }
+        printf("\n");
     }
     return result;
 }
@@ -288,14 +336,14 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_range(
 // Basic impl idea: performs binary search on the timestamps.
 std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_get(
     int64_t src,
-    int32_t atype,
+    int64_t atype,
     std::set<int64_t> dst_id_set,
     int64_t t_low,
     int64_t t_high) {
 
-    printf("assoc_get(src = %lld, atype = %d, dst_id_set=...,low=%lld,high=%lld): ",
+    printf("assoc_get(src = %lld, atype = %lld, dst_id_set=...,low=%lld,high=%lld): ",
         src, atype, t_low, t_high);
-    uint64_t curr_off = get_edge_table_offset(src, atype);
+    int64_t curr_off = get_edge_table_offsets(src, atype)[0];       // FIXME
     if (curr_off == -1) return std::vector<Assoc>();
     printf("edge table offset = %llu\n", curr_off);
 
@@ -331,7 +379,6 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_get(
     //
     while (l + 1 < r) {
         m = (l + r) / 2;
-        timestamp.clear();
         this->edge_table->extract(
             timestamp, curr_off + m * WIDTH_TIMESTAMP, WIDTH_TIMESTAMP);
         ts = SuccinctGraphSerde::decode_timestamp(timestamp);
@@ -347,7 +394,6 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_get(
     r = cnt - 1; // TODO: check
     while (l + 1 < r) {
         m = (l + r) / 2;
-        timestamp.clear();
         this->edge_table->extract(
             timestamp, curr_off + m * WIDTH_TIMESTAMP, WIDTH_TIMESTAMP);
         ts = SuccinctGraphSerde::decode_timestamp(timestamp);
@@ -417,8 +463,8 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_get(
     return result;
 }
 
-int64_t SuccinctGraph::assoc_count(int64_t src, int32_t atype) {
-    uint64_t curr_off = get_edge_table_offset(src, atype);
+int64_t SuccinctGraph::assoc_count(int64_t src, int64_t atype) {
+    int64_t curr_off = get_edge_table_offsets(src, atype)[0]; // FIXME
     if (curr_off == -1) return 0;
     curr_off = skip_init_node_atype(curr_off);
 
@@ -441,14 +487,14 @@ int64_t SuccinctGraph::assoc_count(int64_t src, int32_t atype) {
 
 std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_time_range(
     int64_t src,
-    int32_t atype,
+    int64_t atype,
     int64_t t_low,
     int64_t t_high,
     int32_t len) {
 
-    printf("assoc_time_range(src = %lld, atype = %d,low=%lld,high=%lld,len=%d): ",
+    printf("assoc_time_range(src = %lld, atype = %lld,low=%lld,high=%lld,len=%d): ",
         src, atype, t_low, t_high, len);
-    uint64_t curr_off = get_edge_table_offset(src, atype);
+    int64_t curr_off = get_edge_table_offsets(src, atype)[0]; // FIXME
     if (curr_off == -1) return std::vector<Assoc>();
     printf("edge table offset = %llu\n", curr_off);
 
@@ -484,7 +530,6 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_time_range(
 
     while (l + 1 < r) {
         m = (l + r) / 2;
-        timestamp.clear();
         this->edge_table->extract(
             timestamp, curr_off + m * WIDTH_TIMESTAMP, WIDTH_TIMESTAMP);
         ts = SuccinctGraphSerde::decode_timestamp(timestamp);
@@ -500,7 +545,6 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_time_range(
     r = cnt - 1; // TODO: check
     while (l + 1 < r) {
         m = (l + r) / 2;
-        timestamp.clear();
         this->edge_table->extract(
             timestamp, curr_off + m * WIDTH_TIMESTAMP, WIDTH_TIMESTAMP);
         ts = SuccinctGraphSerde::decode_timestamp(timestamp);
@@ -597,7 +641,7 @@ void SuccinctGraph::get_neighbors(std::vector<int64_t>& result, int64_t node) {
 
     result.clear();
     for (auto it = offsets.begin(); it != offsets.end(); ++it) {
-        uint64_t curr_off = *it;
+        int64_t curr_off = *it;
         curr_off = skip_init_node_atype(curr_off);
 
         std::string edge_width_str;
