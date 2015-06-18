@@ -230,7 +230,9 @@ int main(int argc, char **argv) {
         assert_eq(graph->assoc_range(6, 1, 0, 1),
             { {6, 1, 1, 111111, "abcd"} });
 
-        // assoc_count
+        // TODO: add proper Assoc and AType to other query results
+
+        // assoc_count() tests
 
         printf("assoc_count(0, 0) = %llu\n", graph->assoc_count(0, 0)); // 1
         printf("assoc_count(0, 2) = %llu\n", graph->assoc_count(0, 2)); // 3
@@ -239,29 +241,50 @@ int main(int argc, char **argv) {
         assert(graph->assoc_count(0, 2) == 3);
         assert(graph->assoc_count(6, 1) == 1);
 
+        // assoc_get() tests
+
         std::set<int64_t> dst_id_set;
         dst_id_set.insert(1618);
 
-        // [id=1618,time=93244,attr='sup']
         SuccinctGraph::print_assoc_results(
             graph->assoc_get(0, 2, dst_id_set, 9324, 93245));
+        assert_eq(graph->assoc_get(0, 2, dst_id_set, 9324, 93245),
+            { {0, 1618, 2, 93244, "sup"} });
 
-        // TODO: add proper Assoc and AType to other query results
-
-//        assert_eq(graph->assoc_get(0, 2, dst_id_set, 9324, 93245),
-//            { {0, 1618, 2, 93244, "sup"} });
-
-        // [id=1618,time=93244,attr='sup'] AND [id=1,time=9324,attr='suc']
         dst_id_set.insert(1);
         SuccinctGraph::print_assoc_results(
             graph->assoc_get(0, 2, dst_id_set, 9324, 93245));
+        assert_eq(graph->assoc_get(0, 2, dst_id_set, 9324, 93245),
+            { {0, 1618, 2, 93244, "sup"}, {0, 1, 2, 9324, "suc"} });
 
-//        assert_eq(graph->assoc_get(0, 2, dst_id_set, 9324, 93245),
-//            { {0, 1618, 2, 93244, "sup"}, {0, 1, 2, 9324, "suc"} });
+        // no time lower bound (set to wildcard)
+        assert_eq(graph->assoc_get(0, 2, dst_id_set, -1, 93245),
+            { {0, 1618, 2, 93244, "sup"}, {0, 1, 2, 9324, "suc"} });
+
+        // no time upper bound (set to wildcard)
+        assert_eq(graph->assoc_get(0, 2, dst_id_set, 9324, -1),
+            { {0, 1, 2, 41842148, "a b"},
+              {0, 1618, 2, 93244, "sup"},
+              {0, 1, 2, 9324, "suc"}
+            });
+
+        // all edges no earlier than time 100000 (with dst in { 1, 1618 })
+        assert_eq(graph->assoc_get(-1, -1, dst_id_set, 100000, -1),
+            { {0, 1, 2, 41842148, "a b"}, {6, 1, 1, 111111, "abcd"} });
+
+        // all edges no later than time 100000 (with dst in { 1, 1618 })
+        assert_eq(graph->assoc_get(-1, -1, dst_id_set, -1, 100000),
+            { {0, 1618, 2, 93244, "sup"}, {0, 1, 2, 9324, "suc"} });
+
+        // assoc_time_range() tests
 
         // [id=1,time=111111,attr='abcd']
         SuccinctGraph::print_assoc_results(
             graph->assoc_time_range(6, 1, 1, 99999999, 10)); // 1 edge
+
+//        assert_eq(graph->assoc_time_range(6, 1, 1, 99999999, 10),
+//            { {6, 1, 1, 111111, "abcd"} });
+
 //        SuccinctGraph::print_assoc_results(
 //            graph->assoc_time_range(0, 0, 0, 1, 10)); // 0 edge // FIXME
 

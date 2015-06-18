@@ -97,12 +97,16 @@ public:
     // Gets the attribute data of node `obj_id` into `result`.
     void obj_get(std::string& result, int64_t obj_id);
 
+    // All arguments can be optional (use -1 for none) with the natural
+    // semantics.
     std::vector<Assoc> assoc_range(
         int64_t src,
         int64_t atype,
         int32_t off,
         int32_t len);
 
+    // All arguments, except for `dst_id_set`, can be optional (use -1 for
+    // none) with the natural semantics.
     std::vector<Assoc> assoc_get(
         int64_t src,
         int64_t atype,
@@ -112,8 +116,10 @@ public:
 
     // Returns number of associations in the association list (src, atype).
     // Undefined behavior if (src, atype) doesn't exist.
+    // All arguments can be optional.
     int64_t assoc_count(int64_t src, int64_t atype);
 
+    // All arguments can be optional.
     std::vector<Assoc> assoc_time_range(
         int64_t src,
         int64_t atype,
