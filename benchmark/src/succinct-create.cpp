@@ -187,17 +187,19 @@ void generate_neighbor_node_queries(
     std::random_device rd;
     std::mt19937 rng(rd());
 
-    // TODO: -1 twice?
     std::uniform_int_distribution<int64_t> uni_node(0, graph->num_nodes() - 1);
     std::uniform_int_distribution<int> uni_attr(0, graph->num_attributes() - 1);
 
     std::ofstream warmup_out(warmup_query_file);
     std::ofstream query_out(query_file);
     for(int64_t i = 0; i < warmup_size; i++) {
-        int node_id = uni_node(rng);
+        int node_id;
         int attr = uni_attr(rng);
         std::vector<int64_t> neighbors;
-        graph->get_neighbors(neighbors, node_id);
+        while (neighbors.empty()) {
+            node_id = uni_node(rng);
+            graph->get_neighbors(neighbors, node_id);
+        }
         std::vector<int64_t>::const_iterator it(neighbors.begin());
         int neighbor_idx = rand() % neighbors.size();
         std::advance(it, neighbor_idx);
@@ -207,10 +209,13 @@ void generate_neighbor_node_queries(
     }
 
     for(int64_t i = 0; i < query_size; i++) {
-        int node_id = uni_node(rng);
+        int node_id;
         int attr = uni_attr(rng);
         std::vector<int64_t> neighbors;
-        graph->get_neighbors(neighbors, node_id);
+        while (neighbors.empty()) {
+            node_id = uni_node(rng);
+            graph->get_neighbors(neighbors, node_id);
+        }
         std::vector<int64_t>::const_iterator it(neighbors.begin());
         int neighbor_idx = rand() % neighbors.size();
         std::advance(it, neighbor_idx);
