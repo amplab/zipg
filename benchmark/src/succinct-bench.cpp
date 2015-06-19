@@ -144,7 +144,7 @@ int main(int argc, char **argv) {
         std::string assoc_out_file = std::string(argv[optind + 2]);
 
         GraphFormatter::format_higgs_activity_file(
-            in_file, attr_file, assoc_out_file);
+            in_file, attr_file, assoc_out_file, 128);
 
         // 456626 + 1, since unclear if original data is 0-indexed
         int num_nodes = 456627;

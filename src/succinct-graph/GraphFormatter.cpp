@@ -73,8 +73,6 @@ void GraphFormatter::create_random_node_table(
     int freq,
     int len) {
 
-    printf("in call\n");
-
     std::ofstream s_out(node_file);
     std::vector<std::vector<std::string>> attributes;
     for (int attr = 0; attr < num_attr; attr++) {
@@ -93,7 +91,8 @@ void GraphFormatter::create_random_node_table(
 void GraphFormatter::format_higgs_activity_file(
     const std::string& file,
     const std::string& attr_file,
-    const std::string& out_file) {
+    const std::string& out_file,
+    int bytes_per_attr) {
 
     std::ifstream in_stream(file);
     std::ifstream attr_in_stream(attr_file);
@@ -122,10 +121,16 @@ void GraphFormatter::format_higgs_activity_file(
             token.clear();
             if (token_idx == 4) break;
         }
+
         assert(!attr_in_stream.eof());
         std::string attr;
         std::getline(attr_in_stream, attr);
-        printf("extracted attr = '%s'\n", attr.c_str());
+        if (attr.length() > bytes_per_attr) {
+            attr = attr.substr(0, bytes_per_attr);
+        } else {
+            // just pad
+            attr += std::string(bytes_per_attr - attr.length(), '|');
+        }
         SuccinctGraph::Assoc assoc = { src_id, dst_id, atype, time, attr };
         assoc_map[std::make_pair(src_id, atype)].push_back(assoc);
     }
