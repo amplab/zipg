@@ -91,7 +91,7 @@ public:
             printf("[src %lld,dst %lld,atype %lld,time %lld,attr '%s']\n",
                 it->src_id, it->dst_id, it->atype, it->time, it->attr.c_str());
         }
-        printf("\n\n");
+        printf("\n");
     }
 
     // Gets the attribute data of node `obj_id` into `result`.
