@@ -24,7 +24,7 @@ all: succinct graph
 succinct:
 	mkdir -p $(LIBDIR)
 	git submodule sync # make sure to fetch new updates
-	git submodule update 
+	git submodule update
 	cd $(SUCCINCTDIR) && $(MAKE)
 
 graph_generator:
@@ -40,8 +40,8 @@ $(TARGET): $(OBJECTS)
 
 $(BUILDDIR)/%.o: $(SRCDIR)/%.cpp
 	@mkdir -p $(BUILDDIRS)
-	@echo " $(CC) $(CFLAGS) $(INC) -c -o $@ $<";\
-	        $(CC) $(CFLAGS) $(INC) -c -o $@ $<
+	@echo " $(CC) $(CFLAGS) $(SGFLAGS) $(INC) -c -o $@ $<";\
+	        $(CC) $(CFLAGS) $(SGFLAGS) $(INC) -c -o $@ $<
 
 bench: graph
 	cd benchmark && $(MAKE)

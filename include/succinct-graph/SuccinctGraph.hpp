@@ -88,7 +88,7 @@ public:
     static void
     print_assoc_results(const std::vector<Assoc>& assoc_results) {
         for (auto it = assoc_results.begin(); it != assoc_results.end(); ++it) {
-            printf("[src %lld,dst %lld,atype %lld,time %lld,attr '%s']\n",
+            printf("[ %lld-->%lld, atype %lld, time %lld, attr '%s' ]\n",
                 it->src_id, it->dst_id, it->atype, it->time, it->attr.c_str());
         }
         printf("\n");

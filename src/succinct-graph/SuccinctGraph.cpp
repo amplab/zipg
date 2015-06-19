@@ -254,7 +254,7 @@ void SuccinctGraph::obj_get(std::string& result, int64_t obj_id) {
 std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_range(
     int64_t src, int64_t atype, int32_t off, int32_t len) {
 
-    printf("assoc_range(src = %lld, atype = %lld, off = %d, len = %d)",
+    printf("assoc_range(src = %lld, atype = %lld, off = %d, len = %d)\n",
         src, atype, off, len);
 
     std::vector<int64_t> eoffs = get_edge_table_offsets(src, atype);
@@ -334,7 +334,6 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_range(
         }
         LOG("\n");
     }
-    printf("\n");
     return result;
 }
 
@@ -346,7 +345,7 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_get(
     int64_t t_low,
     int64_t t_high) {
 
-    printf("assoc_get(src = %lld, atype = %lld, dst_id_set=...,low=%lld,high=%lld)",
+    printf("assoc_get(src = %lld, atype = %lld, dstIdSet = ..., tLow = %lld, tHigh = %lld)\n",
         src, atype, t_low, t_high);
     std::vector<int64_t> eoffs = get_edge_table_offsets(src, atype);
 
@@ -387,8 +386,13 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_get(
 
         // binary search: locates smallest t s.t. t >= t_low
         // invariant: target in [l, r)
-        int l = 0, r = cnt, m; // TODO: check t_l >= t_low
+        int l = 0, r = cnt, m;
         if (t_low != NONE) {
+            // check t_l >= t_low
+            this->edge_table->extract(timestamp, curr_off, WIDTH_TIMESTAMP);
+            ts = SuccinctGraphSerde::decode_timestamp(timestamp);
+            if (ts < t_low) continue;
+
             while (l + 1 < r) {
                 m = (l + r) / 2;
                 this->edge_table->extract(
@@ -408,7 +412,13 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_get(
         // invariant: target in (l, r]
         if (t_high != NONE) {
             l = -1;
-            r = cnt - 1; // TODO: check
+            r = cnt - 1;
+
+            // check t_r <= t_high
+            this->edge_table->extract(timestamp, curr_off + r * WIDTH_TIMESTAMP, WIDTH_TIMESTAMP);
+            ts = SuccinctGraphSerde::decode_timestamp(timestamp);
+            if (ts > t_high) continue;
+
             while (l + 1 < r) {
                 m = (l + r) / 2;
                 this->edge_table->extract(
@@ -481,7 +491,6 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_get(
                 });
         }
     }
-    printf("\n");
     return result;
 }
 
@@ -517,7 +526,7 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_time_range(
     int64_t t_high,
     int32_t len) {
 
-    printf("assoc_time_range(src = %lld, atype = %lld,low=%lld,high=%lld,len=%d)",
+    printf("assoc_time_range(src = %lld, atype = %lld, tLow = %lld, tHigh = %lld, len = %d)\n",
         src, atype, t_low, t_high, len);
 
     std::vector<int64_t> eoffs = get_edge_table_offsets(src, atype);
@@ -560,12 +569,19 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_time_range(
         if (len_saved == NONE) len = cnt;
 
         int range_left, range_right; // in-range: [left, right]
-
-        // binary search: locates smallest t s.t. t >= t_low
-        // invariant: target in [l, r)
-        int l = 0, r = cnt, m; // TODO: check t_l >= t_low
+        int l, r, m;
 
         if (t_low != NONE) {
+            l = 0;
+            r = cnt;
+
+            // check t_l >= t_low
+            this->edge_table->extract(timestamp, curr_off, WIDTH_TIMESTAMP);
+            ts = SuccinctGraphSerde::decode_timestamp(timestamp);
+            if (ts < t_low) continue;
+
+            // binary search: locates smallest t s.t. t >= t_low
+            // invariant: target in [l, r)
             while (l + 1 < r) {
                 m = (l + r) / 2;
                 this->edge_table->extract(
@@ -585,7 +601,13 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_time_range(
         // invariant: target in (l, r]
         if (t_high != NONE) {
             l = -1;
-            r = cnt - 1; // TODO: check
+            r = cnt - 1;
+
+            // check t_r <= t_high
+            this->edge_table->extract(timestamp, curr_off + r * WIDTH_TIMESTAMP, WIDTH_TIMESTAMP);
+            ts = SuccinctGraphSerde::decode_timestamp(timestamp);
+            if (ts > t_high) continue;
+
             while (l + 1 < r) {
                 m = (l + r) / 2;
                 this->edge_table->extract(
@@ -642,7 +664,6 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_time_range(
                 });
         }
     }
-    printf("\n");
     return result;
 }
 
