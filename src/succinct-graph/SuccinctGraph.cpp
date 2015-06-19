@@ -293,7 +293,8 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_range(
         LOG("cnt = %llu\n", cnt);
 
         // if len is wildcard, extract all that's left
-        if (len_saved == NONE) len = std::min(cnt, cnt - off);
+        len = std::min((int64_t) len_saved, cnt - off);
+        if (len_saved == NONE) len = cnt - off;
         assert(off + len <= cnt);
         if (len <= 0) continue;
 
