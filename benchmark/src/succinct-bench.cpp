@@ -378,9 +378,16 @@ int main(int argc, char **argv) {
         assert(nodes.size() == 0);
         printf("get_nodes(attr1 (hit), attr2 (no hit)) returns no nodes: ok\n");
 
-    } else {
-        assert(0); // Not supported
-    }
+    } else if (type == "demo") {
 
+        std::string node_succinct_dir = succinct_dir;
+        std::string edge_succinct_dir = std::string(argv[optind + 1]);
+        graph = new SuccinctGraph(succinct_dir, true); // no-op
+        graph->load(node_succinct_dir, edge_succinct_dir);
+        printf("Loaded SuccinctGraph from files.\n\n");
+
+    } else {
+        assert(0);
+    }
     return 0;
 }
