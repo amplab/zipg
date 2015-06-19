@@ -92,10 +92,11 @@ void GraphFormatter::create_random_node_table(
 
 void GraphFormatter::format_higgs_activity_file(
     const std::string& file,
-    const std::string& out_file,
-    int bytes_per_attr) {
+    const std::string& attr_file,
+    const std::string& out_file) {
 
     std::ifstream in_stream(file);
+    std::ifstream attr_in_stream(attr_file);
     std::string line, token;
 
     std::map<SuccinctGraph::AssocListKey, std::vector<SuccinctGraph::Assoc>>
@@ -121,11 +122,15 @@ void GraphFormatter::format_higgs_activity_file(
             token.clear();
             if (token_idx == 4) break;
         }
-        SuccinctGraph::Assoc assoc =
-            { src_id, dst_id, atype, time, gen_random_string(bytes_per_attr) };
+        assert(!attr_in_stream.eof());
+        std::string attr;
+        std::getline(attr_in_stream, attr);
+        printf("extracted attr = '%s'\n", attr.c_str());
+        SuccinctGraph::Assoc assoc = { src_id, dst_id, atype, time, attr };
         assoc_map[std::make_pair(src_id, atype)].push_back(assoc);
     }
     in_stream.close();
+    attr_in_stream.close();
 
     std::ofstream out_stream(out_file);
     for (auto it = assoc_map.begin(); it != assoc_map.end(); ++it) {
@@ -133,7 +138,6 @@ void GraphFormatter::format_higgs_activity_file(
         auto assoc_list = it->second;
         for (auto it2 = assoc_list.begin(); it2 != assoc_list.end(); ++it2) {
             auto assoc = *it2;
-            assert(assoc.attr.length() == bytes_per_attr);
             out_stream << src_id_and_atype.first << " "
                        << assoc.dst_id << " "
                        << src_id_and_atype.second << " "

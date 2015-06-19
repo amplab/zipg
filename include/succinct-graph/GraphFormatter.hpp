@@ -28,8 +28,8 @@ public:
     // SuccinctGraph::construct().
     static void format_higgs_activity_file(
         const std::string& file,
-        const std::string& out_file,
-        int bytes_per_attr);
+        const std::string& attr_file,
+        const std::string& out_file);
 
 };
 
