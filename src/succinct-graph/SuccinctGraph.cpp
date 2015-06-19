@@ -37,10 +37,6 @@ inline int64_t skip_init_node_atype(int64_t curr_off) {
 
 // TODO: lots of code duplication among the functions
 
-// TODO: make ATTR_SIZE a parameter to be passed in; or better way to organize
-const int ATTR_SIZE = 32;
-const int NUM_ATTRIBUTES = 10;
-
 // FIXME
 const char NODE_ID_DELIM = '\x02';
 const char ATYPE_DELIM = '\x03';
@@ -679,7 +675,7 @@ int64_t SuccinctGraph::num_edges() {
 }
 
 int64_t SuccinctGraph::num_attributes() {
-    return NUM_ATTRIBUTES;
+    return NODE_NUM_ATTRS;
 }
 
 size_t SuccinctGraph::storage_size() {
@@ -691,15 +687,16 @@ size_t SuccinctGraph::serialize() {
 /******* Old API *******/
 
 // Assumes the values in node table have fixed number of attributes, each of
-// which has fixed width (ATTR_SIZE), and that each attr is prefixed by a
+// which has fixed width (NODE_ATTR_SIZE), and that each attr is prefixed by a
 // delimiter (in fact unique, but that fact is irrelevant here).
 void SuccinctGraph::get_attribute(
     std::string& result,
     int64_t node_id,
     int attr) {
 
+    assert(attr < NODE_NUM_ATTRS);
     this->node_table->access(
-        result, node_id, attr * (ATTR_SIZE + 1) + 1, ATTR_SIZE);
+        result, node_id, attr * (NODE_ATTR_SIZE + 1) + 1, NODE_ATTR_SIZE);
 }
 
 void SuccinctGraph::get_neighbors(std::vector<int64_t>& result, int64_t node) {

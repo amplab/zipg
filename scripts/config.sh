@@ -17,8 +17,8 @@ QUERY_DIR=${DATA_DIR}/queries
 nodes=( 100000 ) # list of num_nodes to bench
 deg=40 # average outgoing degree (so, total 2 * (# of directed edges) = deg * num_nodes)
 freq=100
-attributes=10
-attribute_length=32
+attributes=4
+attribute_length=200
 
 # succinct construction configs
 sa_sampling_rate=64

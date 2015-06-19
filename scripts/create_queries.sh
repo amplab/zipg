@@ -34,6 +34,8 @@ do
     ${BIN_DIR}/create neighbor-node-queries \
       ${NODE_FILE} \
       ${EDGE_FILE} \
+      ${attribute_length} \
+      ${attributes} \
       ${warmup_neighbor_node} \
       ${measure_neighbor_node} \
       ${QUERY_DIR}/neighbor_node_warmup_${num_nodes}.txt \

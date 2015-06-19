@@ -6,6 +6,8 @@
 
 class SuccinctGraph {
 public:
+
+    // TODO: get rid of this
     // Constructor.  This doesn't actually build the internal data structures.
     SuccinctGraph(std::string succinct_dir = 0,
                   bool construct = false,
@@ -15,6 +17,19 @@ public:
 
     // Loads the previously constructed node table & edge table.
     SuccinctGraph(std::string node_succinct_dir, std::string edge_succinct_dir);
+
+    // Loads the previously constructed node table & edge table.
+    SuccinctGraph(
+        std::string node_succinct_dir,
+        std::string edge_succinct_dir,
+        int32_t node_attr_size,
+        int64_t node_num_attrs
+    ) : SuccinctGraph(node_succinct_dir, edge_succinct_dir) {
+        this->NODE_ATTR_SIZE = node_attr_size;
+        this->NODE_NUM_ATTRS = node_num_attrs;
+        printf("Setting NODE_ATTR_SIZE = %d, NODE_NUM_ATTRS = %lld\n",
+            node_attr_size, node_num_attrs);
+    }
 
     /** Setters that can modify default settings. */
     SuccinctGraph& set_npa_sampling_rate(uint32_t sampling_rate);
@@ -141,6 +156,9 @@ private:
 
     std::string succinct_dir;
     int64_t edges;
+
+    int32_t NODE_ATTR_SIZE = 32;
+    int64_t NODE_NUM_ATTRS = 10;
 
     // Returns a list of edge table offsets; result is a list since the two
     // arguments can be omitted (i.e. as wildcards, represented as -1 for now).
