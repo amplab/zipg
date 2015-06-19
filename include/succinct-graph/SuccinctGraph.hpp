@@ -13,6 +13,9 @@ public:
                   uint32_t isa_sampling_rate = 32,
                   uint32_t npa_sampling_rate = 128);
 
+    // Loads the previously constructed node table & edge table.
+    SuccinctGraph(std::string node_succinct_dir, std::string edge_succinct_dir);
+
     /** Setters that can modify default settings. */
     SuccinctGraph& set_npa_sampling_rate(uint32_t sampling_rate);
     SuccinctGraph& set_sa_sampling_rate(uint32_t sampling_rate);
@@ -28,10 +31,6 @@ public:
     //              srcId dstId atype time [everything from here to EOL is attr]
     // FIXME: probably makes sense to add & to params
     SuccinctGraph& construct(std::string node_file, std::string edge_file);
-
-    // Loads the previously constructed node table & edge table.
-    SuccinctGraph& load(std::string node_succinct_dir,
-                        std::string edge_succinct_dir);
 
     std::string succinct_directory();
 

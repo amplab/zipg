@@ -165,8 +165,7 @@ int main(int argc, char **argv) {
         // TODO: write as an automatic test suite (e.g. write out tmp file)
         std::string node_succinct_dir = succinct_dir;
         std::string edge_succinct_dir = std::string(argv[optind + 1]);
-        graph = new SuccinctGraph(succinct_dir, true); // no-op
-        graph->load(node_succinct_dir, edge_succinct_dir);
+        graph = new SuccinctGraph(node_succinct_dir, edge_succinct_dir);
         printf("Loaded SuccinctGraph from files.\n");
 
         // assoc_range() tests
@@ -336,8 +335,7 @@ int main(int argc, char **argv) {
     } else if (type == "old-api") {
         std::string node_succinct_dir = succinct_dir;
         std::string edge_succinct_dir = std::string(argv[optind + 1]);
-        graph = new SuccinctGraph(succinct_dir, true); // no-op
-        graph->load(node_succinct_dir, edge_succinct_dir);
+        graph = new SuccinctGraph(node_succinct_dir, edge_succinct_dir);
 
         std::vector<int64_t> nbhrs;
 
@@ -382,8 +380,7 @@ int main(int argc, char **argv) {
 
         std::string node_succinct_dir = succinct_dir;
         std::string edge_succinct_dir = std::string(argv[optind + 1]);
-        graph = new SuccinctGraph(succinct_dir, true); // no-op
-        graph->load(node_succinct_dir, edge_succinct_dir);
+        graph = new SuccinctGraph(node_succinct_dir, edge_succinct_dir);
         printf("Loaded SuccinctGraph from files.\n\n");
 
     } else {

@@ -56,6 +56,20 @@ SuccinctGraph::SuccinctGraph(
     uint32_t npa_sampling_rate) {
 }
 
+SuccinctGraph::SuccinctGraph(
+    std::string node_succinct_dir,
+    std::string edge_succinct_dir) {
+
+    this->node_table = new SuccinctShard(
+        0,
+        node_succinct_dir,
+        SuccinctMode::LOAD_MEMORY_MAPPED);
+
+    this->edge_table = new SuccinctFile(
+        edge_succinct_dir,
+        SuccinctMode::LOAD_MEMORY_MAPPED);
+}
+
 SuccinctGraph& SuccinctGraph::set_npa_sampling_rate(uint32_t sampling_rate) {
     this->npa_sampling_rate = sampling_rate;
     return *this;
@@ -198,22 +212,6 @@ SuccinctGraph& SuccinctGraph::construct(
     size_t num_bytes = this->edge_table->serialize();
     printf("Succinct-encoded edge table, number of bytes written: %zu\n",
         num_bytes);
-
-    return *this;
-}
-
-SuccinctGraph& SuccinctGraph::load(
-    std::string node_succinct_dir,
-    std::string edge_succinct_dir) {
-
-    this->node_table = new SuccinctShard(
-        0,
-        node_succinct_dir,
-        SuccinctMode::LOAD_MEMORY_MAPPED);
-
-    this->edge_table = new SuccinctFile(
-        edge_succinct_dir,
-        SuccinctMode::LOAD_MEMORY_MAPPED);
 
     return *this;
 }
