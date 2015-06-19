@@ -108,10 +108,20 @@ void create_succinct_file(std::string graph_file, int sa_sr, int isa_sr, int npa
 }
 
 // Format: randomNodeId.
-void generate_neighbor_queries(int64_t nodes, int warmup_size, int query_size, std::string warmup_query_file, std::string query_file) {
+void generate_neighbor_queries(
+    std::string node_succinct_dir,
+    std::string edge_succinct_dir,
+    int warmup_size,
+    int query_size,
+    std::string warmup_query_file,
+    std::string query_file) {
+
+    SuccinctGraph* graph = new SuccinctGraph(
+        node_succinct_dir, edge_succinct_dir);
+
     std::random_device rd;
     std::mt19937 rng(rd());
-    std::uniform_int_distribution<int64_t> uni(0, nodes - 1);
+    std::uniform_int_distribution<int64_t> uni(0, graph->num_nodes() - 1);
 
     std::ofstream warmup_out(warmup_query_file);
     std::ofstream query_out(query_file);
@@ -127,18 +137,38 @@ void generate_neighbor_queries(int64_t nodes, int warmup_size, int query_size, s
 }
 
 // Format: attrIdx1,attrKey1,attrIdx2,attrKey2.
-void generate_node_queries(std::string node_file, int warmup_size, int query_size, std::string warmup_query_file, std::string query_file) {
+void generate_node_queries(
+    std::string node_file,
+    int warmup_size,
+    int query_size,
+    std::string warmup_query_file,
+    std::string query_file,
+    bool is_comma_separated = true) {
+
     int64_t nodes = 0;
     std::ifstream node_input(node_file);
     std::string line;
     std::vector<std::vector<std::string>*>* attributes = new std::vector<std::vector<std::string>*>();
-    while (getline(node_input, line)) {
+    while (std::getline(node_input, line)) {
         nodes++;
         std::vector<std::string>* attr = new std::vector<std::string>();
         std::istringstream iss(line);
         std::string token;
-        while (getline(iss, token, ',')) {
-            attr->push_back(token);
+
+        if (is_comma_separated) {
+            while (std::getline(iss, token, ',')) {
+                attr->push_back(token);
+            }
+        } else {
+            // SuccinctGraph::DELIMITERS-separated
+            std::getline(iss, token, alphanum[0]); // delim before first attr
+            int delim_idx = 1;
+            while (std::getline(
+                iss, token, SuccinctGraph::DELIMINATORS[delim_idx])) {
+
+                ++delim_idx;
+                attr->push_back(token);
+            }
         }
         attributes->push_back(attr);
     }
@@ -257,14 +287,25 @@ int main(int argc, char **argv) {
         int query_size = atoi(argv[4]);
         std::string warmup_file = argv[5];
         std::string query_file = argv[6];
-        generate_node_queries(node_file, warmup_size, query_size, warmup_file, query_file);
+        bool is_node_file_comma_separated = true;
+        if (std::strcmp(argv[7], "1")) is_node_file_comma_separated = false;
+        generate_node_queries(
+            node_file,
+            warmup_size,
+            query_size,
+            warmup_file,
+            query_file,
+            is_node_file_comma_separated);
     } else if (type == "neighbor-queries") {
-        int nodes = atoi(argv[2]);
-        int warmup_size = atoi(argv[3]);
-        int query_size = atoi(argv[4]);
-        std::string warmup_file = argv[5];
-        std::string query_file = argv[6];
-        generate_neighbor_queries(nodes, warmup_size, query_size, warmup_file, query_file);
+        std::string node_succinct_dir = argv[2];
+        std::string edge_succinct_dir = argv[3];
+        int warmup_size = atoi(argv[4]);
+        int query_size = atoi(argv[5]);
+        std::string warmup_file = argv[6];
+        std::string query_file = argv[7];
+        generate_neighbor_queries(
+            node_succinct_dir, edge_succinct_dir,
+            warmup_size, query_size, warmup_file, query_file);
     } else if (type == "neighbor-node-queries"){
         std::string node_succinct_dir = argv[2];
         std::string edge_succinct_dir = argv[3];
