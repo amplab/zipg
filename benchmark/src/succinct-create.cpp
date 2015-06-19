@@ -173,8 +173,17 @@ void generate_node_queries(std::string node_file, int warmup_size, int query_siz
 }
 
 // Format: randomNodeId,attrIdx,attrKey.
-void generate_neighbor_node_queries(std::string succinct_dir, int warmup_size, int query_size, std::string warmup_query_file, std::string query_file) {
-    SuccinctGraph * graph = new SuccinctGraph(succinct_dir, false);
+void generate_neighbor_node_queries(
+    std::string node_succinct_dir,
+    std::string edge_succinct_dir,
+    int warmup_size,
+    int query_size,
+    std::string warmup_query_file,
+    std::string query_file) {
+
+    SuccinctGraph* graph =
+        new SuccinctGraph(node_succinct_dir, edge_succinct_dir);
+
     std::random_device rd;
     std::mt19937 rng(rd());
 
@@ -252,12 +261,15 @@ int main(int argc, char **argv) {
         std::string query_file = argv[6];
         generate_neighbor_queries(nodes, warmup_size, query_size, warmup_file, query_file);
     } else if (type == "neighbor-node-queries"){
-        std::string succinct_dir = argv[2];
-        int warmup_size = atoi(argv[3]);
-        int query_size = atoi(argv[4]);
-        std::string warmup_file = argv[5];
-        std::string query_file = argv[6];
-        generate_neighbor_node_queries(succinct_dir, warmup_size, query_size, warmup_file, query_file);
+        std::string node_succinct_dir = argv[2];
+        std::string edge_succinct_dir = argv[3];
+        int warmup_size = atoi(argv[4]);
+        int query_size = atoi(argv[5]);
+        std::string warmup_file = argv[6];
+        std::string query_file = argv[7];
+        generate_neighbor_node_queries(
+            node_succinct_dir, edge_succinct_dir,
+            warmup_size, query_size, warmup_file, query_file);
     } else {
         assert(1); // not supported
     }
