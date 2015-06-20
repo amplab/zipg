@@ -148,7 +148,7 @@ public:
     uint32_t isa_sampling_rate = 64;
     uint32_t npa_sampling_rate = 256;
 
-    const static std::string DELIMINATORS;
+    const static std::string DELIMITERS;
 
 private:
     SuccinctShard *node_table;

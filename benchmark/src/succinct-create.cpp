@@ -69,7 +69,7 @@ void create_graph_file(std::string node_file, std::string edge_file, std::string
         line = ',' + line; //prepend each data element with a comma
         int pos = -1;
         // replace commas, e.g. ",attr1,attr2,attr3" -> "∆attr1$attr2*att3"
-        for (char delim: SuccinctGraph::DELIMINATORS) {
+        for (char delim: SuccinctGraph::DELIMITERS) {
             pos = line.find(',', pos + 1);
             line[pos] = delim;
         }
@@ -159,12 +159,12 @@ void generate_node_queries(
             while (std::getline(iss, token, ',')) {
                 attr->push_back(token);
             }
-        } else {
-            // SuccinctGraph::DELIMITERS-separated
-            std::getline(iss, token, alphanum[0]); // delim before first attr
+        } else { // SuccinctGraph::DELIMITERS-separated
+            // delim before first attr
+            std::getline(iss, token, SuccinctGraph::DELIMITERS[0]);
             int delim_idx = 1;
             while (std::getline(
-                iss, token, SuccinctGraph::DELIMINATORS[delim_idx])) {
+                iss, token, SuccinctGraph::DELIMITERS[delim_idx])) {
 
                 ++delim_idx;
                 attr->push_back(token);

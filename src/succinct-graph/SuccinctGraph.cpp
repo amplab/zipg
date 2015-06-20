@@ -42,7 +42,7 @@ const char NODE_ID_DELIM = '\x02';
 const char ATYPE_DELIM = '\x03';
 //const char NODE_ID_DELIM = 'A';
 //const char ATYPE_DELIM = 'B';
-const std::string SuccinctGraph::DELIMINATORS = "<>()#$%&*+[]{}^-|~;? \"',./:=@\\_~\x02\x03\x04\x05\x06\x07\x08\x09";
+const std::string SuccinctGraph::DELIMITERS = "<>()#$%&*+[]{}^-|~;? \"',./:=@\\_~\x02\x03\x04\x05\x06\x07\x08\x09";
 
 SuccinctGraph::SuccinctGraph(
     std::string succinct_dir,
@@ -762,7 +762,7 @@ void SuccinctGraph::get_nodes(
     std::string search_key) {
 
     result.clear();
-    this->node_table->search(result, DELIMINATORS[attr] + search_key);
+    this->node_table->search(result, DELIMITERS[attr] + search_key);
 }
 
 void SuccinctGraph::get_nodes(
@@ -774,8 +774,8 @@ void SuccinctGraph::get_nodes(
 
     result.clear();
     std::set<int64_t> s1, s2;
-    this->node_table->search(s1, DELIMINATORS[attr1] + search_key1);
-    this->node_table->search(s2, DELIMINATORS[attr2] + search_key2);
+    this->node_table->search(s1, DELIMITERS[attr1] + search_key1);
+    this->node_table->search(s2, DELIMITERS[attr2] + search_key2);
     std::set_intersection(s1.begin(), s1.end(), s2.begin(), s2.end(),
                           std::inserter(result, result.begin()));
 }

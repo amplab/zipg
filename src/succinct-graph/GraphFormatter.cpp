@@ -49,7 +49,7 @@ void GraphFormatter::format_node_file(const std::string& node_file) {
         line = ',' + line; // prepend each data element with a comma
         int pos = -1;
         // replace commas, e.g. ",attr1,attr2,attr3" -> "∆attr1$attr2*att3"
-        for (char delim: SuccinctGraph::DELIMINATORS) {
+        for (char delim: SuccinctGraph::DELIMITERS) {
             pos = line.find(',', pos + 1);
             line[pos] = delim;
         }
@@ -80,7 +80,7 @@ void GraphFormatter::create_random_node_table(
     }
     for (int i = 0; i < num_nodes; i++) {
         for (int attr = 0; attr < num_attr; attr++) {
-            s_out << SuccinctGraph::DELIMINATORS[attr]
+            s_out << SuccinctGraph::DELIMITERS[attr]
                   << attributes[attr][i];
         }
         s_out << "\n";
