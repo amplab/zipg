@@ -13,6 +13,10 @@ CSV_DIR=${DATA_DIR}/csv
 NEO4J_DIR=${DATA_DIR}/neo4j
 QUERY_DIR=${DATA_DIR}/queries
 
+NODE_FILE=${DATA_DIR}/higgs.node
+EDGE_FILE=${DATA_DIR}/higgs-activity_time.edge_table
+IS_NODE_FILE_CSV=0
+
 # graph construction configs
 nodes=( 100000 ) # list of num_nodes to bench
 deg=40 # average outgoing degree (so, total 2 * (# of directed edges) = deg * num_nodes)

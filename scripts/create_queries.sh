@@ -3,10 +3,6 @@ SCRIPT_DIR=$(dirname $0)
 source ${SCRIPT_DIR}/config.sh
 mkdir -p ${QUERY_DIR}
 
-NODE_FILE=${DATA_DIR}/higgs.node
-EDGE_FILE=${DATA_DIR}/higgs-activity_time.edge_table
-IS_NODE_FILE_CSV=0
-
 for num_nodes in ${nodes[@]}
 do
     echo creating neighbor queries for ${num_nodes} nodes, warmup ${warmup_neighbor}, measure ${measure_neighbor}

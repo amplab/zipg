@@ -48,6 +48,7 @@ int main(int argc, char **argv) {
     std::string warmup_neighbor_file = "warmup.txt";
     std::string measure_neighbor_file = "query_file.txt";
     std::string result_file_name = "benchmark_results.txt";
+
     while ((c = getopt(argc, argv, "t:x:y:z:w:q:a:b:o:")) != -1) {
         switch(c) {
         case 't':
@@ -79,67 +80,77 @@ int main(int argc, char **argv) {
 
     if (optind == argc) {
         print_usage(argv[0]);
-        // return -1;
+        return -1;
     }
 
-//    printf("started\n");
-//    std::string F = "/Users/zongheng/workspace/amplab/succinct-graph/data/assocs/test.edge_table";
-//    std::string F2 = "/Users/zongheng/workspace/amplab/succinct-graph/data/assocs/test.assoc.edge_table";
-//    SuccinctCore *f = new SuccinctCore(F.c_str());
-//    SuccinctFile *f = new SuccinctFile(F2.c_str());
-//    printf("done\n");
-//    assert(0);
-
-    std::string succinct_dir = std::string(argv[optind]);
-    SuccinctGraph* graph = new SuccinctGraph(succinct_dir, false);
-
+    // specified after all the options
+    std::string node_file = std::string(argv[optind]);
+    std::string edge_file = std::string(argv[optind + 1]);
+    SuccinctGraph* graph = new SuccinctGraph(node_file, edge_file);
     std::ofstream result_file(result_file_name, std::ios_base::app);
-
     GraphBenchmark bench(graph);
+
     if (type == "neighbor-latency") {
+
         bench.benchmark_neighbor_latency(result_file_name, warmup_n, measure_n,
                 warmup_query_file, measure_query_file);
+
     } else if (type == "neighbor-throughput") {
+
         std::pair<double, double> thput_pair = bench.benchmark_neighbor_throughput(
                 warmup_query_file, measure_query_file);
         result_file << "Get Neighbor Throughput: " << thput_pair.first << "\n";
         result_file << "Get Edges Throughput: " << thput_pair.second << "\n";
+
     } else if (type == "node-latency") {
+
         bench.benchmark_node_latency(result_file_name, warmup_n, measure_n,
                 warmup_query_file, measure_query_file);
+
     } else if (type == "node-throughput") {
+
         double thput = bench.benchmark_node_throughput(warmup_query_file, measure_query_file);
         result_file << "Get Name Throughput: " << thput << "\n\n";
+
     } else if (type == "mix-throughput") {
+
         double thput = bench.benchmark_mix_throughput(
                 warmup_neighbor_file, measure_neighbor_file,
                 warmup_query_file, measure_query_file);
         result_file << "Mix throughput: " << thput << "\n\n";
+
     } else if (type == "mix-latency") {
+
         bench.benchmark_mix_latency(result_file_name, warmup_n, measure_n,
                 warmup_neighbor_file, measure_neighbor_file,
                 warmup_query_file, measure_query_file);
+
     } else if (type == "node-node-latency") {
+
         bench.benchmark_node_node_latency(result_file_name, warmup_n, measure_n,
                 warmup_query_file, measure_query_file);
+
     } else if (type == "neighbor-node-latency") {
+
         bench.benchmark_neighbor_node_latency(result_file_name, warmup_n, measure_n,
                 warmup_query_file, measure_query_file);
-    } else if (type == "graph-construct") {
-        // case: construct from node & edge file
-        std::string node_file = succinct_dir; // hacky naming
-        std::string assoc_file = std::string(argv[optind + 1]);
 
-        graph = new SuccinctGraph(succinct_dir, true); // no-op
-        graph->construct(node_file, assoc_file);
+    } else if (type == "graph-construct") {
+
+        // case: construct from node & edge file
+        graph = new SuccinctGraph(node_file, true); // no-op
+        graph->construct(node_file, edge_file);
 
         printf("SuccinctGraph construction done\n");
 
     } else if (type == "graph-format") {
-        GraphFormatter::format_node_file(succinct_dir);
+
+        GraphFormatter::format_node_file(node_file);
         printf("Node file formatted\n");
+
     } else if (type == "higgs-format") {
-        std::string in_file = succinct_dir;
+
+        std::string in_file = node_file;
         std::string attr_file = std::string(argv[optind + 1]);
         std::string assoc_out_file = std::string(argv[optind + 2]);
 
@@ -161,11 +172,9 @@ int main(int argc, char **argv) {
 //        );
 
     } else if (type == "graph-test") {
+
         // case: load (mmap) constructed files
         // TODO: write as an automatic test suite (e.g. write out tmp file)
-        std::string node_succinct_dir = succinct_dir;
-        std::string edge_succinct_dir = std::string(argv[optind + 1]);
-        graph = new SuccinctGraph(node_succinct_dir, edge_succinct_dir);
         printf("Loaded SuccinctGraph from files.\n");
 
         // assoc_range() tests
@@ -333,9 +342,6 @@ int main(int argc, char **argv) {
         );
 
     } else if (type == "old-api") {
-        std::string node_succinct_dir = succinct_dir;
-        std::string edge_succinct_dir = std::string(argv[optind + 1]);
-        graph = new SuccinctGraph(node_succinct_dir, edge_succinct_dir);
 
         std::vector<int64_t> nbhrs;
 
@@ -378,10 +384,8 @@ int main(int argc, char **argv) {
 
     } else if (type == "demo") {
 
-        std::string node_succinct_dir = succinct_dir;
-        std::string edge_succinct_dir = std::string(argv[optind + 1]);
-        graph = new SuccinctGraph(node_succinct_dir, edge_succinct_dir);
         printf("Loaded SuccinctGraph from files.\n\n");
+        // Demo code
 
     } else {
         assert(0);
