@@ -56,8 +56,19 @@ public:
     size_t storage_size();
     size_t serialize();
 
+    SuccinctGraph& set_node_num_attrs(int64_t node_num_attrs) {
+        this->NODE_NUM_ATTRS = node_num_attrs;
+        return *this;
+    }
+
+    SuccinctGraph& set_node_attr_size(int64_t node_attr_size) {
+        this->NODE_ATTR_SIZE = node_attr_size;
+        return *this;
+    }
+
     /**************** Internal formats ****************/
     // C.f. the LinkBench paper, Sigmoid 2013
+
     typedef int64_t NodeId;
     typedef int64_t Timestamp;
     typedef int64_t AType;
@@ -78,10 +89,12 @@ public:
 
     /**************** Primitive APIs ****************/
 
+    // Depends on NODE_ATTR_SIZE and NODE_NUM_ATTRS being set correctly.
     void get_attribute(std::string& result, int64_t node_id, int attr);
 
     void get_neighbors(std::vector<int64_t>& result, int64_t node);
 
+    // Depends on get_attribute() working correctly.
     void get_neighbors(
         std::vector<int64_t>& result,
         int64_t node,

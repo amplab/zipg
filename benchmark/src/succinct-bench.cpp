@@ -132,8 +132,18 @@ int main(int argc, char **argv) {
 
     } else if (type == "neighbor-node-latency") {
 
-        bench.benchmark_neighbor_node_latency(result_file_name, warmup_n, measure_n,
-                warmup_query_file, measure_query_file);
+        assert(optind + 3 < argc);
+        int32_t node_attr_size = std::stoi(argv[optind + 2]);
+        int64_t node_num_attrs = std::stol(argv[optind + 3]);
+        (*graph).set_node_num_attrs(node_num_attrs)
+                .set_node_attr_size(node_attr_size);
+
+        bench.benchmark_neighbor_node_latency(
+            result_file_name,
+            warmup_n,
+            measure_n,
+            warmup_query_file,
+            measure_query_file);
 
     } else if (type == "graph-construct") {
 
@@ -240,9 +250,9 @@ int main(int argc, char **argv) {
 
         // assoc_count() tests
 
-        printf("assoc_count(0, 0) = %llu\n", graph->assoc_count(0, 0)); // 1
-        printf("assoc_count(0, 2) = %llu\n", graph->assoc_count(0, 2)); // 3
-        printf("assoc_count(6, 1) = %llu\n", graph->assoc_count(6, 1)); // 1
+        printf("assoc_count(0, 0) = %lld\n", graph->assoc_count(0, 0)); // 1
+        printf("assoc_count(0, 2) = %lld\n", graph->assoc_count(0, 2)); // 3
+        printf("assoc_count(6, 1) = %lld\n", graph->assoc_count(6, 1)); // 1
 
         assert(graph->assoc_count(0, 0) == 1);
         assert(graph->assoc_count(0, 2) == 3);

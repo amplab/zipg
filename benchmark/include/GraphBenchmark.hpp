@@ -314,8 +314,13 @@ public:
         }
     }
 
-    void benchmark_neighbor_node_latency(std::string res_path, count_t WARMUP_N, count_t MEASURE_N,
-            std::string warmup_query_file, std::string query_file) {
+    void benchmark_neighbor_node_latency(
+        std::string res_path,
+        count_t WARMUP_N,
+        count_t MEASURE_N,
+        std::string warmup_query_file,
+        std::string query_file) {
+
         read_neighbor_node_queries(warmup_query_file, query_file);
         time_t t0, t1;
         std::ofstream res_stream(res_path);

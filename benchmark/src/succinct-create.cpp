@@ -213,6 +213,8 @@ void generate_neighbor_node_queries(
     std::string warmup_query_file,
     std::string query_file) {
 
+    // get_neighbor(n, attr) requires get_attribute() to work correctly,
+    // which requires the correct attr size and num attr
     SuccinctGraph* graph = new SuccinctGraph(
         node_succinct_dir,
         edge_succinct_dir,

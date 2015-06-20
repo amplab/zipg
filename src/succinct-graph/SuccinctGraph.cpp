@@ -684,7 +684,7 @@ size_t SuccinctGraph::storage_size() {
 size_t SuccinctGraph::serialize() {
 }
 
-/******* Old API *******/
+/******* Primitive APIs *******/
 
 // Assumes the values in node table have fixed number of attributes, each of
 // which has fixed width (NODE_ATTR_SIZE), and that each attr is prefixed by a
