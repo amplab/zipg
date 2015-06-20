@@ -29,21 +29,19 @@ public:
 
         // Warmup
         fprintf(stderr, "Warming up for %lu queries...\n", WARMUP_N);
-        for(uint64_t i = 0; i < WARMUP_N; i++) {
+        for (uint64_t i = 0; i < WARMUP_N; i++) {
             std::vector<int64_t> result;
             this->graph->get_neighbors(result, modGet(warmup_neighbor_indices, i));
-            assert(result.size() != 0 && "No result found in benchmarking neighbor latency");
         }
         fprintf(stderr, "Warmup complete.\n");
 
         // Measure
         fprintf(stderr, "Measuring for %lu queries...\n", MEASURE_N);
-        for(uint64_t i = 0; i < MEASURE_N; i++) {
+        for (uint64_t i = 0; i < MEASURE_N; i++) {
             std::vector<int64_t> result;
             t0 = get_timestamp();
             this->graph->get_neighbors(result, modGet(neighbor_indices, i));
             t1 = get_timestamp();
-            assert(result.size() != 0 && "No result found in benchmarking node latency");
             res_stream << result.size() << "," << t1 - t0 << "\n";
 
 #ifdef BENCH_PRINT_RESULTS
