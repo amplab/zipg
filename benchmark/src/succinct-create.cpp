@@ -318,10 +318,10 @@ int main(int argc, char **argv) {
         std::string edge_succinct_dir = argv[3];
         int32_t node_attr_size = std::stoi(argv[4]);
         int64_t node_num_attrs = std::stol(argv[5]);
-        int warmup_size = atoi(argv[5]);
-        int query_size = atoi(argv[6]);
-        std::string warmup_file = argv[7];
-        std::string query_file = argv[8];
+        int warmup_size = atoi(argv[6]);
+        int query_size = atoi(argv[7]);
+        std::string warmup_file = argv[8];
+        std::string query_file = argv[9];
         generate_neighbor_node_queries(
             node_succinct_dir, edge_succinct_dir,
             node_attr_size, node_num_attrs,

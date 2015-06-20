@@ -34,7 +34,7 @@ do
 		-y ${measure_neighbor_node} -w ${QUERY_DIR}/neighbor_node_warmup_${num_nodes}.txt \
 		-q ${QUERY_DIR}/neighbor_node_query_${num_nodes}.txt \
 		-o ${HOME_DIR}/${num_nodes}_neighbor_node_latency.txt \
-		${NODE_FILE} ${EDGE_FILE}
+		${NODE_FILE} ${EDGE_FILE} ${attribute_length} ${attributes}
 
     # ${BIN_DIR}/bench -t mix-latency -x ${warmup_mix} \
 		# -y ${measure_mix} -w ${QUERY_DIR}/node_warmup_${num_nodes}.txt \
