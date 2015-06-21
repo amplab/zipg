@@ -351,6 +351,11 @@ int main(int argc, char **argv) {
             }
         );
 
+        // regression
+        assert_eq(graph->assoc_time_range(-1, -1, 9324, 9324, -1),
+            { {0, 2, 0, 9324, "succinct is cool"},
+              {0, 1, 2, 9324, "suc"} });
+
     } else if (type == "old-api") {
 
         std::vector<int64_t> nbhrs;

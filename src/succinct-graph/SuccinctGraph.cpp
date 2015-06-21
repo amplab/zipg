@@ -430,6 +430,7 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_get(
         }
 
         LOG("range left: %d, range right: %d, cnt: %lld\n", range_left, range_right, cnt);
+        if (range_left > range_right) continue;
 
         // extract in-range timestamps
         this->edge_table->extract(
@@ -620,8 +621,8 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_time_range(
 
         // limit to first `len` edges
         range_right = std::min(range_right, range_left + len - 1);
-
         LOG("range left: %d, range right: %d, cnt: %lld\n", range_left, range_right, cnt);
+        if (range_left > range_right) continue;
 
         // extract in-range timestamps
         std::string timestamps;
