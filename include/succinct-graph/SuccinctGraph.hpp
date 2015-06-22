@@ -31,6 +31,11 @@ public:
             node_attr_size, node_num_attrs);
     }
 
+    ~SuccinctGraph() {
+        delete this->node_table;
+        delete this->edge_table;
+    }
+
     /** Setters that can modify default settings. */
     SuccinctGraph& set_npa_sampling_rate(uint32_t sampling_rate);
     SuccinctGraph& set_sa_sampling_rate(uint32_t sampling_rate);
