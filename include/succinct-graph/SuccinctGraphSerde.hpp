@@ -6,6 +6,10 @@
 #include <string>
 #include <vector>
 
+// Whether or not to alphabet-encode the timestamps and dst nodes. If set to
+// false (0), just pad with 0 in decimal representation.
+#define ALPHABET_ENCODE 0
+
 // SerDe that should adhere to the private typedefs in SuccinctGraph.
 class SuccinctGraphSerde {
 public:
@@ -40,9 +44,14 @@ public:
     const static int WIDTH_DATA_WIDTH_PADDED = 20;
 
     // Widths of encoded fields.
+#if ALPHABET_ENCODE
     // Rule: (alphabetSize)^width > 2^32 (or 2^64, respectively)
     static const int WIDTH_TIMESTAMP = 11; // encoded in str alphabet of size 64
     static const int WIDTH_NODE_ID = 11; // encoded in str alphabet of size 64
+#else
+    static const int WIDTH_TIMESTAMP = 20; // padded
+    static const int WIDTH_NODE_ID = 20; // padded
+#endif
 
 private:
 
@@ -51,6 +60,8 @@ private:
 
     // Left-pads with zeros to 20 chars (with alphabet 0-9).
     static std::string pad_int64(int64_t x);
+
+    static std::vector<int64_t> unpad_multi_int64(const std::string& encoded);
 
     // Encodes decimal input to base alphabet, optionally padding the result
     // according to padded_width (with leading 0).

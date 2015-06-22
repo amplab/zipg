@@ -23,29 +23,53 @@ std::string SuccinctGraphSerde::pad_data_width(int64_t x) {
 }
 
 std::string SuccinctGraphSerde::encode_timestamp(int64_t timestamp) {
+#if ALPHABET_ENCODE
     return encode_int64(timestamp, WIDTH_TIMESTAMP);
+#else
+    return pad_int64(timestamp);
+#endif
 }
 
 int64_t SuccinctGraphSerde::decode_timestamp(const std::string& encoded) {
+#if ALPHABET_ENCODE
     return decode_int64(encoded);
+#else
+    return std::stol(encoded);
+#endif
 }
 
 std::vector<int64_t> SuccinctGraphSerde::decode_multi_timestamps(
         const std::string& encoded) {
+#if ALPHABET_ENCODE
     return decode_multi_int64(encoded, WIDTH_TIMESTAMP);
+#else
+    return unpad_multi_int64(encoded);
+#endif
 }
 
 std::string SuccinctGraphSerde::encode_node_id(int64_t node_id) {
+#if ALPHABET_ENCODE
     return encode_int64(node_id, WIDTH_NODE_ID);
+#else
+    return pad_int64(node_id);
+#endif
 }
 
 int64_t SuccinctGraphSerde::decode_node_id(const std::string& encoded) {
+#if ALPHABET_ENCODE
     return decode_int64(encoded);
+#else
+    return std::stol(encoded);
+#endif
 }
 
 std::vector<int64_t> SuccinctGraphSerde::decode_multi_node_ids(
         const std::string& encoded) {
+#if ALPHABET_ENCODE
     return decode_multi_int64(encoded, WIDTH_NODE_ID);
+#else
+    return unpad_multi_int64(encoded);
+#endif
 }
 
 std::map<char, int> SuccinctGraphSerde::alphabet_char2pos =
@@ -130,4 +154,16 @@ SuccinctGraphSerde::decode_multi_int64(const std::string& encoded,
         res.push_back(decode_int64(encoded.substr(i, padded_width)));
     }
     return res;
+}
+
+std::vector<int64_t>
+SuccinctGraphSerde::unpad_multi_int64(const std::string& encoded) {
+    // impl detail: assumes node ids 64 bits
+    assert(encoded.length() % WIDTH_NODE_ID_PADDED == 0);
+    std::vector<int64_t> result;
+    result.reserve(encoded.length() / WIDTH_NODE_ID_PADDED);
+    for (int i = 0; i < encoded.length(); i += WIDTH_NODE_ID_PADDED) {
+        result.push_back(std::stol(encoded.substr(i, WIDTH_NODE_ID_PADDED)));
+    }
+    return result;
 }
