@@ -135,9 +135,10 @@ SuccinctGraph& SuccinctGraph::construct(
     }
 
     // Serialize to an .edge_table file (flat file layout)
-
-    std::string edge_file_name = edge_file.replace(
-        edge_file.rfind(".assoc"), 6, ".edge_table");
+    size_t postfix_pos = edge_file.rfind(".assoc");
+    std::string edge_file_name = edge_file + ".edge_table";
+    if (postfix_pos != std::string::npos)
+        edge_file_name = edge_file.replace(postfix_pos, 6, ".edge_table");
     std::ofstream edge_file_out(edge_file_name);
 
     for (auto it = assoc_map.begin(); it != assoc_map.end(); ++it) {
