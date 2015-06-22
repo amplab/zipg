@@ -22,6 +22,7 @@ void assert_eq(
     const std::vector<SuccinctGraph::Assoc>& expected,
     std::initializer_list<SuccinctGraph::Assoc> actual) {
 
+    assert(expected.size() == actual.size());
     int i = 0;
     for (auto actual_assoc : actual) {
         auto expected_assoc = expected[i];
@@ -30,6 +31,18 @@ void assert_eq(
         assert(expected_assoc.atype == actual_assoc.atype);
         assert(expected_assoc.time == actual_assoc.time);
         assert(expected_assoc.attr == actual_assoc.attr);
+        ++i;
+    }
+}
+
+void assert_eq(
+    const std::vector<int64_t>& expected,
+    std::initializer_list<int64_t> actual) {
+
+    assert(expected.size() == actual.size());
+    int i = 0;
+    for (int64_t actual_elem : actual) {
+        assert(expected[i] == actual_elem);
         ++i;
     }
 }
@@ -86,7 +99,7 @@ int main(int argc, char **argv) {
     // specified after all the options
     std::string node_file = std::string(argv[optind]);
     std::string edge_file = std::string(argv[optind + 1]);
-    SuccinctGraph* graph = new SuccinctGraph(node_file, edge_file);
+    SuccinctGraph* graph = new SuccinctGraph(node_file, edge_file); // loads
     std::ofstream result_file(result_file_name, std::ios_base::app);
     GraphBenchmark bench(graph);
 
@@ -182,10 +195,40 @@ int main(int argc, char **argv) {
 //        );
 
     } else if (type == "graph-test") {
+        // TODO: use gtest & move this to standalone file at some point?
 
-        // case: load (mmap) constructed files
-        // TODO: write as an automatic test suite (e.g. write out tmp file)
-        printf("Loaded SuccinctGraph from files.\n");
+        // delim-ed
+        std::string node_attr = "<5PN2qmWqBlQ9wQj99nsQzldVI5ZuGXbE>WRK5RhRXdCdG5nG5azdNMK66MuCV6GXi(5xr84P2R391UXaLHbavJvFZGfO47XWS2)qVOw5lxuBEBNue7b9PZS0hoI6pgabi9U#OuSpM2Tlh01vOzwvSikHFswuzleht6xG$botuQQgmO6GkdAqwedXNRRadbLMZROaA%fZDAWhxgqRqcM1fdhRxRZYw3GFhPr6BI&nZITSBQOgwxhHxrhytFUloiivhOmebpb*lnTipx7wXZAqJZR5Y4M9k8AIyGE9CpuX+kn1XvnFttynI1MguokYDeWl5noesnB4m\n";
+        std::string node_file_content(node_attr); // for nodes 0..9
+        for (int i = 1; i < 10; ++i) node_file_content += node_attr;
+
+        std::string edge_file_content = "0 1 2 41842148 a b\n"
+                                        "0 1618 2 93244 sup\n"
+                                        "0 1 2 9324 suc\n"
+                                        "0 2 0 9324 succinct is cool\n"
+                                        "6 1 1 111111 abcd\n";
+
+        std::string node_tmp_pathname = std::tmpnam(NULL);
+        std::string edge_tmp_pathname = std::tmpnam(NULL);
+
+        std::FILE* node_tmp_file = std::fopen(node_tmp_pathname.c_str(), "w+");
+        std::FILE* edge_tmp_file = std::fopen(edge_tmp_pathname.c_str(), "w+");
+
+        std::fputs(node_file_content.c_str(), node_tmp_file);
+        std::fputs(edge_file_content.c_str(), edge_tmp_file);
+
+        std::fclose(node_tmp_file);
+        std::fclose(edge_tmp_file);
+
+        printf("node tmp: %s\nedge tmp %s\n",
+            node_tmp_pathname.c_str(), edge_tmp_pathname.c_str());
+
+        graph->construct(node_tmp_pathname, edge_tmp_pathname);
+
+        std::remove(node_tmp_pathname.c_str());
+        std::remove(edge_tmp_pathname.c_str());
+
+        printf("SuccinctGraph constructed.\n");
 
         // assoc_range() tests
 
@@ -351,30 +394,30 @@ int main(int argc, char **argv) {
             }
         );
 
-        // regression
+        // regression bug
         assert_eq(graph->assoc_time_range(-1, -1, 9324, 9324, -1),
             { {0, 2, 0, 9324, "succinct is cool"},
               {0, 1, 2, 9324, "suc"} });
 
-    } else if (type == "old-api") {
+        // primitive API tests
 
         std::vector<int64_t> nbhrs;
 
         graph->get_neighbors(nbhrs, 0);
-        print_vector("neighbors of node 0: ", nbhrs);
+        assert_eq(nbhrs, { 2, 1, 1618, 1 });
 
         graph->get_neighbors(nbhrs, 6);
-        print_vector("neighbors of node 6: ", nbhrs);
+        assert_eq(nbhrs, { 1 });
 
         // for toy dataset, this will hit every nbhr of 0
         graph->get_neighbors(nbhrs, 0, 0, "5PN2qmWqBlQ9wQj99nsQzldVI5ZuGXbE");
-        print_vector("getNeibors(0, attr_that_will_hit): ", nbhrs);
+        assert_eq(nbhrs, { 2, 1, 1 });
 
         graph->get_neighbors(nbhrs, 6, 0, "5PN2qmWqBlQ9wQj99nsQzldVI5ZuGXbE");
-        print_vector("getNeibors(6, attr_that_will_hit): ", nbhrs);
+        assert_eq(nbhrs, { 1 });
 
         graph->get_neighbors(nbhrs, 0, 0, "WILL NOT HIT");
-        print_vector("getNeibors(0, attr_that_won't_hit): ", nbhrs);
+        assert_eq(nbhrs, { });
 
         std::set<int64_t> nodes;
         graph->get_nodes(nodes, 0, "5PN2qmWqBlQ9wQj99nsQzldVI5ZuGXbE");
@@ -396,6 +439,8 @@ int main(int argc, char **argv) {
             8, "WILL NOT HIT");
         assert(nodes.size() == 0);
         printf("get_nodes(attr1 (hit), attr2 (no hit)) returns no nodes: ok\n");
+
+        graph->remove_generated_files();
 
     } else if (type == "demo") {
 
