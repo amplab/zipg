@@ -210,7 +210,27 @@ SuccinctGraph& SuccinctGraph::construct(
     printf("Succinct-encoded edge table, number of bytes written: %zu\n",
         num_bytes);
 
+    this->node_file_pathname = node_file;
+    this->edge_file_pathname = edge_file;
+
     return *this;
+}
+
+// Note: this is supposed to be used in testing only.
+void SuccinctGraph::remove_generated_files() {
+    char* cmd = new char[999];
+    sprintf(cmd, "rm -rf %s", (this->node_file_pathname + ".succinct").c_str());
+    system(cmd);
+
+    sprintf(cmd, "rm -rf %s",
+        (this->edge_file_pathname + ".edge_table").c_str());
+    system(cmd);
+
+    sprintf(cmd, "rm -rf %s",
+        (this->edge_file_pathname + ".edge_table.succinct").c_str());
+    system(cmd);
+
+    delete[] cmd;
 }
 
 std::vector<int64_t>

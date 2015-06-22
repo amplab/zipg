@@ -36,6 +36,10 @@ public:
         delete this->edge_table;
     }
 
+    // Removes generated files during construction, if any: Succinct data
+    // structures and the formatted .edge_table file.
+    void remove_generated_files();
+
     /** Setters that can modify default settings. */
     SuccinctGraph& set_npa_sampling_rate(uint32_t sampling_rate);
     SuccinctGraph& set_sa_sampling_rate(uint32_t sampling_rate);
@@ -167,6 +171,9 @@ public:
     uint32_t npa_sampling_rate = 256;
 
     const static std::string DELIMITERS;
+
+    // Recorded inside construct().
+    std::string node_file_pathname, edge_file_pathname;
 
 private:
     SuccinctShard *node_table;
