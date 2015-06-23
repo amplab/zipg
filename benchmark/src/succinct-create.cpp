@@ -62,7 +62,7 @@ void create_graph_file(
     std::string node_file,
     std::string edge_file,
     std::string graph_file,
-    bool already_uniquely_delime = false) {
+    bool already_uniquely_delimed = false) {
 
     std::ifstream node_input(node_file);
     std::ifstream edge_input(edge_file);
@@ -74,7 +74,7 @@ void create_graph_file(
     for(nodes = 0; !node_input.eof(); nodes++) {
         std::getline(node_input, line, '\n');
         if (line.length() == 0) break;
-        if (!already_uniquely_delime) {
+        if (!already_uniquely_delimed) {
             line = ',' + line; // prepend each data element with a comma
             int pos = -1;
             // replace commas, e.g. ",attr1,attr2,attr3" -> "∆attr1$attr2*att3"
@@ -312,11 +312,11 @@ int main(int argc, char **argv) {
         std::string edge_file = argv[3];
         std::string graph_file =
             node_file.substr(0, node_file.find(".node")) + ".graph";
-        bool is_node_file_comma_separated = true;
-        if (std::strcmp(argv[4], "1")) is_node_file_comma_separated = false;
+        bool already_uniquely_delimed = true;
+        if (std::strcmp(argv[4], "1")) already_uniquely_delimed = false;
 
         create_graph_file(
-            node_file, edge_file, graph_file, is_node_file_comma_separated);
+            node_file, edge_file, graph_file, already_uniquely_delimed);
 
     } else if (type == "succinct") {
 
