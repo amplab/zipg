@@ -29,8 +29,8 @@ public:
 
         // Warmup
         fprintf(stderr, "Warming up for %lu queries...\n", WARMUP_N);
-        for(uint64_t i = 0; i < WARMUP_N; i++) {
-            std::vector<int64_t> result;
+        std::vector<int64_t> result;
+        for (uint64_t i = 0; i < WARMUP_N; i++) {
             this->graph->get_neighbors(result, modGet(warmup_neighbor_indices, i));
             assert(result.size() != 0 && "No result found in benchmarking neighbor latency");
         }
@@ -38,8 +38,7 @@ public:
 
         // Measure
         fprintf(stderr, "Measuring for %lu queries...\n", MEASURE_N);
-        for(uint64_t i = 0; i < MEASURE_N; i++) {
-            std::vector<int64_t> result;
+        for (uint64_t i = 0; i < MEASURE_N; i++) {
             t0 = get_timestamp();
             this->graph->get_neighbors(result, modGet(neighbor_indices, i));
             t1 = get_timestamp();
@@ -119,8 +118,8 @@ public:
 
         // Warmup
         fprintf(stderr, "Warming up for %lu queries...\n", WARMUP_N);
+        std::set<int64_t> result;
         for(uint64_t i = 0; i < WARMUP_N; i++) {
-            std::set<int64_t> result;
             this->graph->search_nodes(
                 result, modGet(warmup_node_attributes, i), modGet(warmup_node_queries, i));
             assert(result.size() != 0 && "No result found in benchmarking node latency");
@@ -130,7 +129,6 @@ public:
         // Measure
         fprintf(stderr, "Measuring for %lu queries...\n", MEASURE_N);
         for(uint64_t i = 0; i < MEASURE_N; i++) {
-            std::set<int64_t> result;
             t0 = get_timestamp();
             this->graph->search_nodes(result, modGet(node_attributes, i), modGet(node_queries, i));
             t1 = get_timestamp();
@@ -167,8 +165,8 @@ public:
 
         // Warmup
         fprintf(stderr, "Warming up for %lu queries...\n", WARMUP_N);
+        std::set<int64_t> result;
         for(uint64_t i = 0; i < WARMUP_N; i++) {
-            std::set<int64_t> result;
             this->graph->search_nodes(result,
                 modGet(warmup_node_attributes, i), modGet(warmup_node_queries, i),
                 modGet(warmup_node_attributes2, i), modGet(warmup_node_queries2, i));
@@ -179,7 +177,6 @@ public:
         // Measure
         fprintf(stderr, "Measuring for %lu queries...\n", MEASURE_N);
         for(uint64_t i = 0; i < MEASURE_N; i++) {
-            std::set<int64_t> result;
             t0 = get_timestamp();
             this->graph->search_nodes(result, modGet(node_attributes, i), modGet(node_queries, i),
                                               modGet(node_attributes2, i), modGet(node_queries2, i));
@@ -328,8 +325,8 @@ public:
 
         // Warmup
         fprintf(stderr, "Warming up for %lu queries...\n", WARMUP_N);
+        std::vector<int64_t> result;
         for(uint64_t i = 0; i < WARMUP_N; i++) {
-            std::vector<int64_t> result;
             this->graph->get_neighbors_of_node(result,
                 modGet(warmup_neighbor_indices, i), modGet(warmup_node_attributes, i), modGet(warmup_node_queries, i));
             assert(result.size() != 0 && "No result found in benchmarking getNeighborOfNode latency");
@@ -339,7 +336,6 @@ public:
         // Measure
         fprintf(stderr, "Measuring for %lu queries...\n", MEASURE_N);
         for (uint64_t i = 0; i < MEASURE_N; i++) {
-            std::vector<int64_t> result;
             t0 = get_timestamp();
             this->graph->get_neighbors_of_node(result,
                 modGet(neighbor_indices, i), modGet(node_attributes, i), modGet(node_queries, i));
