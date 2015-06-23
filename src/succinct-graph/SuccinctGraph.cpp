@@ -3,6 +3,7 @@
 
 #include <limits>
 #include <sstream>
+#include <thread>
 
 #define WIDTH_TIMESTAMP SuccinctGraphSerde::WIDTH_TIMESTAMP
 #define WIDTH_NODE_ID SuccinctGraphSerde::WIDTH_NODE_ID
@@ -81,15 +82,8 @@ SuccinctGraph& SuccinctGraph::set_isa_sampling_rate(uint32_t sampling_rate) {
     return *this;
 }
 
-// FIXME: some stoi should be stol?
-SuccinctGraph& SuccinctGraph::construct(
-    std::string node_file,
-    std::string edge_file) {
-
-    fprintf(stderr, "Initializing node table (SuccinctShard)\n");
-
-    // TODO: needs to call delete on the allocated object?
-    printf("constructing node table with npa %d, sa %d, isa %d\n",
+void SuccinctGraph::construct_node_table(const std::string& node_file) {
+    printf("Constructing node table with npa %d, sa %d, isa %d\n",
         npa_sampling_rate, sa_sampling_rate, isa_sampling_rate);
     this->node_table = new SuccinctShard(
         0,
@@ -100,9 +94,17 @@ SuccinctGraph& SuccinctGraph::construct(
         npa_sampling_rate
     );
     this->node_table->serialize();
+}
+
+SuccinctGraph& SuccinctGraph::construct(
+    std::string node_file,
+    std::string edge_file) {
+
+    // construct node table in parallel
+    std::thread node_table_thread(
+        &SuccinctGraph::construct_node_table, this, node_file);
 
     fprintf(stderr, "Initializing edge table (SuccinctFile)\n");
-
     std::map<AssocListKey, std::vector<Assoc>> assoc_map;
     std::string line, token;
     std::ifstream edge_file_stream(edge_file);
@@ -115,10 +117,10 @@ SuccinctGraph& SuccinctGraph::construct(
         int token_idx = 0;
         while (std::getline(ss, token, ' ')) {
             ++token_idx;
-            if (token_idx == 1) src_id = std::stoi(token);
-            else if (token_idx == 2) dst_id = std::stoi(token);
-            else if (token_idx == 3) atype = std::stoi(token);
-            else if (token_idx == 4) time = std::stoi(token);
+            if (token_idx == 1) src_id = std::stol(token);
+            else if (token_idx == 2) dst_id = std::stol(token);
+            else if (token_idx == 3) atype = std::stol(token);
+            else if (token_idx == 4) time = std::stol(token);
             token.clear();
             if (token_idx == 4) break;
         }
@@ -213,6 +215,7 @@ SuccinctGraph& SuccinctGraph::construct(
     this->node_file_pathname = node_file;
     this->edge_file_pathname = edge_file;
 
+    node_table_thread.join();
     return *this;
 }
 
@@ -301,9 +304,9 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_range(
             data_width, curr_off, SuccinctGraphSerde::WIDTH_DATA_WIDTH_PADDED);
         LOG("extracted data width = '%s'\n", data_width.c_str());
 
-        assert(std::stoi(data_width) %
+        assert(std::stol(data_width) %
             (WIDTH_TIMESTAMP + WIDTH_NODE_ID + edge_width) == 0);
-        cnt = std::stoi(data_width) /
+        cnt = std::stol(data_width) /
             (WIDTH_TIMESTAMP + WIDTH_NODE_ID + edge_width);
         LOG("cnt = %llu\n", cnt);
 
@@ -392,9 +395,9 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_get(
 
         curr_off += SuccinctGraphSerde::WIDTH_DATA_WIDTH_PADDED;
 
-        assert(std::stoi(data_width) %
+        assert(std::stol(data_width) %
             (WIDTH_TIMESTAMP + WIDTH_NODE_ID + edge_width) == 0);
-        cnt = std::stoi(data_width) /
+        cnt = std::stol(data_width) /
             (WIDTH_TIMESTAMP + WIDTH_NODE_ID + edge_width);
         LOG("cnt = %llu\n", cnt);
 
@@ -528,9 +531,9 @@ int64_t SuccinctGraph::assoc_count(int64_t src, int64_t atype) {
         this->edge_table->extract(
             data_width, curr_off, SuccinctGraphSerde::WIDTH_DATA_WIDTH_PADDED);
 
-        assert(std::stoi(data_width) %
+        assert(std::stol(data_width) %
             (WIDTH_TIMESTAMP + WIDTH_NODE_ID + edge_width) == 0);
-        total_cnt += std::stoi(data_width) /
+        total_cnt += std::stol(data_width) /
             (WIDTH_TIMESTAMP + WIDTH_NODE_ID + edge_width);
     }
     return total_cnt;
@@ -576,9 +579,9 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_time_range(
 
         curr_off += SuccinctGraphSerde::WIDTH_DATA_WIDTH_PADDED;
 
-        assert(std::stoi(data_width) %
+        assert(std::stol(data_width) %
             (WIDTH_TIMESTAMP + WIDTH_NODE_ID + edge_width) == 0);
-        cnt = std::stoi(data_width) /
+        cnt = std::stol(data_width) /
             (WIDTH_TIMESTAMP + WIDTH_NODE_ID + edge_width);
         LOG("cnt = %llu\n", cnt);
 
@@ -743,10 +746,10 @@ void SuccinctGraph::get_neighbors(std::vector<int64_t>& result, int64_t node) {
 
         curr_off += SuccinctGraphSerde::WIDTH_DATA_WIDTH_PADDED;
 
-        assert(std::stoi(data_width) %
+        assert(std::stol(data_width) %
             (WIDTH_TIMESTAMP + WIDTH_NODE_ID + edge_width) == 0);
 
-        int64_t cnt = std::stoi(data_width) /
+        int64_t cnt = std::stol(data_width) /
             (WIDTH_TIMESTAMP + WIDTH_NODE_ID + edge_width);
 
         curr_off += cnt * WIDTH_TIMESTAMP;

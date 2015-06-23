@@ -12,8 +12,8 @@ OBJ_S := $(BUILDDIR)/succinct-bench.o
 TARGET_C := $(BINDIR)/create
 OBJ_C := $(BUILDDIR)/succinct-create.o
 
-CFLAGS := -O3 -std=c++11 -Wall -g
-LIB := -L $(LIBDIR) -lsuccinct
+CFLAGS := -O3 -std=c++11 -Wall -g -lpthread
+LIB := -L $(LIBDIR) -lsuccinct -lpthread
 INC := -I ../include -I include -I ../external/succinct-cpp/benchmark/include/
 
 all: create bench

@@ -195,6 +195,8 @@ private:
     // An edge table offset is -1 iff an assoc list doesn't exist.
     std::vector<int64_t> get_edge_table_offsets(NodeId id, AType atype);
 
+    void construct_node_table(const std::string& node_file);
+
 };
 
 #endif

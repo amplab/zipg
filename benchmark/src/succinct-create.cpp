@@ -329,6 +329,7 @@ int main(int argc, char **argv) {
             node_succinct_dir, edge_succinct_dir,
             node_attr_size, node_num_attrs,
             warmup_size, query_size, warmup_file, query_file);
+
     } else if (type == "higgs-format") {
 
         std::string in_file = argv[2];
@@ -359,6 +360,14 @@ int main(int argc, char **argv) {
             freq,
             len
         );
+
+    } else if (type == "graph-construct") {
+
+        // case: construct from node & edge file
+        SuccinctGraph* graph = new SuccinctGraph("", true); // no-op
+        graph->construct(argv[2], argv[3]);
+
+        printf("SuccinctGraph construction done\n");
 
     } else {
         assert(1); // not supported

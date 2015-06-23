@@ -169,14 +169,6 @@ int main(int argc, char **argv) {
             warmup_query_file,
             measure_query_file);
 
-    } else if (type == "graph-construct") {
-
-        // case: construct from node & edge file
-        graph = new SuccinctGraph(node_file, true); // no-op
-        graph->construct(node_file, edge_file);
-
-        printf("SuccinctGraph construction done\n");
-
     } else if (type == "graph-format") {
 
         GraphFormatter::format_node_file(node_file);
