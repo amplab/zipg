@@ -42,7 +42,7 @@ const char NODE_ID_DELIM = '\x02';
 const char ATYPE_DELIM = '\x03';
 //const char NODE_ID_DELIM = 'A';
 //const char ATYPE_DELIM = 'B';
-const std::string SuccinctGraph::DELIMITERS = "<>()#$%&*+[]{}^-|~;? \"',./:=@\\_~\x02\x03\x04\x05\x06\x07\x08\x09";
+const std::string SuccinctGraph::DELIMITERS = "<>()#$%&*+[]{}^-~;? \"',./:=@|\\_~\x02\x03\x04\x05\x06\x07\x08\x09";
 
 SuccinctGraph::SuccinctGraph(
     std::string succinct_dir,

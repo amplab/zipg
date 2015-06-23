@@ -75,19 +75,68 @@ void GraphFormatter::format_node_file(const std::string& node_file) {
 }
 
 void GraphFormatter::create_random_node_table(
-    const std::string& node_file,
+    const std::string& out_file,
     int num_nodes,
     int num_attr,
     int freq,
     int len) {
 
-    std::ofstream s_out(node_file);
+    std::ofstream s_out(out_file);
     std::vector<std::vector<std::string>> attributes;
     for (int attr = 0; attr < num_attr; attr++) {
         attributes.push_back(gen_random_strings(num_nodes, freq, len));
     }
     for (int i = 0; i < num_nodes; i++) {
         for (int attr = 0; attr < num_attr; attr++) {
+            s_out << SuccinctGraph::DELIMITERS[attr]
+                  << attributes[attr][i];
+        }
+        s_out << "\n";
+    }
+    s_out.close();
+}
+
+
+void GraphFormatter::create_node_table(
+    const std::string& out_file,
+    const std::string& attr_file,
+    int num_nodes,
+    int num_attr,
+    int freq,
+    int len) {
+
+    std::ifstream attr_in_stream(attr_file);
+    std::ofstream s_out(out_file);
+    std::vector<std::vector<std::string>> attributes;
+    std::string attr;
+
+    for (int j = 0; j < num_attr; ++j) {
+        // need attributes for column `attr`, length num_nodes
+        int n = num_nodes;
+        std::vector<std::string> attrs;
+        while (n > 0) {
+            // multiple records concatenated together
+            attr.clear();
+            while (attr.length() < len) std::getline(attr_in_stream, attr);
+            if (attr.length() > len) attr = attr.substr(0, len); // truncate
+
+            int i = 0;
+            while (n > 0 && i < freq) {
+                attrs.push_back(attr);
+                --n;
+                ++i;
+            }
+        }
+        std::random_shuffle(attrs.begin(), attrs.end());
+        attributes.push_back(attrs);
+    }
+    attr_in_stream.close();
+    assert(attributes.size() == num_attr &&
+        attributes.at(0).size() == num_nodes);
+    for (int i = 0; i < num_nodes; i++) {
+        for (int attr = 0; attr < num_attr; attr++) {
+            assert(attributes[attr][i].find(
+                SuccinctGraph::DELIMITERS[attr]) == std::string::npos);
             s_out << SuccinctGraph::DELIMITERS[attr]
                   << attributes[attr][i];
         }

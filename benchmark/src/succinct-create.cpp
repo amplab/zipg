@@ -334,29 +334,31 @@ int main(int argc, char **argv) {
         std::string in_file = argv[2];
         std::string attr_file = argv[3]; // TPC-H
         std::string assoc_out_file = argv[4];
+        std::string node_out_file = argv[5];
 
-        GraphFormatter::format_higgs_twitter_dataset(
-            in_file,
-            attr_file,
-            assoc_out_file,
-            128,
-            false,
-            5
-        );
+//        GraphFormatter::format_higgs_twitter_dataset(
+//            in_file,
+//            attr_file,
+//            assoc_out_file,
+//            128,
+//            false,
+//            5
+//        );
 
         // 456626 + 1, since unclear if original data is 0-indexed
         int num_nodes = 456627;
-        int num_attr = 4;
+        int num_attr = 2;
         int freq = 1000;
-        int len = 200; // so total node attr = 800 bytes
+        int len = 350; // so total node attr = len * num_attr
 
-//        GraphFormatter::create_random_node_table(
-//            std::string(argv[optind + 2]),
-//            num_nodes,
-//            num_attr,
-//            freq,
-//            len
-//        );
+        GraphFormatter::create_node_table(
+            node_out_file,
+            attr_file,
+            num_nodes,
+            num_attr,
+            freq,
+            len
+        );
 
     } else {
         assert(1); // not supported

@@ -16,7 +16,17 @@ public:
     // Outputs random node table, where each line's attributes are properly
     // separated by unique delimiters.
     static void create_random_node_table(
-        const std::string& node_file,
+        const std::string& out_file,
+        int num_nodes,
+        int num_attr,
+        int freq,
+        int len);
+
+    // Outputs node table, where each line's attributes are taken from
+    // `attr_file`, and are properly separated by unique delimiters.
+    static void create_node_table(
+        const std::string& out_file,
+        const std::string& attr_file,
         int num_nodes,
         int num_attr,
         int freq,
