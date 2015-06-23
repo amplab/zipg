@@ -3,6 +3,7 @@
 
 #include <limits>
 #include <sstream>
+#include <thread>
 
 #define WIDTH_TIMESTAMP SuccinctGraphSerde::WIDTH_TIMESTAMP
 #define WIDTH_NODE_ID SuccinctGraphSerde::WIDTH_NODE_ID
@@ -81,15 +82,8 @@ SuccinctGraph& SuccinctGraph::set_isa_sampling_rate(uint32_t sampling_rate) {
     return *this;
 }
 
-// FIXME: some stoi should be stol?
-SuccinctGraph& SuccinctGraph::construct(
-    std::string node_file,
-    std::string edge_file) {
-
-    fprintf(stderr, "Initializing node table (SuccinctShard)\n");
-
-    // TODO: needs to call delete on the allocated object?
-    printf("constructing node table with npa %d, sa %d, isa %d\n",
+void SuccinctGraph::construct_node_table(const std::string& node_file) {
+    printf("Constructing node table with npa %d, sa %d, isa %d\n",
         npa_sampling_rate, sa_sampling_rate, isa_sampling_rate);
     this->node_table = new SuccinctShard(
         0,
@@ -100,9 +94,18 @@ SuccinctGraph& SuccinctGraph::construct(
         npa_sampling_rate
     );
     this->node_table->serialize();
+}
+
+// FIXME: some stoi should be stol?
+SuccinctGraph& SuccinctGraph::construct(
+    std::string node_file,
+    std::string edge_file) {
+
+    // construct node table in parallel
+    std::thread node_table_thread(
+        &SuccinctGraph::construct_node_table, this, node_file);
 
     fprintf(stderr, "Initializing edge table (SuccinctFile)\n");
-
     std::map<AssocListKey, std::vector<Assoc>> assoc_map;
     std::string line, token;
     std::ifstream edge_file_stream(edge_file);
@@ -213,6 +216,7 @@ SuccinctGraph& SuccinctGraph::construct(
     this->node_file_pathname = node_file;
     this->edge_file_pathname = edge_file;
 
+    node_table_thread.join();
     return *this;
 }
 
