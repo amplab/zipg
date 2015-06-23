@@ -47,6 +47,10 @@ public:
         bool has_atype_timestamp = true,
         int num_atype = 5);
 
+    // Used only when generating & parsing queries, not part of the internal
+    // graph layout.  Assumes this is char uniquely identifiable (among attrs).
+    static const char QUERY_FILED_DELIM = '\x02';
+
 };
 
 #endif
