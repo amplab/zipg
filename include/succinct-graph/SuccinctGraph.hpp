@@ -50,7 +50,7 @@ public:
     //
     //   node_file: each row contains attributes (bytes) for the node
     //              whose ID is current row number - 1, separated by
-    //              unique delimiters
+    //              unique delimiters in DELIMITERS
     //   edge_file: each row represents one association, in format
     //              srcId dstId atype time [everything from here to EOL is attr]
     // FIXME: probably makes sense to add & to params
@@ -101,17 +101,22 @@ public:
     // Depends on NODE_ATTR_SIZE and NODE_NUM_ATTRS being set correctly.
     void get_attribute(std::string& result, int64_t node_id, int attr);
 
+    // TODO: decide whether to return set for get_neighbors() as well.
+
+    // Clears `result` for caller.
     void get_neighbors(std::vector<int64_t>& result, int64_t node);
 
-    // Depends on get_attribute() working correctly.
+    // Clears `result` for caller.
     void get_neighbors(
         std::vector<int64_t>& result,
         int64_t node,
         int attr,
         std::string search_key);
 
+    // Clears `result` for caller.
     void get_nodes(std::set<int64_t>& result, int attr, std::string search_key);
 
+    // Clears `result` for caller.
     void get_nodes(
         std::set<int64_t>& result,
         int attr1,

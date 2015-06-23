@@ -47,6 +47,17 @@ void assert_eq(
     }
 }
 
+void assert_eq(
+    const std::set<int64_t>& expected,
+    std::initializer_list<int64_t> actual) {
+
+    assert(expected.size() == actual.size());
+    std::vector<int64_t> expected_vec;
+    for (auto it = expected.begin(); it != expected.end(); ++it)
+        expected_vec.push_back(*it);
+    assert_eq(expected_vec, actual);
+}
+
 int main(int argc, char **argv) {
     if (argc < 2) {
         print_usage(argv[0]);
@@ -439,6 +450,61 @@ int main(int argc, char **argv) {
             8, "WILL NOT HIT");
         assert(nodes.size() == 0);
         printf("get_nodes(attr1 (hit), attr2 (no hit)) returns no nodes: ok\n");
+
+        graph->remove_generated_files();
+
+    } else if (type == "graph-test2") {
+
+        // delim-ed, only first 3 nodes has attrs, diff # of attrs, diff size
+        std::string node_file_content = "<Winter>is(coming\n"
+                                "<is>Winter(here\n"
+                                "<George>R(R)Martin#writes$too%damn&slow\n";
+
+        std::string edge_file_content = "0 1 2 41842148 a b\n"
+                                        "0 1618 2 93244 sup\n"
+                                        "0 1 2 9324 suc\n"
+                                        "0 2 0 9324 succinct is cool\n"
+                                        "6 1 1 111111 abcd\n";
+
+        std::string node_tmp_pathname = std::tmpnam(NULL);
+        std::string edge_tmp_pathname = std::tmpnam(NULL);
+        std::FILE* node_tmp_file = std::fopen(node_tmp_pathname.c_str(), "w+");
+        std::FILE* edge_tmp_file = std::fopen(edge_tmp_pathname.c_str(), "w+");
+        std::fputs(node_file_content.c_str(), node_tmp_file);
+        std::fputs(edge_file_content.c_str(), edge_tmp_file);
+        std::fclose(node_tmp_file);
+        std::fclose(edge_tmp_file);
+        printf("node tmp: %s\nedge tmp %s\n",
+            node_tmp_pathname.c_str(), edge_tmp_pathname.c_str());
+
+        graph->construct(node_tmp_pathname, edge_tmp_pathname);
+
+        std::remove(node_tmp_pathname.c_str());
+        std::remove(edge_tmp_pathname.c_str());
+
+        std::vector<int64_t> nbhrs;
+        std::set<int64_t> nodes;
+
+        graph->get_nodes(nodes, 0, "Winter");
+        assert_eq(nodes, { 0 });
+
+        graph->get_nodes(nodes, 1, "is not");
+        assert_eq(nodes, { });
+
+        graph->get_nodes(nodes, 1, "R");
+        assert_eq(nodes, { 2 });
+
+        graph->get_nodes(nodes, 7, "slow");
+        assert_eq(nodes, { 2 });
+
+        graph->get_nodes(nodes, 0, "George", 3, "Martin");
+        assert_eq(nodes, { 2 });
+
+        graph->get_neighbors(nbhrs, 0, 1, "Winter");
+        assert_eq(nbhrs, { 1, 1 });
+
+        graph->get_neighbors(nbhrs, 0, 0, "George");
+        assert_eq(nbhrs, { 2 });
 
         graph->remove_generated_files();
 

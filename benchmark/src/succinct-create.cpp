@@ -241,6 +241,7 @@ void generate_neighbor_node_queries(
         int neighbor_idx = rand() % neighbors.size();
         std::advance(it, neighbor_idx);
         std::string search_key;
+        // FIXME: deprecated
         graph->get_attribute(search_key, *it, attr);
         warmup_out << node_id << "," << attr << "," << search_key << "\n";
     }
@@ -257,6 +258,7 @@ void generate_neighbor_node_queries(
         int neighbor_idx = rand() % neighbors.size();
         std::advance(it, neighbor_idx);
         std::string search_key;
+        // FIXME: deprecated
         graph->get_attribute(search_key, *it, attr);
         query_out << node_id << "," << attr << "," << search_key << "\n";
     }

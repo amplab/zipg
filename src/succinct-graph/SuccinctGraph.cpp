@@ -771,10 +771,14 @@ void SuccinctGraph::get_neighbors(
     std::vector<int64_t> nbhrs;
     get_neighbors(nbhrs, node_id);
     result.clear();
-    std::string attribute;
+    std::string attributes;
     for (auto it = nbhrs.begin(); it != nbhrs.end(); ++it) {
-        get_attribute(attribute, *it, attr);
-        if (attribute == search_key) result.push_back(*it);
+        this->node_table->get(attributes, *it);
+        size_t pos = attributes.find(
+            SuccinctGraph::DELIMITERS[attr] + search_key);
+        LOG("nbhr id %lld, search key '%s', pos = %d\n",
+            *it, (SuccinctGraph::DELIMITERS[attr] + search_key).c_str(), pos);
+        if (pos != std::string::npos) result.push_back(*it);
     }
 }
 
