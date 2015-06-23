@@ -137,7 +137,7 @@ void generate_neighbor_queries(
     query_out.close();
 }
 
-// Format: attrIdx1,attrKey1<DELIM>attrIdx2,attrKey2,
+// Format: attrIdx1<DELIM>attrKey1<DELIM>attrIdx2<DELIM>attrKey2
 // where <DELIM> is GraphFormatter::QUERY_FILED_DELIM.
 void generate_node_queries(
     std::string node_file,
@@ -189,9 +189,10 @@ void generate_node_queries(
         std::string search_key1 = attributes->at(node_id)->at(attr1);
         int attr2 = uni_attr(rng);
         std::string search_key2 = attributes->at(node_id)->at(attr2);
-        warmup_out << attr1 << ","
+        warmup_out << attr1 << GraphFormatter::QUERY_FILED_DELIM
                    << search_key1 << GraphFormatter::QUERY_FILED_DELIM
-                   << attr2 << "," << search_key2 << "\n";
+                   << attr2 << GraphFormatter::QUERY_FILED_DELIM
+                   << search_key2 << "\n";
     }
 
     for (int64_t i = 0; i < query_size; i++) {
@@ -200,9 +201,10 @@ void generate_node_queries(
         std::string search_key1 = attributes->at(node_id)->at(attr1);
         int attr2 = uni_attr(rng);
         std::string search_key2 = attributes->at(node_id)->at(attr2);
-        query_out << attr1 << ","
+        query_out << attr1 << GraphFormatter::QUERY_FILED_DELIM
                    << search_key1 << GraphFormatter::QUERY_FILED_DELIM
-                   << attr2 << "," << search_key2 << "\n";
+                   << attr2 << GraphFormatter::QUERY_FILED_DELIM
+                   << search_key2 << "\n";
     }
     warmup_out.close();
     query_out.close();
