@@ -457,14 +457,16 @@ protected:
 
         std::string line;
         while (getline(warmup_input, line)) {
-            std::vector<std::string> toks = split(line, ',');
+            // NOTE: hacky, this is borrowed from commit 5257d4
+            std::vector<std::string> toks = split(line, '\x02');
             warmup_node_attributes.push_back(std::atoi(toks[0].c_str()));
             warmup_node_queries.push_back(toks[1]);
             warmup_node_attributes2.push_back(std::atoi(toks[2].c_str()));
             warmup_node_queries2.push_back(toks[3]);
         }
         while (getline(query_input, line)) {
-            std::vector<std::string> toks = split(line, ',');
+            // NOTE: hacky, this is borrowed from commit 5257d4
+            std::vector<std::string> toks = split(line, '\x02');
             node_attributes.push_back(std::atoi(toks[0].c_str()));
             node_queries.push_back(toks[1]);
             node_attributes2.push_back(std::atoi(toks[2].c_str()));
