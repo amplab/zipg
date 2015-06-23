@@ -182,35 +182,6 @@ int main(int argc, char **argv) {
         GraphFormatter::format_node_file(node_file);
         printf("Node file formatted\n");
 
-    } else if (type == "higgs-format") {
-
-        std::string in_file = node_file;
-        std::string attr_file = std::string(argv[optind + 1]); // TPC-H
-        std::string assoc_out_file = std::string(argv[optind + 2]);
-
-        GraphFormatter::format_higgs_twitter_dataset(
-            in_file,
-            attr_file,
-            assoc_out_file,
-            128,
-            false,
-            5
-        );
-
-        // 456626 + 1, since unclear if original data is 0-indexed
-        int num_nodes = 456627;
-        int num_attr = 4;
-        int freq = 1000;
-        int len = 200; // so total node attr = 800 bytes
-
-//        GraphFormatter::create_random_node_table(
-//            std::string(argv[optind + 2]),
-//            num_nodes,
-//            num_attr,
-//            freq,
-//            len
-//        );
-
     } else if (type == "graph-test") {
         // TODO: use gtest & move this to standalone file at some point?
 
