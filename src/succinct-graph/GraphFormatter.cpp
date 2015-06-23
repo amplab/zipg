@@ -142,7 +142,6 @@ void GraphFormatter::format_higgs_twitter_dataset(
                 // Choose something from now back to about 50 days
                 // return (System.currentTimeMillis() - Integer.MAX_VALUE - 1L)
                 //                                        + rng.nextInt();
-                printf("time: %lld\n", time_millis());
                 time = time_millis() - std::numeric_limits<int>::max()
                     - 1 + time_dis(rng2);
                 break;
