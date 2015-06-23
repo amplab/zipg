@@ -108,7 +108,7 @@ void GraphFormatter::create_node_table(
     std::ifstream attr_in_stream(attr_file);
     std::ofstream s_out(out_file);
     std::vector<std::vector<std::string>> attributes;
-    std::string attr;
+    std::string attr, tmp;
 
     for (int j = 0; j < num_attr; ++j) {
         // need attributes for column `attr`, length num_nodes
@@ -117,7 +117,10 @@ void GraphFormatter::create_node_table(
         while (n > 0) {
             // multiple records concatenated together
             attr.clear();
-            while (attr.length() < len) std::getline(attr_in_stream, attr);
+            while (attr.length() < len) {
+                std::getline(attr_in_stream, tmp);
+                attr += tmp;
+            }
             if (attr.length() > len) attr = attr.substr(0, len); // truncate
 
             int i = 0;
