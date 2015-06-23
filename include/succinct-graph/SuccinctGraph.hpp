@@ -113,18 +113,21 @@ public:
         std::vector<int64_t>& result,
         int64_t node,
         int attr,
-        std::string search_key);
+        const std::string& search_key);
 
     // Clears `result` for caller.
-    void get_nodes(std::set<int64_t>& result, int attr, std::string search_key);
+    void get_nodes(
+        std::set<int64_t>& result,
+        int attr,
+        const std::string& search_key);
 
     // Clears `result` for caller.
     void get_nodes(
         std::set<int64_t>& result,
         int attr1,
-        std::string search_key1,
+        const std::string& search_key1,
         int attr2,
-        std::string search_key2);
+        const std::string& search_key2);
 
     /**************** TAO-like APIs ****************/
 

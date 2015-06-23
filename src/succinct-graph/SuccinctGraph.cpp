@@ -725,21 +725,20 @@ void SuccinctGraph::get_attribute(
 }
 
 void SuccinctGraph::get_neighbors(std::vector<int64_t>& result, int64_t node) {
-    std::vector<int64_t> offsets;
+    std::vector<int64_t> decoded, offsets;
     this->edge_table->search(
         offsets, NODE_ID_DELIM + SuccinctGraphSerde::pad_node_id(node));
 
+    std::string edge_width_str, data_width, dst_ids;
     result.clear();
     for (auto it = offsets.begin(); it != offsets.end(); ++it) {
         int64_t curr_off = *it;
         curr_off = skip_init_node_atype(curr_off);
 
-        std::string edge_width_str;
         this->edge_table->extract(
             edge_width_str, curr_off, SuccinctGraphSerde::WIDTH_EDGE_WIDTH_PADDED);
         int32_t edge_width = std::stoi(edge_width_str);
 
-        std::string data_width;
         curr_off += SuccinctGraphSerde::WIDTH_EDGE_WIDTH_PADDED;
         this->edge_table->extract(
             data_width, curr_off, SuccinctGraphSerde::WIDTH_DATA_WIDTH_PADDED);
@@ -754,7 +753,6 @@ void SuccinctGraph::get_neighbors(std::vector<int64_t>& result, int64_t node) {
 
         curr_off += cnt * WIDTH_TIMESTAMP;
 
-        std::string dst_ids;
         this->edge_table->extract(dst_ids, curr_off, cnt * WIDTH_NODE_ID);
 
         std::vector<int64_t> decoded =
@@ -769,16 +767,17 @@ void SuccinctGraph::get_neighbors(
     std::vector<int64_t>& result,
     int64_t node_id,
     int attr,
-    std::string search_key) {
+    const std::string& search_key) {
 
+    result.clear();
+    size_t pos;
+    std::string attributes;
     std::vector<int64_t> nbhrs;
     get_neighbors(nbhrs, node_id);
-    result.clear();
-    std::string attributes;
+
     for (auto it = nbhrs.begin(); it != nbhrs.end(); ++it) {
         this->node_table->get(attributes, *it);
-        size_t pos = attributes.find(
-            SuccinctGraph::DELIMITERS[attr] + search_key);
+        pos = attributes.find(SuccinctGraph::DELIMITERS[attr] + search_key);
         LOG("nbhr id %lld, search key '%s', pos = %d\n",
             *it, (SuccinctGraph::DELIMITERS[attr] + search_key).c_str(), pos);
         if (pos != std::string::npos) result.push_back(*it);
@@ -788,7 +787,7 @@ void SuccinctGraph::get_neighbors(
 void SuccinctGraph::get_nodes(
     std::set<int64_t>& result,
     int attr,
-    std::string search_key) {
+    const std::string& search_key) {
 
     result.clear();
     this->node_table->search(result, DELIMITERS[attr] + search_key);
@@ -797,9 +796,9 @@ void SuccinctGraph::get_nodes(
 void SuccinctGraph::get_nodes(
     std::set<int64_t>& result,
     int attr1,
-    std::string search_key1,
+    const std::string& search_key1,
     int attr2,
-    std::string search_key2) {
+    const std::string& search_key2) {
 
     result.clear();
     std::set<int64_t> s1, s2;
