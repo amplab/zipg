@@ -185,11 +185,17 @@ int main(int argc, char **argv) {
     } else if (type == "higgs-format") {
 
         std::string in_file = node_file;
-        std::string attr_file = std::string(argv[optind + 1]);
+        std::string attr_file = std::string(argv[optind + 1]); // TPC-H
         std::string assoc_out_file = std::string(argv[optind + 2]);
 
-        GraphFormatter::format_higgs_activity_file(
-            in_file, attr_file, assoc_out_file, 128);
+        GraphFormatter::format_higgs_twitter_dataset(
+            in_file,
+            attr_file,
+            assoc_out_file,
+            128,
+            false,
+            5
+        );
 
         // 456626 + 1, since unclear if original data is 0-indexed
         int num_nodes = 456627;

@@ -22,15 +22,20 @@ public:
         int freq,
         int len);
 
-    // Each line is of the form "176481 2417 1341102251 MT". We map
-    // MT->0, RE->1, RT->2 as atypes.  Output random bytes for each
-    // edge as attribute.  The output edge file can be fed into
-    // SuccinctGraph::construct().
-    static void format_higgs_activity_file(
+    // Each line is of the form "176481 2417 1341102251 MT" (map
+    // MT->0, RE->1, RT->2 as atypes); if `has_atype_timestamp` is false, then
+    // each line is just "srcId dstId", and we generate atype and timestamp
+    // uniformly at random from some range.
+    // Edge attributes taken from `attr_file`, with truncation/padding so that
+    // each attribute has specified length.  The output edge file can be fed
+    // into SuccinctGraph::construct().
+    static void format_higgs_twitter_dataset(
         const std::string& file,
         const std::string& attr_file,
         const std::string& out_file,
-        int bytes_per_attr);
+        int bytes_per_attr,
+        bool has_atype_timestamp = true,
+        int num_atype = 5);
 
 };
 
