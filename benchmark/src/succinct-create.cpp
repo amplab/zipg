@@ -204,6 +204,8 @@ void generate_node_queries(
 }
 
 // Format: randomNodeId,attrIdx,attrKey.
+// FIXME: the impl assumes the node attributes have same width (e.g. any attr1
+// has the same # of bytes as any attrK).  We can remove this reliance.
 void generate_neighbor_node_queries(
     std::string node_succinct_dir,
     std::string edge_succinct_dir,
@@ -230,10 +232,13 @@ void generate_neighbor_node_queries(
 
     std::ofstream warmup_out(warmup_query_file);
     std::ofstream query_out(query_file);
+    std::vector<int64_t> neighbors;
+    std::string search_key;
+
     for(int64_t i = 0; i < warmup_size; i++) {
         int node_id;
         int attr = uni_attr(rng);
-        std::vector<int64_t> neighbors;
+        neighbors.clear();
         while (neighbors.empty()) {
             node_id = uni_node(rng);
             graph->get_neighbors(neighbors, node_id);
@@ -241,7 +246,6 @@ void generate_neighbor_node_queries(
         std::vector<int64_t>::const_iterator it(neighbors.begin());
         int neighbor_idx = rand() % neighbors.size();
         std::advance(it, neighbor_idx);
-        std::string search_key;
         // FIXME: deprecated
         graph->get_attribute(search_key, *it, attr);
         warmup_out << node_id << "," << attr << "," << search_key << "\n";
@@ -250,7 +254,7 @@ void generate_neighbor_node_queries(
     for(int64_t i = 0; i < query_size; i++) {
         int node_id;
         int attr = uni_attr(rng);
-        std::vector<int64_t> neighbors;
+        neighbors.clear();
         while (neighbors.empty()) {
             node_id = uni_node(rng);
             graph->get_neighbors(neighbors, node_id);
@@ -258,7 +262,6 @@ void generate_neighbor_node_queries(
         std::vector<int64_t>::const_iterator it(neighbors.begin());
         int neighbor_idx = rand() % neighbors.size();
         std::advance(it, neighbor_idx);
-        std::string search_key;
         // FIXME: deprecated
         graph->get_attribute(search_key, *it, attr);
         query_out << node_id << "," << attr << "," << search_key << "\n";
@@ -270,6 +273,7 @@ void generate_neighbor_node_queries(
 int main(int argc, char **argv) {
     std::string type = argv[1];
     if (type == "nodes") {
+
         int nodes = atoi(argv[2]);
         int attributes = atoi(argv[3]);
         int freq = atoi(argv[4]);
@@ -277,12 +281,16 @@ int main(int argc, char **argv) {
         std::string node_file = std::to_string(nodes) + ".node";
         if (argc > 6) node_file = argv[6];
         create_node_names(nodes, attributes, freq, len, node_file);
+
     } else if (type == "graph") {
+
         std::string node_file = argv[2];
         std::string edge_file = argv[3];
         std::string graph_file = node_file.substr(0, node_file.find(".node")) + ".graph";
         create_graph_file(node_file, edge_file, graph_file);
+
     } else if (type == "succinct") {
+
         std::string graph_file = argv[2];
         int sa_sr = 32, isa_sr = 32, npa_sr = 128;
         if (argc >= 6) {
@@ -291,7 +299,9 @@ int main(int argc, char **argv) {
             npa_sr = std::stoi(argv[5]);
         }
         create_succinct_file(graph_file, sa_sr, isa_sr, npa_sr);
+
     } else if (type == "node-queries") {
+
         std::string node_file = argv[2];
         int warmup_size = atoi(argv[3]);
         int query_size = atoi(argv[4]);
@@ -306,7 +316,9 @@ int main(int argc, char **argv) {
             warmup_file,
             query_file,
             is_node_file_comma_separated);
+
     } else if (type == "neighbor-queries") {
+
         std::string node_succinct_dir = argv[2];
         std::string edge_succinct_dir = argv[3];
         int warmup_size = atoi(argv[4]);
@@ -316,7 +328,9 @@ int main(int argc, char **argv) {
         generate_neighbor_queries(
             node_succinct_dir, edge_succinct_dir,
             warmup_size, query_size, warmup_file, query_file);
-    } else if (type == "neighbor-node-queries"){
+
+    } else if (type == "neighbor-node-queries") {
+
         std::string node_succinct_dir = argv[2];
         std::string edge_succinct_dir = argv[3];
         int32_t node_attr_size = std::stoi(argv[4]);
@@ -370,6 +384,7 @@ int main(int argc, char **argv) {
         printf("SuccinctGraph construction done\n");
 
     } else {
+        printf("Unsupported command type: '%s'\n", type.c_str());
         assert(1); // not supported
     }
     return 0;
