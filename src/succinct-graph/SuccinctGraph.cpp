@@ -43,6 +43,7 @@ int64_t SuccinctGraph::num_attributes() {
 
 // TODO: keep and exploit fixed width assumption for now.
 void SuccinctGraph::get_neighbors(std::vector<int64_t>& result, int64_t node_id) {
+    result.clear();
     std::string line;
     this->shard->access(line, node_id, this->num_attributes() * (ATTR_SIZE + 1) + 1, std::numeric_limits<int32_t>::max());
     std::istringstream iss(line);
