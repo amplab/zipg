@@ -731,6 +731,12 @@ void SuccinctGraph::get_neighbors(std::vector<int64_t>& result, int64_t node) {
 
     std::string edge_width_str, data_width, dst_ids;
     result.clear();
+
+    int64_t bytes_extracted = 0;
+    bytes_extracted += offsets.size() *
+        (SuccinctGraphSerde::WIDTH_EDGE_WIDTH_PADDED +
+         SuccinctGraphSerde::WIDTH_DATA_WIDTH_PADDED);
+
     for (auto it = offsets.begin(); it != offsets.end(); ++it) {
         int64_t curr_off = *it;
         curr_off = skip_init_node_atype(curr_off);
@@ -754,12 +760,14 @@ void SuccinctGraph::get_neighbors(std::vector<int64_t>& result, int64_t node) {
         curr_off += cnt * WIDTH_TIMESTAMP;
 
         this->edge_table->extract(dst_ids, curr_off, cnt * WIDTH_NODE_ID);
+        bytes_extracted += cnt * WIDTH_NODE_ID;
 
         std::vector<int64_t> decoded =
             SuccinctGraphSerde::decode_multi_node_ids(dst_ids);
 
         result.insert(result.end(), decoded.begin(), decoded.end());
     }
+    printf(",%lld\n", bytes_extracted);
 }
 
 // Scans neighbors and looks for those that contain the desired attr.
