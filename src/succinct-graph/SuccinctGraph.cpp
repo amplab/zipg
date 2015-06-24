@@ -81,8 +81,9 @@ void SuccinctGraph::search_nodes(
     std::set<int64_t> s1, s2;
     this->shard->search(s1, DELIMINATORS[attr1] + search_key1);
     this->shard->search(s2, DELIMINATORS[attr2] + search_key2);
+    // result.end() is a hint that supposedly is faster than .begin()
     std::set_intersection(s1.begin(), s1.end(), s2.begin(), s2.end(),
-                          std::inserter(result, result.begin()));
+                          std::inserter(result, result.end()));
 }
 
 // TODO: keep and exploit fixed width assumption for now.
