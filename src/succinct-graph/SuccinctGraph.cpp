@@ -804,6 +804,7 @@ void SuccinctGraph::get_nodes(
     std::set<int64_t> s1, s2;
     this->node_table->search(s1, DELIMITERS[attr1] + search_key1);
     this->node_table->search(s2, DELIMITERS[attr2] + search_key2);
+    // result.end() is a hint that supposedly is faster than .begin()
     std::set_intersection(s1.begin(), s1.end(), s2.begin(), s2.end(),
-                          std::inserter(result, result.begin()));
+                          std::inserter(result, result.end()));
 }
