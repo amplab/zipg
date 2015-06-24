@@ -482,16 +482,20 @@ protected:
 
         std::string line;
         while (getline(warmup_input, line)) {
-            std::vector<std::string> toks = split(line, ',');
-            warmup_neighbor_indices.push_back(std::atoi(toks[0].c_str()));
-            warmup_node_attributes.push_back(std::atoi(toks[1].c_str()));
-            warmup_node_queries.push_back(toks[2]);
+            // Format: nodeId,attrId,[everything to EOL is attr]
+            // Since attr can contain ',', we don't use split() to parse
+            int pos = line.find(',');
+            warmup_neighbor_indices.push_back(std::stoi(line.substr(0, pos)));
+            int pos2 = line.find(',', pos + 1);
+            warmup_node_attributes.push_back(std::stoi(line.substr(pos + 1, pos2 - pos - 1)));
+            warmup_node_queries.push_back(line.substr(pos2 + 1));
         }
         while (getline(query_input, line)) {
-            std::vector<std::string> toks = split(line, ',');
-            neighbor_indices.push_back(std::atoi(toks[0].c_str()));
-            node_attributes.push_back(std::atoi(toks[1].c_str()));
-            node_queries.push_back(toks[2]);
+            int pos = line.find(',');
+            neighbor_indices.push_back(std::stoi(line.substr(0, pos)));
+            int pos2 = line.find(',', pos + 1);
+            node_attributes.push_back(std::stoi(line.substr(pos + 1, pos2 - pos - 1)));
+            node_queries.push_back(line.substr(pos2 + 1));
         }
         warmup_input.close();
         query_input.close();
