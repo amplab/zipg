@@ -32,7 +32,6 @@ public:
         std::vector<int64_t> result;
         for (uint64_t i = 0; i < WARMUP_N; i++) {
             this->graph->get_neighbors(result, modGet(warmup_neighbor_indices, i));
-            assert(result.size() != 0 && "No result found in benchmarking neighbor latency");
         }
         fprintf(stderr, "Warmup complete.\n");
 
@@ -42,7 +41,6 @@ public:
             t0 = get_timestamp();
             this->graph->get_neighbors(result, modGet(neighbor_indices, i));
             t1 = get_timestamp();
-            assert(result.size() != 0 && "No result found in benchmarking node latency");
             res_stream << result.size() << "," << t1 - t0 << "\n";
 
 #ifdef BENCH_PRINT_RESULTS
