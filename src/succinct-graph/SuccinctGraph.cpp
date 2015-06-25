@@ -763,10 +763,7 @@ void SuccinctGraph::get_neighbors(std::vector<int64_t>& result, int64_t node) {
 
         this->edge_table->extract(dst_ids, curr_off, cnt * WIDTH_NODE_ID);
 
-        std::vector<int64_t> decoded =
-            SuccinctGraphSerde::decode_multi_node_ids(dst_ids);
-
-        result.insert(result.end(), decoded.begin(), decoded.end());
+        SuccinctGraphSerde::decode_and_append_multi_node_ids(result, dst_ids);
     }
 }
 

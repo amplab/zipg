@@ -37,6 +37,10 @@ public:
     static std::vector<int64_t> decode_multi_node_ids(
         const std::string& encoded);
 
+    static void decode_and_append_multi_node_ids(
+        std::vector<int64_t>& result,
+        const std::string& encoded);
+
     // Widths of padded fields.
     const static int WIDTH_NODE_ID_PADDED = 20;
     const static int WIDTH_ATYPE_PADDED = 20;

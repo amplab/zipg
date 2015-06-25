@@ -167,3 +167,22 @@ SuccinctGraphSerde::unpad_multi_int64(const std::string& encoded) {
     }
     return result;
 }
+
+void SuccinctGraphSerde::decode_and_append_multi_node_ids(
+    std::vector<int64_t>& result,
+    const std::string& encoded) {
+
+    // impl detail: assumes node ids 64 bits
+    int len = encoded.length();
+    assert(len % WIDTH_NODE_ID_PADDED == 0);
+    int acc = 0, i = 0;
+
+    while (i < len) {
+        for (int j = 0; j < WIDTH_NODE_ID_PADDED; ++j) {
+            acc = acc * 10 + (encoded[i + j] - '0');
+        }
+        i += WIDTH_NODE_ID_PADDED;
+        result.push_back(acc);
+        acc = 0;
+    }
+}
