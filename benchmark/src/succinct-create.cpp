@@ -70,7 +70,7 @@ void create_graph_file(std::string node_file, std::string edge_file, std::string
         line = ',' + line; //prepend each data element with a comma
         int pos = -1;
         // replace commas, e.g. ",attr1,attr2,attr3" -> "∆attr1$attr2*att3"
-        for (char delim: SuccinctGraph::DELIMINATORS) {
+        for (char delim: SuccinctGraph::DELIMITERS) {
             pos = line.find(',', pos + 1);
             line[pos] = delim;
         }

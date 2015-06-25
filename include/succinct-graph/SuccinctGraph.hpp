@@ -20,8 +20,11 @@ public:
     int64_t num_nodes();
     int64_t num_edges();
     int64_t num_attributes();
-    const static std::string DELIMINATORS;
 
+    const static std::string DELIMITERS;
+    const static int MAX_NUM_NODE_ATTRS;
+
+    // FIXME: deprecated & incorrect.
     void get_attribute(std::string& result, int64_t node_id, int attr);
 
     void get_neighbors(std::vector<int64_t>& result, int64_t key);
