@@ -784,19 +784,46 @@ void SuccinctGraph::get_neighbors(
     int attr,
     const std::string& search_key) {
 
+    assert(attr < SuccinctGraph::MAX_NUM_NODE_ATTRS);
     result.clear();
-    std::string key = mk_node_attr_key(attr, search_key);
-    size_t pos;
-    std::string attributes;
+
+    int32_t off, idx, search_len = search_key.length();
+    std::string singleton;
+    bool node_absent;
 
     std::vector<int64_t> nbhrs;
     get_neighbors(nbhrs, node_id);
 
-    for (auto it = nbhrs.begin(); it != nbhrs.end(); ++it) {
-        this->node_table->get(attributes, *it);
-        pos = attributes.find(key);
-        if (pos != std::string::npos) result.push_back(*it);
-        LOG("nbhr id %lld, search key '%s', pos = %d\n", *it, key.c_str(), pos);
+    for (auto nhbrId : nbhrs) {
+        node_absent = false;
+        off = 0;
+
+        // iterative extract until hitting delim for attr
+        while (true) {
+            this->node_table->access(singleton, nhbrId, off, 1);
+            ++off;
+            if (singleton.empty()) {
+                node_absent = true;
+                break;
+            }
+            if (singleton[0] == SuccinctGraph::DELIMITERS[attr]) break;
+        }
+        if (node_absent) continue;
+
+        // found start of attr column
+        idx = 0;
+        while (idx < search_len) {
+            this->node_table->access(singleton, nhbrId, off, 1);
+            ++off;
+            if (singleton[0] != search_key[idx]) break;
+            ++idx;
+        }
+
+        if (idx < search_len) continue;
+        // enforce exact match semantics
+        this->node_table->access(singleton, nhbrId, off, 1);
+        if (singleton[0] == SuccinctGraph::DELIMITERS[attr + 1])
+            result.push_back(nhbrId);
     }
 }
 
