@@ -55,36 +55,59 @@ void create_node_names(int nodes, int num_attr, int freq, int len) {
     s_out.close();
 }
 
-/** Format: [delim-separated attrs], <space>, [space-separated sorted nbhr ids]. */
-void create_graph_file(std::string node_file, std::string edge_file, std::string graph_file) {
+// Format: [delim-separated attrs][space-separated sorted nbhr ids].
+// Note that the special end-of-record delim will be at the end of first part.
+//
+// If the node attributes are not already uniquely delimited, assumes they
+// are comma-separated and properly delim them.
+void create_graph_file(
+    std::string node_file,
+    std::string edge_file,
+    std::string graph_file,
+    bool already_uniquely_delimed = false) {
+
+    // TODO: logic broken for otherwise
+    assert(already_uniquely_delimed);
+
     std::ifstream node_input(node_file);
     std::ifstream edge_input(edge_file);
-    std::vector<std::string> node_names; // each string = all attributes for a node
+    // each string = all attributes for a node
+    std::vector<std::string> node_names;
     std::string line;
 
     int nodes;
-    for(nodes = 0; !node_input.eof(); nodes++) {
+    for (nodes = 0; !node_input.eof(); nodes++) {
         std::getline(node_input, line, '\n');
-        if (line.length() == 0)
-            break;
-        line = ',' + line; //prepend each data element with a comma
-        int pos = -1;
-        // replace commas, e.g. ",attr1,attr2,attr3" -> "∆attr1$attr2*att3"
-        for (char delim: SuccinctGraph::DELIMITERS) {
-            pos = line.find(',', pos + 1);
-            line[pos] = delim;
+        if (line.length() == 0) break;
+        // FIXME: logic broken: needs to pad empty delims, etc
+        if (!already_uniquely_delimed) {
+            line = ',' + line; // prepend each data element with a comma
+            int pos = -1;
+            // replace commas, e.g. ",attr1,attr2,attr3" -> "∆attr1$attr2*att3"
+            for (char delim: SuccinctGraph::DELIMITERS) {
+                pos = line.find(',', pos + 1);
+                line[pos] = delim;
+            }
         }
         node_names.push_back(line);
     }
 
-    std::vector< std::list<int> > neighbor_list(nodes);
+    std::vector< std::vector<int> > neighbor_list(nodes);
     for(int edges = 0; !edge_input.eof(); edges++) {
         std::getline(edge_input, line, '\n');
-        if (line.length() == 0)
-            break;
+        if (line.length() == 0) break;
         int split_pos = line.find(' ');
         int from_node = std::atoi(line.substr(0, split_pos).c_str());
-        int to_node = std::atoi(line.substr(split_pos + 1).c_str());
+        int next_split_pos = line.find(' ', split_pos + 1);
+        int to_node;
+        if (next_split_pos != std::string::npos) {
+            // ignore rest of the fields, just take the dst node field
+            to_node = std::atoi(line.substr(
+                split_pos + 1, next_split_pos - split_pos - 1).c_str());
+        } else {
+            // there are no other fields, take to the end of line
+            to_node = std::atoi(line.substr(split_pos + 1).c_str());
+        }
         neighbor_list[from_node].push_back(to_node);
     }
     node_input.close();
@@ -92,11 +115,14 @@ void create_graph_file(std::string node_file, std::string edge_file, std::string
 
     std::ofstream s_out(graph_file);
     for (int node = 0; node < nodes; node++) {
-        std::list<int> neighbors = neighbor_list[node];
-        neighbors.sort();
+        std::vector<int> neighbors = neighbor_list[node];
+        std::sort(neighbors.begin(), neighbors.end());
         s_out << node_names[node];
-        for (int n: neighbors) {
-            s_out << " " << n;
+        // Note: the attributes and nhbr ids don't have an extra space
+        // since end-of-record delim will serve that purpose
+        if (!neighbors.empty()) s_out << neighbors[0];
+        for (int i = 1; i < neighbors.size(); ++i) {
+            s_out << " " << neighbors[i];
         }
         s_out << "\n";
     }
@@ -223,10 +249,17 @@ int main(int argc, char **argv) {
         int len = atoi(argv[5]);
         create_node_names(nodes, attributes, freq, len);
     } else if (type == "graph") {
+
         std::string node_file = argv[2];
         std::string edge_file = argv[3];
-        std::string graph_file = node_file.substr(0, node_file.find(".node")) + ".graph";
-        create_graph_file(node_file, edge_file, graph_file);
+        std::string graph_file =
+            node_file.substr(0, node_file.find(".node")) + ".graph";
+        bool already_uniquely_delimed = true;
+        if (std::strcmp(argv[4], "1")) already_uniquely_delimed = false;
+
+        create_graph_file(
+            node_file, edge_file, graph_file, already_uniquely_delimed);
+
     } else if (type == "succinct") {
         std::string graph_file = argv[2];
         int sa_sr = 32, isa_sr = 32, npa_sr = 128;
