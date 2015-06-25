@@ -19,13 +19,13 @@ void print_vector(const std::string& msg, const std::vector<int64_t>& vec) {
 }
 
 void assert_eq(
-    const std::vector<SuccinctGraph::Assoc>& expected,
-    std::initializer_list<SuccinctGraph::Assoc> actual) {
+    const std::vector<SuccinctGraph::Assoc>& actual,
+    std::initializer_list<SuccinctGraph::Assoc> expected) {
 
     assert(expected.size() == actual.size());
     int i = 0;
-    for (auto actual_assoc : actual) {
-        auto expected_assoc = expected[i];
+    for (auto expected_assoc : expected) {
+        auto actual_assoc = actual[i];
         assert(expected_assoc.src_id == actual_assoc.src_id);
         assert(expected_assoc.dst_id == actual_assoc.dst_id);
         assert(expected_assoc.atype == actual_assoc.atype);
@@ -36,26 +36,26 @@ void assert_eq(
 }
 
 void assert_eq(
-    const std::vector<int64_t>& expected,
-    std::initializer_list<int64_t> actual) {
+    const std::vector<int64_t>& actual,
+    std::initializer_list<int64_t> expected) {
 
     assert(expected.size() == actual.size());
     int i = 0;
-    for (int64_t actual_elem : actual) {
-        assert(expected[i] == actual_elem);
+    for (int64_t expected_elem : expected) {
+        assert(actual[i] == expected_elem);
         ++i;
     }
 }
 
 void assert_eq(
-    const std::set<int64_t>& expected,
-    std::initializer_list<int64_t> actual) {
+    const std::set<int64_t>& actual,
+    std::initializer_list<int64_t> expected) {
 
     assert(expected.size() == actual.size());
-    std::vector<int64_t> expected_vec;
-    for (auto it = expected.begin(); it != expected.end(); ++it)
-        expected_vec.push_back(*it);
-    assert_eq(expected_vec, actual);
+    std::vector<int64_t> vec;
+    for (auto it = actual.begin(); it != actual.end(); ++it)
+        vec.push_back(*it);
+    assert_eq(vec, expected);
 }
 
 int main(int argc, char **argv) {
@@ -177,11 +177,8 @@ int main(int argc, char **argv) {
     } else if (type == "graph-test") {
         // TODO: use gtest & move this to standalone file at some point?
 
-        // delim-ed
-        std::string node_attr = "<5PN2qmWqBlQ9wQj99nsQzldVI5ZuGXbE>WRK5RhRXdCdG5nG5azdNMK66MuCV6GXi(5xr84P2R391UXaLHbavJvFZGfO47XWS2)qVOw5lxuBEBNue7b9PZS0hoI6pgabi9U#OuSpM2Tlh01vOzwvSikHFswuzleht6xG$botuQQgmO6GkdAqwedXNRRadbLMZROaA%fZDAWhxgqRqcM1fdhRxRZYw3GFhPr6BI&nZITSBQOgwxhHxrhytFUloiivhOmebpb*lnTipx7wXZAqJZR5Y4M9k8AIyGE9CpuX+kn1XvnFttynI1MguokYDeWl5noesnB4m\n";
-        std::string node_file_content(node_attr); // for nodes 0..9
-        for (int i = 1; i < 10; ++i) node_file_content += node_attr;
-
+        std::string node_file_content =
+            GraphFormatter::format_node_attrs_str( { { "" } } ); // empty
         std::string edge_file_content = "0 1 2 41842148 a b\n"
                                         "0 1618 2 93244 sup\n"
                                         "0 1 2 9324 suc\n"
@@ -389,45 +386,16 @@ int main(int argc, char **argv) {
         graph->get_neighbors(nbhrs, 6);
         assert_eq(nbhrs, { 1 });
 
-        // for toy dataset, this will hit every nbhr of 0
-        graph->get_neighbors(nbhrs, 0, 0, "5PN2qmWqBlQ9wQj99nsQzldVI5ZuGXbE");
-        assert_eq(nbhrs, { 2, 1, 1 });
-
-        graph->get_neighbors(nbhrs, 6, 0, "5PN2qmWqBlQ9wQj99nsQzldVI5ZuGXbE");
-        assert_eq(nbhrs, { 1 });
-
-        graph->get_neighbors(nbhrs, 0, 0, "WILL NOT HIT");
-        assert_eq(nbhrs, { });
-
-        std::set<int64_t> nodes;
-        graph->get_nodes(nodes, 0, "5PN2qmWqBlQ9wQj99nsQzldVI5ZuGXbE");
-        assert(nodes.size() == 10);
-        printf("get_nodes(attr that will hit) returns all nodes: ok\n");
-
-        graph->get_nodes(nodes, 0, "WILL NOT HIT");
-        assert(nodes.size() == 0);
-        printf("get_nodes(attr that won't hit) returns no nodes: ok\n");
-
-        graph->get_nodes(nodes,
-            0, "5PN2qmWqBlQ9wQj99nsQzldVI5ZuGXbE",
-            8, "lnTipx7wXZAqJZR5Y4M9k8AIyGE9CpuX");
-        assert(nodes.size() == 10);
-        printf("get_nodes(attr1 (hit), attr2 (hit)) returns all nodes: ok\n");
-
-        graph->get_nodes(nodes,
-            0, "5PN2qmWqBlQ9wQj99nsQzldVI5ZuGXbE",
-            8, "WILL NOT HIT");
-        assert(nodes.size() == 0);
-        printf("get_nodes(attr1 (hit), attr2 (no hit)) returns no nodes: ok\n");
-
         graph->remove_generated_files();
 
     } else if (type == "graph-test2") {
 
-        // delim-ed, only first 3 nodes has attrs, diff # of attrs, diff size
-        std::string node_file_content = "<Winter>is(coming\n"
-                                "<is>Winter(here\n"
-                                "<George>R(R)Martin#writes$too%damn&slow\n";
+        // only first 3 nodes have attrs, diff # of attrs, diff size
+        std::string node_file_content = GraphFormatter::format_node_attrs_str(
+            { { "Winter", "is", "coming" },
+              { "is", "Winter", "here" },
+              { "George", "R", "R", "Martin", "writes", "too", "damn", "slow" }
+            });
 
         std::string edge_file_content = "0 1 2 41842148 a b\n"
                                         "0 1618 2 93244 sup\n"
@@ -448,11 +416,27 @@ int main(int argc, char **argv) {
 
         graph->construct(node_tmp_pathname, edge_tmp_pathname);
 
-        std::remove(node_tmp_pathname.c_str());
-        std::remove(edge_tmp_pathname.c_str());
-
         std::vector<int64_t> nbhrs;
         std::set<int64_t> nodes;
+
+        // several regression tests: test exact match semantics
+        graph->get_neighbors(nbhrs, 0, 0, "Win"); // just a prefix of the attr!
+        assert(nbhrs.empty());
+
+        graph->get_nodes(nodes, 0, "Geo"); // just a prefix!
+        assert(nodes.empty());
+
+        // attr 0 prefix, attr 1 complete key
+        graph->get_nodes(nodes, 0, "Win", 1, "is");
+        assert(nodes.empty());
+
+        // last attribute for a node, test end-of-record delim
+        graph->get_nodes(nodes, 2, "com");
+        assert(nodes.empty());
+        graph->get_nodes(nodes, 7, "slo");
+        assert(nodes.empty());
+        graph->get_nodes(nodes, 7, "slow");
+        assert(nodes.size() == 1 && *(nodes.begin()) == 2);
 
         graph->get_nodes(nodes, 0, "Winter");
         assert_eq(nodes, { 0 });
@@ -475,6 +459,8 @@ int main(int argc, char **argv) {
         graph->get_neighbors(nbhrs, 0, 0, "George");
         assert_eq(nbhrs, { 2 });
 
+        std::remove(node_tmp_pathname.c_str());
+        std::remove(edge_tmp_pathname.c_str());
         graph->remove_generated_files();
 
     } else if (type == "demo") {

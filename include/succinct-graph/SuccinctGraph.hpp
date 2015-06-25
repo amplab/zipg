@@ -180,7 +180,11 @@ public:
     uint32_t isa_sampling_rate = 64;
     uint32_t npa_sampling_rate = 256;
 
+    // TODO: consider moving these to GraphFormatter / Serde?
+    // Internal node attributes delimiters.  Assumes any char of them doesn't
+    // appear in the actual node attributes passed-in by user input.
     const static std::string DELIMITERS;
+    const static int MAX_NUM_NODE_ATTRS; // hard assumption placed
 
     // Recorded inside construct().
     std::string node_file_pathname, edge_file_pathname;

@@ -81,6 +81,8 @@ void GraphFormatter::create_random_node_table(
     int freq,
     int len) {
 
+    assert(num_attr < SuccinctGraph::MAX_NUM_NODE_ATTRS);
+
     std::ofstream s_out(out_file);
     std::vector<std::vector<std::string>> attributes;
     for (int attr = 0; attr < num_attr; attr++) {
@@ -104,6 +106,8 @@ void GraphFormatter::create_node_table(
     int num_attr,
     int freq,
     int len) {
+
+    assert(num_attr < SuccinctGraph::MAX_NUM_NODE_ATTRS);
 
     std::ifstream attr_in_stream(attr_file);
     std::ofstream s_out(out_file);
@@ -136,14 +140,16 @@ void GraphFormatter::create_node_table(
     attr_in_stream.close();
     assert(attributes.size() == num_attr &&
         attributes.at(0).size() == num_nodes);
+
+    std::vector<std::string> node_attrs;
     for (int i = 0; i < num_nodes; i++) {
+        node_attrs.clear();
         for (int attr = 0; attr < num_attr; attr++) {
             assert(attributes[attr][i].find(
-                SuccinctGraph::DELIMITERS[attr]) == std::string::npos);
-            s_out << SuccinctGraph::DELIMITERS[attr]
-                  << attributes[attr][i];
+                SuccinctGraph::DELIMITERS[attr]) == std::string::npos); // weak
+            node_attrs.push_back(attributes[attr][i]);
         }
-        s_out << "\n";
+        s_out << GraphFormatter::format_node_attrs_str({ node_attrs });
     }
     s_out.close();
 }
@@ -232,4 +238,25 @@ void GraphFormatter::format_higgs_twitter_dataset(
     out_stream.close();
 
     printf("Formatted edge file saved to %s\n", out_file.c_str());
+}
+
+std::string GraphFormatter::format_node_attrs_str(
+    std::vector<std::vector<std::string>> node_attrs) {
+
+    std::string result, formatted;
+    for (auto attrs : node_attrs) {
+        assert(attrs.size() < SuccinctGraph::MAX_NUM_NODE_ATTRS);
+        formatted.clear();
+        for (int i = 0; i < attrs.size(); ++i) {
+            assert(attrs[i].find(SuccinctGraph::DELIMITERS[i])
+                == std::string::npos); // weak check
+            formatted += SuccinctGraph::DELIMITERS[i] + attrs[i];
+        }
+        // append delims for empty attr slots, AND end-of-record delim
+        formatted += SuccinctGraph::DELIMITERS.substr(
+            attrs.size(), SuccinctGraph::MAX_NUM_NODE_ATTRS - attrs.size() + 1);
+
+        result += formatted + '\n';
+    }
+    return result;
 }

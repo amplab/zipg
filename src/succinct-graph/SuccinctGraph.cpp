@@ -36,14 +36,22 @@ inline int64_t skip_init_node_atype(int64_t curr_off) {
         SuccinctGraphSerde::WIDTH_ATYPE_PADDED; // padded atype
 }
 
-// TODO: lots of code duplication among the functions
-
-// FIXME
+// Used in edge table layout only.
 const char NODE_ID_DELIM = '\x02';
 const char ATYPE_DELIM = '\x03';
-//const char NODE_ID_DELIM = 'A';
-//const char ATYPE_DELIM = 'B';
-const std::string SuccinctGraph::DELIMITERS = "<>()#$%&*+[]{}^-~;? \"',./:=@|\\_~\x02\x03\x04\x05\x06\x07\x08\x09";
+
+// Used in node table layout only.  Prefer the \x** weird characters first.
+const std::string SuccinctGraph::DELIMITERS =
+    "\x02\x03\x04\x05\x06\x07\x08\x0C\x0D\x0E\x0F\x10\x11\x12\x13\x14\x15"
+    "<>()#$%&*+[]{}^-;? \"',./:=@|\\_~";
+
+// Hard assumption: support up to this many # of node attributes.  The character
+// in DELIMITERS indexed by this is used as a special end-of-record delim
+// appended to every value in node table.
+const int SuccinctGraph::MAX_NUM_NODE_ATTRS = 16;
+
+
+// TODO: lots of code duplication among the TAO-like functions
 
 SuccinctGraph::SuccinctGraph(
     std::string succinct_dir,
@@ -762,6 +770,13 @@ void SuccinctGraph::get_neighbors(std::vector<int64_t>& result, int64_t node) {
     }
 }
 
+inline std::string mk_node_attr_key(int attr, const std::string& query_key) {
+    assert(attr < SuccinctGraph::MAX_NUM_NODE_ATTRS);
+    return SuccinctGraph::DELIMITERS[attr] +
+        query_key +
+        SuccinctGraph::DELIMITERS[attr + 1];
+}
+
 // Scans neighbors and looks for those that contain the desired attr.
 void SuccinctGraph::get_neighbors(
     std::vector<int64_t>& result,
@@ -770,17 +785,18 @@ void SuccinctGraph::get_neighbors(
     const std::string& search_key) {
 
     result.clear();
+    std::string key = mk_node_attr_key(attr, search_key);
     size_t pos;
     std::string attributes;
+
     std::vector<int64_t> nbhrs;
     get_neighbors(nbhrs, node_id);
 
     for (auto it = nbhrs.begin(); it != nbhrs.end(); ++it) {
         this->node_table->get(attributes, *it);
-        pos = attributes.find(SuccinctGraph::DELIMITERS[attr] + search_key);
-        LOG("nbhr id %lld, search key '%s', pos = %d\n",
-            *it, (SuccinctGraph::DELIMITERS[attr] + search_key).c_str(), pos);
+        pos = attributes.find(key);
         if (pos != std::string::npos) result.push_back(*it);
+        LOG("nbhr id %lld, search key '%s', pos = %d\n", *it, key.c_str(), pos);
     }
 }
 
@@ -790,7 +806,7 @@ void SuccinctGraph::get_nodes(
     const std::string& search_key) {
 
     result.clear();
-    this->node_table->search(result, DELIMITERS[attr] + search_key);
+    this->node_table->search(result, mk_node_attr_key(attr, search_key));
 }
 
 void SuccinctGraph::get_nodes(
@@ -802,8 +818,8 @@ void SuccinctGraph::get_nodes(
 
     result.clear();
     std::set<int64_t> s1, s2;
-    this->node_table->search(s1, DELIMITERS[attr1] + search_key1);
-    this->node_table->search(s2, DELIMITERS[attr2] + search_key2);
+    this->node_table->search(s1, mk_node_attr_key(attr1, search_key1));
+    this->node_table->search(s2, mk_node_attr_key(attr2, search_key2));
     // result.end() is a hint that supposedly is faster than .begin()
     std::set_intersection(s1.begin(), s1.end(), s2.begin(), s2.end(),
                           std::inserter(result, result.end()));
