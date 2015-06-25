@@ -2,6 +2,7 @@
 #define GRAPH_FORMATTER_H
 
 #include <string>
+#include <vector>
 
 // Formats input files into Succinct Graph-ready files.
 class GraphFormatter {
@@ -22,8 +23,11 @@ public:
         int freq,
         int len);
 
-    // Outputs node table, where each line's attributes are taken from
-    // `attr_file`, and are properly separated by unique delimiters.
+    // Outputs a node table file suitable for use in SuccinctGraph::construct().
+    // Each node's attributes are taken from `attr_file`, and are properly
+    // separated by unique delimiters (specified in SuccinctGraph::DELIMITERS).
+    //
+    // Asserts that any internal delimiters used do not appear in attr contents.
     static void create_node_table(
         const std::string& out_file,
         const std::string& attr_file,
@@ -46,6 +50,14 @@ public:
         int bytes_per_attr,
         bool has_atype_timestamp = true,
         int num_atype = 5);
+
+    // Applies special delimiter logic: prepend each attribute with a unique
+    // delimiter that doesn't appear in the input; concatenates these into a
+    // string, then takes care of appending delimiters for absent attributes.
+    // Concatenates the result strings with new lines (including at the end).
+    // The output is suitable to be used in SuccinctGraph::construct().
+    static std::string format_node_attrs_str(
+        std::vector<std::vector<std::string>> node_attrs);
 
     // Used only when generating & parsing queries, not part of the internal
     // graph layout.  Assumes this is char uniquely identifiable (among attrs).
