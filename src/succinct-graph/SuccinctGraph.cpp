@@ -739,6 +739,14 @@ void SuccinctGraph::get_neighbors(std::vector<int64_t>& result, int64_t node) {
 
     std::string edge_width_str, data_width, dst_ids;
     result.clear();
+
+#ifdef BYTES_EXTRACTED
+    int64_t bytes_extracted = 0;
+    bytes_extracted += offsets.size() *
+        (SuccinctGraphSerde::WIDTH_EDGE_WIDTH_PADDED +
+         SuccinctGraphSerde::WIDTH_DATA_WIDTH_PADDED);
+#endif
+
     for (auto it = offsets.begin(); it != offsets.end(); ++it) {
         int64_t curr_off = *it;
         curr_off = skip_init_node_atype(curr_off);
@@ -763,11 +771,19 @@ void SuccinctGraph::get_neighbors(std::vector<int64_t>& result, int64_t node) {
 
         this->edge_table->extract(dst_ids, curr_off, cnt * WIDTH_NODE_ID);
 
+#ifdef BYTES_EXTRACTED
+        bytes_extracted += cnt * WIDTH_NODE_ID;
+#endif
+
         std::vector<int64_t> decoded =
             SuccinctGraphSerde::decode_multi_node_ids(dst_ids);
 
         result.insert(result.end(), decoded.begin(), decoded.end());
     }
+
+#ifdef BYTES_EXTRACTED
+    printf(",%lld\n", bytes_extracted);
+#endif
 }
 
 inline std::string mk_node_attr_key(int attr, const std::string& query_key) {
