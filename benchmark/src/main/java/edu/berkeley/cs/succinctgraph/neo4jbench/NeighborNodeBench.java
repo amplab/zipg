@@ -164,7 +164,6 @@ public class NeighborNodeBench {
         }
 //        System.out.println("getting nbhr done");
         List<Long> result = new LinkedList<Long>();
-        graphDb.findNodes()
 
         // .findNodes() *should* be able to use index
         try (ResourceIterator<Node> nodes = graphDb.findNodes(
@@ -209,10 +208,11 @@ public class NeighborNodeBench {
             BufferedReader br = new BufferedReader(new FileReader(file));
             String line = br.readLine();
             while (line != null) {
-                String[] tokens = line.split(",");
-                indices.add(Integer.parseInt(tokens[0]));
-                attributes.add(Integer.parseInt(tokens[1]));
-                queries.add(tokens[2]);
+                int idx = line.indexOf(',');
+                indices.add(Integer.parseInt(line.substring(0, idx)));
+                int idx2 = line.indexOf(',', idx + 1);
+                attributes.add(Integer.parseInt(line.substring(idx + 1, idx2)));
+                queries.add(line.substring(idx2 + 1));
                 line = br.readLine();
             }
         } catch (IOException e) {

@@ -65,7 +65,7 @@ public class BenchNode {
         // START SNIPPET: startDb
         GraphDatabaseService graphDb = new GraphDatabaseFactory()
             .newEmbeddedDatabaseBuilder(DB_PATH)
-            .setConfig(GraphDatabaseSettings.pagecache_memory, neo4jPageCacheMem)
+            //.setConfig(GraphDatabaseSettings.pagecache_memory, neo4jPageCacheMem)
             .newGraphDatabase();
         BenchUtils.registerShutdownHook(graphDb);
         Label label = DynamicLabel.label("Node");
@@ -328,7 +328,7 @@ public class BenchNode {
             BufferedReader br = new BufferedReader(new FileReader(file));
             String line = br.readLine();
             while (line != null) {
-                String[] tokens = line.split(",");
+                String[] tokens = line.split("\\x02");
                 indices1.add(Integer.parseInt(tokens[0]));
                 queries1.add(tokens[1]);
                 indices2.add(Integer.parseInt(tokens[2]));

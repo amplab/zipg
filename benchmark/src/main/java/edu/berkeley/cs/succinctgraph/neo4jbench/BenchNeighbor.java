@@ -51,10 +51,10 @@ public class BenchNeighbor {
             int[] warmupQueries, int[] queries, String output_file) {
 
         System.out.println("Benchmarking getNeighbor queries");
-        System.out.println("Setting neo4j's dbms.pagecache.memory: " + neo4jPageCacheMem);
+        //System.out.println("Setting neo4j's dbms.pagecache.memory: " + neo4jPageCacheMem);
         GraphDatabaseService graphDb = new GraphDatabaseFactory()
             .newEmbeddedDatabaseBuilder(db_path)
-            .setConfig(GraphDatabaseSettings.pagecache_memory, neo4jPageCacheMem)
+            //.setConfig(GraphDatabaseSettings.pagecache_memory, neo4jPageCacheMem)
             .newGraphDatabase();
 
         BenchUtils.registerShutdownHook(graphDb);
