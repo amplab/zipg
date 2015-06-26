@@ -47,3 +47,6 @@ target/
 
 # local neo4j database
 external/neo4j*/data/
+
+# experiment traces
+*latency*txt*
