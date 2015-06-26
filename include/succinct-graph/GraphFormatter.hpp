@@ -59,6 +59,19 @@ public:
     static std::string format_node_attrs_str(
         std::vector<std::vector<std::string>> node_attrs);
 
+    // Output: nodeId [delim] attr0 [delim] ...
+    // Note that node ids must be exactly the range [0, ..., L].
+    static void format_neo4j_node_from_node_file(
+        const std::string& delimed_node_file,
+        const std::string& neo4j_node_out,
+        char neo4j_delim = '\x02');
+
+    // Output: srcId [delim] dstId [delim] atype [delim] timestamp [delim] attr
+    static void format_neo4j_edge_from_edge_file(
+        const std::string& delimed_edge_file,
+        const std::string& neo4j_edge_out,
+        char neo4j_delim = '\x02');
+
     // Used only when generating & parsing queries, not part of the internal
     // graph layout.  Assumes this is char uniquely identifiable (among attrs).
     static const char QUERY_FILED_DELIM = '\x02';

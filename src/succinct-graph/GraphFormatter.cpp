@@ -260,3 +260,62 @@ std::string GraphFormatter::format_node_attrs_str(
     }
     return result;
 }
+
+void GraphFormatter::format_neo4j_node_from_node_file(
+    const std::string& delimed_node_file,
+    const std::string& neo4j_node_out,
+    char neo4j_delim) {
+
+    std::ifstream in_stream(delimed_node_file);
+    std::ofstream out_stream(neo4j_node_out);
+    std::string line;
+
+    int node_id = 0;
+    while (std::getline(in_stream, line)) {
+        out_stream << node_id;
+        // parse the delim-ed node attrs, replace all delims with neo4j_delim
+        for (char node_attr_delim : SuccinctGraph::DELIMITERS) {
+            int pos = line.find(node_attr_delim);
+            line[pos] = neo4j_delim;
+        }
+        for (char node_attr_delim : SuccinctGraph::DELIMITERS)
+            assert(line.find(node_attr_delim) == std::string::npos);
+        out_stream << line << "\n";
+        ++node_id;
+    }
+
+    in_stream.close();
+    out_stream.close();
+}
+
+void GraphFormatter::format_neo4j_edge_from_edge_file(
+    const std::string& delimed_edge_file,
+    const std::string& neo4j_edge_out,
+    char neo4j_delim) {
+
+    std::ifstream in_stream(delimed_edge_file);
+    std::ofstream out_stream(neo4j_edge_out);
+    std::string line, token;
+
+    while (std::getline(in_stream, line)) {
+        std::istringstream iss(line);
+
+        std::getline(iss, token, ' '); // src id
+        out_stream << token << neo4j_delim;
+
+        std::getline(iss, token, ' '); // dst id
+        out_stream << token << neo4j_delim;
+
+        std::getline(iss, token, ' '); // atype
+        out_stream << token << neo4j_delim;
+
+        std::getline(iss, token, ' '); // timestamp
+        out_stream << token << neo4j_delim;
+
+        std::getline(iss, token, '\n'); // rest is attr
+        out_stream << token << "\n";
+    }
+
+    in_stream.close();
+    out_stream.close();
+}

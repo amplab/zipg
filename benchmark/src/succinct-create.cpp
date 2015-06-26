@@ -412,6 +412,26 @@ int main(int argc, char **argv) {
 
         printf("SuccinctGraph construction done\n");
 
+    } else if (type == "neo4j-node") {
+
+        std::string delimed_node_file = argv[2];
+        std::string neo4j_node_out = argv[3];
+
+        GraphFormatter::format_neo4j_node_from_node_file(
+            delimed_node_file,
+            neo4j_node_out
+        );
+
+    } else if (type == "neo4j-edge") {
+
+        std::string delimed_edge_file = argv[2];
+        std::string neo4j_edge_out = argv[3];
+
+        GraphFormatter::format_neo4j_node_from_node_file(
+            delimed_edge_file,
+            neo4j_edge_out
+        );
+
     } else {
         printf("Unsupported command type: '%s'\n", type.c_str());
         assert(1); // not supported

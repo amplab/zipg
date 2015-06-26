@@ -14,8 +14,11 @@ NEO4J_DIR=${DATA_DIR}/neo4j
 QUERY_DIR=${DATA_DIR}/queries
 
 NODE_FILE=${DATA_DIR}/higgs.node
-EDGE_FILE=${DATA_DIR}/higgs-activity_time.edge_table
 IS_NODE_FILE_CSV=0
+EDGE_FILE=${DATA_DIR}/higgs-activity_time.edge_table
+ASSOC_FILE=${DATA_DIR}/higgs-social_network.assoc # used for formatting neo4j
+# \x02
+NEO4J_DELIM=
 
 # graph construction configs
 nodes=( 100000 ) # list of num_nodes to bench
