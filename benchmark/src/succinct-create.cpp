@@ -427,7 +427,7 @@ int main(int argc, char **argv) {
         std::string delimed_edge_file = argv[2];
         std::string neo4j_edge_out = argv[3];
 
-        GraphFormatter::format_neo4j_node_from_node_file(
+        GraphFormatter::format_neo4j_edge_from_edge_file(
             delimed_edge_file,
             neo4j_edge_out
         );

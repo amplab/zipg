@@ -276,10 +276,11 @@ void GraphFormatter::format_neo4j_node_from_node_file(
         // parse the delim-ed node attrs, replace all delims with neo4j_delim
         for (char node_attr_delim : SuccinctGraph::DELIMITERS) {
             int pos = line.find(node_attr_delim);
+            // NOTE: hacky! This assumes input uses the first few delims
+            // consecutively only.
+            if (pos == std::string::npos) break;
             line[pos] = neo4j_delim;
         }
-        for (char node_attr_delim : SuccinctGraph::DELIMITERS)
-            assert(line.find(node_attr_delim) == std::string::npos);
         out_stream << line << "\n";
         ++node_id;
     }

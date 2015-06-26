@@ -29,10 +29,11 @@ echo $node_header > ${CSV_DIR}/nodes-header.csv
 #       also, timestamp is marked as LONG, so supposedly better than strings
 echo \
     ":START_ID${NEO4J_DELIM}:END_ID${NEO4J_DELIM}:TYPE${NEO4J_DELIM}timestamp:LONG${NEO4J_DELIM}attr" \
-    >${CSV_DIR}edges-header.csv
+    >${CSV_DIR}/edges-header.csv
 
-${BIN_DIR}/create neo4j-node $NODE_FILE ${NODE_FILE}.neo4j
-${BIN_DIR}/create neo4j-edge $ASSOC_FILE ${ASSOC_FILE}.neo4j
+${BIN_DIR}/create neo4j-node $NODE_FILE ${NODE_FILE}.neo4j &
+${BIN_DIR}/create neo4j-edge $ASSOC_FILE ${ASSOC_FILE}.neo4j &
+wait
 
 #    EDGE_CSV=${CSV_DIR}/${num_nodes}_edge.csv
 #    # TODO: this sed is very slow, can just patch the OCaml program
