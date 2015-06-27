@@ -20,6 +20,7 @@ public:
     static std::string pad_atype(int64_t x);
     static std::string pad_edge_width(int32_t x);
     static std::string pad_data_width(int64_t x);
+    static std::string pad_dst_id_width(int32_t x);
 
     /********** encoding: encode into alphabet & left-pad with 0 **********/
 
@@ -32,16 +33,23 @@ public:
 
     static std::string encode_node_id(int64_t node_id);
 
+    static std::string encode_node_id(int64_t node_id, int32_t padded_width);
+
     static int64_t decode_node_id(const std::string& encoded);
 
     static std::vector<int64_t> decode_multi_node_ids(
         const std::string& encoded);
+
+    static std::vector<int64_t> decode_multi_node_ids(
+        const std::string& encoded,
+        int32_t padded_width);
 
     // Widths of padded fields.
     const static int WIDTH_NODE_ID_PADDED = 20;
     const static int WIDTH_ATYPE_PADDED = 20;
     const static int WIDTH_EDGE_WIDTH_PADDED = 10;
     const static int WIDTH_DATA_WIDTH_PADDED = 20;
+    const static int WIDTH_DST_ID_WIDTH_PADDED = 2;
 
     // Widths of encoded fields.
 #if ALPHABET_ENCODE

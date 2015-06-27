@@ -22,6 +22,13 @@ std::string SuccinctGraphSerde::pad_data_width(int64_t x) {
     return pad_int64(x);
 }
 
+// Uses exactly 2 chars to represent dst id width.
+std::string SuccinctGraphSerde::pad_dst_id_width(int32_t x) {
+    assert(x <= WIDTH_NODE_ID_PADDED);
+    if (x < 10) return '0' + std::to_string(x);
+    return std::to_string(x);
+}
+
 std::string SuccinctGraphSerde::encode_timestamp(int64_t timestamp) {
 #if ALPHABET_ENCODE
     return encode_int64(timestamp, WIDTH_TIMESTAMP);
@@ -55,6 +62,16 @@ std::string SuccinctGraphSerde::encode_node_id(int64_t node_id) {
 #endif
 }
 
+// TODO: code duplication.
+std::string SuccinctGraphSerde::encode_node_id(
+    int64_t node_id,
+    int32_t padded_width) {
+
+    char res[padded_width + 1];
+    sprintf(res, "%0*lld", padded_width, node_id);
+    return std::string(res);
+}
+
 int64_t SuccinctGraphSerde::decode_node_id(const std::string& encoded) {
 #if ALPHABET_ENCODE
     return decode_int64(encoded);
@@ -64,12 +81,26 @@ int64_t SuccinctGraphSerde::decode_node_id(const std::string& encoded) {
 }
 
 std::vector<int64_t> SuccinctGraphSerde::decode_multi_node_ids(
-        const std::string& encoded) {
+    const std::string& encoded) {
 #if ALPHABET_ENCODE
     return decode_multi_int64(encoded, WIDTH_NODE_ID);
 #else
     return unpad_multi_int64(encoded);
 #endif
+}
+
+// TODO: code duplication.
+std::vector<int64_t> SuccinctGraphSerde::decode_multi_node_ids(
+    const std::string& encoded,
+    int32_t padded_width) {
+
+    assert(encoded.length() % padded_width == 0);
+    std::vector<int64_t> result;
+    result.reserve(encoded.length() / padded_width);
+    for (int i = 0; i < encoded.length(); i += padded_width) {
+        result.push_back(std::stol(encoded.substr(i, padded_width)));
+    }
+    return result;
 }
 
 std::map<char, int> SuccinctGraphSerde::alphabet_char2pos =
