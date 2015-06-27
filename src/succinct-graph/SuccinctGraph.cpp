@@ -5,39 +5,21 @@
 #include <sstream>
 #include <thread>
 
-#define WIDTH_TIMESTAMP SuccinctGraphSerde::WIDTH_TIMESTAMP
-
-// Hacky: represents not-specified query arguments
-#define NONE -1
-
-// Assumes all variables defined; curr_off needs to be at start of an assoc list
-#define UNSAFE_EXTRACT_SRC_ATYPE_AND_INC_OFF() \
-        curr_off += 1; \
-        this->edge_table->extract(src_id_str, curr_off, SuccinctGraphSerde::WIDTH_NODE_ID_PADDED); \
-        curr_off += SuccinctGraphSerde::WIDTH_NODE_ID_PADDED + 1; \
-        this->edge_table->extract(atype_str, curr_off, SuccinctGraphSerde::WIDTH_ATYPE_PADDED); \
-        curr_off += SuccinctGraphSerde::WIDTH_ATYPE_PADDED; \
-        src = std::stoll(src_id_str); \
-        atype = std::stoll(atype_str);
-
 #ifdef LOG_DEBUG
     #define LOG(fmt, ...) printf(fmt, ##__VA_ARGS__)
 #else
     #define LOG(fmt, ...)
 #endif
 
-// Used in places where we don't need the src id and atype.
-inline int64_t skip_init_node_atype(int64_t curr_off) {
-    return curr_off +
-        1 + // node delim
-        SuccinctGraphSerde::WIDTH_NODE_ID_PADDED + // padded node id
-        1 + // atype delim
-        SuccinctGraphSerde::WIDTH_ATYPE_PADDED; // padded atype
-}
+#define WIDTH_TIMESTAMP SuccinctGraphSerde::WIDTH_TIMESTAMP
+
+// Hacky: represents not-specified query arguments
+#define NONE -1
 
 // Used in edge table layout only.
 const char NODE_ID_DELIM = '\x02';
 const char ATYPE_DELIM = '\x03';
+const char HEADER_DELIM = '\x04'; // delim right after atype
 
 // Used in node table layout only.  Prefer the \x** weird characters first.
 const std::string SuccinctGraph::DELIMITERS =
@@ -165,10 +147,11 @@ SuccinctGraph& SuccinctGraph::construct(
         auto src_id_and_atype = it->first;
 
         edge_file_out << NODE_ID_DELIM
-            << SuccinctGraphSerde::pad_node_id(src_id_and_atype.first);
+            << src_id_and_atype.first;
 
         edge_file_out << ATYPE_DELIM
-            << SuccinctGraphSerde::pad_atype(src_id_and_atype.second);
+            << src_id_and_atype.second
+            << HEADER_DELIM;
 
         std::vector<Assoc> assoc_list = it->second;
 
@@ -267,20 +250,29 @@ SuccinctGraph::get_edge_table_offsets(NodeId id, AType atype) {
         this->edge_table->search(res, key);
     } else if (atype == NONE) {
         this->edge_table->search(
-            res, key + SuccinctGraphSerde::pad_node_id(id));
+            res, key + std::to_string(id) + ATYPE_DELIM);
     } else if (id == NONE) {
-        this->edge_table->search(
-            res,
-            std::string(1, ATYPE_DELIM) + SuccinctGraphSerde::pad_atype(atype));
-        // shift to start of each assoc list
-        for (int i = 0; i < res.size(); ++i) {
-            res[i] -= SuccinctGraphSerde::WIDTH_NODE_ID_PADDED;
-            res[i] -= 1; // delim
+        // NOTE: since srcIds are variable-length, this case is same as first
+        this->edge_table->search(res, key);
+        // filter by atype
+        std::string atype_str;
+        for (auto it = res.begin(); it != res.end(); ) {
+            int64_t curr_off = this->edge_table->skipping_extract_until(
+                *it, ATYPE_DELIM);
+            // TODO: extract_compare() similar to SuccinctShard can be nice here
+            this->edge_table->extract_until(atype_str, curr_off, HEADER_DELIM);
+            if (std::stol(atype_str) != atype) {
+                it = res.erase(it);
+            } else {
+                ++it;
+            }
         }
     } else {
-        key += SuccinctGraphSerde::pad_node_id(id) +
+        // case: id & atype are specified.
+        key += std::to_string(id) +
             ATYPE_DELIM +
-            SuccinctGraphSerde::pad_atype(atype);
+            std::to_string(atype) +
+            HEADER_DELIM;
         this->edge_table->search(res, key);
         assert(res.size() <= 1);
     }
@@ -315,7 +307,13 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_range(
         if (curr_off == -1) continue;
 
         // Since the passed-in src and atype can be None, extract nonetheless
-        UNSAFE_EXTRACT_SRC_ATYPE_AND_INC_OFF();
+        curr_off = this->edge_table->extract_until(
+            src_id_str, curr_off + 1, ATYPE_DELIM); // +1 for skip NODE_DELIM
+        src = std::stol(src_id_str);
+
+        curr_off = this->edge_table->extract_until(
+            atype_str, curr_off, HEADER_DELIM);
+        atype = std::stol(atype_str);
 
         this->edge_table->extract(
             dst_id_width_str,
@@ -413,7 +411,13 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_get(
         if (curr_off == -1) continue;
 
         // Since the passed-in src and atype can be None, extract nonetheless
-        UNSAFE_EXTRACT_SRC_ATYPE_AND_INC_OFF();
+        curr_off = this->edge_table->extract_until(
+            src_id_str, curr_off + 1, ATYPE_DELIM); // +1 for skip NODE_DELIM
+        src = std::stol(src_id_str);
+
+        curr_off = this->edge_table->extract_until(
+            atype_str, curr_off, HEADER_DELIM);
+        atype = std::stol(atype_str);
 
         this->edge_table->extract(
             dst_id_width_str,
@@ -543,9 +547,9 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_get(
             idx = in_set_indexes[i];
             // decoded dst ids and timestamps start w/ absolute idx range_left
             result.push_back(
-                { src, // from UNSAFE_EXTRACT_SRC_ATYPE_AND_INC_OFF
+                { src,
                   decoded_dst_ids[idx - range_left],
-                  atype, // from UNSAFE_EXTRACT_SRC_ATYPE_AND_INC_OFF
+                  atype,
                   decoded_timestamps[idx - range_left],
                   valid_attrs[i]
                 });
@@ -562,7 +566,9 @@ int64_t SuccinctGraph::assoc_count(int64_t src, int64_t atype) {
 
     for (auto curr_off : eoffs) {
         if (curr_off == -1) continue;
-        curr_off = skip_init_node_atype(curr_off);
+
+        curr_off = this->edge_table->skipping_extract_until(
+            curr_off, HEADER_DELIM);
 
         this->edge_table->extract(
             dst_id_width_str,
@@ -615,7 +621,13 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_time_range(
         if (curr_off == -1) continue;
 
         // Since the passed-in src and atype can be None, extract nonetheless
-        UNSAFE_EXTRACT_SRC_ATYPE_AND_INC_OFF();
+        curr_off = this->edge_table->extract_until(
+            src_id_str, curr_off + 1, ATYPE_DELIM); // +1 for skip NODE_DELIM
+        src = std::stol(src_id_str);
+
+        curr_off = this->edge_table->extract_until(
+            atype_str, curr_off, HEADER_DELIM);
+        atype = std::stol(atype_str);
 
         this->edge_table->extract(
             dst_id_width_str,
@@ -734,9 +746,9 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_time_range(
             SuccinctGraphSerde::decode_multi_node_ids(dst_ids, dst_id_width);
         for (int i = 0; i < decoded_timestamps.size(); ++i) {
             result.push_back(
-                { src, // from UNSAFE_EXTRACT_SRC_ATYPE_AND_INC_OFF
+                { src,
                   decoded_dst_ids[i],
-                  atype, // from UNSAFE_EXTRACT_SRC_ATYPE_AND_INC_OFF
+                  atype,
                   decoded_timestamps[i],
                   attrs.substr(i * edge_width, edge_width)
                 });
@@ -785,7 +797,7 @@ void SuccinctGraph::get_attribute(
 void SuccinctGraph::get_neighbors(std::vector<int64_t>& result, int64_t node) {
     std::vector<int64_t> decoded, offsets;
     this->edge_table->search(
-        offsets, NODE_ID_DELIM + SuccinctGraphSerde::pad_node_id(node));
+        offsets, NODE_ID_DELIM + std::to_string(node) + ATYPE_DELIM);
 
     std::string edge_width_str, data_width, dst_ids, dst_id_width_str;
     result.clear();
@@ -798,13 +810,14 @@ void SuccinctGraph::get_neighbors(std::vector<int64_t>& result, int64_t node) {
 #endif
 
     for (auto it = offsets.begin(); it != offsets.end(); ++it) {
-        int64_t curr_off = *it;
-        curr_off = skip_init_node_atype(curr_off);
+        int64_t curr_off = this->edge_table->skipping_extract_until(
+            *it, HEADER_DELIM);
 
         this->edge_table->extract(
             dst_id_width_str,
             curr_off,
             SuccinctGraphSerde::WIDTH_DST_ID_WIDTH_PADDED);
+
         int32_t dst_id_width = std::stoi(dst_id_width_str);
         curr_off += SuccinctGraphSerde::WIDTH_DST_ID_WIDTH_PADDED;
 
