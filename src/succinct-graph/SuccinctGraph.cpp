@@ -805,42 +805,13 @@ void SuccinctGraph::get_neighbors(
     assert(attr < SuccinctGraph::MAX_NUM_NODE_ATTRS);
     char attr_delim = DELIMITERS[attr], next_attr_delim = DELIMITERS[attr + 1];
 
-    int32_t off, idx, search_len = search_key.length();
-    std::string singleton;
-
     std::vector<int64_t> nbhrs;
     get_neighbors(nbhrs, node_id);
 
     for (auto nhbrId : nbhrs) {
-        off = 0;
-
-        // extract first to see if nhbrId is absent in table
-        this->node_table->access(singleton, nhbrId, off, 1);
-        if (singleton.empty()) continue;
-        ++off;
-
-        if (singleton[0] != attr_delim) {
-            // iterative extract until hitting delim for attr
-            while (true) {
-                this->node_table->access(singleton, nhbrId, off, 1);
-                ++off;
-                if (singleton[0] == attr_delim) break;
-            }
-        }
-
-        // found start of attr column
-        idx = 0;
-        while (idx < search_len) {
-            this->node_table->access(singleton, nhbrId, off, 1);
-            ++off;
-            if (singleton[0] != search_key[idx]) break;
-            ++idx;
-        }
-        if (idx < search_len) continue;
-
-        // enforce exact match semantics
-        this->node_table->access(singleton, nhbrId, off, 1);
-        if (singleton[0] == next_attr_delim) result.push_back(nhbrId);
+        if (this->node_table->extract_compare(
+                nhbrId, attr_delim, next_attr_delim, search_key))
+            result.push_back(nhbrId);
     }
 }
 
