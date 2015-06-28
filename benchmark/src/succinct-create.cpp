@@ -406,9 +406,20 @@ int main(int argc, char **argv) {
 
     } else if (type == "graph-construct") {
 
-        // case: construct from node & edge file
+        std::string node_file(argv[2]);
+        std::string edge_file(argv[3]);
+        int sa_sr = 64, isa_sr = 64, npa_sr = 256;
+        if (argc > 4) {
+            sa_sr = std::stoi(argv[4]);
+            isa_sr = std::stoi(argv[5]);
+            npa_sr = std::stoi(argv[6]);
+        }
+
         SuccinctGraph* graph = new SuccinctGraph("", true); // no-op
-        graph->construct(argv[2], argv[3]);
+        graph->set_npa_sampling_rate(npa_sr);
+        graph->set_sa_sampling_rate(sa_sr);
+        graph->set_isa_sampling_rate(isa_sr);
+        graph->construct(node_file, edge_file);
 
         printf("SuccinctGraph construction done\n");
 
