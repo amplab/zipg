@@ -799,9 +799,19 @@ void SuccinctGraph::get_neighbors(std::vector<int64_t>& result, int64_t node) {
     this->edge_table->search(
         offsets, NODE_ID_DELIM + std::to_string(node) + ATYPE_DELIM);
 
+#ifdef DEBUG_TIME
+    auto t1 = get_timestamp();
+#endif
+
     std::string edge_width_str, data_width, dst_ids, dst_id_width_str;
     result.clear();
     uint64_t suf_arr_idx;
+
+#ifdef DEBUG_TIME
+    auto t2 = get_timestamp();
+    printf(",%ld\n", t2 - t1);
+    t1 = get_timestamp();
+#endif
 
 #ifdef BYTES_EXTRACTED
     int64_t bytes_extracted = 0;
@@ -860,6 +870,11 @@ void SuccinctGraph::get_neighbors(std::vector<int64_t>& result, int64_t node) {
         result.insert(result.end(), decoded.begin(), decoded.end());
     }
 
+#ifdef DEBUG_TIME
+    t2 = get_timestamp();
+    printf(".%ld\n", t2 - t1);
+#endif
+
 #ifdef BYTES_EXTRACTED
     printf(",%lld\n", bytes_extracted);
 #endif
@@ -879,6 +894,10 @@ void SuccinctGraph::get_neighbors(
     int attr,
     const std::string& search_key) {
 
+#ifdef DEBUG_TIME
+    auto t1 = get_timestamp();
+#endif
+
     result.clear();
 
     assert(attr < SuccinctGraph::MAX_NUM_NODE_ATTRS);
@@ -887,11 +906,22 @@ void SuccinctGraph::get_neighbors(
     std::vector<int64_t> nbhrs;
     get_neighbors(nbhrs, node_id);
 
+#ifdef DEBUG_TIME
+    auto t2 = get_timestamp();
+    printf(",%ld\n", t2 - t1);
+    t1 = get_timestamp();
+#endif
+
     for (auto nhbrId : nbhrs) {
         if (this->node_table->extract_compare(
                 nhbrId, attr_delim, next_attr_delim, search_key))
             result.push_back(nhbrId);
     }
+
+#ifdef DEBUG_TIME
+    t2 = get_timestamp();
+    printf(".%ld\n", t2 - t1);
+#endif
 }
 
 void SuccinctGraph::get_nodes(

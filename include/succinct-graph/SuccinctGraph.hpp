@@ -4,6 +4,8 @@
 #include "../succinct/SuccinctShard.hpp"
 #include "../succinct/SuccinctFile.hpp"
 
+#include <sys/time.h>
+
 class SuccinctGraph {
 public:
 
@@ -205,6 +207,13 @@ private:
     std::vector<int64_t> get_edge_table_offsets(NodeId id, AType atype);
 
     void construct_node_table(const std::string& node_file);
+
+    inline static time_t get_timestamp() {
+        struct timeval now;
+        gettimeofday (&now, NULL);
+
+        return  now.tv_usec + (time_t)now.tv_sec * 1000000;
+    }
 
 };
 
