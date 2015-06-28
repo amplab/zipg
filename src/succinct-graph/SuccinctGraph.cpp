@@ -801,6 +801,7 @@ void SuccinctGraph::get_neighbors(std::vector<int64_t>& result, int64_t node) {
 
     std::string edge_width_str, data_width, dst_ids, dst_id_width_str;
     result.clear();
+    uint64_t suf_arr_idx;
 
 #ifdef BYTES_EXTRACTED
     int64_t bytes_extracted = 0;
@@ -810,11 +811,13 @@ void SuccinctGraph::get_neighbors(std::vector<int64_t>& result, int64_t node) {
 #endif
 
     for (auto it = offsets.begin(); it != offsets.end(); ++it) {
+        suf_arr_idx = -1;
         int64_t curr_off = this->edge_table->skipping_extract_until(
-            *it, HEADER_DELIM);
+            suf_arr_idx, *it, HEADER_DELIM);
 
         this->edge_table->extract(
             dst_id_width_str,
+            suf_arr_idx,
             curr_off,
             SuccinctGraphSerde::WIDTH_DST_ID_WIDTH_PADDED);
 
@@ -822,12 +825,18 @@ void SuccinctGraph::get_neighbors(std::vector<int64_t>& result, int64_t node) {
         curr_off += SuccinctGraphSerde::WIDTH_DST_ID_WIDTH_PADDED;
 
         this->edge_table->extract(
-            edge_width_str, curr_off, SuccinctGraphSerde::WIDTH_EDGE_WIDTH_PADDED);
+            edge_width_str,
+            suf_arr_idx,
+            curr_off,
+            SuccinctGraphSerde::WIDTH_EDGE_WIDTH_PADDED);
         int32_t edge_width = std::stoi(edge_width_str);
 
         curr_off += SuccinctGraphSerde::WIDTH_EDGE_WIDTH_PADDED;
         this->edge_table->extract(
-            data_width, curr_off, SuccinctGraphSerde::WIDTH_DATA_WIDTH_PADDED);
+            data_width,
+            suf_arr_idx,
+            curr_off,
+            SuccinctGraphSerde::WIDTH_DATA_WIDTH_PADDED);
 
         curr_off += SuccinctGraphSerde::WIDTH_DATA_WIDTH_PADDED;
 
