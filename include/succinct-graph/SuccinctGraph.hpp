@@ -118,6 +118,12 @@ public:
         const std::string& search_key);
 
     // Clears `result` for caller.
+    void get_neighbors(
+        std::vector<int64_t>& result,
+        int64_t node,
+        int64_t atype);
+
+    // Clears `result` for caller.
     void get_nodes(
         std::set<int64_t>& result,
         int attr,
@@ -205,6 +211,10 @@ private:
     // arguments can be omitted (i.e. as wildcards, represented as -1 for now).
     // An edge table offset is -1 iff an assoc list doesn't exist.
     std::vector<int64_t> get_edge_table_offsets(NodeId id, AType atype);
+
+    void extract_neighbors(
+        std::vector<int64_t>& result,
+        const std::vector<int64_t>& offsets);
 
     void construct_node_table(const std::string& node_file);
 

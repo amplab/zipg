@@ -419,6 +419,16 @@ int main(int argc, char **argv) {
         std::vector<int64_t> nbhrs;
         std::set<int64_t> nodes;
 
+        // get_nhbr(n, atype)
+        graph->get_neighbors(nbhrs, 0, 2);
+        assert_eq(nbhrs, { 1, 1618, 1 });
+
+        graph->get_neighbors(nbhrs, 0, 3);
+        assert_eq(nbhrs, { });
+
+        graph->get_neighbors(nbhrs, 6, 1);
+        assert_eq(nbhrs, { 1 });
+
         // several regression tests: test exact match semantics
         graph->get_neighbors(nbhrs, 0, 0, "Win"); // just a prefix of the attr!
         assert(nbhrs.empty());

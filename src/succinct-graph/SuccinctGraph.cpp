@@ -794,25 +794,9 @@ void SuccinctGraph::get_attribute(
         result, node_id, attr * (NODE_ATTR_SIZE + 1) + 1, NODE_ATTR_SIZE);
 }
 
-void SuccinctGraph::get_neighbors(std::vector<int64_t>& result, int64_t node) {
-
-#ifdef DEBUG_TIME_NHBR1
-    auto t1 = get_timestamp();
-#endif
-
-    std::vector<int64_t> decoded, offsets;
-    this->edge_table->search(
-        offsets, NODE_ID_DELIM + std::to_string(node) + ATYPE_DELIM);
-
-    std::string edge_width_str, data_width, dst_ids, dst_id_width_str;
-    result.clear();
-    uint64_t suf_arr_idx;
-
-#ifdef DEBUG_TIME_NHBR1
-    auto t2 = get_timestamp();
-    printf(".%lld\n", t2 - t1);
-    t1 = get_timestamp();
-#endif
+inline void SuccinctGraph::extract_neighbors(
+    std::vector<int64_t>& result,
+    const std::vector<int64_t>& offsets) {
 
 #ifdef BYTES_EXTRACTED
     int64_t bytes_extracted = 0;
@@ -821,8 +805,13 @@ void SuccinctGraph::get_neighbors(std::vector<int64_t>& result, int64_t node) {
          SuccinctGraphSerde::WIDTH_DATA_WIDTH_PADDED);
 #endif
 
+    result.clear();
+    std::string edge_width_str, data_width, dst_ids, dst_id_width_str;
+    uint64_t suf_arr_idx;
+
     for (auto it = offsets.begin(); it != offsets.end(); ++it) {
         suf_arr_idx = -1;
+
         int64_t curr_off = this->edge_table->skipping_extract_until(
             suf_arr_idx, *it, HEADER_DELIM);
 
@@ -865,19 +854,38 @@ void SuccinctGraph::get_neighbors(std::vector<int64_t>& result, int64_t node) {
         bytes_extracted += cnt * dst_id_width;
 #endif
 
-        std::vector<int64_t> decoded =
-            SuccinctGraphSerde::decode_multi_node_ids(dst_ids, dst_id_width);
+        std::vector<int64_t> decoded(SuccinctGraphSerde::decode_multi_node_ids(
+            dst_ids, dst_id_width));
 
         result.insert(result.end(), decoded.begin(), decoded.end());
     }
 
+#ifdef BYTES_EXTRACTED
+    printf(",%lld\n", bytes_extracted);
+#endif
+}
+
+void SuccinctGraph::get_neighbors(std::vector<int64_t>& result, int64_t node) {
+
+#ifdef DEBUG_TIME_NHBR1
+    auto t1 = get_timestamp();
+#endif
+
+    std::vector<int64_t> offsets;
+    this->edge_table->search(
+        offsets, NODE_ID_DELIM + std::to_string(node) + ATYPE_DELIM);
+
+#ifdef DEBUG_TIME_NHBR1
+    auto t2 = get_timestamp();
+    printf(".%lld\n", t2 - t1);
+    t1 = get_timestamp();
+#endif
+
+    extract_neighbors(result, offsets);
+
 #ifdef DEBUG_TIME_NHBR1
     t2 = get_timestamp();
     printf(",%lld\n", t2 - t1);
-#endif
-
-#ifdef BYTES_EXTRACTED
-    printf(",%lld\n", bytes_extracted);
 #endif
 }
 
@@ -924,6 +932,21 @@ void SuccinctGraph::get_neighbors(
     t2 = get_timestamp();
     printf(",%lld\n", t2 - t1);
 #endif
+}
+
+void SuccinctGraph::get_neighbors(
+    std::vector<int64_t>& result,
+    int64_t node,
+    int64_t atype) {
+
+    std::vector<int64_t> offsets;
+    this->edge_table->search(
+        offsets,
+        NODE_ID_DELIM + std::to_string(node) +
+        ATYPE_DELIM + std::to_string(atype) +
+        HEADER_DELIM);
+
+    extract_neighbors(result, offsets);
 }
 
 void SuccinctGraph::get_nodes(
