@@ -154,6 +154,37 @@ void generate_neighbor_queries(
     query_out.close();
 }
 
+// Format: randomNodeId,atype.
+void generate_neighbor_atype_queries(
+    std::string node_succinct_dir,
+    std::string edge_succinct_dir,
+    int max_num_atype,
+    int warmup_size,
+    int query_size,
+    std::string warmup_query_file,
+    std::string query_file) {
+
+    SuccinctGraph* graph = new SuccinctGraph(
+        node_succinct_dir, edge_succinct_dir);
+
+    std::random_device rd1, rd2;
+    std::mt19937 rng1(rd1()), rng2(rd2());
+    std::uniform_int_distribution<int64_t> uni1(0, graph->num_nodes() - 1);
+    std::uniform_int_distribution<int64_t> uni2(0, max_num_atype - 1);
+
+    std::ofstream warmup_out(warmup_query_file);
+    std::ofstream query_out(query_file);
+    for (int64_t i = 0; i < warmup_size; i++) {
+        warmup_out << uni1(rng1) << "," << uni2(rng2) << std::endl;
+    }
+
+    for (int64_t i = 0; i < query_size; i++) {
+        query_out << uni1(rng1) << "," << uni2(rng2) << std::endl;
+    }
+    warmup_out.close();
+    query_out.close();
+}
+
 // Format: attrIdx1<DELIM>attrKey1<DELIM>attrIdx2<DELIM>attrKey2
 // where <DELIM> is GraphFormatter::QUERY_FILED_DELIM.
 void generate_node_queries(
@@ -372,6 +403,25 @@ int main(int argc, char **argv) {
             node_succinct_dir, edge_succinct_dir,
             node_attr_size, node_num_attrs,
             warmup_size, query_size, warmup_file, query_file);
+
+    } else if (type == "neighbor-atype-queries") {
+
+        std::string node_succinct_dir = argv[2];
+        std::string edge_succinct_dir = argv[3];
+        int max_num_atype = std::atoi(argv[4]);
+        int warmup_size = atoi(argv[5]);
+        int query_size = atoi(argv[6]);
+        std::string warmup_file = argv[7];
+        std::string query_file = argv[8];
+
+        generate_neighbor_atype_queries(
+            node_succinct_dir,
+            edge_succinct_dir,
+            max_num_atype,
+            warmup_size,
+            query_size,
+            warmup_file,
+            query_file);
 
     } else if (type == "higgs-format") {
 
