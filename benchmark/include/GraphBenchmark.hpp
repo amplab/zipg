@@ -70,19 +70,18 @@ public:
         std::string query_file) {
 
         time_t t0, t1;
-        fprintf(stderr, "Benchmarking getNeighborAtype latency of %s\n", this->graph->succinct_directory().c_str());
+        fprintf(stderr, "Benchmarking getNeighborAtype latency\n");
         read_neighbor_atype_queries(warmup_query_file, query_file);
         std::ofstream res_stream(res_path);
-
-#ifdef BENCH_PRINT_RESULTS
-        std::ofstream query_res_stream(res_path + ".succinct_result");
-#endif
 
         // Warmup
         fprintf(stderr, "Warming up for %lu queries...\n", WARMUP_N);
         std::vector<int64_t> result;
         for (uint64_t i = 0; i < WARMUP_N; i++) {
-            this->graph->get_neighbors(result, modGet(warmup_neighbor_indices, i));
+            this->graph->get_neighbors(
+                result,
+                modGet(warmup_neighbor_indices, i),
+                modGet(warmup_atypes, i));
         }
         fprintf(stderr, "Warmup complete.\n");
 
@@ -90,26 +89,17 @@ public:
         fprintf(stderr, "Measuring for %lu queries...\n", MEASURE_N);
         for (uint64_t i = 0; i < MEASURE_N; i++) {
             t0 = get_timestamp();
-            this->graph->get_neighbors(result, modGet(neighbor_indices, i));
+            this->graph->get_neighbors(
+                result,
+                modGet(neighbor_indices, i),
+                modGet(atypes, i));
             t1 = get_timestamp();
             res_stream << result.size() << "," << t1 - t0 << "\n";
 
-#ifdef BENCH_PRINT_RESULTS
-            // correctness validation
-            query_res_stream << "node id: " << modGet(neighbor_indices, i) << "\n";
-            for (auto it = result.begin(); it != result.end(); ++it) {
-                query_res_stream << *it << " ";
-            }
-            query_res_stream << "\n";
-#endif
         }
         fprintf(stderr, "Measure complete.\n");
 
         res_stream.close();
-
-#ifdef BENCH_PRINT_RESULTS
-        query_res_stream.close();
-#endif
     }
 
     std::pair<double, double> benchmark_neighbor_throughput(
