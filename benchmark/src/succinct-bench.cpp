@@ -428,6 +428,9 @@ int main(int argc, char **argv) {
         std::vector<int64_t> nbhrs;
         std::set<int64_t> nodes;
 
+        graph->get_neighbors(nbhrs, 6);
+        assert_eq(nbhrs, { 1 });
+
         // get_nhbr(n, atype)
         graph->get_neighbors(nbhrs, 0, 2);
         assert_eq(nbhrs, { 1, 1618, 1 });
