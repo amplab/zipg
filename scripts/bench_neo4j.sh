@@ -32,7 +32,7 @@ do
            ${HOME_DIR}/neo4j_${DATASET}_neighbor_latency_jvm${JVM_HEAP}m_pagecache${PC}m.txt \
            ${neo4j_warmup_neighbor} \
            ${neo4j_measure_neighbor} 5g
-        
+
         sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
         java -server -XX:+UseConcMarkSweepGC -Xmx${JVM_HEAP}m -cp ${classpath} \
            edu.berkeley.cs.succinctgraph.neo4jbench.BenchNode node-latency \
@@ -63,6 +63,17 @@ do
             ${HOME_DIR}/neo4j_${DATASET}_neighbor_node_latency.txt \
             ${neo4j_warmup_neighbor_node} \
             ${neo4j_measure_neighbor_node} 5g
+
+        sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+        java -server -XX:+UseConcMarkSweepGC -Xmx${JVM_HEAP}m -cp ${classpath} \
+            edu.berkeley.cs.succinctgraph.neo4jbench.BenchNeighborAtype \
+            latency \
+            ${NEO4J_DIR}/${DATASET} \
+            ${QUERY_DIR}/neighborAtype_warmup_${num_nodes}.txt \
+            ${QUERY_DIR}/neighborAtype_query_${num_nodes}.txt \
+            ${HOME_DIR}/neo4j_${DATASET}_neighborAtype_latency.txt \
+            ${neo4j_warmup_neighbor_atype} \
+            ${neo4j_measure_neighbor_atype}
 
         # sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
         # java -server -XX:+UseConcMarkSweepGC -Xmx${JVM_HEAP}m -cp ${classpath} \
