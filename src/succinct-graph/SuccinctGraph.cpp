@@ -791,7 +791,8 @@ void SuccinctGraph::get_attribute(
 
 inline void SuccinctGraph::extract_neighbors(
     std::vector<int64_t>& result,
-    const std::vector<int64_t>& offsets) {
+    const std::vector<int64_t>& offsets,
+    int32_t skip_length) {
 
 #ifdef BYTES_EXTRACTED
     int64_t bytes_extracted = 0;
@@ -809,7 +810,7 @@ inline void SuccinctGraph::extract_neighbors(
 
         // TODO: this can be optimized
         int64_t curr_off = this->edge_table->skipping_extract_until(
-            suf_arr_idx, *it, DST_ID_WIDTH_DELIM);
+            suf_arr_idx, (*it) + skip_length, DST_ID_WIDTH_DELIM);
 
         this->edge_table->extract(
             dst_id_width_str,
@@ -878,7 +879,8 @@ void SuccinctGraph::get_neighbors(std::vector<int64_t>& result, int64_t node) {
     t1 = get_timestamp();
 #endif
 
-    extract_neighbors(result, offsets);
+    // skip node delim, node, atype delim
+    extract_neighbors(result, offsets, num_digits(node) + 2);
 
 #ifdef DEBUG_TIME_NHBR1
     t2 = get_timestamp();
@@ -943,7 +945,8 @@ void SuccinctGraph::get_neighbors(
         ATYPE_DELIM + std::to_string(atype) +
         DST_ID_WIDTH_DELIM);
 
-    extract_neighbors(result, offsets);
+    // skip 2 delims & node & atype, i.e. first ISA lookup will hit dst id delim
+    extract_neighbors(result, offsets, num_digits(node) + num_digits(atype) + 2);
 }
 
 void SuccinctGraph::get_nodes(
