@@ -71,7 +71,7 @@ public class BenchNeighborAtype {
 
         List<Long> neighbors;
 
-        System.out.println("Benchmarking getNeighbor queries");
+        System.out.println("Benchmarking getNeighborAtype queries");
         //System.out.println("Setting neo4j's dbms.pagecache.memory: " + neo4jPageCacheMem);
         GraphDatabaseService graphDb = new GraphDatabaseFactory()
             .newEmbeddedDatabaseBuilder(db_path)
