@@ -26,6 +26,7 @@ deg=40 # average outgoing degree (so, total 2 * (# of directed edges) = deg * nu
 freq=100
 attributes=2
 attribute_length=350
+max_num_atype=5
 
 # succinct construction configs
 sa_sampling_rate=64
@@ -55,6 +56,11 @@ measure_neighbor_node=2000
 measure_neighbor_node=200000
 neo4j_warmup_neighbor_node=100000
 neo4j_measure_neighbor_node=200000
+
+warmup_neighbor_atype=100000
+measure_neighbor_atype=200000
+neo4j_warmup_neighbor_atype=100000
+neo4j_measure_neighbor_atype=200000
 
 warmup_mix=50000
 measure_mix=100000
