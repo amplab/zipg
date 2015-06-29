@@ -214,7 +214,8 @@ private:
 
     void extract_neighbors(
         std::vector<int64_t>& result,
-        const std::vector<int64_t>& offsets);
+        const std::vector<int64_t>& offsets,
+        int32_t skip_length);
 
     void construct_node_table(const std::string& node_file);
 
