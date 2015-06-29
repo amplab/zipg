@@ -37,4 +37,15 @@ do
       ${QUERY_DIR}/neighbor_node_warmup_${num_nodes}.txt \
       ${QUERY_DIR}/neighbor_node_query_${num_nodes}.txt
 
+    echo creating neighbor-atype queries, warmup ${warmup_neighbor_node}, measure ${measure_neighbor_node}
+
+    ${BIN_DIR}/create neighbor-atype-queries \
+      ${NODE_FILE} \
+      ${EDGE_FILE} \
+      ${max_num_atype} \
+      ${warmup_neighbor_atype} \
+      ${measure_neighbor_atype} \
+      ${QUERY_DIR}/neighborAtype_warmup_${num_nodes}.txt \
+      ${QUERY_DIR}/neighborAtype_query_${num_nodes}.txt
+
 done
