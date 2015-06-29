@@ -938,6 +938,10 @@ void SuccinctGraph::get_neighbors(
     int64_t node,
     int64_t atype) {
 
+#ifdef DEBUG_TIME_NHBR3
+    auto t1 = get_timestamp();
+#endif
+
     std::vector<int64_t> offsets;
     this->edge_table->search(
         offsets,
@@ -945,8 +949,20 @@ void SuccinctGraph::get_neighbors(
         ATYPE_DELIM + std::to_string(atype) +
         DST_ID_WIDTH_DELIM);
 
+#ifdef DEBUG_TIME_NHBR3
+    auto t2 = get_timestamp();
+    printf(".%lld\n", t2 - t1);
+    if (t2 - t1 == 0) assert(nbhrs.empty());
+    t1 = get_timestamp();
+#endif
+
     // skip 2 delims & node & atype, i.e. first ISA lookup will hit dst id delim
     extract_neighbors(result, offsets, num_digits(node) + num_digits(atype) + 2);
+
+#ifdef DEBUG_TIME_NHBR3
+    t2 = get_timestamp();
+    printf(",%lld\n", t2 - t1);
+#endif
 }
 
 void SuccinctGraph::get_nodes(
