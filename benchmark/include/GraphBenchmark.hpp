@@ -61,6 +61,57 @@ public:
 #endif
     }
 
+    // get_neighbor(nodeId, atype)
+    void benchmark_neighbor_atype_latency(
+        std::string res_path,
+        count_t WARMUP_N,
+        count_t MEASURE_N,
+        std::string warmup_query_file,
+        std::string query_file) {
+
+        time_t t0, t1;
+        fprintf(stderr, "Benchmarking getNeighborAtype latency of %s\n", this->graph->succinct_directory().c_str());
+        read_neighbor_atype_queries(warmup_query_file, query_file);
+        std::ofstream res_stream(res_path);
+
+#ifdef BENCH_PRINT_RESULTS
+        std::ofstream query_res_stream(res_path + ".succinct_result");
+#endif
+
+        // Warmup
+        fprintf(stderr, "Warming up for %lu queries...\n", WARMUP_N);
+        std::vector<int64_t> result;
+        for (uint64_t i = 0; i < WARMUP_N; i++) {
+            this->graph->get_neighbors(result, modGet(warmup_neighbor_indices, i));
+        }
+        fprintf(stderr, "Warmup complete.\n");
+
+        // Measure
+        fprintf(stderr, "Measuring for %lu queries...\n", MEASURE_N);
+        for (uint64_t i = 0; i < MEASURE_N; i++) {
+            t0 = get_timestamp();
+            this->graph->get_neighbors(result, modGet(neighbor_indices, i));
+            t1 = get_timestamp();
+            res_stream << result.size() << "," << t1 - t0 << "\n";
+
+#ifdef BENCH_PRINT_RESULTS
+            // correctness validation
+            query_res_stream << "node id: " << modGet(neighbor_indices, i) << "\n";
+            for (auto it = result.begin(); it != result.end(); ++it) {
+                query_res_stream << *it << " ";
+            }
+            query_res_stream << "\n";
+#endif
+        }
+        fprintf(stderr, "Measure complete.\n");
+
+        res_stream.close();
+
+#ifdef BENCH_PRINT_RESULTS
+        query_res_stream.close();
+#endif
+    }
+
     std::pair<double, double> benchmark_neighbor_throughput(
             std::string warmup_query_file, std::string query_file) {
         double get_neighbor_thput = 0;
@@ -427,8 +478,9 @@ protected:
     count_t WARMUP_N; count_t MEASURE_N;
     static const count_t COOLDOWN_N = 500;
 
-    std::vector<int> warmup_neighbor_indices;
-    std::vector<int> neighbor_indices;
+    std::vector<int64_t> warmup_neighbor_indices, neighbor_indices;
+
+    std::vector<int> warmup_atypes, atypes;
 
     std::vector<int> warmup_node_attributes;
     std::vector<std::string> warmup_node_queries;
@@ -451,6 +503,26 @@ protected:
 
         while (getline(query_input, line)) {
             neighbor_indices.push_back(std::atoi(line.c_str()));
+        }
+        warmup_input.close();
+        query_input.close();
+    }
+
+    void read_neighbor_atype_queries(
+        std::string warmup_file, std::string query_file) {
+
+        std::ifstream warmup_input(warmup_file);
+        std::ifstream query_input(query_file);
+        std::string line;
+        while (getline(warmup_input, line)) {
+            std::vector<std::string> toks = split(line, ',');
+            warmup_neighbor_indices.push_back(std::stol(toks[0]));
+            warmup_atypes.push_back(std::stoi(toks[1]));
+        }
+        while (getline(query_input, line)) {
+            std::vector<std::string> toks = split(line, ',');
+            neighbor_indices.push_back(std::stol(toks[0]));
+            atypes.push_back(std::stoi(toks[1]));
         }
         warmup_input.close();
         query_input.close();

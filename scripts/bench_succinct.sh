@@ -36,6 +36,13 @@ do
 		-o ${HOME_DIR}/${num_nodes}_neighbor_node_latency.txt \
 		${NODE_FILE} ${EDGE_FILE} ${attribute_length} ${attributes}
 
+    sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+    ${BIN_DIR}/bench -t neighbor-atype-latency -x ${warmup_neighbor_atype} \
+		-y ${measure_neighbor_atype} -w ${QUERY_DIR}/neighborAtype_warmup_${num_nodes}.txt \
+		-q ${QUERY_DIR}/neighborAtype_query_${num_nodes}.txt \
+		-o ${HOME_DIR}/neighborAtype_latency.txt \
+		${NODE_FILE} ${EDGE_FILE}
+
     # ${BIN_DIR}/bench -t mix-latency -x ${warmup_mix} \
 		# -y ${measure_mix} -w ${QUERY_DIR}/node_warmup_${num_nodes}.txt \
 		# -q ${QUERY_DIR}/node_query_${num_nodes}.txt \

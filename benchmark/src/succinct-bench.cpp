@@ -169,6 +169,15 @@ int main(int argc, char **argv) {
             warmup_query_file,
             measure_query_file);
 
+    } else if (type == "neighbor-atype-latency") {
+
+        bench.benchmark_neighbor_atype_latency(
+            result_file_name,
+            warmup_n,
+            measure_n,
+            warmup_query_file,
+            measure_query_file);
+
     } else if (type == "graph-format") {
 
         GraphFormatter::format_node_file(node_file);
