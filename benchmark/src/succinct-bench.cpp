@@ -183,6 +183,18 @@ int main(int argc, char **argv) {
         GraphFormatter::format_node_file(node_file);
         printf("Node file formatted\n");
 
+    } else if (type == "pad-test") {
+
+        int num_nodes = graph->num_nodes();
+        int num_atypes = 5;
+        std::vector<int64_t> nhbrs;
+
+        for (int i = 0; i < num_nodes; ++i) {
+            for (int j = 0; j < num_atypes; ++j) {
+                graph->get_neighbors(nhbrs, i, j);
+            }
+        }
+
     } else if (type == "graph-test") {
         // TODO: use gtest & move this to standalone file at some point?
 

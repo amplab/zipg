@@ -89,6 +89,17 @@ std::vector<int64_t> SuccinctGraphSerde::decode_multi_node_ids(
 #endif
 }
 
+// This can be > 5x faster (loop unroll / static lookup).
+inline int32_t num_digits(int64_t number) {
+    if (number == 0) return 1;
+   int32_t digits = 0;
+   while (number != 0) {
+       number /= 10;
+       ++digits;
+   }
+   return digits;
+}
+
 // TODO: code duplication.
 std::vector<int64_t> SuccinctGraphSerde::decode_multi_node_ids(
     const std::string& encoded,
@@ -97,9 +108,14 @@ std::vector<int64_t> SuccinctGraphSerde::decode_multi_node_ids(
     assert(encoded.length() % padded_width == 0);
     std::vector<int64_t> result;
     result.reserve(encoded.length() / padded_width);
+    std::string node_str;
+    int32_t num_padded_zeros = 0;
     for (int i = 0; i < encoded.length(); i += padded_width) {
-        result.push_back(std::stol(encoded.substr(i, padded_width)));
+        int64_t node_id = std::stol(encoded.substr(i, padded_width));
+        num_padded_zeros += padded_width - num_digits(node_id);
+        result.push_back(node_id);
     }
+    printf("%d,%d,%d\n", num_padded_zeros, 2 * result.size(), num_padded_zeros - 2 * result.size());
     return result;
 }
 
