@@ -952,7 +952,6 @@ void SuccinctGraph::get_neighbors(
 #ifdef DEBUG_TIME_NHBR3
     auto t2 = get_timestamp();
     printf(".%lld\n", t2 - t1);
-    if (t2 - t1 == 0) assert(nbhrs.empty());
     t1 = get_timestamp();
 #endif
 
