@@ -59,7 +59,6 @@ inline std::string mk_node_attr_key(int attr, const std::string& query_key) {
         SuccinctGraph::DELIMITERS[attr + 1];
 }
 
-// Due to fixed width assumption, extract everything, then pick out nhbrs.
 // This is the only primitive query whose impl differs from new format.
 void SuccinctGraph::get_neighbors(std::vector<int64_t>& result, int64_t node_id) {
     result.clear();
@@ -107,6 +106,7 @@ void SuccinctGraph::get_attribute(std::string& result, int64_t node_id, int attr
 }
 
 // Iterative extract, same logic as new format!
+// TODO: re-run eval, should needs be
 void SuccinctGraph::get_neighbors_of_node(
     std::vector<int64_t>& result,
     int64_t node_id,
@@ -118,42 +118,13 @@ void SuccinctGraph::get_neighbors_of_node(
     assert(attr < SuccinctGraph::MAX_NUM_NODE_ATTRS);
     char attr_delim = DELIMITERS[attr], next_attr_delim = DELIMITERS[attr + 1];
 
-    int32_t off, idx, search_len = search_key.length();
-    std::string singleton;
-
     std::vector<int64_t> nbhrs;
     get_neighbors(nbhrs, node_id);
 
     for (auto nhbrId : nbhrs) {
-        off = 0;
-
-        // extract first to see if nhbrId is absent in table
-        this->shard->access(singleton, nhbrId, off, 1);
-        if (singleton.empty()) continue;
-        ++off;
-
-        if (singleton[0] != attr_delim) {
-            // iterative extract until hitting delim for attr
-            while (true) {
-                this->shard->access(singleton, nhbrId, off, 1);
-                ++off;
-                if (singleton[0] == attr_delim) break;
-            }
-        }
-
-        // found start of attr column
-        idx = 0;
-        while (idx < search_len) {
-            this->shard->access(singleton, nhbrId, off, 1);
-            ++off;
-            if (singleton[0] != search_key[idx]) break;
-            ++idx;
-        }
-        if (idx < search_len) continue;
-
-        // enforce exact match semantics
-        this->shard->access(singleton, nhbrId, off, 1);
-        if (singleton[0] == next_attr_delim) result.push_back(nhbrId);
+        if (this->shard->extract_compare(
+                nhbrId, attr_delim, next_attr_delim, search_key))
+            result.push_back(nhbrId);
     }
 }
 
