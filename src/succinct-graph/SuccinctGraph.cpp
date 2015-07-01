@@ -932,7 +932,7 @@ void SuccinctGraph::get_neighbors(
     result.clear();
 
     assert(attr < SuccinctGraph::MAX_NUM_NODE_ATTRS);
-    char attr_delim = DELIMITERS[attr], next_attr_delim = DELIMITERS[attr + 1];
+    char next_attr_delim = DELIMITERS[attr + 1];
 
     std::vector<int64_t> nbhrs;
     get_neighbors(nbhrs, node_id);
@@ -944,9 +944,25 @@ void SuccinctGraph::get_neighbors(
     t1 = get_timestamp();
 #endif
 
+    std::string tmp;
+
     for (auto nhbrId : nbhrs) {
-        if (this->node_table->extract_compare(
-                nhbrId, attr_delim, next_attr_delim, search_key))
+        uint64_t suf_arr_idx = -1;
+        int64_t start_offset = this->node_table->extract_until(
+            tmp, suf_arr_idx, nhbrId, NODE_TABLE_HEADER_DELIM);
+        if (start_offset == -1) continue; // key doesn't exist
+        // +(attr + 1) to account for delims after each of the lengths
+        int32_t dist = std::stoi(tmp) + (attr + 1);
+
+        for (int i = 1; i <= attr; ++i) {
+            this->node_table->extract_until(
+                tmp, suf_arr_idx, nhbrId, NODE_TABLE_HEADER_DELIM);
+            dist += std::stoi(tmp);
+        }
+
+        // jump!
+        if (this->node_table->extract_compare_until(
+                start_offset + dist, next_attr_delim, search_key))
             result.push_back(nhbrId);
     }
 

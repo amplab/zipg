@@ -231,7 +231,7 @@ private:
 
     // This can be > 5x faster (loop unroll / static lookup).
     inline static int32_t num_digits(int64_t number) {
-        if (number == 0) return 1;
+       if (number == 0) return 1;
        int32_t digits = 0;
        while (number != 0) {
            number /= 10;
