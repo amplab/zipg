@@ -17,21 +17,18 @@
 #define NONE -1
 
 // Used in edge table layout only.
-const char NODE_ID_DELIM = '\x02';
-const char ATYPE_DELIM = '\x03';
-const char DST_ID_WIDTH_DELIM = '\x04'; // delim right after atype
-const char DATA_WIDTH_DELIM = '\x05'; // delim right before data width
-const char METADATA_DELIM = '\x06'; // delim after all these header metadata
+constexpr char NODE_ID_DELIM = '\x02';
+constexpr char ATYPE_DELIM = '\x03';
+constexpr char DST_ID_WIDTH_DELIM = '\x04'; // delim right after atype
+constexpr char DATA_WIDTH_DELIM = '\x05'; // delim right before data width
+constexpr char METADATA_DELIM = '\x06'; // delim after all these header metadata
 
 // Used in node table layout only.  Prefer the \x** weird characters first.
+// Note that it is important the delim is not in DELIMITERS.
+constexpr char NODE_TABLE_HEADER_DELIM = '\x1F';
 const std::string SuccinctGraph::DELIMITERS =
     "\x02\x03\x04\x05\x06\x07\x08\x0C\x0D\x0E\x0F\x10\x11\x12\x13\x14\x15"
     "<>()#$%&*+[]{}^-;? \"',./:=@|\\_~";
-
-// Hard assumption: support up to this many # of node attributes.  The character
-// in DELIMITERS indexed by this is used as a special end-of-record delim
-// appended to every value in node table.
-const int SuccinctGraph::MAX_NUM_NODE_ATTRS = 16;
 
 
 // TODO: lots of code duplication among the TAO-like functions
@@ -76,9 +73,46 @@ SuccinctGraph& SuccinctGraph::set_isa_sampling_rate(uint32_t sampling_rate) {
 void SuccinctGraph::construct_node_table(const std::string& node_file) {
     printf("Constructing node table with npa %d, sa %d, isa %d\n",
         npa_sampling_rate, sa_sampling_rate, isa_sampling_rate);
+
+    std::string formatted_node_file(node_file + "WithPtrs");
+    std::ifstream in_stream(node_file);
+    std::ofstream out_stream(formatted_node_file);
+    std::string line, token;
+    std::vector<int64_t> attr_lengths(MAX_NUM_NODE_ATTRS);
+
+    // Output format:
+    //
+    // distance [delim] len1 [delim] ... lenMAX-1 [delim] [delim1] attr1 ... [delimMAX] attrMAX
+    //
+    // NOTE:
+    //   (1) distance jumps us from right after its [delim] to start of attr1.
+    //   (2) to jump to attrK, read from distance up to (& including) len(K-1).
+
+    while (std::getline(in_stream, line)) {
+        std::stringstream ss(line);
+        attr_lengths.clear();
+        int distance = 0;
+
+        std::getline(ss, token, DELIMITERS[0]); // skip first delim
+
+        // Need to reach DELIMITERS[MAX] as well
+        for (int i = 1; i <= MAX_NUM_NODE_ATTRS; ++i) {
+            // assumes consecutive use of the delimiters
+            if (!std::getline(ss, token, DELIMITERS[i])) break;
+            attr_lengths.push_back(token.length());
+            // account for one delimiter after each len here
+            distance += num_digits(token.length()) + 1;
+        }
+        out_stream << distance << NODE_TABLE_HEADER_DELIM;
+        for (int64_t len : attr_lengths)
+            out_stream << len << NODE_TABLE_HEADER_DELIM;
+        out_stream << line << "\n";
+    }
+    out_stream.close();
+
     this->node_table = new SuccinctShard(
         0,
-        node_file,
+        formatted_node_file,
         SuccinctMode::CONSTRUCT_IN_MEMORY,
         sa_sampling_rate,
         isa_sampling_rate,
@@ -87,20 +121,9 @@ void SuccinctGraph::construct_node_table(const std::string& node_file) {
     this->node_table->serialize();
 }
 
-// This can be > 5x faster (loop unroll / static lookup).
-inline int32_t num_digits(int64_t number) {
-    if (number == 0) return 1;
-   int32_t digits = 0;
-   while (number != 0) {
-       number /= 10;
-       ++digits;
-   }
-   return digits;
-}
-
 SuccinctGraph& SuccinctGraph::construct(
-    std::string node_file,
-    std::string edge_file) {
+    std::string& node_file,
+    std::string& edge_file) {
 
     // construct node table in parallel
     std::thread node_table_thread(
@@ -909,7 +932,7 @@ void SuccinctGraph::get_neighbors(
     result.clear();
 
     assert(attr < SuccinctGraph::MAX_NUM_NODE_ATTRS);
-    char attr_delim = DELIMITERS[attr], next_attr_delim = DELIMITERS[attr + 1];
+    char next_attr_delim = DELIMITERS[attr + 1];
 
     std::vector<int64_t> nbhrs;
     get_neighbors(nbhrs, node_id);
@@ -921,9 +944,25 @@ void SuccinctGraph::get_neighbors(
     t1 = get_timestamp();
 #endif
 
+    std::string tmp;
+
     for (auto nhbrId : nbhrs) {
-        if (this->node_table->extract_compare(
-                nhbrId, attr_delim, next_attr_delim, search_key))
+        uint64_t suf_arr_idx = -1;
+        int64_t start_offset = this->node_table->extract_until(
+            tmp, suf_arr_idx, nhbrId, NODE_TABLE_HEADER_DELIM);
+        if (start_offset == -1) continue; // key doesn't exist
+        // +(attr + 1) to account for delims after each of the lengths
+        int32_t dist = std::stoi(tmp) + (attr + 1);
+
+        for (int i = 1; i <= attr; ++i) {
+            this->node_table->extract_until(
+                tmp, suf_arr_idx, nhbrId, NODE_TABLE_HEADER_DELIM);
+            dist += std::stoi(tmp);
+        }
+
+        // jump!
+        if (this->node_table->extract_compare_until(
+                start_offset + dist, next_attr_delim, search_key))
             result.push_back(nhbrId);
     }
 

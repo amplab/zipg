@@ -55,8 +55,7 @@ public:
     //              unique delimiters in DELIMITERS
     //   edge_file: each row represents one association, in format
     //              srcId dstId atype time [everything from here to EOL is attr]
-    // FIXME: probably makes sense to add & to params
-    SuccinctGraph& construct(std::string node_file, std::string edge_file);
+    SuccinctGraph& construct(std::string& node_file, std::string& edge_file);
 
     std::string succinct_directory();
 
@@ -192,7 +191,11 @@ public:
     // Internal node attributes delimiters.  Assumes any char of them doesn't
     // appear in the actual node attributes passed-in by user input.
     const static std::string DELIMITERS;
-    const static int MAX_NUM_NODE_ATTRS; // hard assumption placed
+
+    // Hard assumption: support up to this many # of node attributes.  The
+    // character in DELIMITERS indexed by this is used as a special
+    // end-of-record delim  appended to every value in node table.
+    constexpr static int MAX_NUM_NODE_ATTRS = 16;
 
     // Recorded inside construct().
     std::string node_file_pathname, edge_file_pathname;
@@ -224,6 +227,17 @@ private:
         gettimeofday (&now, NULL);
 
         return  now.tv_usec + (time_t)now.tv_sec * 1000000;
+    }
+
+    // This can be > 5x faster (loop unroll / static lookup).
+    inline static int32_t num_digits(int64_t number) {
+       if (number == 0) return 1;
+       int32_t digits = 0;
+       while (number != 0) {
+           number /= 10;
+           ++digits;
+       }
+       return digits;
     }
 
 };
