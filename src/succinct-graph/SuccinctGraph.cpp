@@ -21,9 +21,7 @@ constexpr char NODE_ID_DELIM = '\x02';
 constexpr char ATYPE_DELIM = '\x03';
 constexpr char DST_ID_WIDTH_DELIM = '\x04'; // delim right after atype
 constexpr char DATA_WIDTH_DELIM = '\x05'; // delim right before data width
-
-// delim after all these header metadata
-const char SuccinctGraph::METADATA_DELIM = '\x06';
+constexpr char METADATA_DELIM = '\x06'; // delim after all these header metadata
 
 // Used in node table layout only.  Prefer the \x** weird characters first.
 // *****Note that it is important the delim is not in DELIMITERS.*****

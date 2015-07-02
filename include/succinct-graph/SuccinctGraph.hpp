@@ -173,9 +173,6 @@ public:
     // end-of-record delim  appended to every value in node table.
     constexpr static int MAX_NUM_NODE_ATTRS = 25;
 
-    // Used in node table only.  Delim after all the lengths metadata.
-    const static char METADATA_DELIM;
-
     // Recorded inside construct().
     std::string node_file_pathname, edge_file_pathname;
 
