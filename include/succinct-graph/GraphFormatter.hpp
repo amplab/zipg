@@ -36,10 +36,11 @@ public:
         int freq,
         int len);
 
-    // Each line is of the form "176481 2417 1341102251 MT" (map
-    // MT->0, RE->1, RT->2 as atypes); if `has_atype_timestamp` is false, then
-    // each line is just "srcId dstId", and we generate atype and timestamp
-    // uniformly at random from some range.
+    // If `has_atype_timestamp` is false, then each line is "srcId dstId", and
+    // we generate atype and timestamp uniformly at random from some range.
+    // Otherwise, each line is of the form "176481 2417 1341102251 MT" (map
+    // MT->0, RE->1, RT->2 as atypes).
+    //
     // Edge attributes taken from `attr_file`, with truncation/padding so that
     // each attribute has specified length.  The output edge file can be fed
     // into SuccinctGraph::construct().

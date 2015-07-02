@@ -24,10 +24,11 @@ constexpr char DATA_WIDTH_DELIM = '\x05'; // delim right before data width
 constexpr char METADATA_DELIM = '\x06'; // delim after all these header metadata
 
 // Used in node table layout only.  Prefer the \x** weird characters first.
-// Note that it is important the delim is not in DELIMITERS.
+// *****Note that it is important the delim is not in DELIMITERS.*****
 constexpr char NODE_TABLE_HEADER_DELIM = '\x1F';
 const std::string SuccinctGraph::DELIMITERS =
     "\x02\x03\x04\x05\x06\x07\x08\x0C\x0D\x0E\x0F\x10\x11\x12\x13\x14\x15"
+    "\x16\x17\x18\x19\x1A\x1B\x1C\x1D\x1E"
     "<>()#$%&*+[]{}^-;? \"',./:=@|\\_~";
 
 
@@ -74,7 +75,7 @@ void SuccinctGraph::construct_node_table(const std::string& node_file) {
     printf("Constructing node table with npa %d, sa %d, isa %d\n",
         npa_sampling_rate, sa_sampling_rate, isa_sampling_rate);
 
-    std::string formatted_node_file(node_file + "WithPtrs");
+    std::string formatted_node_file(node_file + "WithPtrs"); // FIXME!
     std::ifstream in_stream(node_file);
     std::ofstream out_stream(formatted_node_file);
     std::string line, token;
@@ -831,7 +832,6 @@ inline void SuccinctGraph::extract_neighbors(
     for (auto it = offsets.begin(); it != offsets.end(); ++it) {
         suf_arr_idx = -1;
 
-        // TODO: this can be optimized
         int64_t curr_off = this->edge_table->skipping_extract_until(
             suf_arr_idx, (*it) + skip_length, DST_ID_WIDTH_DELIM);
 
