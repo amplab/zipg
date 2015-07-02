@@ -156,11 +156,10 @@ int main(int argc, char **argv) {
 
     } else if (type == "neighbor-node-latency") {
 
+        // TODO: these are not needed anymore.
         assert(optind + 3 < argc);
         int32_t node_attr_size = std::stoi(argv[optind + 2]);
         int64_t node_num_attrs = std::stol(argv[optind + 3]);
-        (*graph).set_node_num_attrs(node_num_attrs)
-                .set_node_attr_size(node_attr_size);
 
         bench.benchmark_neighbor_node_latency(
             result_file_name,

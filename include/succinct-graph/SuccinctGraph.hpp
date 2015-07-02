@@ -20,19 +20,6 @@ public:
     // Loads the previously constructed node table & edge table.
     SuccinctGraph(std::string node_succinct_dir, std::string edge_succinct_dir);
 
-    // Loads the previously constructed node table & edge table.
-    SuccinctGraph(
-        std::string node_succinct_dir,
-        std::string edge_succinct_dir,
-        int32_t node_attr_size,
-        int64_t node_num_attrs
-    ) : SuccinctGraph(node_succinct_dir, edge_succinct_dir) {
-        this->NODE_ATTR_SIZE = node_attr_size;
-        this->NODE_NUM_ATTRS = node_num_attrs;
-        printf("Setting NODE_ATTR_SIZE = %d, NODE_NUM_ATTRS = %lld\n",
-            node_attr_size, node_num_attrs);
-    }
-
     ~SuccinctGraph() {
         delete this->node_table;
         delete this->edge_table;
@@ -65,16 +52,6 @@ public:
 
     size_t storage_size();
     size_t serialize();
-
-    SuccinctGraph& set_node_num_attrs(int64_t node_num_attrs) {
-        this->NODE_NUM_ATTRS = node_num_attrs;
-        return *this;
-    }
-
-    SuccinctGraph& set_node_attr_size(int64_t node_attr_size) {
-        this->NODE_ATTR_SIZE = node_attr_size;
-        return *this;
-    }
 
     /**************** Internal formats ****************/
     // C.f. the LinkBench paper, Sigmoid 2013
@@ -205,9 +182,6 @@ private:
 
     std::string succinct_dir;
     int64_t edges;
-
-    int32_t NODE_ATTR_SIZE = 32;
-    int64_t NODE_NUM_ATTRS = 10;
 
     // Returns a list of edge table offsets; result is a list since the two
     // arguments can be omitted (i.e. as wildcards, represented as -1 for now).

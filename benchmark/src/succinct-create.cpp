@@ -271,19 +271,15 @@ void generate_neighbor_node_queries(
     std::string warmup_query_file,
     std::string query_file) {
 
-    // get_neighbor(n, attr) requires get_attribute() to work correctly,
-    // which requires the correct attr size and num attr
     SuccinctGraph* graph = new SuccinctGraph(
         node_succinct_dir,
-        edge_succinct_dir,
-        node_attr_size,
-        node_num_attrs);
+        edge_succinct_dir);
 
     std::random_device rd;
     std::mt19937 rng(rd());
 
     std::uniform_int_distribution<int64_t> uni_node(0, graph->num_nodes() - 1);
-    std::uniform_int_distribution<int> uni_attr(0, graph->num_attributes() - 1);
+    std::uniform_int_distribution<int> uni_attr(0, node_num_attrs - 1);
 
     std::ofstream warmup_out(warmup_query_file);
     std::ofstream query_out(query_file);

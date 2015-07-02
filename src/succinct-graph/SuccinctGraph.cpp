@@ -788,10 +788,6 @@ int64_t SuccinctGraph::num_edges() {
     return edges;
 }
 
-int64_t SuccinctGraph::num_attributes() {
-    return NODE_NUM_ATTRS;
-}
-
 size_t SuccinctGraph::storage_size() {
 }
 
