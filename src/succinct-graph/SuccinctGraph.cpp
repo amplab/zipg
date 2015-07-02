@@ -800,17 +800,20 @@ size_t SuccinctGraph::serialize() {
 
 /******* Primitive APIs *******/
 
-// Assumes the values in node table have fixed number of attributes, each of
-// which has fixed width (NODE_ATTR_SIZE), and that each attr is prefixed by a
-// delimiter (in fact unique, but that fact is irrelevant here).
+// This might not be most efficient as we don't jump over the lengths.
 void SuccinctGraph::get_attribute(
     std::string& result,
     int64_t node_id,
     int attr) {
 
-    assert(attr < NODE_NUM_ATTRS);
-    this->node_table->access(
-        result, node_id, attr * (NODE_ATTR_SIZE + 1) + 1, NODE_ATTR_SIZE);
+    assert(attr < MAX_NUM_NODE_ATTRS);
+    uint64_t suf_arr_idx = -1;
+
+    this->node_table->extract_until(
+        result, suf_arr_idx, node_id, DELIMITERS[attr]);
+
+    this->node_table->extract_until(
+        result, suf_arr_idx, node_id, DELIMITERS[attr + 1]);
 }
 
 inline void SuccinctGraph::extract_neighbors(

@@ -260,10 +260,7 @@ void generate_node_queries(
     query_out.close();
 }
 
-// FIXME
 // Format: randomNodeId,attrIdx,attrKey.
-// FIXME: the impl assumes the node attributes have same width (e.g. any attr1
-// has the same # of bytes as any attrK).  We can remove this reliance.
 void generate_neighbor_node_queries(
     std::string node_succinct_dir,
     std::string edge_succinct_dir,
@@ -304,7 +301,6 @@ void generate_neighbor_node_queries(
         std::vector<int64_t>::const_iterator it(neighbors.begin());
         int neighbor_idx = rand() % neighbors.size();
         std::advance(it, neighbor_idx);
-        // FIXME: deprecated
         graph->get_attribute(search_key, *it, attr);
         warmup_out << node_id << "," << attr << "," << search_key << "\n";
     }
@@ -320,7 +316,6 @@ void generate_neighbor_node_queries(
         std::vector<int64_t>::const_iterator it(neighbors.begin());
         int neighbor_idx = rand() % neighbors.size();
         std::advance(it, neighbor_idx);
-        // FIXME: deprecated
         graph->get_attribute(search_key, *it, attr);
         query_out << node_id << "," << attr << "," << search_key << "\n";
     }

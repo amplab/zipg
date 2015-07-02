@@ -99,9 +99,8 @@ public:
 
     /**************** Primitive APIs ****************/
 
-    // FIXME: deprecated.
-    // Depends on NODE_ATTR_SIZE and NODE_NUM_ATTRS being set correctly.
-    // Clears `result` for caller.
+    // Clears `result` for caller.  Used in query generation and is not
+    // efficient enough for general query's use.
     void get_attribute(std::string& result, int64_t node_id, int attr);
 
     // TODO: decide whether to return set for get_neighbors() as well.
