@@ -193,12 +193,14 @@ void generate_node_queries(
     int query_size,
     std::string warmup_query_file,
     std::string query_file,
+    int num_actual_delims,
     bool is_comma_separated = true) {
 
     int64_t nodes = 0;
     std::ifstream node_input(node_file);
     std::string line;
     std::vector<std::vector<std::string>*>* attributes = new std::vector<std::vector<std::string>*>();
+
     while (std::getline(node_input, line)) {
         nodes++;
         std::vector<std::string>* attr = new std::vector<std::string>();
@@ -209,14 +211,14 @@ void generate_node_queries(
             while (std::getline(iss, token, ',')) {
                 attr->push_back(token);
             }
-        } else { // SuccinctGraph::DELIMITERS-separated
-            // delim before first attr
-            std::getline(iss, token, SuccinctGraph::DELIMITERS[0]);
-            int delim_idx = 1;
-            while (std::getline(
-                iss, token, SuccinctGraph::DELIMITERS[delim_idx])) {
+        } else {
+            // case: SuccinctGraph::DELIMITERS-separated
 
-                ++delim_idx;
+            // skip all the way until the delim before first attr
+            std::getline(iss, token, SuccinctGraph::DELIMITERS[0]);
+
+            for (int i = 1; i <= num_actual_delims; ++i) {
+                std::getline(iss, token, SuccinctGraph::DELIMITERS[i]);
                 attr->push_back(token);
             }
         }
@@ -258,6 +260,7 @@ void generate_node_queries(
     query_out.close();
 }
 
+// FIXME
 // Format: randomNodeId,attrIdx,attrKey.
 // FIXME: the impl assumes the node attributes have same width (e.g. any attr1
 // has the same # of bytes as any attrK).  We can remove this reliance.
@@ -367,14 +370,16 @@ int main(int argc, char **argv) {
         int query_size = atoi(argv[4]);
         std::string warmup_file = argv[5];
         std::string query_file = argv[6];
+        int num_actual_delims = atoi(argv[7]); // not succinct's max bound
         bool is_node_file_comma_separated = true;
-        if (std::strcmp(argv[7], "1")) is_node_file_comma_separated = false;
+        if (std::strcmp(argv[8], "1")) is_node_file_comma_separated = false;
         generate_node_queries(
             node_file,
             warmup_size,
             query_size,
             warmup_file,
             query_file,
+            num_actual_delims,
             is_node_file_comma_separated);
 
     } else if (type == "neighbor-queries") {

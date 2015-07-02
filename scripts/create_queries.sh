@@ -23,10 +23,12 @@ do
       ${measure_node} \
       ${QUERY_DIR}/node_warmup_${num_nodes}.txt \
       ${QUERY_DIR}/node_query_${num_nodes}.txt \
-      IS_NODE_FILE_CSV
+      ${attributes} \
+      ${IS_NODE_FILE_CSV}
 
     echo creating neighbor-node queries for ${num_nodes} nodes, warmup ${warmup_neighbor_node}, measure ${measure_neighbor_node}
 
+    # FIXME
     ${BIN_DIR}/create neighbor-node-queries \
       ${NODE_FILE} \
       ${EDGE_FILE} \
