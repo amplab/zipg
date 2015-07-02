@@ -274,9 +274,16 @@ void GraphFormatter::format_neo4j_node_from_node_file(
     int node_id = 0;
     while (std::getline(in_stream, line)) {
         out_stream << node_id;
+
+        // skip the lengths metadata
+        int pos = line.find(SuccinctGraph::METADATA_DELIM);
+        assert(pos != std::string::npos);
+        line.erase(0, pos + 1);
+
         // parse the delim-ed node attrs, replace all delims with neo4j_delim
+        // note that we *do* want to replace the first delim
         for (char node_attr_delim : SuccinctGraph::DELIMITERS) {
-            int pos = line.find(node_attr_delim);
+            pos = line.find(node_attr_delim);
             // NOTE: hacky! This assumes input uses the first few delims
             // consecutively only.
             if (pos == std::string::npos) break;
@@ -285,9 +292,6 @@ void GraphFormatter::format_neo4j_node_from_node_file(
         out_stream << line << "\n";
         ++node_id;
     }
-
-    in_stream.close();
-    out_stream.close();
 }
 
 void GraphFormatter::format_neo4j_edge_from_edge_file(
