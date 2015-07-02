@@ -118,18 +118,19 @@ void GraphFormatter::create_node_table(
         // need attributes for column `attr`, length num_nodes
         int n = num_nodes;
         std::vector<std::string> attrs;
+        attr.clear();
         while (n > 0) {
             // multiple records concatenated together
-            attr.clear();
             while (attr.length() < len) {
                 std::getline(attr_in_stream, tmp);
                 attr += tmp;
             }
-            if (attr.length() > len) attr = attr.substr(0, len); // truncate
+            tmp = attr.substr(0, len); // possibly truncate
+            attr.erase(0, len); // can potentially reuse this row
 
             int i = 0;
             while (n > 0 && i < freq) {
-                attrs.push_back(attr);
+                attrs.push_back(tmp);
                 --n;
                 ++i;
             }
