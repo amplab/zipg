@@ -23,7 +23,7 @@ INC := -I include
 
 all: succinct graph
 
-sharding:
+sharding: $(THRIFT_BIN)
 	@mkdir -p src/thrift
 	@mkdir -p include/thrift
 	$(THRIFT_BIN) -I include/thrift \
@@ -32,6 +32,9 @@ sharding:
 	  thrift/succinct_graph.thrift
 	mv thrift/*.cpp src/thrift/ && mv thrift/*.h include/thrift/
 	rm -rf src/thrift/*skeleton*
+
+$(THRIFT_BIN):
+	@cd $(SUCCINCTDIR) && make gen-thrift
 
 succinct-server: graph $(THRIFTTARGET_SS)
 
