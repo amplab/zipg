@@ -15,8 +15,8 @@ BUILDDIRS := $(subst $(SRCDIR),$(BUILDDIR),$(SRCDIRS))
 SOURCES := $(shell find $(SRCDIR) -type f -name *.cpp)
 OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.cpp=.o))
 TARGET := $(LIBDIR)/libsuccinctgraph.a
-CFLAGS := -O3 -std=c++11 -Wall -g -lpthread 
-LIB := -L ../external/succinct-cpp/lib -lsuccinct -lpthread
+CFLAGS := -O3 -std=c++11 -Wall -g
+LIB :=  -lpthread -L ../external/succinct-cpp/lib -lsuccinct
 INC := -I include
 
 all: succinct graph
