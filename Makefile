@@ -8,6 +8,7 @@ LIBDIR := lib
 INCLUDEDIR := include
 SRCDIR := src
 SUCCINCTDIR := $(EXTERNDIR)/succinct-cpp
+THRIFT_BIN := $(SUCCINCTDIR)/bin/thrift
 
 SRCDIRS := $(shell find $(SRCDIR) -type d)
 BUILDDIRS := $(subst $(SRCDIR),$(BUILDDIR),$(SRCDIRS))
@@ -15,11 +16,37 @@ BUILDDIRS := $(subst $(SRCDIR),$(BUILDDIR),$(SRCDIRS))
 SOURCES := $(shell find $(SRCDIR) -type f -name *.cpp)
 OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.cpp=.o))
 TARGET := $(LIBDIR)/libsuccinctgraph.a
+
 CFLAGS := -O3 -std=c++11 -Wall -g
-LIB :=  -lpthread -L ../external/succinct-cpp/lib -lsuccinct
+LIB :=  -lpthread -L ../external/succinct-cpp/lib -lsuccinct -lthrift
 INC := -I include
 
 all: succinct graph
+
+sharding:
+	@mkdir -p src/thrift
+	@mkdir -p include/thrift
+	$(THRIFT_BIN) -I include/thrift \
+	  -gen cpp:include_prefix \
+	  -out thrift \
+	  thrift/succinct_graph.thrift
+	mv thrift/*.cpp src/thrift/ && mv thrift/*.h include/thrift/
+	rm -rf src/thrift/*skeleton*
+
+succinct-server: graph $(THRIFTTARGET_SS)
+
+succinct-handler: graph $(THRIFTTARGET_SH)
+
+succinct-master: graph $(THRIFTTARGET_SM)
+
+$(THRIFTTARGET_SS): $(THRIFTOBJECTS_SS) $(THRIFTOBJECTS_GEN)
+	@echo "Linking..."
+	@mkdir -p $(BINDIR)
+	$(CC) $^ -o $(THRIFTTARGET_SS) $(THRIFTLIB)
+
+
+build-thrift:
+	cd external/succinct-cpp/ && make -j build-thrift
 
 succinct:
 	mkdir -p $(LIBDIR)
