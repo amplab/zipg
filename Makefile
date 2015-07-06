@@ -6,9 +6,8 @@ BUILDDIR := build
 EXTERNDIR := external
 LIBDIR := lib
 INCLUDEDIR := include
-SRCDIR := src
+SRCDIR := src/succinct-graph
 SUCCINCTDIR := $(EXTERNDIR)/succinct-cpp
-THRIFT_BIN := $(SUCCINCTDIR)/bin/thrift
 
 SRCDIRS := $(shell find $(SRCDIR) -type d)
 BUILDDIRS := $(subst $(SRCDIR),$(BUILDDIR),$(SRCDIRS))
@@ -18,8 +17,14 @@ OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.cpp=.o))
 TARGET := $(LIBDIR)/libsuccinctgraph.a
 
 CFLAGS := -O3 -std=c++11 -Wall -g
-LIB :=  -lpthread -L ../external/succinct-cpp/lib -lsuccinct -lthrift
-INC := -I include -I $(SUCCINCTDIR)/include
+LIB :=  -lpthread -L ../external/succinct-cpp/lib -lsuccinct
+INC := -I include
+
+THRIFT_BIN := $(SUCCINCTDIR)/bin/thrift
+GENERATED_THRIFT_SRCDIR := src/thrift
+THRIFTCFLAGS := -O3 -std=c++11 -w -DHAVE_NETINET_IN_H -g
+THRIFTLIB := -L $(LIBDIR) -lsuccinct -levent -lthrift
+THRIFTINC := -I include -I $(SUCCINCTDIR)/include
 
 all: succinct graph
 
@@ -55,9 +60,7 @@ sharding: $(THRIFT_BIN)
 	mv thrift/*.cpp src/thrift/ && mv thrift/*.h include/thrift/
 	rm -rf src/thrift/*skeleton*
 
-$(THRIFT_BIN): build-thrift
-
-build-thrift:
+$(THRIFT_BIN):
 	cd $(SUCCINCTDIR) && make -j build-thrift
 
 succinct-server: graph $(THRIFTTARGET_SS)
