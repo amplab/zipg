@@ -10,7 +10,7 @@ SRCDIR := src/succinct-graph
 SUCCINCTDIR := $(EXTERNDIR)/succinct-cpp
 
 SRCDIRS := $(shell find $(SRCDIR) -type d)
-BUILDDIRS := $(subst $(SRCDIR),$(BUILDDIR),$(SRCDIRS))
+BUILDDIRS := $(subst $(SRCDIR),$(BUILDDIR),$(SRCDIRS)) build/thrift
 
 SOURCES := $(shell find $(SRCDIR) -type f -name *.cpp)
 OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.cpp=.o))
@@ -20,13 +20,66 @@ CFLAGS := -O3 -std=c++11 -Wall -g
 LIB :=  -lpthread -L ../external/succinct-cpp/lib -lsuccinct
 INC := -I include
 
+# Function used to check variables. Use on the command line:
+# make print-VARNAME
+# Useful for debugging and adding features
+print-%: ; @echo $*=$($*)
+
+############################# Thrift / RPC related #############################
+
 THRIFT_BIN := $(SUCCINCTDIR)/bin/thrift
-GENERATED_THRIFT_SRCDIR := src/thrift
 THRIFTCFLAGS := -O3 -std=c++11 -w -DHAVE_NETINET_IN_H -g
-THRIFTLIB := -L $(LIBDIR) -lsuccinct -levent -lthrift
+THRIFTLIB := -L $(LIBDIR) -L external/succinct-cpp/lib -levent -lthrift
+# the latter contains Thrift itself
 THRIFTINC := -I include -I $(SUCCINCTDIR)/include
 
+# non-generated RPC related code
+rpc_src_dir := src/rpc
+rpc_build_dir := build/rpc
+
+# graph query server
+RPC_TARGET_QRAPH_QUERY_SERVER := $(BINDIR)/graph_query_server
+RPC_SRC_QRAPH_QUERY_SERVER := $(rpc_src_dir)/GraphQueryServiceServer.cpp
+RPC_OBJECTS_QRAPH_QUERY_SERVER := $(rpc_build_dir)/GraphQueryServiceServer.o
+
+# auto-generated thrift files for the services
+THRIFTSRCDIR := src/thrift
+THRIFTBUILDDIR := build/thrift
+THRIFT_GENERATED_SOURCES := $(THRIFTSRCDIR)/GraphQueryService.cpp $(THRIFTSRCDIR)/succinct_graph_constants.cpp $(THRIFTSRCDIR)/succinct_graph_types.cpp
+THRIFT_GENERATED_OBJECTS := $(patsubst $(THRIFTSRCDIR)/%,$(THRIFTBUILDDIR)/%,$(THRIFT_GENERATED_SOURCES:.cpp=.o))
+
+# 1st target is the default
 all: succinct graph
+
+$(THRIFT_BIN):
+	cd $(SUCCINCTDIR) && make -j build-thrift
+
+generate_thrift: $(THRIFT_BIN)
+	@mkdir -p src/thrift
+	@mkdir -p include/thrift
+	$(THRIFT_BIN) -I include/thrift \
+	  -gen cpp:include_prefix \
+	  -out thrift \
+	  thrift/succinct_graph.thrift
+	mv thrift/*.cpp src/thrift/ && mv thrift/*.h include/thrift/
+	rm -rf src/thrift/*skeleton*
+
+$(rpc_build_dir)/%.o: $(rpc_src_dir)/%.cpp generate_thrift
+	@echo "making rpc stuff"
+	@mkdir -p $(rpc_build_dir)
+	$(CC) $(CFLAGS) $(THRIFTINC) -c -o $@ $<
+
+$(THRIFTBUILDDIR)/%.o: $(THRIFTSRCDIR)/%.cpp generate_thrift
+	@echo "making thrift stuff"
+	@mkdir -p $(THRIFTBUILDDIR)
+	$(CC) $(THRIFTCFLAGS) $(THRIFTINC) -c -o $@ $<
+
+$(RPC_TARGET_QRAPH_QUERY_SERVER): $(RPC_OBJECTS_QRAPH_QUERY_SERVER) $(THRIFT_GENERATED_OBJECTS)
+	@echo "Linking..."
+	@mkdir -p $(BINDIR)
+	$(CC) $^ -o $(RPC_TARGET_QRAPH_QUERY_SERVER) $(THRIFTLIB)
+
+graph-server: graph $(RPC_TARGET_QRAPH_QUERY_SERVER)
 
 succinct:
 	mkdir -p $(LIBDIR)
@@ -50,30 +103,6 @@ $(BUILDDIR)/%.o: $(SRCDIR)/%.cpp
 	@echo " $(CC) $(CFLAGS) $(SGFLAGS) $(INC) -c -o $@ $<";\
 	        $(CC) $(CFLAGS) $(SGFLAGS) $(INC) -c -o $@ $<
 
-sharding: $(THRIFT_BIN)
-	@mkdir -p src/thrift
-	@mkdir -p include/thrift
-	$(THRIFT_BIN) -I include/thrift \
-	  -gen cpp:include_prefix \
-	  -out thrift \
-	  thrift/succinct_graph.thrift
-	mv thrift/*.cpp src/thrift/ && mv thrift/*.h include/thrift/
-	rm -rf src/thrift/*skeleton*
-
-$(THRIFT_BIN):
-	cd $(SUCCINCTDIR) && make -j build-thrift
-
-succinct-server: graph $(THRIFTTARGET_SS)
-
-succinct-handler: graph $(THRIFTTARGET_SH)
-
-succinct-master: graph $(THRIFTTARGET_SM)
-
-$(THRIFTTARGET_SS): $(THRIFTOBJECTS_SS) $(THRIFTOBJECTS_GEN)
-	@echo "Linking..."
-	@mkdir -p $(BINDIR)
-	$(CC) $^ -o $(THRIFTTARGET_SS) $(THRIFTLIB)
-
 bench: graph
 	cd benchmark && $(MAKE)
 
@@ -82,3 +111,4 @@ clean:
 	cd $(SUCCINCTDIR) && $(MAKE) clean
 	cd external/graphs && $(MAKE) clean
 	rm -rf $(BINDIR)/*  $(BUILDDIR)/* $(LIBDIR)/*
+	rm -rf include/thrift/* src/thrift/*
