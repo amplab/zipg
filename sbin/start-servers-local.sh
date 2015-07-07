@@ -1,15 +1,6 @@
 #!/usr/bin/env bash
 # Launch logical shards locally on this physical node.
 
-# number of shards to launch on each physical node
-num_shards=$1
-# total number of physical nodes in cluster
-num_hosts=$2
-# which id identifies this physical node?
-local_host_id=$3
-# ??
-num_replicas=$( wc -l < ${SUCCINCT_CONF_DIR}/repl)
-
 
 sbin="`dirname "$0"`"
 sbin="`cd "$sbin"; pwd`"
@@ -27,6 +18,15 @@ bin="$SUCCINCT_HOME/bin"
 bin="`cd "$bin"; pwd`"
 
 export LD_LIBRARY_PATH=$SUCCINCT_HOME/lib
+
+# number of shards to launch on each physical node
+num_shards=$1
+# total number of physical nodes in cluster
+num_hosts=$2
+# which id identifies this physical node?
+local_host_id=$3
+# ??
+num_replicas=$( wc -l < ${SUCCINCT_CONF_DIR}/repl)
 
 if [ "$SUCCINCT_DATA_PATH" = "" ]; then
   SUCCINCT_DATA_PATH="$SUCCINCT_HOME/dat"
