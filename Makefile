@@ -29,7 +29,7 @@ print-%: ; @echo $*=$($*)
 
 THRIFT_BIN := $(SUCCINCTDIR)/bin/thrift
 THRIFTCFLAGS := -O3 -std=c++11 -w -DHAVE_NETINET_IN_H -g
-THRIFTLIB := -L $(LIBDIR) -L external/succinct-cpp/lib -levent -lthrift
+THRIFTLIB := -L $(LIBDIR) -L external/succinct-cpp/lib -levent -lthrift -lsuccinct -lsuccinctgraph
 # the latter contains Thrift itself
 THRIFTINC := -I include -I $(SUCCINCTDIR)/include
 
@@ -93,9 +93,9 @@ $(RPC_TARGET_GRAPH_QUERY_AGGREGATOR): $(RPC_OBJECTS_GRAPH_QUERY_AGGREGATOR) $(TH
 	@mkdir -p $(BINDIR)
 	$(CC) $^ -o $(RPC_TARGET_GRAPH_QUERY_AGGREGATOR) $(THRIFTLIB)
 
-rpc: graph $(RPC_TARGET_GRAPH_QUERY_SERVER) $(RPC_TARGET_GRAPH_QUERY_AGGREGATOR)
-graph-server: graph $(RPC_TARGET_GRAPH_QUERY_SERVER)
-graph-aggregator: graph $(RPC_TARGET_GRAPH_QUERY_AGGREGATOR)
+rpc: succinct graph $(RPC_TARGET_GRAPH_QUERY_SERVER) $(RPC_TARGET_GRAPH_QUERY_AGGREGATOR)
+graph-server: succinct graph $(RPC_TARGET_GRAPH_QUERY_SERVER)
+graph-aggregator: succinct graph $(RPC_TARGET_GRAPH_QUERY_AGGREGATOR)
 
 succinct:
 	mkdir -p $(LIBDIR)
