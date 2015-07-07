@@ -60,7 +60,9 @@ all: succinct graph
 $(THRIFT_BIN):
 	cd $(SUCCINCTDIR) && make -j build-thrift
 
-generate_thrift: $(THRIFT_BIN) thrift/succinct_graph.thrift
+generate_thrift_manifest = $(BUILDDIR)/generate_thrift.manifest
+
+$(generate_thrift_manifest): $(THRIFT_BIN) thrift/succinct_graph.thrift
 	@mkdir -p src/thrift
 	@mkdir -p include/thrift
 	$(THRIFT_BIN) -I include/thrift \
@@ -69,13 +71,14 @@ generate_thrift: $(THRIFT_BIN) thrift/succinct_graph.thrift
 	  thrift/succinct_graph.thrift
 	mv thrift/*.cpp src/thrift/ && mv thrift/*.h include/thrift/
 	rm -rf src/thrift/*skeleton*
+	touch $(generate_thrift_manifest)
 
-$(rpc_build_dir)/%.o: $(rpc_src_dir)/%.cpp generate_thrift
+$(rpc_build_dir)/%.o: $(rpc_src_dir)/%.cpp $(generate_thrift_manifest)
 	@echo "making rpc stuff"
 	@mkdir -p $(rpc_build_dir)
 	$(CC) $(CFLAGS) $(THRIFTINC) -c -o $@ $<
 
-$(THRIFTBUILDDIR)/%.o: $(THRIFTSRCDIR)/%.cpp generate_thrift
+$(THRIFTBUILDDIR)/%.o: $(THRIFTSRCDIR)/%.cpp $(generate_thrift_manifest)
 	@echo "making thrift stuff"
 	@mkdir -p $(THRIFTBUILDDIR)
 	$(CC) $(THRIFTCFLAGS) $(THRIFTINC) -c -o $@ $<
