@@ -37,15 +37,21 @@ THRIFTINC := -I include -I $(SUCCINCTDIR)/include
 rpc_src_dir := src/rpc
 rpc_build_dir := build/rpc
 
-# graph query server
-RPC_TARGET_QRAPH_QUERY_SERVER := $(BINDIR)/graph_query_server
-RPC_SRC_QRAPH_QUERY_SERVER := $(rpc_src_dir)/GraphQueryServiceServer.cpp
-RPC_OBJECTS_QRAPH_QUERY_SERVER := $(rpc_build_dir)/GraphQueryServiceServer.o
+# graph query shard
+RPC_TARGET_GRAPH_QUERY_SERVER := $(BINDIR)/graph_query_server
+RPC_SRC_GRAPH_QUERY_SERVER := $(rpc_src_dir)/GraphQueryServiceServer.cpp
+RPC_OBJECTS_GRAPH_QUERY_SERVER := $(rpc_build_dir)/GraphQueryServiceServer.o
+
+# graph query aggregator
+RPC_TARGET_GRAPH_QUERY_AGGREGATOR := $(BINDIR)/graph_query_aggregator
+RPC_SRC_GRAPH_QUERY_AGGREGATOR := $(rpc_src_dir)/GraphQueryAggregator.cpp
+RPC_OBJECTS_GRAPH_QUERY_AGGREGATOR := $(rpc_build_dir)/GraphQueryAggregator.o
 
 # auto-generated thrift files for the services
+# Reason for this manually-entered atrocity: lazy eval / thunk issue
 THRIFTSRCDIR := src/thrift
 THRIFTBUILDDIR := build/thrift
-THRIFT_GENERATED_SOURCES := $(THRIFTSRCDIR)/GraphQueryService.cpp $(THRIFTSRCDIR)/succinct_graph_constants.cpp $(THRIFTSRCDIR)/succinct_graph_types.cpp
+THRIFT_GENERATED_SOURCES := $(THRIFTSRCDIR)/GraphQueryService.cpp $(THRIFTSRCDIR)/succinct_graph_constants.cpp $(THRIFTSRCDIR)/succinct_graph_types.cpp $(THRIFTSRCDIR)/GraphQueryAggregatorService.cpp
 THRIFT_GENERATED_OBJECTS := $(patsubst $(THRIFTSRCDIR)/%,$(THRIFTBUILDDIR)/%,$(THRIFT_GENERATED_SOURCES:.cpp=.o))
 
 # 1st target is the default
@@ -74,12 +80,19 @@ $(THRIFTBUILDDIR)/%.o: $(THRIFTSRCDIR)/%.cpp generate_thrift
 	@mkdir -p $(THRIFTBUILDDIR)
 	$(CC) $(THRIFTCFLAGS) $(THRIFTINC) -c -o $@ $<
 
-$(RPC_TARGET_QRAPH_QUERY_SERVER): $(RPC_OBJECTS_QRAPH_QUERY_SERVER) $(THRIFT_GENERATED_OBJECTS)
+$(RPC_TARGET_GRAPH_QUERY_SERVER): $(RPC_OBJECTS_GRAPH_QUERY_SERVER) $(THRIFT_GENERATED_OBJECTS)
 	@echo "Linking..."
 	@mkdir -p $(BINDIR)
-	$(CC) $^ -o $(RPC_TARGET_QRAPH_QUERY_SERVER) $(THRIFTLIB)
+	$(CC) $^ -o $(RPC_TARGET_GRAPH_QUERY_SERVER) $(THRIFTLIB)
 
-graph-server: graph $(RPC_TARGET_QRAPH_QUERY_SERVER)
+$(RPC_TARGET_GRAPH_QUERY_AGGREGATOR): $(RPC_OBJECTS_GRAPH_QUERY_AGGREGATOR) $(THRIFT_GENERATED_OBJECTS)
+	@echo "Linking..."
+	@mkdir -p $(BINDIR)
+	$(CC) $^ -o $(RPC_TARGET_GRAPH_QUERY_AGGREGATOR) $(THRIFTLIB)
+
+rpc: graph $(RPC_TARGET_GRAPH_QUERY_SERVER) $(RPC_TARGET_GRAPH_QUERY_AGGREGATOR)
+graph-server: graph $(RPC_TARGET_GRAPH_QUERY_SERVER)
+graph-aggregator: graph $(RPC_TARGET_GRAPH_QUERY_AGGREGATOR)
 
 succinct:
 	mkdir -p $(LIBDIR)
