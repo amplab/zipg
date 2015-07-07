@@ -29,7 +29,7 @@ local_host_id=$3
 num_replicas=$( wc -l < ${SUCCINCT_CONF_DIR}/repl)
 
 if [ "$SUCCINCT_DATA_PATH" = "" ]; then
-  SUCCINCT_DATA_PATH="$SUCCINCT_HOME/dat"
+  SUCCINCT_DATA_PATH="$SUCCINCT_HOME/data"
 fi
 
 if [ "$SUCCINCT_LOG_PATH" = "" ]; then
@@ -54,7 +54,7 @@ for i in `seq 0 $limit`; do
 	shard_id=$(($i * $num_hosts + local_host_id))
 	shard_type=$(($shard_id % $num_replicas))
 	data_file="$SUCCINCT_DATA_PATH/data_${shard_type}"
-	nohup "$bin/sserver" \
+	nohup "$bin/graph_query_server" \
       -m 1 \
       -p $port \
       -i ${sampling_rates[$shard_type]} \
