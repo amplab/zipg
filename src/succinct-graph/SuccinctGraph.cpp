@@ -71,11 +71,12 @@ SuccinctGraph& SuccinctGraph::set_isa_sampling_rate(uint32_t sampling_rate) {
     return *this;
 }
 
-void SuccinctGraph::construct_node_table(const std::string& node_file) {
+void SuccinctGraph::construct_node_table(std::string node_file) {
     printf("Constructing node table with npa %d, sa %d, isa %d\n",
         npa_sampling_rate, sa_sampling_rate, isa_sampling_rate);
 
-    std::string formatted_node_file(node_file + "WithPtrs"); // FIXME!
+    // FIXME: correct thing to do is use a temp file for this
+    std::string formatted_node_file(node_file + "WithPtrs");
     std::ifstream in_stream(node_file);
     std::ofstream out_stream(formatted_node_file);
     std::string line, token;
@@ -122,14 +123,7 @@ void SuccinctGraph::construct_node_table(const std::string& node_file) {
     this->node_table->serialize();
 }
 
-SuccinctGraph& SuccinctGraph::construct(
-    std::string& node_file,
-    std::string& edge_file) {
-
-    // construct node table in parallel
-    std::thread node_table_thread(
-        &SuccinctGraph::construct_node_table, this, node_file);
-
+void SuccinctGraph::construct_edge_table(std::string edge_file) {
     fprintf(stderr, "Initializing edge table (SuccinctFile)\n");
     std::map<AssocListKey, std::vector<Assoc>> assoc_map;
     std::string line, token;
@@ -244,12 +238,20 @@ SuccinctGraph& SuccinctGraph::construct(
     size_t num_bytes = this->edge_table->serialize();
     printf("Succinct-encoded edge table, number of bytes written: %zu\n",
         num_bytes);
+}
+
+void SuccinctGraph::construct(
+    std::string& node_file,
+    std::string& edge_file)
+{
+    // construct in parallel
+    std::thread node_table_thread(
+        &SuccinctGraph::construct_node_table, this, node_file);
+    this->construct_edge_table(edge_file);
+    node_table_thread.join();
 
     this->node_file_pathname = node_file;
     this->edge_file_pathname = edge_file;
-
-    node_table_thread.join();
-    return *this;
 }
 
 // Note: this is supposed to be used in testing only.
