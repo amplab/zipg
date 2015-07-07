@@ -60,7 +60,7 @@ all: succinct graph
 $(THRIFT_BIN):
 	cd $(SUCCINCTDIR) && make -j build-thrift
 
-generate_thrift: $(THRIFT_BIN)
+generate_thrift: $(THRIFT_BIN) thrift/succinct_graph.thrift
 	@mkdir -p src/thrift
 	@mkdir -p include/thrift
 	$(THRIFT_BIN) -I include/thrift \
