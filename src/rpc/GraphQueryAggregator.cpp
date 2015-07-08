@@ -40,12 +40,12 @@ class GraphQueryAggregatorServiceHandler : virtual public GraphQueryAggregatorSe
     printf("get_neighbors_attr_local\n");
   }
 
-  void get_nodes_local(std::vector<int64_t> & _return, const int32_t attrId, const std::string& attrKey) {
+  void get_nodes_local(std::set<int64_t> & _return, const int32_t attrId, const std::string& attrKey) {
     // Your implementation goes here
     printf("get_nodes_local\n");
   }
 
-  void get_nodes2_local(std::vector<int64_t> & _return, const int32_t attrId1, const std::string& attrKey1, const int32_t attrId2, const std::string& attrKey2) {
+  void get_nodes2_local(std::set<int64_t> & _return, const int32_t attrId1, const std::string& attrKey1, const int32_t attrId2, const std::string& attrKey2) {
     // Your implementation goes here
     printf("get_nodes2_local\n");
   }

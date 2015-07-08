@@ -10,9 +10,9 @@ service GraphQueryService {
 
     list<i64> get_neighbors_attr(1: i64 nodeId, 2: i32 attrId, 3: string attrKey),
 
-    list<i64> get_nodes(1: i32 attrId, 2: string attrKey),
+    set<i64> get_nodes(1: i32 attrId, 2: string attrKey),
 
-    list<i64> get_nodes2(
+    set<i64> get_nodes2(
         1: i32 attrId1,
         2: string attrKey1,
         3: i32 attrId2,
@@ -32,9 +32,9 @@ service GraphQueryAggregatorService {
     list<i64> get_neighbors_attr_local(
         1: i64 nodeId, 2: i32 attrId, 3: string attrKey),
 
-    list<i64> get_nodes_local(1: i32 attrId, 2: string attrKey),
+    set<i64> get_nodes_local(1: i32 attrId, 2: string attrKey),
 
-    list<i64> get_nodes2_local(
+    set<i64> get_nodes2_local(
         1: i32 attrId1,
         2: string attrKey1,
         3: i32 attrId2,

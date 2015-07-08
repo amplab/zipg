@@ -25,11 +25,15 @@ public:
         bool construct,
         int32_t sa_sampling_rate,
         int32_t isa_sampling_rate,
-        int32_t npa_sampling_rate)
-    : node_table_empty_(file_exists(node_file)),
-      edge_table_empty_(file_exists(edge_file)),
+        int32_t npa_sampling_rate,
+        int shard_id,
+        int total_num_shards)
+    : shard_id_(shard_id),
+      total_num_shards_(total_num_shards),
       node_file_(node_file),
       edge_file_(edge_file),
+      node_table_empty_(file_exists(node_file)),
+      edge_table_empty_(file_exists(edge_file)),
       construct_(construct),
       graph_(new SuccinctGraph("")) // just no-op object alloc
     {
@@ -40,33 +44,102 @@ public:
 
     // Loads or constructs graph shards.
     void init() {
-        // Your implementation goes here
-        printf("init\n");
+        if (construct_) {
+            if (!node_table_empty_ && !edge_table_empty_) {
+                graph_->construct(node_file_, edge_file_); // in parallel
+            } else if (!node_table_empty_) {
+                graph_->construct_node_table(node_file_);
+            } else if (!edge_table_empty_) {
+                graph_->construct_edge_table(edge_file_);
+            } else {
+                assert(false && "Neither node file nor edge file exists!");
+            }
+        } else {
+            if (!node_table_empty_ && !edge_table_empty_) {
+                graph_->load(node_file_, edge_file_);
+            } else if (!node_table_empty_) {
+                graph_->load_node_table(node_file_);
+            } else if (!edge_table_empty_) {
+                graph_->load_edge_table(edge_file_);
+            } else {
+                assert(false && "Neither node file nor edge file exists!");
+            }
+        }
+        fprintf(stderr, "Initialization at this shard: done\n");
     }
 
+    // In principle, nodeId should be in this shard's edge table.
     void get_neighbors(std::vector<int64_t> & _return, const int64_t nodeId) {
         // Your implementation goes here
         printf("get_neighbors\n");
+
+        assert(nodeId % total_num_shards_ == shard_id_);
+        if (edge_table_empty_) {
+            _return.clear();
+            return;
+        }
+        graph_->get_neighbors(_return, nodeId);
     }
 
-    void get_neighbors_atype(std::vector<int64_t> & _return, const int64_t nodeId, const int64_t atype) {
+    void get_neighbors_atype(
+        std::vector<int64_t> & _return,
+        const int64_t nodeId,
+        const int64_t atype)
+    {
         // Your implementation goes here
         printf("get_neighbors_atype\n");
+
+        assert(nodeId % total_num_shards_ == shard_id_);
+        if (edge_table_empty_) {
+            _return.clear();
+            return;
+        }
+        graph_->get_neighbors(_return, nodeId, atype);
     }
 
-    void get_neighbors_attr(std::vector<int64_t> & _return, const int64_t nodeId, const int32_t attrId, const std::string& attrKey) {
+    void get_neighbors_attr(
+        std::vector<int64_t> & _return,
+        const int64_t nodeId,
+        const int32_t attrId,
+        const std::string& attrKey)
+    {
         // Your implementation goes here
         printf("get_neighbors_attr\n");
+
+        assert(false &&
+            "Algorithm for get_nhbr(n, attr) should not contact shards");
     }
 
-    void get_nodes(std::vector<int64_t> & _return, const int32_t attrId, const std::string& attrKey) {
+    void get_nodes(
+        std::set<int64_t> & _return,
+        const int32_t attrId,
+        const std::string& attrKey)
+    {
         // Your implementation goes here
         printf("get_nodes\n");
+
+        if (node_table_empty_) {
+            _return.clear();
+            return;
+        }
+        graph_->get_nodes(_return, attrId, attrKey);
     }
 
-    void get_nodes2(std::vector<int64_t> & _return, const int32_t attrId1, const std::string& attrKey1, const int32_t attrId2, const std::string& attrKey2) {
+    void get_nodes2(
+        std::set<int64_t> & _return,
+        const int32_t attrId1,
+        const std::string& attrKey1,
+        const int32_t attrId2,
+        const std::string& attrKey2)
+    {
         // Your implementation goes here
         printf("get_nodes2\n");
+
+        if (node_table_empty_) {
+            _return.clear();
+            return;
+        }
+        graph_->get_nodes(_return, attrId1, attrKey1, attrId2, attrKey2);
     }
 
 private:
@@ -76,16 +149,19 @@ private:
         return (stat(pathname.c_str(), &buffer) == 0);
     }
 
+    const int shard_id_;
+    const int total_num_shards_;
+
     const std::string node_file_;
     const std::string edge_file_;
-    bool node_table_empty_;
-    bool edge_table_empty_;
-    bool construct_;
-    shared_ptr<SuccinctGraph> graph_;
+    const bool node_table_empty_;
+    const bool edge_table_empty_;
+    const bool construct_;
+    const shared_ptr<SuccinctGraph> graph_;
 };
 
 int main(int argc, char **argv) {
-    if (argc < 2 || argc > 12)
+    if (argc < 2 || argc > 16)
         return -1;
     fprintf(stderr, "Command line: ");
     for (int i = 0; i < argc; i++) fprintf(stderr, "%s ", argv[i]);
@@ -93,7 +169,8 @@ int main(int argc, char **argv) {
 
     int c;
     uint32_t mode, port, sa_sampling_rate, isa_sampling_rate, npa_sampling_rate;
-    while ((c = getopt(argc, argv, "m:p:s:i:n:")) != -1) {
+    int shard_id, total_num_shards;
+    while ((c = getopt(argc, argv, "m:p:s:i:n:t:d:")) != -1) {
         switch(c) {
         case 'm':
             mode = atoi(optarg); // 0 for construct, 1 for load
@@ -111,7 +188,15 @@ int main(int argc, char **argv) {
         case 'n':
             npa_sampling_rate = atoi(optarg);
             break;
+        case 't':
+            total_num_shards = atoi(optarg);
+            break;
+        case 'd':
+            shard_id = atoi(optarg);
+            break;
         default:
+            shard_id = 0;
+            total_num_shards = 1;
             mode = 0; // construct
             port = QUERY_SERVER_PORT;
             // default Succinct Graph level 0
@@ -134,7 +219,9 @@ int main(int argc, char **argv) {
                 construct,
                 sa_sampling_rate,
                 isa_sampling_rate,
-                npa_sampling_rate));
+                npa_sampling_rate,
+                shard_id,
+                total_num_shards));
 
         shared_ptr<TProcessor> processor(
             new GraphQueryServiceProcessor(handler));
