@@ -14,41 +14,65 @@ using namespace ::apache::thrift::server;
 
 using boost::shared_ptr;
 
-class GraphQueryAggregatorServiceHandler : virtual public GraphQueryAggregatorServiceIf {
- public:
-  GraphQueryAggregatorServiceHandler() {
-    // Your initialization goes here
-  }
+class GraphQueryAggregatorServiceHandler :
+    virtual public GraphQueryAggregatorServiceIf {
 
-  int32_t connect_to_local_servers() {
-    // Your implementation goes here
-    printf("connect_to_local_servers\n");
-  }
+public:
+    GraphQueryAggregatorServiceHandler() {
+        // Your initialization goes here
+    }
 
-  void get_neighbors_local(std::vector<int64_t> & _return, const int64_t nodeId) {
-    // Your implementation goes here
-    printf("get_neighbors_local\n");
-  }
+    int32_t connect_to_local_servers() {
+        // Your implementation goes here
+        printf("connect_to_local_servers\n");
+    }
 
-  void get_neighbors_atype_local(std::vector<int64_t> & _return, const int64_t nodeId, const int64_t atype) {
-    // Your implementation goes here
-    printf("get_neighbors_atype_local\n");
-  }
+    void get_neighbors_local(
+        std::vector<int64_t> & _return,
+        const int64_t nodeId)
+    {
+        // Your implementation goes here
+        printf("get_neighbors_local\n");
+    }
 
-  void get_neighbors_attr_local(std::vector<int64_t> & _return, const int64_t nodeId, const int32_t attrId, const std::string& attrKey) {
-    // Your implementation goes here
-    printf("get_neighbors_attr_local\n");
-  }
+    void get_neighbors_atype_local(
+        std::vector<int64_t> & _return,
+        const int64_t nodeId,
+        const int64_t atype)
+    {
+        // Your implementation goes here
+        printf("get_neighbors_atype_local\n");
+    }
 
-  void get_nodes_local(std::set<int64_t> & _return, const int32_t attrId, const std::string& attrKey) {
-    // Your implementation goes here
-    printf("get_nodes_local\n");
-  }
+    void get_neighbors_attr_local(
+        std::vector<int64_t> & _return,
+        const int64_t nodeId,
+        const int32_t attrId,
+        const std::string& attrKey)
+    {
+        // Your implementation goes here
+        printf("get_neighbors_attr_local\n");
+    }
 
-  void get_nodes2_local(std::set<int64_t> & _return, const int32_t attrId1, const std::string& attrKey1, const int32_t attrId2, const std::string& attrKey2) {
-    // Your implementation goes here
-    printf("get_nodes2_local\n");
-  }
+    void get_nodes_local(
+        std::set<int64_t> & _return,
+        const int32_t attrId,
+        const std::string& attrKey)
+    {
+        // Your implementation goes here
+        printf("get_nodes_local\n");
+    }
+
+    void get_nodes2_local(
+        std::set<int64_t> & _return,
+        const int32_t attrId1,
+        const std::string& attrKey1,
+        const int32_t attrId2,
+        const std::string& attrKey2)
+    {
+        // Your implementation goes here
+        printf("get_nodes2_local\n");
+    }
 
 };
 
@@ -64,6 +88,7 @@ int main(int argc, char **argv) {
     qsclient.get_neighbors(nhbrs, 1);
     fprintf(stderr, "Pushed!\n");
 
+// From prototype:
 //  int port = 9090;
 //  shared_ptr<GraphQueryAggregatorServiceHandler> handler(new GraphQueryAggregatorServiceHandler());
 //  shared_ptr<TProcessor> processor(new GraphQueryAggregatorServiceProcessor(handler));
