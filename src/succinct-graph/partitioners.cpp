@@ -4,21 +4,6 @@ void RangePartitioner::partition(
     const std::string& node_file_in,
     const std::string& edge_file_in)
 {
-    auto num_digits = [](int32_t number) {
-       if (number == 0) return 1;
-       int32_t digits = 0;
-       while (number != 0) {
-           number /= 10;
-           ++digits;
-       }
-       return digits;
-    };
-
-    auto format_out_name = [](const std::string& prefix, int digits, int num) {
-        char s[digits + 1];
-        sprintf(s, "%0*d", digits, num);
-        return std::string(prefix + "-part" + s);
-    };
 
     std::ifstream node_file_stream(node_file_in);
     std::ofstream curr_split_ofstream;
@@ -80,7 +65,55 @@ void RangePartitioner::partition(
     }
 }
 
+void HashPartitioner::partition(
+    const std::string& node_file_in,
+    const std::string& edge_file_in)
+{
+    int32_t N = this->num_shards_;
+    auto id_to_shard = [N](int64_t node_id) { return node_id % N; };
+    std::vector< std::vector<std::string> > node_splits_per_shard(num_shards_);
+    std::vector< std::vector<std::string> > edge_splits_per_shard(num_shards_);
+
+    // reads node files
+    std::ifstream file_ifstream(node_file_in);
+    std::string line;
+    int64_t line_idx = 0;
+    while (std::getline(file_ifstream, line)) {
+        node_splits_per_shard[id_to_shard(line_idx)].push_back(line);
+        ++line_idx;
+    }
+    // reads edge files
+    file_ifstream = std::ifstream(edge_file_in);
+    std::string src_id_str;
+    while (std::getline(file_ifstream, line)) {
+        std::stringstream ss(line);
+        std::getline(ss, src_id_str, ' ');
+        edge_splits_per_shard[id_to_shard(std::stol(src_id_str))]
+            .push_back(line);
+    }
+    // output, selectively
+    int num_shards_digits = num_digits(this->num_shards_);
+    auto output_nonempty_shards = [num_shards_digits](
+        const std::vector< std::vector<std::string> >& lines,
+        const std::string& file_prefix)
+    {
+        for (int i = 0; i < lines.size(); ++i) {
+            auto shard_lines = lines[i];
+            if (!shard_lines.empty()) {
+                std::string out_name(
+                    format_out_name(file_prefix, num_shards_digits, i));
+                std::ofstream file_ofstream(out_name);
+                for (auto line : shard_lines) {
+                    file_ofstream << line << std::endl;
+                }
+            }
+        }
+    };
+    output_nonempty_shards(node_splits_per_shard, node_file_in);
+    output_nonempty_shards(edge_splits_per_shard, edge_file_in);
+}
+
 int main() {
-    RangePartitioner partitioner(31);
-    partitioner.partition("Makefile", "data/assocs/test.assoc");
+    GraphPartitioner* partitioner = new HashPartitioner(4);
+    partitioner->partition("Makefile", "data/assocs/test.assoc");
 }
