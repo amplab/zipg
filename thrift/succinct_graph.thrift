@@ -1,6 +1,9 @@
 // One per logical shard (there can be multiple shards per physical node).
 service GraphQueryService {
 
+    // Loads or constructs graph shards.
+    void init(),
+
     list<i64> get_neighbors(1: i64 nodeId),
 
     list<i64> get_neighbors_atype(1: i64 nodeId, 2: i64 atype),
