@@ -1,6 +1,7 @@
 #ifndef SUCCINCT_GRAPH_H
 #define SUCCINCT_GRAPH_H
 
+// FIXME: encouraged to include relative to project's include path
 #include "../succinct/SuccinctShard.hpp"
 #include "../succinct/SuccinctFile.hpp"
 
@@ -19,6 +20,7 @@ public:
 
 
     // Loads the previously constructed node table & edge table.
+    // The same as load().
     SuccinctGraph(std::string node_succinct_dir, std::string edge_succinct_dir);
 
     ~SuccinctGraph() {
@@ -43,11 +45,16 @@ public:
     //              unique delimiters in DELIMITERS
     //   edge_file: each row represents one association, in format
     //              srcId dstId atype time [everything from here to EOL is attr]
-    void construct(std::string& node_file, std::string& edge_file);
+    void construct(std::string node_file, std::string edge_file);
     // The two steps in construct().  Intended for greater flexibility: users
     // can construct one table without the other.
     void construct_node_table(std::string node_file);
     void construct_edge_table(std::string edge_file);
+
+    // Loads constructed & Succinct-encoded tables.
+    void load(std::string node_succinct_dir, std::string edge_succinct_dir);
+    void load_node_table(std::string node_succinct_dir);
+    void load_edge_table(std::string edge_succinct_dir);
 
     std::string succinct_directory();
 

@@ -44,13 +44,27 @@ SuccinctGraph::SuccinctGraph(
 
 SuccinctGraph::SuccinctGraph(
     std::string node_succinct_dir,
-    std::string edge_succinct_dir) {
+    std::string edge_succinct_dir)
+{
+    load(node_succinct_dir, edge_succinct_dir);
+}
 
+void SuccinctGraph::load(
+    std::string node_succinct_dir,
+    std::string edge_succinct_dir)
+{
+    this->load_node_table(node_succinct_dir);
+    this->load_edge_table(edge_succinct_dir);
+}
+
+void SuccinctGraph::load_node_table(std::string node_succinct_dir) {
     this->node_table = new SuccinctShard(
         0,
         node_succinct_dir,
         SuccinctMode::LOAD_MEMORY_MAPPED);
+}
 
+void SuccinctGraph::load_edge_table(std::string edge_succinct_dir) {
     this->edge_table = new SuccinctFile(
         edge_succinct_dir,
         SuccinctMode::LOAD_MEMORY_MAPPED);
@@ -240,10 +254,7 @@ void SuccinctGraph::construct_edge_table(std::string edge_file) {
         num_bytes);
 }
 
-void SuccinctGraph::construct(
-    std::string& node_file,
-    std::string& edge_file)
-{
+void SuccinctGraph::construct(std::string node_file, std::string edge_file) {
     // construct in parallel
     std::thread node_table_thread(
         &SuccinctGraph::construct_node_table, this, node_file);
