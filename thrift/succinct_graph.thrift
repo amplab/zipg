@@ -8,7 +8,8 @@ service GraphQueryService {
 
     list<i64> get_neighbors_atype(1: i64 nodeId, 2: i64 atype),
 
-    list<i64> get_neighbors_attr(1: i64 nodeId, 2: i32 attrId, 3: string attrKey),
+    list<i64> get_neighbors_attr(
+        1: i64 nodeId, 2: i32 attrId, 3: string attrKey),
 
     set<i64> get_nodes(1: i32 attrId, 2: string attrKey),
 
@@ -20,21 +21,26 @@ service GraphQueryService {
 
 }
 
-// One per physical node; handles local aggregation.
+// One per physical node; handles local aggregation and query routing.
 service GraphQueryAggregatorService {
 
-    i32 connect_to_local_servers(),
+    // TODO: what do these do?
+    i32 connect_to_local_shards(),
+//    i32 connect_to_handlers(),
+//    i32 disconnect_from_handlers(),
+//    i32 connect_to_local_servers(),
+//    i32 disconnect_from_local_servers(),
 
-    list<i64> get_neighbors_local(1: i64 nodeId),
+    list<i64> get_neighbors(1: i64 nodeId),
 
-    list<i64> get_neighbors_atype_local(1: i64 nodeId, 2: i64 atype),
+    list<i64> get_neighbors_atype(1: i64 nodeId, 2: i64 atype),
 
-    list<i64> get_neighbors_attr_local(
+    list<i64> get_neighbors_attr(
         1: i64 nodeId, 2: i32 attrId, 3: string attrKey),
 
-    set<i64> get_nodes_local(1: i32 attrId, 2: string attrKey),
+    set<i64> get_nodes(1: i32 attrId, 2: string attrKey),
 
-    set<i64> get_nodes2_local(
+    set<i64> get_nodes2(
         1: i32 attrId1,
         2: string attrKey1,
         3: i32 attrId2,
