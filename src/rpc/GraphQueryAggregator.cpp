@@ -167,7 +167,7 @@ int main(int argc, char **argv) {
     std::ifstream hosts(hostsfile);
     std::string host;
     std::vector<std::string> hostnames;
-    while (std::getline(hosts, host, '\n')) {
+    while (std::getline(hosts, host)) {
         hostnames.push_back(host);
     }
 
@@ -182,8 +182,8 @@ int main(int argc, char **argv) {
 
         shared_ptr<TProcessor> processor(
             new GraphQueryAggregatorServiceProcessor(handler));
-        shared_ptr<TServerSocket> server_transport(new TServerSocket(port));
-        shared_ptr<TBufferedTransportFactory> transport_factory(
+        shared_ptr<TServerTransport> server_transport(new TServerSocket(port));
+        shared_ptr<TTransportFactory> transport_factory(
             new TBufferedTransportFactory());
         shared_ptr<TProtocolFactory> protocol_factory(
             new TBinaryProtocolFactory());
