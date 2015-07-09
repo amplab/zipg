@@ -91,8 +91,10 @@ void SuccinctGraph::construct_node_table(std::string node_file) {
     LOG_E("Constructing node table with npa %d, sa %d, isa %d\n",
         npa_sampling_rate, sa_sampling_rate, isa_sampling_rate);
 
-    // FIXME: correct thing to do is use a temp file for this
+    // TODO: correct thing to do is use a temp file for this
+    // TODO: also, the Succinct dir will have the postfix in it -- not clean?
     std::string formatted_node_file(node_file + "WithPtrs");
+
     std::ifstream in_stream(node_file);
     std::ofstream out_stream(formatted_node_file);
     std::string line, token;
@@ -138,10 +140,16 @@ void SuccinctGraph::construct_node_table(std::string node_file) {
     );
     this->node_table->serialize();
     LOG_E("Node table constructed and serialized\n");
+
+    // FIXME: rely on some dtor to clean up
+    char cmd[99];
+    sprintf(cmd, "rm -rf %s", formatted_node_file.c_str());
+    LOG_E("Running cmd: '%s'\n", cmd);
+    system(cmd);
 }
 
 void SuccinctGraph::construct_edge_table(std::string edge_file) {
-    fprintf(stderr, "Initializing edge table (SuccinctFile)\n");
+    LOG_E("Initializing edge table (SuccinctFile)\n");
     std::map<AssocListKey, std::vector<Assoc>> assoc_map;
     std::string line, token;
     std::ifstream edge_file_stream(edge_file);

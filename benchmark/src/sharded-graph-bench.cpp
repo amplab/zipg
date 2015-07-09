@@ -60,6 +60,13 @@ public:
 private:
     const int total_num_shards_;
     shared_ptr<GraphQueryAggregatorServiceClient> aggregator;
+
+    void print_vector(const std::string& msg, const std::vector<int64_t>& vec) {
+        printf("%s[", msg.c_str());
+        for (auto it = vec.begin(); it != vec.end(); ++it)
+            printf(" %lld", *it);
+        printf(" ]\n");
+    }
 };
 
 void print_usage(char *exec) {
