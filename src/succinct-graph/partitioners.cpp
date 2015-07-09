@@ -61,9 +61,9 @@ void RangePartitioner::partition(
             curr_id_limit += lines_per_split;
             if (shard_idx < diff) ++curr_id_limit; // leftovers
             if (std::stol(src_id_str) < curr_id_limit) {
-                std::ofstream tmp(format_out_name(
+                curr_split_ofstream.close();
+                curr_split_ofstream.open(format_out_name(
                     edge_file_in, num_shards_digits, shard_idx));
-                curr_split_ofstream.swap(tmp);
             }
         }
         curr_split_ofstream << line << std::endl;
@@ -88,9 +88,9 @@ void HashPartitioner::partition(
         ++line_idx;
     }
     // reads edge files
-    file_ifstream = std::ifstream(edge_file_in);
+    std::ifstream edgefile_ifstream(edge_file_in);
     std::string src_id_str;
-    while (std::getline(file_ifstream, line)) {
+    while (std::getline(edgefile_ifstream, line)) {
         std::stringstream ss(line);
         std::getline(ss, src_id_str, ' ');
         edge_splits_per_shard[id_to_shard(std::stol(src_id_str))]
