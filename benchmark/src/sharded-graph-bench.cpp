@@ -38,10 +38,16 @@ public:
             LOG_E("Connected to aggregator!\n");
 
             int ret = aggregator->connect_to_local_shards();
-            LOG_E("done connecting to local shards, ret = %d\n", ret);
+            LOG_E("Aggregator connected to local shards, ret = %d\n", ret);
 
             aggregator->init();
-            LOG_E("done init shards\n");
+            LOG_E("Done init all shards\n");
+
+            std::vector<int64_t> nhbrs;
+            aggregator->get_neighbors(nhbrs, 1);
+            print_vector("nhbrs of 1: ", nhbrs);
+            aggregator->get_neighbors(nhbrs, 6);
+            print_vector("nhbrs of 6: ", nhbrs);
 
         } catch (std::exception& e) {
             LOG_E("Exception in benchmark client: %s\n", e.what());

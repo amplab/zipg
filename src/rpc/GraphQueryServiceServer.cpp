@@ -36,7 +36,8 @@ public:
       node_table_empty_(!file_exists(node_file)),
       edge_table_empty_(!file_exists(edge_file)),
       construct_(construct),
-      graph_(new SuccinctGraph("")) // just no-op object alloc
+      graph_(new SuccinctGraph("")), // just no-op object alloc
+      initialized_(false)
     {
         graph_->set_npa_sampling_rate(npa_sampling_rate);
         graph_->set_sa_sampling_rate(sa_sampling_rate);
@@ -49,7 +50,11 @@ public:
 
     // Loads or constructs graph shards.
     void init() {
-        fprintf(stderr, "in shard id %d, init()-ing..\n", shard_id_);
+        if (initialized_) {
+            LOG_E("Already initialized\n");
+            return;
+        }
+        LOG_E("In shard %d's init()\n", shard_id_);
         if (construct_) {
             if (!node_table_empty_ && !edge_table_empty_) {
                 LOG_E("Constructing both node & edge tables\n");
@@ -72,13 +77,14 @@ public:
                 assert(false && "Neither node file nor edge file exists!");
             }
         }
-        fprintf(stderr, "Initialization at this shard: done\n");
+        initialized_ = true;
+        LOG_E("Initialization at this shard: done\n");
     }
 
     // In principle, nodeId should be in this shard's edge table.
     void get_neighbors(std::vector<int64_t> & _return, const int64_t nodeId) {
         // Your implementation goes here
-        printf("get_neighbors\n");
+        LOG_E("Received: get_neighbors(%lld)\n", nodeId);
 
         assert(nodeId % total_num_shards_ == shard_id_);
         if (edge_table_empty_) {
@@ -165,14 +171,15 @@ private:
     const bool edge_table_empty_;
     const bool construct_;
     const shared_ptr<SuccinctGraph> graph_;
+    bool initialized_;
 };
 
 int main(int argc, char **argv) {
     if (argc < 2 || argc > 16)
         return -1;
-    fprintf(stderr, "Command line: ");
-    for (int i = 0; i < argc; i++) fprintf(stderr, "%s ", argv[i]);
-    fprintf(stderr, "\n");
+    LOG_E("Command line: ");
+    for (int i = 0; i < argc; i++) LOG_E("%s ", argv[i]);
+    LOG_E("\n");
 
     int c;
     int mode = 0, port = QUERY_SERVER_PORT;

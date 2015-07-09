@@ -5,17 +5,11 @@
 
 #include "succinct-graph/GraphFormatter.hpp"
 #include "succinct-graph/SuccinctGraph.hpp"
+#include "succinct-graph/utils.h"
 #include "../include/GraphBenchmark.hpp"
 
 void print_usage(char *exec) {
     fprintf(stderr, "Usage: %s [-t type] [-x warmup_n] [-y measure_n] [-w warmup_file] [-q query_file] [-a neighbor_warmup ] [-b neighbor_query] [-o output_file] [succinct_dir]\n", exec);
-}
-
-void print_vector(const std::string& msg, const std::vector<int64_t>& vec) {
-    printf("%s[", msg.c_str());
-    for (auto it = vec.begin(); it != vec.end(); ++it)
-        printf(" %lld", *it);
-    printf(" ]\n");
 }
 
 void assert_eq(

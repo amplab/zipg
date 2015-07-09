@@ -6,7 +6,7 @@ BINDIR := ../bin
 LIBDIR := ../external/succinct-cpp/lib
 NEO4JDIR := neo4j
 
-OBJ := $(shell find $(BUILDDIR) -type f -name *Graph*.o)
+OBJ := $(shell find $(BUILDDIR) -type f -name Succinct*.o) $(BUILDDIR)/GraphFormatter.o
 TARGET_S := $(BINDIR)/bench
 OBJ_S := $(BUILDDIR)/succinct-bench.o
 TARGET_C := $(BINDIR)/create

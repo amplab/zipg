@@ -49,14 +49,12 @@ public:
                 transport->open();
                 LOG_E("Connected!\n");
                 local_shards_.push_back(client);
-                LOG_E("Pushed!\n");
             } catch (std::exception& e) {
-                fprintf(stderr, "Could not connect to server: %s\n", e.what());
+                LOG_E("Could not connect to server: %s\n", e.what());
                 return 1;
             }
         }
-        fprintf(
-            stderr,
+        LOG_E(
             "Currently have %zu local server connections.\n",
             local_shards_.size());
         return 0;
@@ -65,16 +63,15 @@ public:
     void init() {
         for (auto shard : local_shards_)
             shard.send_init();
-        LOG_E("sent all inits\n");
-        for (auto shard : local_shards_) {
-            LOG_E("receiving init\n");
+        for (auto shard : local_shards_)
             shard.recv_init();
-        }
     }
 
     void get_neighbors(std::vector<int64_t> & _return, const int64_t nodeId) {
         int shard_id = nodeId % total_num_shards_;
         int host_id = shard_id % total_num_hosts_;
+        LOG_E("Received: get_neighbors(%lld), route to shard %d on host %d\n",
+            nodeId, shard_id, host_id);
         if (host_id == local_host_id_) {
             local_shards_.at(shard_id / total_num_hosts_)
                 .get_neighbors(_return, nodeId);
@@ -139,8 +136,7 @@ private:
 };
 
 void print_usage(char *exec) {
-    fprintf(
-        stderr,
+    LOG_E(
         "Usage: %s [-t total_num_shards] [-s local_num_shards] "
         "[-h hostsfile] [-i local_host_id]\n",
         exec);
@@ -206,10 +202,7 @@ int main(int argc, char **argv) {
 
         server.serve();
     } catch (std::exception& e) {
-        fprintf(
-            stderr,
-            "Exception at GraphQueryAggregator:main(): %s\n",
-            e.what());
+        LOG_E("Exception at GraphQueryAggregator:main(): %s\n", e.what());
     }
     return 0;
 }
