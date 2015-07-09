@@ -72,10 +72,29 @@ for i in `seq 0 $limit`; do
     node_split="${NODE_FILE}-part${padded_shard_id}"
     edge_split="${EDGE_FILE}-part${padded_shard_id}"
 
+    # Encoded succinct dirs
+    # Hacky: note this uses internal impl details about namings of encoded tables
+    nodeTbl="${node_split}WithPtrs.succinct"
+    # This replaces the last 'assoc' by 'edge_table'
+    edgeTbl=$(echo -n "${edge_split}.succinct" | sed 's/\(.*\)assoc\(.*\)/\1edge_table\2/')
+
+    nodeInput=${nodeTbl/.succinct/}
+    edgeInput=${edgeTbl/.succinct/}
+    # -m: 0 for construct, 1 for load
+    mode=1
+    # construct only if for either of the tables: input file exists, but encoded table not
+    if [[ ( ( -f "${node_split}" ) && ( ! -d "${nodeTbl}" ) ) ||
+          ( ( -f "${edge_split}") && ( ! -d "${edgeTbl}" ) ) ]]; then
+      mode=0
+      nodeInput=$node_split
+      edgeInput=$edge_split
+    fi
+
+    echo "Launching shard ${shard_id}"
     nohup "$bin/graph_query_server" \
-      -m 0 \
+      -m $mode \
       -p $port \
-      $node_split \
-      $edge_split \
+      $nodeInput \
+      $edgeInput \
       2>"$SUCCINCT_LOG_PATH/server_${i}.log" &
 done

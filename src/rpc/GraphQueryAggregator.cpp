@@ -37,6 +37,10 @@ public:
 
     int32_t connect_to_local_shards() {
         for (int i = 0; i < local_num_shards_; ++i) {
+            // Desirable? Hacky way to facilitate benchmark client reconnecting
+            // to a healthy cluster of aggregators & shard servers.
+            if (i < local_shards_.size()) continue;
+
             LOG_E("Connecting to local server %d...", i);
             try {
                 shared_ptr<TSocket> socket(new TSocket(

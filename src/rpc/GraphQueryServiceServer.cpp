@@ -33,8 +33,6 @@ public:
       total_num_shards_(total_num_shards),
       node_file_(node_file),
       edge_file_(edge_file),
-      node_table_empty_(!file_exists(node_file)),
-      edge_table_empty_(!file_exists(edge_file)),
       construct_(construct),
       graph_(new SuccinctGraph("")), // just no-op object alloc
       initialized_(false)
@@ -43,7 +41,17 @@ public:
         graph_->set_sa_sampling_rate(sa_sampling_rate);
         graph_->set_isa_sampling_rate(isa_sampling_rate);
 
-        LOG_E("shard id %d, total num shards %d, isa %d, sa %d, npa %d\n",
+        if (construct) {
+            node_table_empty_ = !file_or_dir_exists(node_file);
+            edge_table_empty_ = !file_or_dir_exists(edge_file);
+        } else {
+            node_table_empty_ = !file_or_dir_exists(node_file + ".succinct");
+            edge_table_empty_ = !file_or_dir_exists(edge_file + ".succinct");
+        }
+
+        LOG_E(
+            "shard id %d, total num shards %d; isa %d, sa %d, npa %d"
+            " (specified, please check actual)\n",
             shard_id_, total_num_shards_, isa_sampling_rate,
             sa_sampling_rate, npa_sampling_rate);
     }
@@ -56,8 +64,8 @@ public:
         }
         LOG_E("In shard %d's init()\n", shard_id_);
         if (construct_) {
+            LOG_E("Construct is set to true: starting to construct & encode\n");
             if (!node_table_empty_ && !edge_table_empty_) {
-                LOG_E("Constructing both node & edge tables\n");
                 graph_->construct(node_file_, edge_file_); // in parallel
             } else if (!node_table_empty_) {
                 graph_->construct_node_table(node_file_);
@@ -67,6 +75,7 @@ public:
                 assert(false && "Neither node file nor edge file exists!");
             }
         } else {
+            LOG_E("Construct is set to false: starting to load\n");
             if (!node_table_empty_ && !edge_table_empty_) {
                 graph_->load(node_file_, edge_file_);
             } else if (!node_table_empty_) {
@@ -157,7 +166,7 @@ public:
 
 private:
 
-    inline bool file_exists(const std::string& pathname) {
+    inline bool file_or_dir_exists(const std::string& pathname) {
         struct stat buffer;
         return (stat(pathname.c_str(), &buffer) == 0);
     }
@@ -167,11 +176,12 @@ private:
 
     const std::string node_file_;
     const std::string edge_file_;
-    const bool node_table_empty_;
-    const bool edge_table_empty_;
     const bool construct_;
     const shared_ptr<SuccinctGraph> graph_;
     bool initialized_;
+
+    bool node_table_empty_ = true;
+    bool edge_table_empty_ = true;
 };
 
 int main(int argc, char **argv) {
@@ -190,7 +200,6 @@ int main(int argc, char **argv) {
         switch(c) {
         case 'm':
             mode = atoi(optarg); // 0 for construct, 1 for load
-            assert(mode == 0 && "Loading constructed shards not supported atm");
             break;
         case 'p':
             port = atoi(optarg); // port for this shard server

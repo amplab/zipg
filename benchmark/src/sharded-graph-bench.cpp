@@ -44,6 +44,8 @@ public:
             LOG_E("Done init all shards\n");
 
             std::vector<int64_t> nhbrs;
+            aggregator->get_neighbors(nhbrs, 0);
+            print_vector("nhbrs of 0: ", nhbrs);
             aggregator->get_neighbors(nhbrs, 1);
             print_vector("nhbrs of 1: ", nhbrs);
             aggregator->get_neighbors(nhbrs, 6);
