@@ -33,8 +33,8 @@ public:
       total_num_shards_(total_num_shards),
       node_file_(node_file),
       edge_file_(edge_file),
-      node_table_empty_(file_exists(node_file)),
-      edge_table_empty_(file_exists(edge_file)),
+      node_table_empty_(!file_exists(node_file)),
+      edge_table_empty_(!file_exists(edge_file)),
       construct_(construct),
       graph_(new SuccinctGraph("")) // just no-op object alloc
     {
@@ -52,6 +52,7 @@ public:
         fprintf(stderr, "in shard id %d, init()-ing..\n", shard_id_);
         if (construct_) {
             if (!node_table_empty_ && !edge_table_empty_) {
+                LOG_E("Constructing both node & edge tables\n");
                 graph_->construct(node_file_, edge_file_); // in parallel
             } else if (!node_table_empty_) {
                 graph_->construct_node_table(node_file_);

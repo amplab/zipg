@@ -77,6 +77,5 @@ for i in `seq 0 $limit`; do
       -p $port \
       $node_split \
       $edge_split \
-      2>&1 >"$SUCCINCT_LOG_PATH/server_${i}.log" &
-
+      2>"$SUCCINCT_LOG_PATH/server_${i}.log" &
 done

@@ -12,18 +12,18 @@ sbin="`cd "$sbin"; pwd`"
 
 # Start Servers
 echo "Starting servers..."
-"$sbin"/start-servers.sh
+"$sbin"/start-servers.sh &
 
 # Wait for some time
 sleep 1
 
 # Start Handlers
 echo "Starting handlers..."
-"$sbin"/start-handlers.sh
+"$sbin"/start-handlers.sh &
 
 # Wait for some time
 sleep 1
 
 # Start Master
-echo "Starting master..."
-"$sbin"/start-master.sh
+# echo "Starting master..."
+# "$sbin"/start-master.sh &

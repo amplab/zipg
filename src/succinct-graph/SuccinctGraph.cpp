@@ -1,9 +1,11 @@
 #include "succinct-graph/SuccinctGraph.hpp"
-#include "succinct-graph/SuccinctGraphSerde.hpp"
 
 #include <limits>
 #include <sstream>
 #include <thread>
+
+#include "succinct-graph/SuccinctGraphSerde.hpp"
+#include "succinct-graph/utils.h"
 
 #ifdef LOG_DEBUG
     #define LOG(fmt, ...) printf(fmt, ##__VA_ARGS__)
@@ -86,7 +88,7 @@ SuccinctGraph& SuccinctGraph::set_isa_sampling_rate(uint32_t sampling_rate) {
 }
 
 void SuccinctGraph::construct_node_table(std::string node_file) {
-    printf("Constructing node table with npa %d, sa %d, isa %d\n",
+    LOG_E("Constructing node table with npa %d, sa %d, isa %d\n",
         npa_sampling_rate, sa_sampling_rate, isa_sampling_rate);
 
     // FIXME: correct thing to do is use a temp file for this
@@ -135,6 +137,7 @@ void SuccinctGraph::construct_node_table(std::string node_file) {
         npa_sampling_rate
     );
     this->node_table->serialize();
+    LOG_E("Node table constructed and serialized\n");
 }
 
 void SuccinctGraph::construct_edge_table(std::string edge_file) {
@@ -239,9 +242,9 @@ void SuccinctGraph::construct_edge_table(std::string edge_file) {
     }
     edge_file_out << "\n"; // FIXME: without this, SuccinctCore ctor segfaults
     edge_file_out.close();
-    printf("Edge table written out to disk, now to Succinct-encode it\n");
+    LOG_E("Edge table written out to disk, now to Succinct-encode it\n");
 
-    printf("constructing edge table with npa %d, sa %d, isa %d\n",
+    LOG_E("constructing edge table with npa %d, sa %d, isa %d\n",
         npa_sampling_rate, sa_sampling_rate, isa_sampling_rate);
     this->edge_table = new SuccinctFile(
         edge_file_name,
@@ -250,7 +253,7 @@ void SuccinctGraph::construct_edge_table(std::string edge_file) {
         isa_sampling_rate,
         npa_sampling_rate);
     size_t num_bytes = this->edge_table->serialize();
-    printf("Succinct-encoded edge table, number of bytes written: %zu\n",
+    LOG_E("Succinct-encoded edge table, number of bytes written: %zu\n",
         num_bytes);
 }
 

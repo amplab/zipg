@@ -16,4 +16,13 @@ The list of server hostnames should be put in `conf/hosts`. The master node shou
 
 Configure stuff in `conf/succinct-env.sh` and/or `sbin/succinct-config.sh`.
 
-On the master node, run `sbin/start-succinct.sh`.
+On the master node, run 
+```
+sbin/partition-input.sh && sbin/start-succinct.sh 
+make sharded-bench && bin/sharded-graph-bench
+```
+
+To cleanly stop the cluster, run
+```
+sbin/stop-succinct.sh
+```

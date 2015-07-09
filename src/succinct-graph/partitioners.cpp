@@ -1,5 +1,9 @@
 #include "succinct-graph/partitioners.hpp"
 
+#include <unistd.h>
+
+#include "succinct-graph/utils.h"
+
 void RangePartitioner::partition(
     const std::string& node_file_in,
     const std::string& edge_file_in)
@@ -113,7 +117,25 @@ void HashPartitioner::partition(
     output_nonempty_shards(edge_splits_per_shard, edge_file_in);
 }
 
-int main() {
-    GraphPartitioner* partitioner = new HashPartitioner(4);
-    partitioner->partition("Makefile", "data/assocs/test.assoc");
+int main(int argc, char **argv) {
+    if (argc < 2) {
+        LOG_E("partitioners: [-n total_num_shards=1] node_file edge_file\n");
+        return -1;
+    }
+
+    int c;
+    int total_num_shards = 1;
+    while ((c = getopt(argc, argv, "n:")) != -1) {
+        switch(c) {
+        case 'n':
+            total_num_shards = atoi(optarg);
+            break;
+        }
+    }
+    assert(optind + 2 >= argc);
+    std::string node_file(argv[optind]);
+    std::string edge_file(argv[optind + 1]);
+
+    GraphPartitioner* partitioner = new HashPartitioner(total_num_shards);
+    partitioner->partition(node_file, edge_file);
 }

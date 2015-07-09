@@ -55,8 +55,20 @@ THRIFTBUILDDIR := build/thrift
 THRIFT_GENERATED_SOURCES := $(THRIFTSRCDIR)/GraphQueryService.cpp $(THRIFTSRCDIR)/succinct_graph_constants.cpp $(THRIFTSRCDIR)/succinct_graph_types.cpp $(THRIFTSRCDIR)/GraphQueryAggregatorService.cpp
 THRIFT_GENERATED_OBJECTS := $(patsubst $(THRIFTSRCDIR)/%,$(THRIFTBUILDDIR)/%,$(THRIFT_GENERATED_SOURCES:.cpp=.o))
 
+target_graph_partitioner := $(BINDIR)/graph-partitioner
+obj_graph_partitioner := $(BUILDDIR)/partitioners.o
+src_graph_partitioner := $(SRCDIR)/partitioners.cpp
+
 # 1st target is the default
 all: succinct graph
+
+graph-partitioner: $(target_graph_partitioner)
+$(target_graph_partitioner): $(obj_graph_partitioner)
+	@mkdir -p $(BINDIR)
+	$(CC) $^ -o $@
+$(obj_graph_partitioner): $(src_graph_partitioner)
+	@mkdir -p $(BUILDDIR)
+	$(CC) $(CFLAGS) $(INC) -c -o $@ $<
 
 $(THRIFT_BIN):
 	cd $(SUCCINCTDIR) && make -j build-thrift
