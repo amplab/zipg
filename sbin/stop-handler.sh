@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-pids="`pgrep shandler`"
+pids="`pgrep graph_query_aggregator`"
 
 for pid in $pids
 do

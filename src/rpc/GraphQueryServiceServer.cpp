@@ -5,6 +5,7 @@
 #include <thrift/transport/TBufferTransports.h>
 
 #include "succinct-graph/SuccinctGraph.hpp"
+#include "succinct-graph/utils.h"
 #include "rpc/ports.h"
 
 #include <sys/stat.h>
@@ -40,10 +41,15 @@ public:
         graph_->set_npa_sampling_rate(npa_sampling_rate);
         graph_->set_sa_sampling_rate(sa_sampling_rate);
         graph_->set_isa_sampling_rate(isa_sampling_rate);
+
+        LOG_E("shard id %d, total num shards %d, isa %d, sa %d, npa %d\n",
+            shard_id_, total_num_shards_, isa_sampling_rate,
+            sa_sampling_rate, npa_sampling_rate);
     }
 
     // Loads or constructs graph shards.
     void init() {
+        fprintf(stderr, "in shard id %d, init()-ing..\n", shard_id_);
         if (construct_) {
             if (!node_table_empty_ && !edge_table_empty_) {
                 graph_->construct(node_file_, edge_file_); // in parallel
@@ -168,8 +174,10 @@ int main(int argc, char **argv) {
     fprintf(stderr, "\n");
 
     int c;
-    uint32_t mode, port, sa_sampling_rate, isa_sampling_rate, npa_sampling_rate;
-    int shard_id, total_num_shards;
+    int mode = 0, port = QUERY_SERVER_PORT;
+    // default Succinct Graph level 0
+    int sa_sampling_rate = 32, isa_sampling_rate = 64, npa_sampling_rate = 128;
+    int shard_id = 0, total_num_shards = 1;
     while ((c = getopt(argc, argv, "m:p:s:i:n:t:d:")) != -1) {
         switch(c) {
         case 'm':
@@ -194,15 +202,6 @@ int main(int argc, char **argv) {
         case 'd':
             shard_id = atoi(optarg);
             break;
-        default:
-            shard_id = 0;
-            total_num_shards = 1;
-            mode = 0; // construct
-            port = QUERY_SERVER_PORT;
-            // default Succinct Graph level 0
-            isa_sampling_rate = 64;
-            sa_sampling_rate = 32;
-            npa_sampling_rate = 128;
         }
     }
 

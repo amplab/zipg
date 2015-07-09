@@ -9,6 +9,7 @@
 #include <thrift/transport/TSocket.h>
 
 #include "rpc/ports.h"
+#include "succinct-graph/utils.h"
 #include <thrift/GraphQueryService.h>
 
 using namespace ::apache::thrift;
@@ -35,8 +36,8 @@ public:
     { }
 
     int32_t connect_to_local_shards() {
-        for (int i = 0; i < local_num_shards_; i++) {
-            fprintf(stderr, "Connecting to local server %d...", i);
+        for (int i = 0; i < local_num_shards_; ++i) {
+            LOG_E("Connecting to local server %d...", i);
             try {
                 shared_ptr<TSocket> socket(new TSocket(
                     "localhost", QUERY_SERVER_PORT + i));
@@ -46,9 +47,9 @@ public:
                 GraphQueryServiceClient client(protocol);
 
                 transport->open();
-                fprintf(stderr, "Connected!\n");
+                LOG_E("Connected!\n");
                 local_shards_.push_back(client);
-                fprintf(stderr, "Pushed!\n");
+                LOG_E("Pushed!\n");
             } catch (std::exception& e) {
                 fprintf(stderr, "Could not connect to server: %s\n", e.what());
                 return 1;
@@ -59,6 +60,16 @@ public:
             "Currently have %zu local server connections.\n",
             local_shards_.size());
         return 0;
+    }
+
+    void init() {
+        for (auto shard : local_shards_)
+            shard.send_init();
+        LOG_E("sent all inits\n");
+        for (auto shard : local_shards_) {
+            LOG_E("receiving init\n");
+            shard.recv_init();
+        }
     }
 
     void get_neighbors(std::vector<int64_t> & _return, const int64_t nodeId) {

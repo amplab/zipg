@@ -15,6 +15,7 @@ BUILDDIRS := $(subst $(SRCDIR),$(BUILDDIR),$(SRCDIRS)) build/thrift
 SOURCES := $(shell find $(SRCDIR) -type f -name *.cpp)
 OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.cpp=.o))
 TARGET := $(LIBDIR)/libsuccinctgraph.a
+TARGET_GRAPH_CLIENT := $(LIBDIR)/libsuccinctgraph-client.a
 
 CFLAGS := -O3 -std=c++11 -Wall -g
 LIB :=  -lpthread -L ../external/succinct-cpp/lib -lsuccinct
@@ -114,6 +115,13 @@ $(TARGET): $(OBJECTS)
 	@mkdir -p $(LIBDIR)
 	@echo " $(AR) $(ARFLAGS) $@ $^"; $(AR) $(ARFLAGS) $@ $^
 
+graph-client: $(TARGET_GRAPH_CLIENT)
+
+$(TARGET_GRAPH_CLIENT): $(THRIFT_GENERATED_OBJECTS)
+	@echo "Creating static library..."
+	@mkdir -p $(LIBDIR)
+	@echo " $(AR) $(ARFLAGS) $@ $^"; $(AR) $(ARFLAGS) $@ $^
+
 $(BUILDDIR)/%.o: $(SRCDIR)/%.cpp
 	@mkdir -p $(BUILDDIRS)
 	@echo " $(CC) $(CFLAGS) $(SGFLAGS) $(INC) -c -o $@ $<";\
@@ -121,6 +129,9 @@ $(BUILDDIR)/%.o: $(SRCDIR)/%.cpp
 
 bench: graph
 	cd benchmark && $(MAKE)
+
+sharded-bench: rpc graph-client
+	cd benchmark && $(MAKE) sharded-bench
 
 clean:
 	echo "Cleaning...";

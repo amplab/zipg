@@ -3,6 +3,8 @@
 # - Starts a handler on each node specified in conf/hosts, as well as
 # launching logical shards on those nodes.
 
+# TODO: prepare graph file splits separately?
+
 sbin="`dirname "$0"`"
 sbin="`cd "$sbin"; pwd`"
 

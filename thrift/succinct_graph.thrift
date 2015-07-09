@@ -31,6 +31,9 @@ service GraphQueryAggregatorService {
 //    i32 connect_to_local_servers(),
 //    i32 disconnect_from_local_servers(),
 
+    // Initialize local shards.
+    void init(),
+
     list<i64> get_neighbors(1: i64 nodeId),
 
     list<i64> get_neighbors_atype(1: i64 nodeId, 2: i64 atype),
