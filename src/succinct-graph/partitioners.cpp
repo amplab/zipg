@@ -10,7 +10,6 @@ void RangePartitioner::partition(
 {
 
     std::ifstream node_file_stream(node_file_in);
-    std::ofstream curr_split_ofstream;
     std::string line, curr_split_filename;
 
     std::vector<std::string> lines;
@@ -50,7 +49,7 @@ void RangePartitioner::partition(
 
     std::string src_id_str;
     shard_idx = 0;
-    curr_split_ofstream = std::ofstream(format_out_name(
+    std::ofstream curr_split_ofstream(format_out_name(
         edge_file_in, num_shards_digits, 0));
 
     while (std::getline(edge_file_stream, line)) {
@@ -61,9 +60,11 @@ void RangePartitioner::partition(
             ++shard_idx;
             curr_id_limit += lines_per_split;
             if (shard_idx < diff) ++curr_id_limit; // leftovers
-            if (std::stol(src_id_str) < curr_id_limit)
-                curr_split_ofstream = std::ofstream(format_out_name(
+            if (std::stol(src_id_str) < curr_id_limit) {
+                std::ofstream tmp(format_out_name(
                     edge_file_in, num_shards_digits, shard_idx));
+                curr_split_ofstream.swap(tmp);
+            }
         }
         curr_split_ofstream << line << std::endl;
     }
