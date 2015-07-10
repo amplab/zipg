@@ -4,9 +4,9 @@ set -e
 SCRIPT_DIR=$(dirname $0)
 source ${SCRIPT_DIR}/config.sh
 
-#benchNeighbor=T
-#benchNeighborAtype=T
-benchNeighborNode=T
+benchNeighbor=T
+benchNeighborAtype=T
+#benchNeighborNode=T
 #benchNode=T
 #benchNodeNode=T
 
@@ -29,7 +29,7 @@ do
       -y ${measure_neighbor_node} -w ${QUERY_DIR}/neighbor_node_warmup_${num_nodes}.txt \
       -q ${QUERY_DIR}/neighbor_node_query_${num_nodes}.txt \
       -o ${HOME_DIR}/${num_nodes}_neighbor_node_latency.txt \
-      ${NODE_FILE} ${EDGE_FILE} ${attribute_length} ${attributes}
+      ${NODE_FILE} ${EDGE_FILE}
     fi
 
     if [[ -n "$benchNode" ]]; then
