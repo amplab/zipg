@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-pids="`pgrep graph_query_aggregator`"
+# NB: somehow if the whole name is specified, doesn't work on EC2 Linux
+pids="`pgrep graph_query_agg`"
 
 for pid in $pids
 do

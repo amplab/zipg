@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-pids="`pgrep graph_query_server`"
+# NB: somehow if the whole name is specified, doesn't work on EC2 Linux
+pids="`pgrep graph_query_ser`"
 
 for pid in $pids
 do
