@@ -27,7 +27,10 @@ ifeq ($(UNAME_S),Linux)
 	# NB: -l order matters (-lsuccinct must come after -lsuccinctgraph); also on
 	# EC2 if not statically link thrift, the binaries seem unable to find the
 	# library file (even though LD_LIBRARY_PATH is set correctly)
-	rpclib += -lpthread -L $(LIBDIR) -L ../lib -Wl,-Bstatic -lthrift -Wl,-Bdynamic -levent -lsuccinctgraph -lsuccinct -lsuccinctgraph-client -Wl,--as-needed
+	rpclib += -lpthread -L $(LIBDIR) -L ../lib \
+	  -Wl,-Bdynamic -lsuccinctgraph-client -lsuccinctgraph -lsuccinct \
+	  -Wl,-Bstatic -lthrift \
+	  -Wl,-Bdynamic -Wl,--as-needed
 endif
 ifeq ($(UNAME_S),Darwin)
 	# Mac OS, clang
