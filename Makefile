@@ -30,7 +30,22 @@ print-%: ; @echo $*=$($*)
 
 THRIFT_BIN := $(SUCCINCTDIR)/bin/thrift
 THRIFTCFLAGS := -O3 -std=c++11 -w -DHAVE_NETINET_IN_H -g
-THRIFTLIB := -L $(LIBDIR) -L external/succinct-cpp/lib -levent -lthrift -lsuccinct -lsuccinctgraph
+THRIFTLIB := 
+
+UNAME_S := $(shell uname -s)
+# FIXME: super hacky
+ifeq ($(UNAME_S),Linux)
+	# Linux, g++
+	# NB: -l order matters (-lsuccinct must come after -lsuccinctgraph); also on
+	# EC2 if not statically link thrift, the binaries seem unable to find the
+	# library file (even though LD_LIBRARY_PATH is set correctly)
+	THRIFTLIB += -lpthread -L $(LIBDIR) -L external/succinct-cpp/lib -Wl,-Bstatic -lthrift -Wl,-Bdynamic -levent -lsuccinctgraph -lsuccinct -Wl,--as-needed
+endif
+ifeq ($(UNAME_S),Darwin)
+	# Mac OS, clang
+	THRIFTLIB += -lpthread -L $(LIBDIR) -L external/succinct-cpp/lib -levent -lthrift -lsuccinct -lsuccinctgraph
+endif
+
 # the latter contains Thrift itself
 THRIFTINC := -I include -I $(SUCCINCTDIR)/include
 
