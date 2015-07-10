@@ -30,7 +30,7 @@ print-%: ; @echo $*=$($*)
 
 THRIFT_BIN := $(SUCCINCTDIR)/bin/thrift
 THRIFTCFLAGS := -O3 -std=c++11 -w -DHAVE_NETINET_IN_H -g
-THRIFTLIB := 
+THRIFTLIB :=
 
 UNAME_S := $(shell uname -s)
 # FIXME: super hacky
@@ -154,11 +154,8 @@ $(BUILDDIR)/%.o: $(SRCDIR)/%.cpp
 	@echo " $(CC) $(CFLAGS) $(SGFLAGS) $(INC) -c -o $@ $<";\
 	        $(CC) $(CFLAGS) $(SGFLAGS) $(INC) -c -o $@ $<
 
-bench: graph
+bench: rpc graph graph-client
 	cd benchmark && $(MAKE)
-
-sharded-bench: rpc graph-client
-	cd benchmark && $(MAKE) sharded-bench
 
 clean:
 	echo "Cleaning...";

@@ -70,6 +70,7 @@ void RangePartitioner::partition(
     }
 }
 
+// TODO: partition two files in parallel
 void HashPartitioner::partition(
     const std::string& node_file_in,
     const std::string& edge_file_in)
