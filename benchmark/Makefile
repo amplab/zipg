@@ -16,7 +16,24 @@ CFLAGS := -O3 -std=c++11 -Wall -g
 LIB := -lpthread -L $(LIBDIR) -lsuccinct
 # What atrocity am I committing
 INC := -I ../include -I include -I ../external/succinct-cpp/benchmark/include/ -I ../external/succinct-cpp/include
-rpclib := -L $(LIBDIR) -L ../lib -levent -lthrift -lsuccinct -lsuccinctgraph -lsuccinctgraph-client
+# rpclib := -L $(LIBDIR) -L ../lib -levent -lthrift -lsuccinct -lsuccinctgraph -lsuccinctgraph-client
+
+rpclib :=
+
+UNAME_S := $(shell uname -s)
+# FIXME: super hacky
+ifeq ($(UNAME_S),Linux)
+	# Linux, g++
+	# NB: -l order matters (-lsuccinct must come after -lsuccinctgraph); also on
+	# EC2 if not statically link thrift, the binaries seem unable to find the
+	# library file (even though LD_LIBRARY_PATH is set correctly)
+	rpclib += -lpthread -L $(LIBDIR) -L ../lib -Wl,-Bstatic -lthrift -Wl,-Bdynamic -levent -lsuccinctgraph -lsuccinct -lsuccinctgraph-client -Wl,--as-needed
+endif
+ifeq ($(UNAME_S),Darwin)
+	# Mac OS, clang
+	rpclib += -lpthread -L $(LIBDIR) -L ../lib -levent -lthrift -lsuccinct -lsuccinctgraph -lsuccinctgraph-client
+endif
+
 
 all: create bench
 
