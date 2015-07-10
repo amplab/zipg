@@ -4,6 +4,9 @@ set -e
 SCRIPT_DIR=$(dirname $0)
 source ${SCRIPT_DIR}/config.sh
 
+# NOTE: comment this out for non-sharded bench
+SHARDED=T
+
 benchNeighbor=T
 benchNeighborAtype=T
 #benchNeighborNode=T
@@ -20,7 +23,7 @@ do
       -y ${measure_neighbor} -w ${QUERY_DIR}/neighbor_warmup_${num_nodes}.txt \
       -q ${QUERY_DIR}/neighbor_query_${num_nodes}.txt \
       -o ${HOME_DIR}/${num_nodes}_neighbor_latency.txt \
-      ${NODE_FILE} ${EDGE_FILE}
+      ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
     fi
 
     if [[ -n "$benchNeighborNode" ]]; then
@@ -29,7 +32,7 @@ do
       -y ${measure_neighbor_node} -w ${QUERY_DIR}/neighbor_node_warmup_${num_nodes}.txt \
       -q ${QUERY_DIR}/neighbor_node_query_${num_nodes}.txt \
       -o ${HOME_DIR}/${num_nodes}_neighbor_node_latency.txt \
-      ${NODE_FILE} ${EDGE_FILE}
+      ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
     fi
 
     if [[ -n "$benchNode" ]]; then
@@ -38,7 +41,7 @@ do
       -y ${measure_node} -w ${QUERY_DIR}/node_warmup_${num_nodes}.txt \
       -q ${QUERY_DIR}/node_query_${num_nodes}.txt \
       -o ${HOME_DIR}/${num_nodes}_node_latency.txt \
-      ${NODE_FILE} ${EDGE_FILE}
+      ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
     fi
 
     if [[ -n "$benchNodeNode" ]]; then
@@ -47,7 +50,7 @@ do
       -y ${measure_node} -w ${QUERY_DIR}/node_warmup_${num_nodes}.txt \
       -q ${QUERY_DIR}/node_query_${num_nodes}.txt \
       -o ${HOME_DIR}/${num_nodes}_double_node_latency.txt \
-      ${NODE_FILE} ${EDGE_FILE}
+      ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
     fi
 
     if [[ -n "$benchNeighborAtype" ]]; then
@@ -56,7 +59,7 @@ do
         -y ${measure_neighbor_atype} -w ${QUERY_DIR}/neighborAtype_warmup_${num_nodes}.txt \
         -q ${QUERY_DIR}/neighborAtype_query_${num_nodes}.txt \
         -o ${HOME_DIR}/neighborAtype_latency.txt \
-        ${NODE_FILE} ${EDGE_FILE}
+        ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
     fi
 
 done
