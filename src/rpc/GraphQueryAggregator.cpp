@@ -74,7 +74,8 @@ public:
     void get_neighbors(std::vector<int64_t> & _return, const int64_t nodeId) {
         int shard_id = nodeId % total_num_shards_;
         int host_id = shard_id % total_num_hosts_;
-        LOG_E("Received: get_neighbors(%lld), route to shard %d on host %d\n",
+        COND_LOG_E(
+            "Received: get_neighbors(%lld), route to shard %d on host %d\n",
             nodeId, shard_id, host_id);
         if (host_id == local_host_id_) {
             local_shards_.at(shard_id / total_num_hosts_)

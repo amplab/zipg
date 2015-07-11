@@ -93,7 +93,7 @@ public:
     // In principle, nodeId should be in this shard's edge table.
     void get_neighbors(std::vector<int64_t> & _return, const int64_t nodeId) {
         // Your implementation goes here
-        LOG_E("Received: get_neighbors(%lld)\n", nodeId);
+        COND_LOG_E("Received: get_neighbors(%lld)\n", nodeId);
 
         assert(nodeId % total_num_shards_ == shard_id_);
         if (edge_table_empty_) {
@@ -109,7 +109,7 @@ public:
         const int64_t atype)
     {
         // Your implementation goes here
-        printf("get_neighbors_atype\n");
+        COND_LOG_E("get_neighbors_atype\n");
 
         assert(nodeId % total_num_shards_ == shard_id_);
         if (edge_table_empty_) {
@@ -126,7 +126,7 @@ public:
         const std::string& attrKey)
     {
         // Your implementation goes here
-        printf("get_neighbors_attr\n");
+        COND_LOG_E("get_neighbors_attr\n");
 
         assert(false &&
             "Algorithm for get_nhbr(n, attr) should not contact shards");
@@ -138,7 +138,7 @@ public:
         const std::string& attrKey)
     {
         // Your implementation goes here
-        printf("get_nodes\n");
+        COND_LOG_E("get_nodes\n");
 
         if (node_table_empty_) {
             _return.clear();
@@ -155,7 +155,7 @@ public:
         const std::string& attrKey2)
     {
         // Your implementation goes here
-        printf("get_nodes2\n");
+        COND_LOG_E("get_nodes2\n");
 
         if (node_table_empty_) {
             _return.clear();
