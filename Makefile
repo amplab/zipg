@@ -104,7 +104,7 @@ $(generate_thrift_manifest): $(THRIFT_BIN) thrift/succinct_graph.thrift
 $(rpc_build_dir)/%.o: $(rpc_src_dir)/%.cpp $(generate_thrift_manifest)
 	@echo "making rpc stuff"
 	@mkdir -p $(rpc_build_dir)
-	$(CC) $(CFLAGS) $(THRIFTINC) -c -o $@ $<
+	$(CC) $(CFLAGS) $(SGFLAGS) $(THRIFTINC) -c -o $@ $<
 
 $(THRIFTBUILDDIR)/%.o: $(THRIFTSRCDIR)/%.cpp $(generate_thrift_manifest)
 	@echo "making thrift stuff"

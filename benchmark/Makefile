@@ -56,7 +56,7 @@ $(TARGET_S): $(OBJ_S) $(OBJ)
 
 $(BUILDDIR)/%.o: $(SRCDIR)/%.cpp
 	@mkdir -p $(BUILDDIR)
-	$(CC) $(CFLAGS) $(INC) -c -o $@ $<
+	$(CC) $(CFLAGS) $(SGFLAGS) $(INC) -c -o $@ $<
 
 clean:
 	@echo "Cleaning...";
