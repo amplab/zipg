@@ -106,7 +106,10 @@ public:
         const int32_t attrId,
         const std::string& attrKey)
     {
-        assert(false && "not implemented"); // TODO
+        std::vector<int64_t> nhbrs;
+        get_neighbors(nhbrs, nodeId);
+
+        assert(false && "not implemented"); // TODO: add get_node_attr()
     }
 
     void get_nodes(
@@ -114,7 +117,19 @@ public:
         const int32_t attrId,
         const std::string& attrKey)
     {
-        assert(false && "not implemented"); // TODO
+        // TODO: aggregator-to-aggregator routing is not yet implemented
+        assert(local_num_shards_ == total_num_shards_);
+
+        std::vector< std::set<int64_t> > shard_results(local_num_shards_);
+        for (int i = 0; i < local_num_shards_; ++i) {
+            local_shards_[i].send_get_nodes(shard_results[i], attrId, attrKey);
+        }
+
+        _return.clear();
+        for (int i = 0; i < local_num_shards_; ++i) {
+            local_shards_[i].recv_get_nodes(shard_results[i], attrId, attrKey);
+            _return.insert(shard_results[i].begin(), shard_results[i].end());
+        }
     }
 
     void get_nodes2(

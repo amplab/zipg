@@ -125,11 +125,9 @@ public:
         const int32_t attrId,
         const std::string& attrKey)
     {
-        // Your implementation goes here
-        COND_LOG_E("get_neighbors_attr\n");
-
+        // TODO: remove this API from shard's thrift def?
         assert(false &&
-            "Algorithm for get_nhbr(n, attr) should not contact shards");
+            "The call get_nhbr(n, attr) should not be called on shards");
     }
 
     void get_nodes(
@@ -137,7 +135,6 @@ public:
         const int32_t attrId,
         const std::string& attrKey)
     {
-        // Your implementation goes here
         COND_LOG_E("get_nodes\n");
 
         if (node_table_empty_) {
@@ -154,7 +151,6 @@ public:
         const int32_t attrId2,
         const std::string& attrKey2)
     {
-        // Your implementation goes here
         COND_LOG_E("get_nodes2\n");
 
         if (node_table_empty_) {
