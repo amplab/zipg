@@ -137,13 +137,22 @@ public:
     {
         COND_LOG_E("get_nodes\n");
 
+        _return.clear();
         if (node_table_empty_) {
-            _return.clear();
             return;
         }
-        graph_->get_nodes(_return, attrId, attrKey);
+
+        std::set<int64_t> local_keys;
+        graph_->get_nodes(local_keys, attrId, attrKey);
+
+        // TODO: this assumes a particular form of hash partitioning
+        auto it = _return.begin();
+        for (int64_t local_key : local_keys) {
+            it = _return.insert(it, shard_id_ * total_num_shards_ + local_key);
+        }
     }
 
+    // FIXME: add key transformation
     void get_nodes2(
         std::set<int64_t> & _return,
         const int32_t attrId1,
