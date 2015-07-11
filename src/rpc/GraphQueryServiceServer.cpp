@@ -148,7 +148,7 @@ public:
         // TODO: this assumes a particular form of hash partitioning
         auto it = _return.begin();
         for (int64_t local_key : local_keys) {
-            it = _return.insert(it, shard_id_ * total_num_shards_ + local_key);
+            it = _return.insert(it, local_key * total_num_shards_ + shard_id_);
         }
     }
 
