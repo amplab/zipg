@@ -119,17 +119,6 @@ public:
         graph_->get_neighbors(_return, nodeId, atype);
     }
 
-    void get_neighbors_attr(
-        std::vector<int64_t> & _return,
-        const int64_t nodeId,
-        const int32_t attrId,
-        const std::string& attrKey)
-    {
-        // TODO: remove this API from shard's thrift def?
-        assert(false &&
-            "The call get_nhbr(n, attr) should not be called on shards");
-    }
-
     void get_nodes(
         std::set<int64_t> & _return,
         const int32_t attrId,
@@ -174,6 +163,15 @@ public:
         for (int64_t local_key : local_keys) {
             it = _return.insert(it, local_key * total_num_shards_ + shard_id_);
         }
+    }
+
+    void filter_nodes(
+        std::vector<int64_t> & _return,
+        const std::vector<int64_t> & nodeIds,
+        const int32_t attrId,
+        const std::string& attrKey)
+    {
+        graph_->filter_nodes(_return, nodeIds, attrId, attrKey);
     }
 
 private:

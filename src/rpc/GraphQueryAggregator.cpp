@@ -1,6 +1,7 @@
 #include "thrift/GraphQueryAggregatorService.h"
 
 #include <fstream>
+#include <unordered_map>
 
 #include <thrift/protocol/TBinaryProtocol.h>
 #include <thrift/server/TThreadedServer.h>
@@ -109,7 +110,30 @@ public:
         std::vector<int64_t> nhbrs;
         get_neighbors(nhbrs, nodeId);
 
-        assert(false && "not implemented"); // TODO: add get_node_attr()
+        std::unordered_map<int, std::vector<int64_t>> splits_by_keys;
+        int shard_id, host_id;
+        for (int64_t nhbr_id : nhbrs) {
+            shard_id = nhbr_id % total_num_shards_;
+            splits_by_keys[shard_id].push_back(nhbr_id);
+
+            host_id = shard_id % total_num_hosts_;
+            assert(host_id == local_host_id_);
+        }
+
+        for (auto it = splits_by_keys.begin(); it != splits_by_keys.end(); ++it)
+        {
+            local_shards_.at(it->first).send_filter_nodes(
+                it->second, attrId, attrKey);
+        }
+
+        _return.clear();
+        std::vector<int64_t> shard_result;
+        for (auto it = splits_by_keys.begin(); it != splits_by_keys.end(); ++it)
+        {
+            local_shards_.at(it->first).recv_filter_nodes(shard_result);
+            _return.insert(
+                _return.end(), shard_result.begin(), shard_result.end());
+        }
     }
 
     void get_nodes(
