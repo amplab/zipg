@@ -1,6 +1,6 @@
 #include "thrift/GraphQueryService.h"
 #include <thrift/protocol/TBinaryProtocol.h>
-#include <thrift/server/TSimpleServer.h>
+#include <thrift/server/TThreadedServer.h>
 #include <thrift/transport/TServerSocket.h>
 #include <thrift/transport/TBufferTransports.h>
 
@@ -247,7 +247,7 @@ int main(int argc, char **argv) {
         shared_ptr<TProtocolFactory> protocolFactory(
             new TBinaryProtocolFactory());
         // TODO: simple server vs. threaded server?
-        TSimpleServer server(
+        TThreadedServer server(
             processor, serverTransport, transportFactory, protocolFactory);
 
         server.serve();
