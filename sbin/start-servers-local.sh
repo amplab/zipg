@@ -94,6 +94,8 @@ for i in `seq 0 $limit`; do
     nohup "$bin/graph_query_server" \
       -m $mode \
       -p $port \
+      -t ${TOTAL_NUM_SHARDS} \
+      -d ${shard_id} \
       $nodeInput \
       $edgeInput \
       2>"$SUCCINCT_LOG_PATH/server_${i}.log" &
