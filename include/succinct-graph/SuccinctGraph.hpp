@@ -124,6 +124,13 @@ public:
         int attr2,
         const std::string& search_key2);
 
+    // Clears `result` for caller.
+    void filter_nodes(
+        std::vector<int64_t>& result,
+        const std::vector<int64_t>& node_ids,
+        int attr,
+        const std::string& search_key);
+
     /**************** TAO-like APIs ****************/
 
     static void
