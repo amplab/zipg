@@ -20,7 +20,6 @@ using namespace ::apache::thrift;
 using namespace ::apache::thrift::protocol;
 using namespace ::apache::thrift::transport;
 
-// TODO: use agg or graph depending on whether graph is nullptr
 class GraphBenchmark : public Benchmark {
 private:
 
@@ -179,6 +178,7 @@ public:
 #ifdef BENCH_PRINT_RESULTS
             // correctness validation
             query_res_stream << "node id: " << mod_get(neighbor_indices, i) << "\n";
+            std:sort(result.begin(), result.end());
             for (auto it = result.begin(); it != result.end(); ++it) {
                 query_res_stream << *it << " ";
             }
@@ -186,12 +186,6 @@ public:
 #endif
         }
         LOG_E("Measure complete.\n");
-
-        res_stream.close();
-
-#ifdef BENCH_PRINT_RESULTS
-        query_res_stream.close();
-#endif
     }
 
     // get_neighbor(nodeId, atype)
@@ -202,11 +196,14 @@ public:
         std::string warmup_query_file,
         std::string query_file)
     {
-
         time_t t0, t1;
         LOG_E("Benchmarking getNeighborAtype latency\n");
         read_neighbor_atype_queries(warmup_query_file, query_file);
         std::ofstream res_stream(res_path);
+
+#ifdef BENCH_PRINT_RESULTS
+        std::ofstream query_res_stream(res_path + ".succinct_result");
+#endif
 
         // Warmup
         LOG_E("Warming up for %lu queries...\n", WARMUP_N);
@@ -230,10 +227,18 @@ public:
             t1 = get_timestamp();
             res_stream << result.size() << "," << t1 - t0 << "\n";
 
+#ifdef BENCH_PRINT_RESULTS
+            // correctness validation
+            query_res_stream << "node id: " << mod_get(neighbor_indices, i) << "\n";
+            query_res_stream << "atype:  " << mod_get(atypes, i) << "\n";
+            std:sort(result.begin(), result.end());
+            for (auto it = result.begin(); it != result.end(); ++it) {
+                query_res_stream << *it << " ";
+            }
+            query_res_stream << "\n";
+#endif
         }
         LOG_E("Measure complete.\n");
-
-        res_stream.close();
     }
 
     std::pair<double, double> benchmark_neighbor_throughput(
@@ -311,16 +316,11 @@ public:
             // correctness validation
             query_res_stream << "attr " << mod_get(node_attributes, i) << ": " << mod_get(node_queries, i) << "\n";
             for (auto it = result.begin(); it != result.end(); ++it)
-                query_res_stream << *it << " "; // sets are sorted (hopefully)
+                query_res_stream << *it << " "; // sets are sorted
             query_res_stream << "\n";
 #endif
         }
         LOG_E("Measure complete.\n");
-
-        res_stream.close();
-#ifdef BENCH_PRINT_RESULTS
-        query_res_stream.close();
-#endif
     }
 
     void benchmark_node_node_latency(std::string res_path, count_t WARMUP_N, count_t MEASURE_N,
@@ -361,17 +361,11 @@ public:
             query_res_stream << "attr1 " << mod_get(node_attributes, i) << ": " << mod_get(node_queries, i) << "; ";
             query_res_stream << "attr2 " << mod_get(node_attributes2, i) << ": " << mod_get(node_queries2, i) << "\n";
             for (auto it = result.begin(); it != result.end(); ++it)
-                query_res_stream << *it << " "; // sets are sorted (hopefully)
+                query_res_stream << *it << " "; // sets are sorted
             query_res_stream << "\n";
 #endif
         }
         LOG_E("Measure complete.\n");
-
-        res_stream.close();
-
-#ifdef BENCH_PRINT_RESULTS
-        query_res_stream.close();
-#endif
     }
 
     double benchmark_node_throughput(std::string warmup_query_file, std::string query_file) {
@@ -526,19 +520,14 @@ public:
             // correctness
             query_res_stream << "id " << mod_get(neighbor_indices, i) << " attr " << mod_get(node_attributes, i);
             query_res_stream << " query " << mod_get(node_queries, i) << "\n";
+            std::sort(result.begin(), result.end());
             for (auto it = result.begin(); it != result.end(); ++it)
-                query_res_stream << *it << " "; // sets are sorted (hopefully)
+                query_res_stream << *it << " ";
             query_res_stream << "\n";
 #endif
         }
 
         LOG_E("Measure complete.\n");
-
-        res_stream.close();
-
-#ifdef BENCH_PRINT_RESULTS
-        query_res_stream.close();
-#endif
     }
 
     double benchmark_mix_throughput(std::string warmup_neighbor_query_file, std::string neighbor_query_file,
@@ -658,8 +647,6 @@ protected:
         while (getline(query_input, line)) {
             neighbor_indices.push_back(std::atoi(line.c_str()));
         }
-        warmup_input.close();
-        query_input.close();
     }
 
     void read_neighbor_atype_queries(
@@ -678,8 +665,6 @@ protected:
             neighbor_indices.push_back(std::stol(toks[0]));
             atypes.push_back(std::stoi(toks[1]));
         }
-        warmup_input.close();
-        query_input.close();
     }
 
     void read_node_queries(std::string warmup_query_file, std::string query_file) {
@@ -703,8 +688,6 @@ protected:
             node_attributes2.push_back(std::atoi(toks[2].c_str()));
             node_queries2.push_back(toks[3]);
         }
-        warmup_input.close();
-        query_input.close();
     }
 
     void read_neighbor_node_queries(std::string warmup_query_file, std::string query_file) {
@@ -728,8 +711,6 @@ protected:
             node_attributes.push_back(std::stoi(line.substr(pos + 1, pos2 - pos - 1)));
             node_queries.push_back(line.substr(pos2 + 1));
         }
-        warmup_input.close();
-        query_input.close();
     }
 
     std::vector<std::string> split(const std::string &s, char delim) {
