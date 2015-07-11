@@ -5,17 +5,11 @@
 
 #include "succinct-graph/GraphFormatter.hpp"
 #include "succinct-graph/SuccinctGraph.hpp"
+#include "succinct-graph/utils.h"
 #include "../include/GraphBenchmark.hpp"
 
 void print_usage(char *exec) {
     fprintf(stderr, "Usage: %s [-t type] [-x warmup_n] [-y measure_n] [-w warmup_file] [-q query_file] [-a neighbor_warmup ] [-b neighbor_query] [-o output_file] [succinct_dir]\n", exec);
-}
-
-void print_vector(const std::string& msg, const std::vector<int64_t>& vec) {
-    printf("%s[", msg.c_str());
-    for (auto it = vec.begin(); it != vec.end(); ++it)
-        printf(" %lld", *it);
-    printf(" ]\n");
 }
 
 void assert_eq(
@@ -61,7 +55,7 @@ void assert_eq(
 int main(int argc, char **argv) {
     if (argc < 2) {
         print_usage(argv[0]);
-        // return -1;
+        return -1;
     }
 
     int c;
@@ -110,58 +104,62 @@ int main(int argc, char **argv) {
     // specified after all the options
     std::string node_file = std::string(argv[optind]);
     std::string edge_file = std::string(argv[optind + 1]);
-    SuccinctGraph* graph = new SuccinctGraph(node_file, edge_file); // loads
+
     std::ofstream result_file(result_file_name, std::ios_base::app);
-    GraphBenchmark bench(graph);
+    SuccinctGraph* graph = nullptr;
+    GraphBenchmark* bench = nullptr;
+
+    bool is_sharded = (optind + 2 < argc); // if there exists a last dummy arg
+    if (!is_sharded) {
+        graph = new SuccinctGraph(node_file, edge_file); // loads
+        bench = new GraphBenchmark(graph);
+    } else {
+        bench = new GraphBenchmark(nullptr);
+    }
 
     if (type == "neighbor-latency") {
 
-        bench.benchmark_neighbor_latency(result_file_name, warmup_n, measure_n,
+        bench->benchmark_neighbor_latency(result_file_name, warmup_n, measure_n,
                 warmup_query_file, measure_query_file);
 
     } else if (type == "neighbor-throughput") {
 
-        std::pair<double, double> thput_pair = bench.benchmark_neighbor_throughput(
+        std::pair<double, double> thput_pair = bench->benchmark_neighbor_throughput(
                 warmup_query_file, measure_query_file);
         result_file << "Get Neighbor Throughput: " << thput_pair.first << "\n";
         result_file << "Get Edges Throughput: " << thput_pair.second << "\n";
 
     } else if (type == "node-latency") {
 
-        bench.benchmark_node_latency(result_file_name, warmup_n, measure_n,
+        bench->benchmark_node_latency(result_file_name, warmup_n, measure_n,
                 warmup_query_file, measure_query_file);
 
     } else if (type == "node-throughput") {
 
-        double thput = bench.benchmark_node_throughput(warmup_query_file, measure_query_file);
+        double thput = bench->benchmark_node_throughput(warmup_query_file, measure_query_file);
         result_file << "Get Name Throughput: " << thput << "\n\n";
 
     } else if (type == "mix-throughput") {
 
-        double thput = bench.benchmark_mix_throughput(
+        double thput = bench->benchmark_mix_throughput(
                 warmup_neighbor_file, measure_neighbor_file,
                 warmup_query_file, measure_query_file);
         result_file << "Mix throughput: " << thput << "\n\n";
 
     } else if (type == "mix-latency") {
 
-        bench.benchmark_mix_latency(result_file_name, warmup_n, measure_n,
+        bench->benchmark_mix_latency(result_file_name, warmup_n, measure_n,
                 warmup_neighbor_file, measure_neighbor_file,
                 warmup_query_file, measure_query_file);
 
     } else if (type == "node-node-latency") {
 
-        bench.benchmark_node_node_latency(result_file_name, warmup_n, measure_n,
+        bench->benchmark_node_node_latency(result_file_name, warmup_n, measure_n,
                 warmup_query_file, measure_query_file);
 
     } else if (type == "neighbor-node-latency") {
 
-        // TODO: these are not needed anymore.
-        assert(optind + 3 < argc);
-        int32_t node_attr_size = std::stoi(argv[optind + 2]);
-        int64_t node_num_attrs = std::stol(argv[optind + 3]);
-
-        bench.benchmark_neighbor_node_latency(
+        bench->benchmark_neighbor_node_latency(
             result_file_name,
             warmup_n,
             measure_n,
@@ -170,7 +168,7 @@ int main(int argc, char **argv) {
 
     } else if (type == "neighbor-atype-latency") {
 
-        bench.benchmark_neighbor_atype_latency(
+        bench->benchmark_neighbor_atype_latency(
             result_file_name,
             warmup_n,
             measure_n,

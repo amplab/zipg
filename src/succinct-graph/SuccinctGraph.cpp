@@ -1,9 +1,11 @@
 #include "succinct-graph/SuccinctGraph.hpp"
-#include "succinct-graph/SuccinctGraphSerde.hpp"
 
 #include <limits>
 #include <sstream>
 #include <thread>
+
+#include "succinct-graph/SuccinctGraphSerde.hpp"
+#include "succinct-graph/utils.h"
 
 #ifdef LOG_DEBUG
     #define LOG(fmt, ...) printf(fmt, ##__VA_ARGS__)
@@ -44,13 +46,27 @@ SuccinctGraph::SuccinctGraph(
 
 SuccinctGraph::SuccinctGraph(
     std::string node_succinct_dir,
-    std::string edge_succinct_dir) {
+    std::string edge_succinct_dir)
+{
+    load(node_succinct_dir, edge_succinct_dir);
+}
 
+void SuccinctGraph::load(
+    std::string node_succinct_dir,
+    std::string edge_succinct_dir)
+{
+    this->load_node_table(node_succinct_dir);
+    this->load_edge_table(edge_succinct_dir);
+}
+
+void SuccinctGraph::load_node_table(std::string node_succinct_dir) {
     this->node_table = new SuccinctShard(
         0,
         node_succinct_dir,
         SuccinctMode::LOAD_MEMORY_MAPPED);
+}
 
+void SuccinctGraph::load_edge_table(std::string edge_succinct_dir) {
     this->edge_table = new SuccinctFile(
         edge_succinct_dir,
         SuccinctMode::LOAD_MEMORY_MAPPED);
@@ -71,11 +87,14 @@ SuccinctGraph& SuccinctGraph::set_isa_sampling_rate(uint32_t sampling_rate) {
     return *this;
 }
 
-void SuccinctGraph::construct_node_table(const std::string& node_file) {
-    printf("Constructing node table with npa %d, sa %d, isa %d\n",
+void SuccinctGraph::construct_node_table(std::string node_file) {
+    LOG_E("Constructing node table with npa %d, sa %d, isa %d\n",
         npa_sampling_rate, sa_sampling_rate, isa_sampling_rate);
 
-    std::string formatted_node_file(node_file + "WithPtrs"); // FIXME!
+    // TODO: correct thing to do is use a temp file for this
+    // TODO: also, the Succinct dir will have the postfix in it -- not clean?
+    std::string formatted_node_file(node_file + "WithPtrs");
+
     std::ifstream in_stream(node_file);
     std::ofstream out_stream(formatted_node_file);
     std::string line, token;
@@ -120,17 +139,17 @@ void SuccinctGraph::construct_node_table(const std::string& node_file) {
         npa_sampling_rate
     );
     this->node_table->serialize();
+    LOG_E("Node table constructed and serialized\n");
+
+    // FIXME: rely on some dtor to clean up
+    char cmd[99];
+    sprintf(cmd, "rm -rf %s", formatted_node_file.c_str());
+    LOG_E("Running cmd: '%s'\n", cmd);
+    system(cmd);
 }
 
-SuccinctGraph& SuccinctGraph::construct(
-    std::string& node_file,
-    std::string& edge_file) {
-
-    // construct node table in parallel
-    std::thread node_table_thread(
-        &SuccinctGraph::construct_node_table, this, node_file);
-
-    fprintf(stderr, "Initializing edge table (SuccinctFile)\n");
+void SuccinctGraph::construct_edge_table(std::string edge_file) {
+    LOG_E("Initializing edge table (SuccinctFile)\n");
     std::map<AssocListKey, std::vector<Assoc>> assoc_map;
     std::string line, token;
     std::ifstream edge_file_stream(edge_file);
@@ -231,9 +250,9 @@ SuccinctGraph& SuccinctGraph::construct(
     }
     edge_file_out << "\n"; // FIXME: without this, SuccinctCore ctor segfaults
     edge_file_out.close();
-    printf("Edge table written out to disk, now to Succinct-encode it\n");
+    LOG_E("Edge table written out to disk, now to Succinct-encode it\n");
 
-    printf("constructing edge table with npa %d, sa %d, isa %d\n",
+    LOG_E("constructing edge table with npa %d, sa %d, isa %d\n",
         npa_sampling_rate, sa_sampling_rate, isa_sampling_rate);
     this->edge_table = new SuccinctFile(
         edge_file_name,
@@ -242,14 +261,19 @@ SuccinctGraph& SuccinctGraph::construct(
         isa_sampling_rate,
         npa_sampling_rate);
     size_t num_bytes = this->edge_table->serialize();
-    printf("Succinct-encoded edge table, number of bytes written: %zu\n",
+    LOG_E("Succinct-encoded edge table, number of bytes written: %zu\n",
         num_bytes);
+}
+
+void SuccinctGraph::construct(std::string node_file, std::string edge_file) {
+    // construct in parallel
+    std::thread node_table_thread(
+        &SuccinctGraph::construct_node_table, this, node_file);
+    this->construct_edge_table(edge_file);
+    node_table_thread.join();
 
     this->node_file_pathname = node_file;
     this->edge_file_pathname = edge_file;
-
-    node_table_thread.join();
-    return *this;
 }
 
 // Note: this is supposed to be used in testing only.
@@ -917,6 +941,40 @@ inline std::string mk_node_attr_key(int attr, const std::string& query_key) {
         SuccinctGraph::DELIMITERS[attr + 1];
 }
 
+void SuccinctGraph::filter_nodes(
+    std::vector<int64_t>& result,
+    const std::vector<int64_t>& node_ids,
+    int attr,
+    const std::string& search_key)
+{
+    assert(attr < SuccinctGraph::MAX_NUM_NODE_ATTRS);
+    result.clear();
+    const char next_attr_delim = DELIMITERS[attr + 1];
+    std::string tmp;
+
+    for (int64_t node_id : node_ids) {
+        uint64_t suf_arr_idx = -1;
+        int64_t start_offset = this->node_table->extract_until(
+            tmp, suf_arr_idx, node_id, NODE_TABLE_HEADER_DELIM);
+        if (start_offset == -1) continue; // key doesn't exist
+        // +(attr + 1) to account for delims after each of the lengths
+        int32_t dist = std::stoi(tmp) + (attr + 1);
+
+        for (int i = 1; i <= attr; ++i) {
+            this->node_table->extract_until(
+                tmp, suf_arr_idx, node_id, NODE_TABLE_HEADER_DELIM);
+            dist += std::stoi(tmp);
+        }
+
+        // jump!
+        if (this->node_table->extract_compare_until(
+                start_offset + dist, next_attr_delim, search_key))
+        {
+            result.push_back(node_id);
+        }
+    }
+}
+
 // Scans neighbors and looks for those that contain the desired attr.
 void SuccinctGraph::get_neighbors(
     std::vector<int64_t>& result,
@@ -928,11 +986,7 @@ void SuccinctGraph::get_neighbors(
     auto t1 = get_timestamp();
 #endif
 
-    result.clear();
-
     assert(attr < SuccinctGraph::MAX_NUM_NODE_ATTRS);
-    char next_attr_delim = DELIMITERS[attr + 1];
-
     std::vector<int64_t> nbhrs;
     get_neighbors(nbhrs, node_id);
 
@@ -943,27 +997,7 @@ void SuccinctGraph::get_neighbors(
     t1 = get_timestamp();
 #endif
 
-    std::string tmp;
-
-    for (auto nhbrId : nbhrs) {
-        uint64_t suf_arr_idx = -1;
-        int64_t start_offset = this->node_table->extract_until(
-            tmp, suf_arr_idx, nhbrId, NODE_TABLE_HEADER_DELIM);
-        if (start_offset == -1) continue; // key doesn't exist
-        // +(attr + 1) to account for delims after each of the lengths
-        int32_t dist = std::stoi(tmp) + (attr + 1);
-
-        for (int i = 1; i <= attr; ++i) {
-            this->node_table->extract_until(
-                tmp, suf_arr_idx, nhbrId, NODE_TABLE_HEADER_DELIM);
-            dist += std::stoi(tmp);
-        }
-
-        // jump!
-        if (this->node_table->extract_compare_until(
-                start_offset + dist, next_attr_delim, search_key))
-            result.push_back(nhbrId);
-    }
+    filter_nodes(result, nbhrs, attr, search_key);
 
 #ifdef DEBUG_TIME_NHBR2
     t2 = get_timestamp();

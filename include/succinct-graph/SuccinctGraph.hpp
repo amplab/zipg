@@ -1,6 +1,7 @@
 #ifndef SUCCINCT_GRAPH_H
 #define SUCCINCT_GRAPH_H
 
+// FIXME: encouraged to include relative to project's include path
 #include "../succinct/SuccinctShard.hpp"
 #include "../succinct/SuccinctFile.hpp"
 
@@ -9,7 +10,7 @@
 class SuccinctGraph {
 public:
 
-    // TODO: get rid of this
+    // TODO: get rid of this, currently succinct-create depends on it.
     // Constructor.  This doesn't actually build the internal data structures.
     SuccinctGraph(std::string succinct_dir = 0,
                   bool construct = false,
@@ -17,12 +18,14 @@ public:
                   uint32_t isa_sampling_rate = 32,
                   uint32_t npa_sampling_rate = 128);
 
+
     // Loads the previously constructed node table & edge table.
+    // The same as load().
     SuccinctGraph(std::string node_succinct_dir, std::string edge_succinct_dir);
 
     ~SuccinctGraph() {
-        delete this->node_table;
-        delete this->edge_table;
+        if (this->node_table != nullptr) delete this->node_table;
+        if (this->edge_table != nullptr) delete this->edge_table;
     }
 
     // Removes generated files during construction, if any: Succinct data
@@ -42,7 +45,16 @@ public:
     //              unique delimiters in DELIMITERS
     //   edge_file: each row represents one association, in format
     //              srcId dstId atype time [everything from here to EOL is attr]
-    SuccinctGraph& construct(std::string& node_file, std::string& edge_file);
+    void construct(std::string node_file, std::string edge_file);
+    // The two steps in construct().  Intended for greater flexibility: users
+    // can construct one table without the other.
+    void construct_node_table(std::string node_file);
+    void construct_edge_table(std::string edge_file);
+
+    // Loads constructed & Succinct-encoded tables.
+    void load(std::string node_succinct_dir, std::string edge_succinct_dir);
+    void load_node_table(std::string node_succinct_dir);
+    void load_edge_table(std::string edge_succinct_dir);
 
     std::string succinct_directory();
 
@@ -112,6 +124,13 @@ public:
         int attr2,
         const std::string& search_key2);
 
+    // Clears `result` for caller.
+    void filter_nodes(
+        std::vector<int64_t>& result,
+        const std::vector<int64_t>& node_ids,
+        int attr,
+        const std::string& search_key);
+
     /**************** TAO-like APIs ****************/
 
     static void
@@ -177,8 +196,8 @@ public:
     std::string node_file_pathname, edge_file_pathname;
 
 private:
-    SuccinctShard *node_table;
-    SuccinctFile *edge_table;
+    SuccinctShard* node_table;
+    SuccinctFile* edge_table;
 
     std::string succinct_dir;
     int64_t edges;
@@ -192,8 +211,6 @@ private:
         std::vector<int64_t>& result,
         const std::vector<int64_t>& offsets,
         int32_t skip_length);
-
-    void construct_node_table(const std::string& node_file);
 
     inline static time_t get_timestamp() {
         struct timeval now;

@@ -50,3 +50,5 @@ external/neo4j*/data/
 
 # experiment traces
 *latency*txt*
+
+data/
