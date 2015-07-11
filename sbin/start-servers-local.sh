@@ -64,13 +64,14 @@ done < ${SUCCINCT_CONF_DIR}/repl
 
 limit=$(($num_shards - 1))
 padWidth=${#limit}
+paddedTotalNumShards=$(printf "%0*d" ${padWidth} ${TOTAL_NUM_SHARDS})
 
 for i in `seq 0 $limit`; do
 	port=$(($QUERY_SERVER_PORT + $i))
 	shard_id=$(($i * $num_hosts + local_host_id)) # balance across physical nodes
     padded_shard_id=$(printf "%0*d" ${padWidth} ${shard_id})
-    node_split="${NODE_FILE}-part${padded_shard_id}"
-    edge_split="${EDGE_FILE}-part${padded_shard_id}"
+    node_split="${NODE_FILE}-part${padded_shard_id}of${paddedTotalNumShards}"
+    edge_split="${EDGE_FILE}-part${padded_shard_id}of${paddedTotalNumShards}"
 
     # Encoded succinct dirs
     # Hacky: note this uses internal impl details about namings of encoded tables
