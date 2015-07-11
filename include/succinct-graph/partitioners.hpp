@@ -40,11 +40,12 @@ protected:
     };
 
     static std::string format_out_name(
-        const std::string& prefix, int digits, int num)
+        const std::string& prefix, int digits, int num, int total)
     {
         char s[digits + 1];
-        sprintf(s, "%0*d", digits, num);
-        return std::string(prefix + "-part" + s);
+        // "-part01of19"
+        sprintf(s, "-part%0*dof%0*d", digits, num, digits, total);
+        return std::string(prefix + s);
     };
 
 };

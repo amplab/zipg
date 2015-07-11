@@ -26,7 +26,7 @@ void RangePartitioner::partition(
     int split_start_line = 0;
     while (split_start_line < lines.size()) {
         std::string s(format_out_name(
-            node_file_in, num_shards_digits, shard_idx));
+            node_file_in, num_shards_digits, shard_idx, this->num_shards_));
         std::ofstream curr_split_ofstream(s);
         int j = split_start_line;
         for ( ; j < split_start_line + lines_per_split && j < lines.size(); ++j)
@@ -50,7 +50,7 @@ void RangePartitioner::partition(
     std::string src_id_str;
     shard_idx = 0;
     std::ofstream curr_split_ofstream(format_out_name(
-        edge_file_in, num_shards_digits, 0));
+        edge_file_in, num_shards_digits, 0, num_shards_));
 
     while (std::getline(edge_file_stream, line)) {
         std::stringstream ss(line);
@@ -63,7 +63,7 @@ void RangePartitioner::partition(
             if (std::stol(src_id_str) < curr_id_limit) {
                 curr_split_ofstream.close();
                 curr_split_ofstream.open(format_out_name(
-                    edge_file_in, num_shards_digits, shard_idx));
+                    edge_file_in, num_shards_digits, shard_idx, num_shards_));
             }
         }
         curr_split_ofstream << line << std::endl;
@@ -99,7 +99,8 @@ void HashPartitioner::partition(
     }
     // output, selectively
     int num_shards_digits = num_digits(this->num_shards_);
-    auto output_nonempty_shards = [num_shards_digits](
+    int num = this->num_shards_;
+    auto output_nonempty_shards = [num_shards_digits, num](
         const std::vector< std::vector<std::string> >& lines,
         const std::string& file_prefix)
     {
@@ -107,8 +108,9 @@ void HashPartitioner::partition(
             auto shard_lines = lines[i];
             if (!shard_lines.empty()) {
                 std::string out_name(
-                    format_out_name(file_prefix, num_shards_digits, i));
+                    format_out_name(file_prefix, num_shards_digits, i, num));
                 std::ofstream file_ofstream(out_name);
+                LOG_E("Writing split '%s' for shard %d\n", out_name.c_str(), i);
                 for (auto line : shard_lines) {
                     file_ofstream << line << std::endl;
                 }
