@@ -126,15 +126,9 @@ public:
 
         std::set<int64_t> shard_result;
         _return.clear();
-//        for (auto shard : local_shards_) {
-//            shard.recv_get_nodes(shard_result);
-//            _return.insert(shard_result.begin(), shard_result.end());
-//        }
-        for (int shard_id = 0; shard_id < local_num_shards_; ++shard_id) {
-            local_shards_[shard_id].recv_get_nodes(shard_result);
-            for (int64_t local_key : shard_result) {
-                _return.insert(local_key * total_num_shards_ + shard_id);
-            }
+        for (auto shard : local_shards_) {
+            shard.recv_get_nodes(shard_result);
+            _return.insert(shard_result.begin(), shard_result.end());
         }
     }
 

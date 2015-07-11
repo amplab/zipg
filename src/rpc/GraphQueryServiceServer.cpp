@@ -141,15 +141,15 @@ public:
         if (node_table_empty_) {
             return;
         }
-        graph_->get_nodes(_return, attrId, attrKey);
-//        std::set<int64_t> local_keys;
-//        graph_->get_nodes(local_keys, attrId, attrKey);
-//
-//        // TODO: this assumes a particular form of hash partitioning
-//        auto it = _return.begin();
-//        for (int64_t local_key : local_keys) {
-//            it = _return.insert(it, local_key * total_num_shards_ + shard_id_);
-//        }
+
+        std::set<int64_t> local_keys;
+        graph_->get_nodes(local_keys, attrId, attrKey);
+
+        // TODO: this assumes a particular form of hash partitioning
+        auto it = _return.begin();
+        for (int64_t local_key : local_keys) {
+            it = _return.insert(it, local_key * total_num_shards_ + shard_id_);
+        }
     }
 
     void get_nodes2(
