@@ -114,7 +114,10 @@ public:
         int shard_id, host_id;
         for (int64_t nhbr_id : nhbrs) {
             shard_id = nhbr_id % total_num_shards_;
-            splits_by_keys[shard_id].push_back(nhbr_id);
+            // globalKey = localKey * numShards + shardId
+            // localKey = (globalKey - shardId) / numShards
+            splits_by_keys[shard_id].push_back(
+                (nhbr_id - shard_id) / total_num_shards_);
 
             host_id = shard_id % total_num_hosts_;
             assert(host_id == local_host_id_);
@@ -131,8 +134,9 @@ public:
         for (auto it = splits_by_keys.begin(); it != splits_by_keys.end(); ++it)
         {
             local_shards_.at(it->first).recv_filter_nodes(shard_result);
-            _return.insert(
-                _return.end(), shard_result.begin(), shard_result.end());
+            for (int64_t local_key : shard_result) {
+                _return.push_back(local_key * total_num_shards_ + it->first);
+            }
         }
     }
 

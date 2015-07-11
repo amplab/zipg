@@ -17,7 +17,10 @@ service GraphQueryService {
         4: string attrKey2),
 
     // Filter the nodeIds by checking whether they contain the specified
-    // attribute.  This shard will only check its own local node table.
+    // attribute.  Contracts:
+    // (1) This shard will only check its own local node table.
+    // (2) `nodeIds` contains "local keys".
+    // (3) On return, the result contains "local keys" as well.
     list<i64> filter_nodes(
         1: list<i64> nodeIds,
         2: i32 attrId,
