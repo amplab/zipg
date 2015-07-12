@@ -18,6 +18,17 @@ fi
 
 . "$SUCCINCT_PREFIX/sbin/load-succinct-env.sh"
 
+# optionally support input file override
+# default is to read from sbin/succinct-config.sh
+node_file_raw=$1
+if [ "$node_file_raw" = "" ]; then
+  node_file_raw=${NODE_FILE}
+fi
+edge_file_raw=$2
+if [ "$edge_file_raw" = "" ]; then
+  edge_file_raw=${EDGE_FILE}
+fi
+
 if [ "$HOSTLIST" = "" ]; then
   if [ "$SUCCINCT_HOSTS" = "" ]; then
     if [ -f "${SUCCINCT_CONF_DIR}/hosts" ]; then
@@ -40,10 +51,10 @@ i=0
 num_hosts=$(echo "$HOSTLIST"|sed  "s/#.*$//;/^$/d"|wc -l)
 for host in `echo "$HOSTLIST"|sed  "s/#.*$//;/^$/d"`; do
   if [ -n "${SUCCINCT_SSH_FOREGROUND}" ]; then
-    ssh $SUCCINCT_SSH_OPTS "$host" "$sbin/start-servers-local.sh" $SHARDS_PER_SERVER $num_hosts $i \
+    ssh $SUCCINCT_SSH_OPTS "$host" "$sbin/start-servers-local.sh" $SHARDS_PER_SERVER $num_hosts $i $node_file_raw $edge_file_raw \
       2>&1 | sed "s/^/$host: /"
   else
-    ssh $SUCCINCT_SSH_OPTS "$host" "$sbin/start-servers-local.sh" $SHARDS_PER_SERVER $num_hosts $i \
+    ssh $SUCCINCT_SSH_OPTS "$host" "$sbin/start-servers-local.sh" $SHARDS_PER_SERVER $num_hosts $i $node_file_raw $edge_file_raw \
       2>&1 | sed "s/^/$host: /" &
   fi
   if [ "$SUCCINCT_HOST_SLEEP" != "" ]; then
