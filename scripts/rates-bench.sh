@@ -36,7 +36,7 @@ function bench() {
       ${BIN_DIR}/bench -t node-latency -x ${warmup_node} \
       -y ${measure_node} -w ${QUERY_DIR}/node_warmup_${num_nodes}.txt \
       -q ${QUERY_DIR}/node_query_${num_nodes}.txt \
-      -o ${HOME_DIR}/node_latency-npa${npa}sa${sa}isa${isa}${dataset}.txt \
+      -o ${HOME_DIR}/node_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
       ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
 
     fi
@@ -46,7 +46,7 @@ function bench() {
       ${BIN_DIR}/bench -t node-node-latency -x ${warmup_node} \
       -y ${measure_node} -w ${QUERY_DIR}/node_warmup_${num_nodes}.txt \
       -q ${QUERY_DIR}/node_query_${num_nodes}.txt \
-      -o ${HOME_DIR}/double_node_latency-npa${npa}sa${sa}isa${isa}${dataset}.txt \
+      -o ${HOME_DIR}/double_node_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
       ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
     fi
     
@@ -55,7 +55,7 @@ function bench() {
       ${BIN_DIR}/bench -t neighbor-node-latency -x ${warmup_neighbor_node} \
       -y ${measure_neighbor_node} -w ${QUERY_DIR}/neighbor_node_warmup_${num_nodes}.txt \
       -q ${QUERY_DIR}/neighbor_node_query_${num_nodes}.txt \
-      -o ${HOME_DIR}/neighbor_node_latency-npa${npa}sa${sa}isa${isa}${dataset}.txt \
+      -o ${HOME_DIR}/neighbor_node_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
       ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
     fi
 
@@ -64,7 +64,7 @@ function bench() {
         ${BIN_DIR}/bench -t neighbor-atype-latency -x ${warmup_neighbor_atype} \
         -y ${measure_neighbor_atype} -w ${QUERY_DIR}/neighborAtype_warmup_${num_nodes}.txt \
         -q ${QUERY_DIR}/neighborAtype_query_${num_nodes}.txt \
-        -o ${HOME_DIR}/neighborAtype_latency-npa${npa}sa${sa}isa${isa}.txt \
+        -o ${HOME_DIR}/neighborAtype_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
         ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
     fi
 
@@ -73,7 +73,7 @@ function bench() {
       ${BIN_DIR}/bench -t neighbor-latency -x ${warmup_neighbor} \
       -y ${measure_neighbor} -w ${QUERY_DIR}/neighbor_warmup_${num_nodes}.txt \
       -q ${QUERY_DIR}/neighbor_query_${num_nodes}.txt \
-      -o ${HOME_DIR}/neighbor_latency-npa${npa}sa${sa}isa${isa}.txt \
+      -o ${HOME_DIR}/neighbor_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
       ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
     fi
 
@@ -85,11 +85,11 @@ function bench() {
 }
 
 
-#sa=32; isa=64; npa=128
-#bench
+sa=32; isa=64; npa=128
+bench
 
-#sa=8; isa=64; npa=64
-#bench
+sa=8; isa=64; npa=64
+bench
 
 sa=4; isa=16; npa=16
 bench
