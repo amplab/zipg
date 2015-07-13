@@ -40,15 +40,9 @@ if [ "$edge_file_raw" = "" ]; then
 fi
 
 # these can be set when calling this script; otherwise, use defaults
-if [ "$sa_sr" = "" ]; then
-  sa_sr=32
-fi
-if [ "$isa_sr" = "" ]; then
-  isa_sr=64
-fi
-if [ "$npa_sr" = "" ]; then
-  npa_sr=128
-fi
+sa_sr=${6:=32}
+isa_sr=${7:=64}
+npa_sr=${8:=128}
 
 # ??
 num_replicas=$( wc -l < ${SUCCINCT_CONF_DIR}/repl)
@@ -125,13 +119,15 @@ fi
     fi
 
     echo "Launching shard ${shard_id}"
+
     nohup "$bin/graph_query_server" \
       -m $mode \
       -p $port \
       -t ${TOTAL_NUM_SHARDS} \
       -d ${shard_id} \
-      -s ${sa_sr} -i ${isa_sr} -n ${npa_sr} \
+      -s${sa_sr} -i${isa_sr} -n${npa_sr} \
       $nodeInput \
       $edgeInput \
       2>"$SUCCINCT_LOG_PATH/server_${i}.log" &
+
 done

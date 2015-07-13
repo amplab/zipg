@@ -27,10 +27,7 @@ function bench() {
   bash ${SCRIPT_DIR}/../sbin/stop-all.sh
   sleep 2
 
-  npa_sr=${npa}
-  sa_sr=${sa}
-  isa_sr=${isa}
-  bash ${SCRIPT_DIR}/../sbin/start-servers.sh $NODE_FILE $EDGE_FILE &
+  bash ${SCRIPT_DIR}/../sbin/start-servers.sh $NODE_FILE $EDGE_FILE $sa $isa $npa &
   sleep 2
 
   bash ${SCRIPT_DIR}/../sbin/start-handlers.sh &
@@ -91,8 +88,8 @@ function bench() {
 }
 
 
-sa=32; isa=64; npa=128
-bench
+#sa=32; isa=64; npa=128
+#bench
 
 sa=8; isa=64; npa=64
 bench
