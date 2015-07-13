@@ -39,6 +39,17 @@ if [ "$edge_file_raw" = "" ]; then
   edge_file_raw=${EDGE_FILE}
 fi
 
+# these can be set when calling this script; otherwise, use defaults
+if [ "$sa_sr" = "" ]; then
+  sa_sr=32
+fi
+if [ "$isa_sr" = "" ]; then
+  isa_sr=64
+fi
+if [ "$npa_sr" = "" ]; then
+  npa_sr=128
+fi
+
 # ??
 num_replicas=$( wc -l < ${SUCCINCT_CONF_DIR}/repl)
 
@@ -119,6 +130,7 @@ fi
       -p $port \
       -t ${TOTAL_NUM_SHARDS} \
       -d ${shard_id} \
+      -s ${sa_sr} -i ${isa_sr} -n ${npa_sr} \
       $nodeInput \
       $edgeInput \
       2>"$SUCCINCT_LOG_PATH/server_${i}.log" &

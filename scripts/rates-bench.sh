@@ -19,14 +19,20 @@ benchNode=T
 benchNodeNode=T
 
 function bench() {
+
   EDGE_FILE="../data/higgs-social_network.opts-npa${npa}sa${sa}isa${isa}.assoc"
   NODE_FILE="../data/higgs${dataset}-tpch-npa${npa}sa${sa}isa${isa}.node"
   #NODE_FILE="${DATA_DIR}/higgs${dataset}-tpch-npa${npa}sa${sa}isa${isa}.nodeWithPtrs"
 
   bash ${SCRIPT_DIR}/../sbin/stop-all.sh
   sleep 2
+
+  npa_sr=${npa}
+  sa_sr=${sa}
+  isa_sr=${isa}
   bash ${SCRIPT_DIR}/../sbin/start-servers.sh $NODE_FILE $EDGE_FILE &
   sleep 2
+
   bash ${SCRIPT_DIR}/../sbin/start-handlers.sh &
   sleep 2
 
