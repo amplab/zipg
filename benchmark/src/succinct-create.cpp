@@ -469,6 +469,12 @@ int main(int argc, char **argv) {
 
         printf("SuccinctGraph construction done\n");
 
+    } else if (type == "nodeTable-construct") {
+
+        std::string node_file(argv[2]);
+        SuccinctGraph graph("");
+        graph.construct_node_table(node_file);
+
     } else if (type == "neo4j-node") {
 
         std::string delimed_node_file = argv[2];
