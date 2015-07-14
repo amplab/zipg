@@ -100,7 +100,15 @@ public:
             _return.clear();
             return;
         }
+#ifdef DEBUG_RPC_NHBR
+        auto t1 = get_timestamp();
+#endif
         graph_->get_neighbors(_return, nodeId);
+
+#ifdef DEBUG_RPC_NHBR
+        auto t2 = get_timestamp();
+        LOG_E(",%lld\n", t2 - t1);
+#endif
     }
 
     void get_neighbors_atype(
@@ -116,7 +124,15 @@ public:
             _return.clear();
             return;
         }
+#ifdef DEBUG_RPC_NHBR
+        auto t1 = get_timestamp();
+#endif
         graph_->get_neighbors(_return, nodeId, atype);
+
+#ifdef DEBUG_RPC_NHBR
+        auto t2 = get_timestamp();
+        LOG_E(",%lld\n", t2 - t1);
+#endif
     }
 
     void get_nodes(

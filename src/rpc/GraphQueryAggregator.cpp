@@ -79,8 +79,16 @@ public:
             "Received: get_neighbors(%lld), route to shard %d on host %d\n",
             nodeId, shard_id, host_id);
         if (host_id == local_host_id_) {
+#ifdef DEBUG_RPC_NHBR
+            auto t1 = get_timestamp();
+#endif
             local_shards_.at(shard_id / total_num_hosts_)
                 .get_neighbors(_return, nodeId);
+
+#ifdef DEBUG_RPC_NHBR
+            auto t2 = get_timestamp();
+            LOG_E(".%lld\n", t2 - t1);
+#endif
         } else {
             assert(false && "routing not implemented");
         }
@@ -94,8 +102,16 @@ public:
         int shard_id = nodeId % total_num_shards_;
         int host_id = shard_id % total_num_hosts_;
         if (host_id == local_host_id_) {
+#ifdef DEBUG_RPC_NHBR
+            auto t1 = get_timestamp();
+#endif
             local_shards_.at(shard_id / total_num_hosts_)
                 .get_neighbors_atype(_return, nodeId, atype);
+
+#ifdef DEBUG_RPC_NHBR
+            auto t2 = get_timestamp();
+            LOG_E(".%lld\n", t2 - t1);
+#endif
         } else {
             assert(false && "routing not implemented");
         }
