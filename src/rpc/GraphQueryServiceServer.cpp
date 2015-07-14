@@ -107,7 +107,9 @@ public:
 
 #ifdef DEBUG_RPC_NHBR
         auto t2 = get_timestamp();
-        LOG_E(",%lld\n", t2 - t1);
+        if (shard_id_ == 0) {
+            LOG_E(",%lld\n", t2 - t1);
+        }
 #endif
     }
 
@@ -131,7 +133,9 @@ public:
 
 #ifdef DEBUG_RPC_NHBR
         auto t2 = get_timestamp();
-        LOG_E(",%lld\n", t2 - t1);
+        if (shard_id_ == 0) {
+            LOG_E(",%lld\n", t2 - t1);
+        }
 #endif
     }
 
