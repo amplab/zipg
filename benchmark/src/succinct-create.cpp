@@ -128,49 +128,38 @@ void create_succinct_file(std::string graph_file, int sa_sr, int isa_sr, int npa
 
 // Format: randomNodeId.
 void generate_neighbor_queries(
-    std::string node_succinct_dir,
-    std::string edge_succinct_dir,
+    int64_t num_nodes,
     int warmup_size,
     int query_size,
     std::string warmup_query_file,
-    std::string query_file) {
-
-    SuccinctGraph* graph = new SuccinctGraph(
-        node_succinct_dir, edge_succinct_dir);
-
+    std::string query_file)
+{
     std::random_device rd;
     std::mt19937 rng(rd());
-    std::uniform_int_distribution<int64_t> uni(0, graph->num_nodes() - 1);
+    std::uniform_int_distribution<int64_t> uni(0, num_nodes - 1);
 
     std::ofstream warmup_out(warmup_query_file);
     std::ofstream query_out(query_file);
-    for(int64_t i = 0; i < warmup_size; i++) {
+    for (int64_t i = 0; i < warmup_size; i++) {
         warmup_out << uni(rng) << std::endl;
     }
-
-    for(int64_t i = 0; i < query_size; i++) {
+    for (int64_t i = 0; i < query_size; i++) {
         query_out << uni(rng) << std::endl;
     }
-    warmup_out.close();
-    query_out.close();
 }
 
 // Format: randomNodeId,atype.
 void generate_neighbor_atype_queries(
-    std::string node_succinct_dir,
-    std::string edge_succinct_dir,
+    int64_t num_nodes,
     int max_num_atype,
     int warmup_size,
     int query_size,
     std::string warmup_query_file,
-    std::string query_file) {
-
-    SuccinctGraph* graph = new SuccinctGraph(
-        node_succinct_dir, edge_succinct_dir);
-
+    std::string query_file)
+{
     std::random_device rd1, rd2;
     std::mt19937 rng1(rd1()), rng2(rd2());
-    std::uniform_int_distribution<int64_t> uni1(0, graph->num_nodes() - 1);
+    std::uniform_int_distribution<int64_t> uni1(0, num_nodes - 1);
     std::uniform_int_distribution<int64_t> uni2(0, max_num_atype - 1);
 
     std::ofstream warmup_out(warmup_query_file);
@@ -182,8 +171,6 @@ void generate_neighbor_atype_queries(
     for (int64_t i = 0; i < query_size; i++) {
         query_out << uni1(rng1) << "," << uni2(rng2) << std::endl;
     }
-    warmup_out.close();
-    query_out.close();
 }
 
 // Format: attrIdx1<DELIM>attrKey1<DELIM>attrIdx2<DELIM>attrKey2
@@ -378,15 +365,14 @@ int main(int argc, char **argv) {
 
     } else if (type == "neighbor-queries") {
 
-        std::string node_succinct_dir = argv[2];
-        std::string edge_succinct_dir = argv[3];
-        int warmup_size = atoi(argv[4]);
-        int query_size = atoi(argv[5]);
-        std::string warmup_file = argv[6];
-        std::string query_file = argv[7];
-        generate_neighbor_queries(
-            node_succinct_dir, edge_succinct_dir,
-            warmup_size, query_size, warmup_file, query_file);
+        int64_t num_nodes = std::stoll(argv[2]);
+        int warmup_size = atoi(argv[3]);
+        int query_size = atoi(argv[4]);
+        std::string warmup_file = argv[5];
+        std::string query_file = argv[6];
+        generate_neighbor_queries(num_nodes,
+            warmup_size, query_size,
+            warmup_file, query_file);
 
     } else if (type == "neighbor-node-queries") {
 
@@ -405,17 +391,15 @@ int main(int argc, char **argv) {
 
     } else if (type == "neighbor-atype-queries") {
 
-        std::string node_succinct_dir = argv[2];
-        std::string edge_succinct_dir = argv[3];
-        int max_num_atype = std::atoi(argv[4]);
-        int warmup_size = atoi(argv[5]);
-        int query_size = atoi(argv[6]);
-        std::string warmup_file = argv[7];
-        std::string query_file = argv[8];
+        int64_t num_nodes = std::stoll(argv[2]);
+        int max_num_atype = std::atoi(argv[3]);
+        int warmup_size = atoi(argv[4]);
+        int query_size = atoi(argv[5]);
+        std::string warmup_file = argv[6];
+        std::string query_file = argv[7];
 
         generate_neighbor_atype_queries(
-            node_succinct_dir,
-            edge_succinct_dir,
+            num_nodes,
             max_num_atype,
             warmup_size,
             query_size,

@@ -15,8 +15,7 @@ do
     echo creating neighbor queries for ${num_nodes} nodes, warmup ${warmup_neighbor}, measure ${measure_neighbor}
 
     ${BIN_DIR}/create neighbor-queries \
-      ${NODE_FILE} \
-      ${EDGE_FILE} \
+      $(wc -l ${NODE_FILE}) \
       ${warmup_neighbor} \
       ${measure_neighbor} \
       ${QUERY_DIR}/neighbor_warmup_${num_nodes}.txt \
@@ -54,8 +53,7 @@ do
     echo creating neighbor-atype queries, warmup ${warmup_neighbor_node}, measure ${measure_neighbor_node}
 
     ${BIN_DIR}/create neighbor-atype-queries \
-      ${NODE_FILE} \
-      ${EDGE_FILE} \
+      $(wc -l ${NODE_FILE}) \
       ${max_num_atype} \
       ${warmup_neighbor_atype} \
       ${measure_neighbor_atype} \
