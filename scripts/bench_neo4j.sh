@@ -9,7 +9,11 @@ classpath=target/scala-2.10/succinctgraph-assembly-0.1.0-SNAPSHOT.jar
 TOTAL_MEM=249856
 AVAIL_MEM=$(( $TOTAL_MEM - 512 )) # reserve 512m for OS
 
-DATASET=higgs-twitter
+DATASET=higgs-twitter-20attr35each
+DATASET=liveJournal-40attr16each
+
+postfix="-20attr35each"
+postfix=""
 
 for JVM_HEAP in 4096
 do
@@ -29,7 +33,7 @@ do
            ${NEO4J_DIR}/${DATASET} \
            ${QUERY_DIR}/neighbor_warmup_${num_nodes}.txt \
            ${QUERY_DIR}/neighbor_query_${num_nodes}.txt \
-           ${HOME_DIR}/neo4j_${DATASET}_neighbor_latency_jvm${JVM_HEAP}m_pagecache${PC}m.txt \
+           ${HOME_DIR}/neo4j_${DATASET}_neighbor_latency_jvm${JVM_HEAP}m_pagecache${PC}m${postfix}.txt \
            ${neo4j_warmup_neighbor} \
            ${neo4j_measure_neighbor} 5g
 
@@ -39,7 +43,7 @@ do
            ${NEO4J_DIR}/${DATASET} \
            ${QUERY_DIR}/node_warmup_${num_nodes}.txt \
            ${QUERY_DIR}/node_query_${num_nodes}.txt \
-           ${HOME_DIR}/neo4j_${DATASET}_node_latency_jvm${JVM_HEAP}m_pagecache${PC}m.txt \
+           ${HOME_DIR}/neo4j_${DATASET}_node_latency_jvm${JVM_HEAP}m_pagecache${PC}m${postfix}.txt \
            ${neo4j_warmup_node} \
            ${neo4j_measure_node} 5g #\
            #${PC}m
@@ -50,7 +54,7 @@ do
            ${NEO4J_DIR}/${DATASET} \
            ${QUERY_DIR}/node_warmup_${num_nodes}.txt \
            ${QUERY_DIR}/node_query_${num_nodes}.txt \
-           ${HOME_DIR}/neo4j_${DATASET}_node_node_latency.txt \
+           ${HOME_DIR}/neo4j_${DATASET}_node_node_latency_jvm${JVM_HEAP}m_pagecache${PC}m${postfix}.txt \
            ${neo4j_warmup_node} \
            ${neo4j_measure_node} 5g
 
@@ -60,7 +64,7 @@ do
             ${NEO4J_DIR}/${DATASET} \
             ${QUERY_DIR}/neighbor_node_warmup_${num_nodes}.txt \
             ${QUERY_DIR}/neighbor_node_query_${num_nodes}.txt \
-            ${HOME_DIR}/neo4j_${DATASET}_neighbor_node_latency.txt \
+            ${HOME_DIR}/neo4j_${DATASET}_neighbor_node_latency_jvm${JVM_HEAP}m_pagecache${PC}m${postfix}.txt \
             ${neo4j_warmup_neighbor_node} \
             ${neo4j_measure_neighbor_node} 5g
 
@@ -71,7 +75,7 @@ do
             ${NEO4J_DIR}/${DATASET} \
             ${QUERY_DIR}/neighborAtype_warmup_${num_nodes}.txt \
             ${QUERY_DIR}/neighborAtype_query_${num_nodes}.txt \
-            ${HOME_DIR}/neo4j_${DATASET}_neighborAtype_latency.txt \
+            ${HOME_DIR}/neo4j_${DATASET}_neighborAtype_latency_jvm${JVM_HEAP}m_pagecache${PC}m${postfix}.txt \
             ${neo4j_warmup_neighbor_atype} \
             ${neo4j_measure_neighbor_atype}
 

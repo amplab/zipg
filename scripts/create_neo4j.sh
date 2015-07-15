@@ -3,11 +3,16 @@ set -e
 
 SCRIPT_DIR=$(dirname $0)
 source ${SCRIPT_DIR}/config.sh
+#### At least dependent on these configs (config.sh):
+####    attribtues
+####    NODE_FILE
+####    ASSOC_FILE
+####    NEO4J_DELIM
+
+#DATASET="higgs-twitter-20attr35each"
+DATASET="liveJournal-40attr16each"
 
 mkdir -p ${NEO4J_DIR}
-
-DATASET="higgs-twitter"
-
 if [ -d ${NEO4J_DIR}/${DATASET} ]
 then
     echo "Warning: neo4j database ${NEO4J_DIR}/${DATASET} exists, import will \
@@ -16,17 +21,17 @@ re-run this script"
     exit
 fi
 
-echo "Creating neo4j-import csv for ${NODE_FILE} and ${ASSOC_FILE}"
-
+#echo "Creating neo4j-import csv for ${NODE_FILE} and ${ASSOC_FILE}"
+#
 node_header=":ID"
 for (( i = 0; i < ${attributes}; i++ ))
 do
     node_header+="${NEO4J_DELIM}name${i}"
 done
 echo $node_header > ${CSV_DIR}/nodes-header.csv
-
-# NOTE: encode atype as neo4j's primitive :TYPE (string);
-#       also, timestamp is marked as LONG, so supposedly better than strings
+#
+## NOTE: encode atype as neo4j's primitive :TYPE (string);
+##       also, timestamp is marked as LONG, so supposedly better than strings
 echo \
     ":START_ID${NEO4J_DELIM}:END_ID${NEO4J_DELIM}:TYPE${NEO4J_DELIM}timestamp:LONG${NEO4J_DELIM}attr" \
     >${CSV_DIR}/edges-header.csv

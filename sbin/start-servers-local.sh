@@ -87,8 +87,17 @@ for i in `seq 0 $limit`; do
 	port=$(($QUERY_SERVER_PORT + $i))
 	shard_id=$(($i * $num_hosts + local_host_id)) # balance across physical nodes
     padded_shard_id=$(printf "%0*d" ${padWidth} ${shard_id})
-    node_split="${sbin}/${node_file_raw}-part${padded_shard_id}of${paddedTotalNumShards}"
-    edge_split="${sbin}/${edge_file_raw}-part${padded_shard_id}of${paddedTotalNumShards}"
+
+    if [[ "${node_file_raw}" = /* ]]; then
+      node_split="${node_file_raw}-part${padded_shard_id}of${paddedTotalNumShards}"
+    else
+      node_split="${sbin}/${node_file_raw}-part${padded_shard_id}of${paddedTotalNumShards}"
+    fi
+    if [[ "${edge_file_raw}" = /* ]]; then
+      edge_split="${edge_file_raw}-part${padded_shard_id}of${paddedTotalNumShards}"
+    else
+      edge_split="${sbin}/${edge_file_raw}-part${padded_shard_id}of${paddedTotalNumShards}"
+    fi
 
     # Encoded succinct dirs
     # Hacky: note this uses internal impl details about namings of encoded tables
