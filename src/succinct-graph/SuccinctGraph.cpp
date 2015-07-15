@@ -28,10 +28,11 @@ constexpr char METADATA_DELIM = '\x06'; // delim after all these header metadata
 // Used in node table layout only.  Prefer the \x** weird characters first.
 // *****Note that it is important the delim is not in DELIMITERS.*****
 constexpr char NODE_TABLE_HEADER_DELIM = '\x1F';
-const std::string SuccinctGraph::DELIMITERS =
-    "\x02\x03\x04\x05\x06\x07\x08\x0C\x0D\x0E\x0F\x10\x11\x12\x13\x14\x15"
-    "\x16\x17\x18\x19\x1A\x1B\x1C\x1D\x1E"
-    "<>()#$%&*+[]{}^-;? \"',./:=@|\\_~";
+const std::vector<unsigned char> SuccinctGraph::DELIMITERS = {
+    '\x02', '\x03', '\x04', '\x05', '\x06', '\x07', '\x08', '\x0C', '\x0D',
+    '\x0E', '\x0F', '\x10', '\x11', '\x12', '\x13', '\x14', '\x15', '\x16',
+    '\x17', '\x18', '\x19', '\x1A', '\x1B', '\x1C', '\x1D', '\x1E'
+};
 
 
 // TODO: lots of code duplication among the TAO-like functions
@@ -113,12 +114,13 @@ void SuccinctGraph::construct_node_table(std::string node_file) {
         attr_lengths.clear();
         int distance = 0;
 
-        std::getline(ss, token, DELIMITERS[0]); // skip first delim
+        std::getline(ss, token, static_cast<char>(DELIMITERS[0])); // skip first delim
 
         // Need to reach DELIMITERS[MAX] as well
         for (int i = 1; i <= MAX_NUM_NODE_ATTRS; ++i) {
             // assumes consecutive use of the delimiters
-            if (!std::getline(ss, token, DELIMITERS[i])) break;
+            if (!std::getline(ss, token, static_cast<char>(DELIMITERS[i])))
+                break;
             attr_lengths.push_back(token.length());
             // account for one delimiter after each len here
             distance += num_digits(token.length()) + 1;
@@ -830,10 +832,10 @@ void SuccinctGraph::get_attribute(
     uint64_t suf_arr_idx = -1;
 
     this->node_table->extract_until(
-        result, suf_arr_idx, node_id, DELIMITERS[attr]);
+        result, suf_arr_idx, node_id, static_cast<char>(DELIMITERS[attr]));
 
     this->node_table->extract_until(
-        result, suf_arr_idx, node_id, DELIMITERS[attr + 1]);
+        result, suf_arr_idx, node_id, static_cast<char>(DELIMITERS[attr + 1]));
 }
 
 inline void SuccinctGraph::extract_neighbors(
@@ -936,9 +938,9 @@ void SuccinctGraph::get_neighbors(std::vector<int64_t>& result, int64_t node) {
 
 inline std::string mk_node_attr_key(int attr, const std::string& query_key) {
     assert(attr < SuccinctGraph::MAX_NUM_NODE_ATTRS);
-    return SuccinctGraph::DELIMITERS[attr] +
+    return static_cast<char>(SuccinctGraph::DELIMITERS[attr]) +
         query_key +
-        SuccinctGraph::DELIMITERS[attr + 1];
+        static_cast<char>(SuccinctGraph::DELIMITERS[attr + 1]);
 }
 
 void SuccinctGraph::filter_nodes(
@@ -949,7 +951,7 @@ void SuccinctGraph::filter_nodes(
 {
     assert(attr < SuccinctGraph::MAX_NUM_NODE_ATTRS);
     result.clear();
-    const char next_attr_delim = DELIMITERS[attr + 1];
+    const char next_attr_delim = static_cast<char>(DELIMITERS[attr + 1]);
     std::string tmp;
 
     for (int64_t node_id : node_ids) {

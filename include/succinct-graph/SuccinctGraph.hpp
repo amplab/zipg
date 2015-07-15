@@ -185,7 +185,7 @@ public:
     // TODO: consider moving these to GraphFormatter / Serde?
     // Internal node attributes delimiters.  Assumes any char of them doesn't
     // appear in the actual node attributes passed-in by user input.
-    const static std::string DELIMITERS;
+    const static std::vector<unsigned char> DELIMITERS;
 
     // Hard assumption: support up to this many # of node attributes.  The
     // character in DELIMITERS indexed by this is used as a special
