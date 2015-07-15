@@ -60,9 +60,9 @@ for host in `echo "$HOSTLIST"|sed  "s/#.*$//;/^$/d"`; do
   fi
   # hack: wait some time after launching certain shards
   # useful for expensive construction
-  if [[ ("$SUCCINCT_HOST_SLEEP" != "") && ("$i + 1" -eq $NUM_SHARDS_BATCH) ]]; then
-    echo Sleeping for "${SUCCINCT_HOST_SLEEP}" seconds since "$i + 1" shards launched
-    sleep $SUCCINCT_HOST_SLEEP
+  if [[ ("$SHARDS_BATCH_SLEEP" != "") && ("$i + 1" -eq $NUM_SHARDS_BATCH) ]]; then
+    echo Sleeping for "${SHARDS_BATCH_SLEEP}" seconds since "$i + 1" shards launched
+    sleep $SHARDS_BATCH_SLEEP
   fi
   i=$(( $i + 1 ))
 done

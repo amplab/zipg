@@ -5,5 +5,5 @@
 export SHARDS_PER_SERVER=3
 export TOTAL_NUM_SHARDS=3
 
-# export SUCCINCT_HOST_SLEEP=120 # seconds
-# export NUM_SHARDS_BATCH=16
+export SHARDS_BATCH_SLEEP=120 # seconds
+export NUM_SHARDS_BATCH=16
