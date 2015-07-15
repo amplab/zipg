@@ -3,6 +3,7 @@
 #include <fstream>
 #include <unistd.h>
 #include <random>
+#include <thread>
 #include <vector>
 #include <list>
 
@@ -419,36 +420,41 @@ int main(int argc, char **argv) {
             warmup_file,
             query_file);
 
-    } else if (type == "higgs-format") {
+    } else if (type == "format-input") {
 
-        std::string in_file = argv[2];
-        std::string attr_file = argv[3]; // TPC-H
-        std::string assoc_out_file = argv[4];
-        std::string node_out_file = argv[5];
+        std::string edge_list_in(argv[2]);
+        std::string attr_file(argv[3]); // TPC-H
+        std::string assoc_out_file(argv[4]);
+        std::string node_out_file(argv[5]);
+        int64_t num_nodes = std::stol(argv[6]);
+        int num_node_attr = std::stoi(argv[7]);
+        int node_attr_freq = std::stoi(argv[8]);
+        int node_attr_size_each = std::stoi(argv[9]);
 
-//        GraphFormatter::format_higgs_twitter_dataset(
-//            in_file,
-//            attr_file,
-//            assoc_out_file,
-//            128,
-//            false,
-//            5
-//        );
+        std::thread edge_table_thread(
+            &GraphFormatter::create_edge_table,
+            edge_list_in,
+            attr_file,
+            assoc_out_file,
+            128,
+            5,
+            false);
 
         // 456626 + 1, since unclear if original data is 0-indexed
-        int num_nodes = 456627;
-        int num_attr = 2;
-        int freq = 1000;
-        int len = 350; // so total node attr = len * num_attr
+//        int num_nodes = 456627;
+//        int num_attr = 2;
+//        int freq = 1000;
+//        int len = 350; // so total node attr = len * num_attr
 
         GraphFormatter::create_node_table(
             node_out_file,
             attr_file,
             num_nodes,
-            num_attr,
-            freq,
-            len
-        );
+            num_node_attr,
+            node_attr_freq,
+            node_attr_size_each);
+
+        edge_table_thread.join();
 
     } else if (type == "graph-construct") {
 

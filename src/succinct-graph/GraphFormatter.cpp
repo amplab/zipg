@@ -155,14 +155,14 @@ void GraphFormatter::create_node_table(
     s_out.close();
 }
 
-void GraphFormatter::format_higgs_twitter_dataset(
+void GraphFormatter::create_edge_table(
     const std::string& file,
     const std::string& attr_file,
     const std::string& out_file,
     int bytes_per_attr,
-    bool has_atype_timestamp,
-    int num_atype) {
-
+    int num_atype,
+    bool has_atype_timestamp)
+{
     std::ifstream in_stream(file);
     std::ifstream attr_in_stream(attr_file);
     std::string line, token;

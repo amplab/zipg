@@ -39,18 +39,18 @@ public:
     // If `has_atype_timestamp` is false, then each line is "srcId dstId", and
     // we generate atype and timestamp uniformly at random from some range.
     // Otherwise, each line is of the form "176481 2417 1341102251 MT" (map
-    // MT->0, RE->1, RT->2 as atypes).
+    // MT->0, RE->1, RT->2 as atypes), which is Higgs-Twitter specific.
     //
-    // Edge attributes taken from `attr_file`, with truncation/padding so that
-    // each attribute has specified length.  The output edge file can be fed
-    // into SuccinctGraph::construct().
-    static void format_higgs_twitter_dataset(
+    // Edge attributes are taken from `attr_file`, with truncation/padding so
+    // that each attribute has specified length.  The output edge file can be
+    // fed into SuccinctGraph::construct().
+    static void create_edge_table(
         const std::string& file,
         const std::string& attr_file,
         const std::string& out_file,
         int bytes_per_attr,
-        bool has_atype_timestamp = true,
-        int num_atype = 5);
+        int num_atype = 5,
+        bool has_atype_timestamp = false);
 
     // Applies special delimiter logic: prepend each attribute with a unique
     // delimiter that doesn't appear in the input; concatenates these into a
