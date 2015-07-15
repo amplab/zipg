@@ -432,6 +432,8 @@ int main(int argc, char **argv) {
         int num_node_attr = std::stoi(argv[7]);
         int node_attr_freq = std::stoi(argv[8]);
         int node_attr_size_each = std::stoi(argv[9]);
+        char edge_inner_delim = std::string(argv[10]).at(0);
+        char edge_end_delim = std::string(argv[11]).at(0);
 
         std::thread edge_table_thread(
             &GraphFormatter::create_edge_table,
@@ -439,8 +441,9 @@ int main(int argc, char **argv) {
             attr_file,
             assoc_out_file,
             128,
-            5,
-            false);
+            edge_inner_delim,
+            edge_end_delim,
+            5);
 
         // 456626 + 1, since unclear if original data is 0-indexed
 //        int num_nodes = 456627;

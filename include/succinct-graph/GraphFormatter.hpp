@@ -36,13 +36,16 @@ public:
         int freq,
         int len);
 
-    // If `has_atype_timestamp` is false, then each line is "srcId dstId", and
-    // we generate atype and timestamp uniformly at random from some range.
-    // Otherwise, each line is of the form "176481 2417 1341102251 MT" (map
-    // MT->0, RE->1, RT->2 as atypes), which is Higgs-Twitter specific.
+    // Each input line is of the form
+    //     "srcId<edge_inner_delim>dstId<edge_end_delim>",
+    // where the inner delimiter defaults to a whitespace and the end delimiter
+    // defaults to an end-of-line.
+    //
+    // For each edge, we generate atype and timestamp uniformly at
+    // random from some range.
     //
     // The input edge list file can contain comment lines that start with '#',
-    // so that these lines will be ignored.
+    // all of which will be ignored.
     //
     // Edge attributes are taken from `attr_file`, with truncation/padding so
     // that each attribute has specified length.  The output edge file can be
@@ -52,8 +55,9 @@ public:
         const std::string& attr_file,
         const std::string& out_file,
         int bytes_per_attr,
-        int num_atype = 5,
-        bool has_atype_timestamp = false);
+        char edge_inner_delim = ' ',
+        char edge_end_delim = '\n',
+        int num_atype = 5);
 
     // Applies special delimiter logic: prepend each attribute with a unique
     // delimiter that doesn't appear in the input; concatenates these into a

@@ -162,8 +162,9 @@ void GraphFormatter::create_edge_table(
     const std::string& attr_file,
     const std::string& out_file,
     int bytes_per_attr,
-    int num_atype,
-    bool has_atype_timestamp)
+    char edge_inner_delim,
+    char edge_end_delim,
+    int num_atype)
 {
     std::ifstream in_stream(file);
     std::ifstream attr_in_stream(attr_file);
@@ -178,7 +179,7 @@ void GraphFormatter::create_edge_table(
     std::random_device rd1, rd2;
     std::mt19937 rng1(rd1()), rng2(rd2());
     std::uniform_int_distribution<int64_t> atype_dis(0, num_atype);
-    std::uniform_int_distribution<int64_t> time_dis(
+    std::uniform_int_distribution<int> time_dis(
         0, std::numeric_limits<int>::max());
 
     while (std::getline(in_stream, line)) {
@@ -187,32 +188,19 @@ void GraphFormatter::create_edge_table(
         }
 
         std::stringstream ss(line);
-        int token_idx = 0;
-        while (std::getline(ss, token, ' ')) {
-            ++token_idx;
-            if (token_idx == 1) src_id = std::stoll(token);
-            else if (token_idx == 2) dst_id = std::stoll(token);
-            else if (token_idx == 3) time = std::stoll(token);
-            else if (token_idx == 4) {
-                if (token == "MT") atype = 0;
-                else if (token == "RE") atype = 1;
-                else if (token == "RT") atype = 2;
-                else assert(0);
-            }
-            token.clear();
-            if (!has_atype_timestamp && token_idx == 2) {
-                // Generate atype and timestamp
-                atype = atype_dis(rng1);
-                // C.f. LinkBench
-                // Choose something from now back to about 50 days
-                // return (System.currentTimeMillis() - Integer.MAX_VALUE - 1L)
-                //                                        + rng.nextInt();
-                time = time_millis() - std::numeric_limits<int>::max()
-                    - 1 + time_dis(rng2);
-                break;
-            }
-            if (has_atype_timestamp && token_idx == 4) break;
-        }
+        std::getline(ss, token, edge_inner_delim);
+        src_id = std::stoll(token);
+        std::getline(ss, token, edge_end_delim);
+        dst_id = std::stoll(token);
+
+        // Generate atype and timestamp
+        atype = atype_dis(rng1);
+        // C.f. LinkBench
+        // Choose something from now back to about 50 days
+        // return (System.currentTimeMillis() - Integer.MAX_VALUE - 1L)
+        //                                        + rng.nextInt();
+        time = time_millis() - std::numeric_limits<int>::max()
+            - 1 + time_dis(rng2);
 
         if (attr_in_stream.eof()) {
             // if attrs exhausted, recycle
