@@ -185,12 +185,12 @@ public:
     // TODO: consider moving these to GraphFormatter / Serde?
     // Internal node attributes delimiters.  Assumes any char of them doesn't
     // appear in the actual node attributes passed-in by user input.
-    const static std::string DELIMITERS;
+    const static std::vector<unsigned char> DELIMITERS;
 
     // Hard assumption: support up to this many # of node attributes.  The
     // character in DELIMITERS indexed by this is used as a special
     // end-of-record delim  appended to every value in node table.
-    constexpr static int MAX_NUM_NODE_ATTRS = 25;
+    constexpr static int MAX_NUM_NODE_ATTRS = 40;
 
     // Recorded inside construct().
     std::string node_file_pathname, edge_file_pathname;

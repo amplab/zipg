@@ -1,5 +1,4 @@
 #include "succinct-graph/GraphFormatter.hpp"
-#include "succinct-graph/SuccinctGraph.hpp"
 
 #include <cassert>
 #include <fstream>
@@ -7,6 +6,9 @@
 #include <vector>
 #include <random>
 #include <sys/time.h>
+
+#include "succinct-graph/SuccinctGraph.hpp"
+#include "succinct-graph/utils.h"
 
 int64_t time_millis() {
     struct timeval now;
@@ -57,9 +59,9 @@ void GraphFormatter::format_node_file(const std::string& node_file) {
         line = ',' + line; // prepend each data element with a comma
         int pos = -1;
         // replace commas, e.g. ",attr1,attr2,attr3" -> "∆attr1$attr2*att3"
-        for (char delim: SuccinctGraph::DELIMITERS) {
+        for (unsigned char delim: SuccinctGraph::DELIMITERS) {
             pos = line.find(',', pos + 1);
-            line[pos] = delim;
+            line[pos] = static_cast<char>(delim);
         }
         assert(line.find(',', pos + 1) == std::string::npos); // no more attr
         node_attrs.push_back(line);
@@ -146,8 +148,8 @@ void GraphFormatter::create_node_table(
     for (int i = 0; i < num_nodes; i++) {
         node_attrs.clear();
         for (int attr = 0; attr < num_attr; attr++) {
-            assert(attributes[attr][i].find(
-                SuccinctGraph::DELIMITERS[attr]) == std::string::npos); // weak
+            assert(attributes[attr][i].find(static_cast<char>(
+                SuccinctGraph::DELIMITERS[attr])) == std::string::npos); // weak
             node_attrs.push_back(attributes[attr][i]);
         }
         s_out << GraphFormatter::format_node_attrs_str({ node_attrs });
@@ -253,14 +255,15 @@ std::string GraphFormatter::format_node_attrs_str(
         assert(attrs.size() < SuccinctGraph::MAX_NUM_NODE_ATTRS);
         formatted.clear();
         for (int i = 0; i < attrs.size(); ++i) {
-            assert(attrs[i].find(SuccinctGraph::DELIMITERS[i])
-                == std::string::npos); // weak check
-            formatted += SuccinctGraph::DELIMITERS[i] + attrs[i];
+            assert(attrs[i].find(static_cast<char>(
+                SuccinctGraph::DELIMITERS[i])) == std::string::npos); // weak check
+            formatted += static_cast<char>(SuccinctGraph::DELIMITERS[i]) + attrs[i];
         }
         // append delims for empty attr slots, AND end-of-record delim
-        formatted += SuccinctGraph::DELIMITERS.substr(
-            attrs.size(), SuccinctGraph::MAX_NUM_NODE_ATTRS - attrs.size() + 1);
-
+        for (int j = attrs.size(); j <= SuccinctGraph::MAX_NUM_NODE_ATTRS; ++j)
+        {
+            formatted += static_cast<char>(SuccinctGraph::DELIMITERS[j]);
+        }
         result += formatted + '\n';
     }
     return result;
@@ -279,8 +282,8 @@ void GraphFormatter::format_neo4j_node_from_node_file(
     while (std::getline(in_stream, line)) {
         out_stream << node_id;
         // parse the delim-ed node attrs, replace all delims with neo4j_delim
-        for (char node_attr_delim : SuccinctGraph::DELIMITERS) {
-            int pos = line.find(node_attr_delim);
+        for (unsigned char node_attr_delim : SuccinctGraph::DELIMITERS) {
+            int pos = line.find(static_cast<char>(node_attr_delim));
             // NOTE: hacky! This assumes input uses the first few delims
             // consecutively only.
             if (pos == std::string::npos) break;
