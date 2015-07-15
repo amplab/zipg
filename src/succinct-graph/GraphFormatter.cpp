@@ -214,7 +214,11 @@ void GraphFormatter::create_edge_table(
             if (has_atype_timestamp && token_idx == 4) break;
         }
 
-        assert(!attr_in_stream.eof());
+        if (attr_in_stream.eof()) {
+            // if attrs exhausted, recycle
+            attr_in_stream.close();
+            attr_in_stream.open(attr_file);
+        }
         std::string attr;
         std::getline(attr_in_stream, attr);
         if (attr.length() > bytes_per_attr) {
