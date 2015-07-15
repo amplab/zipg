@@ -25,10 +25,14 @@ constexpr char DST_ID_WIDTH_DELIM = '\x04'; // delim right after atype
 constexpr char DATA_WIDTH_DELIM = '\x05'; // delim right before data width
 constexpr char METADATA_DELIM = '\x06'; // delim after all these header metadata
 
-// Used in node table layout only.  Prefer the \x** weird characters first.
+// Used in node table layout only.
 // *****Note that it is important the delim is not in DELIMITERS.*****
 constexpr char NODE_TABLE_HEADER_DELIM = '\x1F';
 const std::vector<unsigned char> SuccinctGraph::DELIMITERS = {
+    // non-ASCII delims (ord >= 128)
+    128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142,
+    143, 144, 145, 146, 147,
+    // ASCII delims that are not alphanumeric (unlikely to be used), ord < 128
     '\x02', '\x03', '\x04', '\x05', '\x06', '\x07', '\x08', '\x0C', '\x0D',
     '\x0E', '\x0F', '\x10', '\x11', '\x12', '\x13', '\x14', '\x15', '\x16',
     '\x17', '\x18', '\x19', '\x1A', '\x1B', '\x1C', '\x1D', '\x1E'

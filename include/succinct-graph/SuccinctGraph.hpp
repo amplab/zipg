@@ -190,7 +190,7 @@ public:
     // Hard assumption: support up to this many # of node attributes.  The
     // character in DELIMITERS indexed by this is used as a special
     // end-of-record delim  appended to every value in node table.
-    constexpr static int MAX_NUM_NODE_ATTRS = 25;
+    constexpr static int MAX_NUM_NODE_ATTRS = 45;
 
     // Recorded inside construct().
     std::string node_file_pathname, edge_file_pathname;
