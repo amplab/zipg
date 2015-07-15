@@ -3,10 +3,10 @@ SCRIPT_DIR=$(dirname $0)
 source ${SCRIPT_DIR}/config.sh
 mkdir -p ${QUERY_DIR}
 
-#neighbor=T
 #neighborAtype=T
-node=T
-#neighborNode=T
+#node=T
+#neighbor=T
+neighborNode=T
 
 for num_nodes in ${nodes[@]}
 do
@@ -15,7 +15,7 @@ do
     echo creating neighbor queries for ${num_nodes} nodes, warmup ${warmup_neighbor}, measure ${measure_neighbor}
 
     ${BIN_DIR}/create neighbor-queries \
-      $(wc -l ${NODE_FILE}) \
+      $(wc -l ${NODE_FILE} | cut -d' ' -f 1) \
       ${warmup_neighbor} \
       ${measure_neighbor} \
       ${QUERY_DIR}/neighbor_warmup_${num_nodes}.txt \
@@ -48,12 +48,12 @@ do
  #     ${QUERY_DIR}/neighbor_node_query_${num_nodes}.txt
 
     # if noLoad, queries can have empty results
-     ${BIN_DIR}/create neighbor-node-queries-noLoad \
+    ${BIN_DIR}/create neighbor-node-queries-noLoad \
       ${NODE_FILE} \
-      ${warmup_node} \
-      ${measure_node} \
-      ${QUERY_DIR}/node_warmup_${num_nodes}.txt \
-      ${QUERY_DIR}/node_query_${num_nodes}.txt \
+      ${warmup_neighbor_node} \
+      ${measure_neighbor_node} \
+      ${QUERY_DIR}/neighbor_node_warmup_${num_nodes}.txt \
+      ${QUERY_DIR}/neighbor_node_query_${num_nodes}.txt \
       ${attributes} \
       ${IS_NODE_FILE_CSV}
 
@@ -64,7 +64,7 @@ do
 
     # queries can have empty results
     ${BIN_DIR}/create neighbor-atype-queries \
-      $(wc -l ${NODE_FILE}) \
+      $(wc -l ${NODE_FILE} | cut -d' ' -f 1) \
       ${max_num_atype} \
       ${warmup_neighbor_atype} \
       ${measure_neighbor_atype} \
