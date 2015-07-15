@@ -83,7 +83,7 @@ void GraphFormatter::create_random_node_table(
     int freq,
     int len) {
 
-    assert(num_attr < SuccinctGraph::MAX_NUM_NODE_ATTRS);
+    assert(num_attr <= SuccinctGraph::MAX_NUM_NODE_ATTRS);
 
     std::ofstream s_out(out_file);
     std::vector<std::vector<std::string>> attributes;
@@ -109,7 +109,7 @@ void GraphFormatter::create_node_table(
     int freq,
     int len) {
 
-    assert(num_attr < SuccinctGraph::MAX_NUM_NODE_ATTRS);
+    assert(num_attr <= SuccinctGraph::MAX_NUM_NODE_ATTRS);
 
     std::ifstream attr_in_stream(attr_file);
     std::ofstream s_out(out_file);
@@ -252,7 +252,7 @@ std::string GraphFormatter::format_node_attrs_str(
 
     std::string result, formatted;
     for (auto attrs : node_attrs) {
-        assert(attrs.size() < SuccinctGraph::MAX_NUM_NODE_ATTRS);
+        assert(attrs.size() <= SuccinctGraph::MAX_NUM_NODE_ATTRS);
         formatted.clear();
         for (int i = 0; i < attrs.size(); ++i) {
             assert(attrs[i].find(static_cast<char>(
