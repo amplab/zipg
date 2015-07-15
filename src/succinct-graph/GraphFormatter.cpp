@@ -180,6 +180,10 @@ void GraphFormatter::create_edge_table(
         0, std::numeric_limits<int>::max());
 
     while (std::getline(in_stream, line)) {
+        if (line[0] == '#') {
+            continue;
+        }
+
         std::stringstream ss(line);
         int token_idx = 0;
         while (std::getline(ss, token, ' ')) {
