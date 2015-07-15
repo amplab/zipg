@@ -38,20 +38,31 @@ do
   if [[ -n "$neighborNode" ]]; then
     echo creating neighbor-node queries for ${num_nodes} nodes, warmup ${warmup_neighbor_node}, measure ${measure_neighbor_node}
 
-    ${BIN_DIR}/create neighbor-node-queries \
+ #   ${BIN_DIR}/create neighbor-node-queries \
+ #     ${NODE_FILE} \
+ #     ${EDGE_FILE} \
+ #     ${attributes} \
+ #     ${warmup_neighbor_node} \
+ #     ${measure_neighbor_node} \
+ #     ${QUERY_DIR}/neighbor_node_warmup_${num_nodes}.txt \
+ #     ${QUERY_DIR}/neighbor_node_query_${num_nodes}.txt
+
+    # if noLoad, queries can have empty results
+     ${BIN_DIR}/create neighbor-node-queries-noLoad \
       ${NODE_FILE} \
-      ${EDGE_FILE} \
-      ${attribute_length} \
+      ${warmup_node} \
+      ${measure_node} \
+      ${QUERY_DIR}/node_warmup_${num_nodes}.txt \
+      ${QUERY_DIR}/node_query_${num_nodes}.txt \
       ${attributes} \
-      ${warmup_neighbor_node} \
-      ${measure_neighbor_node} \
-      ${QUERY_DIR}/neighbor_node_warmup_${num_nodes}.txt \
-      ${QUERY_DIR}/neighbor_node_query_${num_nodes}.txt
-  fi
+      ${IS_NODE_FILE_CSV}
+
+ fi
 
   if [[ -n "$neighborAtype" ]]; then
     echo creating neighbor-atype queries, warmup ${warmup_neighbor_node}, measure ${measure_neighbor_node}
 
+    # queries can have empty results
     ${BIN_DIR}/create neighbor-atype-queries \
       $(wc -l ${NODE_FILE}) \
       ${max_num_atype} \
