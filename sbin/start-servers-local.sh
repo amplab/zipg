@@ -130,4 +130,11 @@ fi
       $edgeInput \
       2>"$SUCCINCT_LOG_PATH/server_${i}.log" &
 
+    # hack: wait some time after launching certain shards
+    # useful for expensive construction
+    if [[ ("$SHARDS_BATCH_SLEEP" != "") && ("$i + 1" -eq $NUM_SHARDS_BATCH) ]]; then
+      echo Sleeping for "${SHARDS_BATCH_SLEEP}" seconds since "$i + 1" shards launched
+      sleep $SHARDS_BATCH_SLEEP
+    fi
+
 done

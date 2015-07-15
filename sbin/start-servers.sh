@@ -58,11 +58,5 @@ for host in `echo "$HOSTLIST"|sed  "s/#.*$//;/^$/d"`; do
     ssh $SUCCINCT_SSH_OPTS "$host" "$sbin/start-servers-local.sh" $SHARDS_PER_SERVER $num_hosts $i $node_file_raw $edge_file_raw $3 $4 $5 \
       2>&1 | sed "s/^/$host: /" &
   fi
-  # hack: wait some time after launching certain shards
-  # useful for expensive construction
-  if [[ ("$SHARDS_BATCH_SLEEP" != "") && ("$i + 1" -eq $NUM_SHARDS_BATCH) ]]; then
-    echo Sleeping for "${SHARDS_BATCH_SLEEP}" seconds since "$i + 1" shards launched
-    sleep $SHARDS_BATCH_SLEEP
-  fi
   i=$(( $i + 1 ))
 done
