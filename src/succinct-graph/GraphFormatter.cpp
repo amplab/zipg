@@ -190,9 +190,9 @@ void GraphFormatter::create_edge_table(
         int token_idx = 0;
         while (std::getline(ss, token, ' ')) {
             ++token_idx;
-            if (token_idx == 1) src_id = std::stol(token);
-            else if (token_idx == 2) dst_id = std::stol(token);
-            else if (token_idx == 3) time = std::stol(token);
+            if (token_idx == 1) src_id = std::stoll(token);
+            else if (token_idx == 2) dst_id = std::stoll(token);
+            else if (token_idx == 3) time = std::stoll(token);
             else if (token_idx == 4) {
                 if (token == "MT") atype = 0;
                 else if (token == "RE") atype = 1;
