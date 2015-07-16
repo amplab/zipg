@@ -15,7 +15,14 @@ DATASET=liveJournal-40attr16each
 postfix="-20attr35each"
 postfix=""
 
-for JVM_HEAP in 4096
+benchNeighbor=T
+benchNeighborAtype=T
+#benchNeighborNodeIndexed=T
+benchNeighborNode=T
+benchNode=T
+benchNodeNode=T
+
+for JVM_HEAP in 13312
 do
   # 1st is default neo4j setting; 2nd is "use more"
   for PC in Auto #`echo "0.75 * ($TOTAL_MEM - $JVM_HEAP)" | bc | awk '{printf("%d", $1)}'` #`echo "$AVAIL_MEM - $JVM_HEAP" | bc | awk '{printf("%d", $1)}'`
@@ -27,6 +34,7 @@ do
     do
         echo "Benching nodes: ${num_nodes}"
 
+    if [[ -n "$benchNeighbor" ]]; then
         sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
         java -server -XX:+UseConcMarkSweepGC -Xmx${JVM_HEAP}m -cp ${classpath} \
            edu.berkeley.cs.succinctgraph.neo4jbench.BenchNeighbor neighbor-latency \
@@ -36,7 +44,9 @@ do
            ${HOME_DIR}/neo4j_${DATASET}_neighbor_latency_jvm${JVM_HEAP}m_pagecache${PC}m${postfix}.txt \
            ${neo4j_warmup_neighbor} \
            ${neo4j_measure_neighbor} 5g
+      fi
 
+    if [[ -n "$benchNode" ]]; then
         sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
         java -server -XX:+UseConcMarkSweepGC -Xmx${JVM_HEAP}m -cp ${classpath} \
            edu.berkeley.cs.succinctgraph.neo4jbench.BenchNode node-latency \
@@ -47,7 +57,9 @@ do
            ${neo4j_warmup_node} \
            ${neo4j_measure_node} 5g #\
            #${PC}m
+      fi
 
+    if [[ -n "$benchNodeNode" ]]; then
         sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
         java -server -XX:+UseConcMarkSweepGC -Xmx${JVM_HEAP}m -cp ${classpath} \
            edu.berkeley.cs.succinctgraph.neo4jbench.BenchNode node-node-latency \
@@ -57,7 +69,9 @@ do
            ${HOME_DIR}/neo4j_${DATASET}_node_node_latency_jvm${JVM_HEAP}m_pagecache${PC}m${postfix}.txt \
            ${neo4j_warmup_node} \
            ${neo4j_measure_node} 5g
+      fi
 
+    if [[ -n "$benchNeighborNode" ]]; then
         sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
         java -server -XX:+UseConcMarkSweepGC -Xmx${JVM_HEAP}m -cp ${classpath} \
             edu.berkeley.cs.succinctgraph.neo4jbench.NeighborNodeBench latency \
@@ -67,7 +81,9 @@ do
             ${HOME_DIR}/neo4j_${DATASET}_neighbor_node_latency_jvm${JVM_HEAP}m_pagecache${PC}m${postfix}.txt \
             ${neo4j_warmup_neighbor_node} \
             ${neo4j_measure_neighbor_node} 5g
+      fi
 
+    if [[ -n "$benchNeighborAtype" ]]; then
         sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
         java -server -XX:+UseConcMarkSweepGC -Xmx${JVM_HEAP}m -cp ${classpath} \
             edu.berkeley.cs.succinctgraph.neo4jbench.BenchNeighborAtype \
@@ -78,16 +94,19 @@ do
             ${HOME_DIR}/neo4j_${DATASET}_neighborAtype_latency_jvm${JVM_HEAP}m_pagecache${PC}m${postfix}.txt \
             ${neo4j_warmup_neighbor_atype} \
             ${neo4j_measure_neighbor_atype}
+      fi
 
-        # sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
-        # java -server -XX:+UseConcMarkSweepGC -Xmx${JVM_HEAP}m -cp ${classpath} \
-            # edu.berkeley.cs.succinctgraph.neo4jbench.NeighborNodeBench latency-index \
-            # ${NEO4J_DIR}/${DATASET} \
-            # ${QUERY_DIR}/neighbor_node_warmup_${DATASET}.txt \
-            # ${QUERY_DIR}/neighbor_node_query_${DATASET}.txt \
-            # ${HOME_DIR}/neo4j_${DATASET}_neighbor_node_latency_index.txt \
-            # ${neo4j_warmup_neighbor_node} \
-            # ${neo4j_measure_neighbor_node}
+      if [[ -n "$benchNeighborNodeIndexed" ]]; then
+        sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+        java -server -XX:+UseConcMarkSweepGC -Xmx${JVM_HEAP}m -cp ${classpath} \
+            edu.berkeley.cs.succinctgraph.neo4jbench.NeighborNodeBench latency-index \
+            ${NEO4J_DIR}/${DATASET} \
+            ${QUERY_DIR}/neighbor_node_warmup_${num_nodes}.txt \
+            ${QUERY_DIR}/neighbor_node_query_${num_nodes}.txt \
+            ${HOME_DIR}/neo4j_${DATASET}_neighbor_node_latency_index.txt \
+            ${neo4j_warmup_neighbor_node} \
+            ${neo4j_measure_neighbor_node}
+      fi
 
 
 

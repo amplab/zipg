@@ -27,8 +27,8 @@ public class BenchNode {
         WARMUP_N = Integer.parseInt(args[5]);
         MEASURE_N = Integer.parseInt(args[6]);
         String neo4jPageCacheMemory;
-        if (args.length >= 8) neo4jPageCacheMemory = args[7];
-        else neo4jPageCacheMemory = GraphDatabaseSettings.pagecache_memory.getDefaultValue();
+        //if (args.length >= 8) neo4jPageCacheMemory = args[7];
+        neo4jPageCacheMemory = GraphDatabaseSettings.pagecache_memory.getDefaultValue();
 
         List<Integer> warmupAttributes1 = new ArrayList<Integer>();
         List<Integer> warmupAttributes2 = new ArrayList<Integer>();

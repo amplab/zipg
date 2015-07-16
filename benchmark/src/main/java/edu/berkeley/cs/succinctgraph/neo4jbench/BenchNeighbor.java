@@ -75,9 +75,9 @@ public class BenchNeighbor {
                     tx = graphDb.beginTx();
                 }
                 List<Long> neighbors = getNeighbors(graphDb, warmupQueries[i % warmupQueries.length]);
-                if (neighbors.size() == 0) {
-                    System.err.println("Error: no results for neighbor of " + warmupQueries[i % warmupQueries.length]);
-                }
+//                if (neighbors.size() == 0) {
+//                    System.err.println("Error: no results for neighbor of " + warmupQueries[i % warmupQueries.length]);
+//                }
             }
 
             System.out.println("Measuring for " + MEASURE_N + " queries");
@@ -128,8 +128,8 @@ public class BenchNeighbor {
             long warmupStart = System.nanoTime();
             while (System.nanoTime() - warmupStart < WARMUP_TIME) {
                 List<Long> neighbors = getNeighbors(graphDb, warmupQueries[i % warmupQueries.length]);
-                if (neighbors.size() == 0)
-                    System.err.println("Error: no results found in neo4j neighbor throughput benchmarking");
+//                if (neighbors.size() == 0)
+//                    System.err.println("Error: no results found in neo4j neighbor throughput benchmarking");
                 i++;
             }
 
@@ -148,10 +148,8 @@ public class BenchNeighbor {
                 long queryStart = System.nanoTime();
                 List<Long> neighbors = getNeighbors(graphDb, queries[i % queries.length]);
                 long queryEnd = System.nanoTime();
-                if (neighbors.size() == 0)
-                    System.err.println("Error: no results found in neo4j neighbor throughput benchmarking");
-
-
+//                if (neighbors.size() == 0)
+//                    System.err.println("Error: no results found in neo4j neighbor throughput benchmarking");
 
                 totalSeconds += (queryEnd - queryStart) / ((double) 1E9);
                 edges += neighbors.size();

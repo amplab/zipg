@@ -80,11 +80,11 @@ public class NeighborNodeBench {
                         modGet(warmup_node_attributes, i), modGet(warmup_node_queries, i));
                 }
                 if (result.size() == 0) {
-                    System.out.printf(
-                        "Error: no neighbor nodes for node id: %d, attr %d, search %s\n",
-                        modGet(warmup_neighbor_indices, i),
-                        modGet(warmup_node_attributes, i),
-                        modGet(warmup_node_queries, i));
+//                    System.out.printf(
+//                        "Error: no neighbor nodes for node id: %d, attr %d, search %s\n",
+//                        modGet(warmup_neighbor_indices, i),
+//                        modGet(warmup_node_attributes, i),
+//                        modGet(warmup_node_queries, i));
                     // For now, just ignore...
                     // System.exit(0);
                 }
@@ -111,15 +111,13 @@ public class NeighborNodeBench {
                         modGet(node_attributes, i), modGet(node_queries, i));
                     queryEnd = System.nanoTime();
                 }
-                if (result.size() == 0) {
-                    System.out.printf(
-                        "Error: no neighbor nodes for node id: %d, attr %d, search %s\n",
-                        modGet(neighbor_indices, i),
-                        modGet(node_attributes, i),
-                        modGet(node_queries, i));
-                } else {
-                    out.println(result.size() + "," + (queryEnd - queryStart) / 1000);
-                }
+//              if (result.size() == 0) {
+//                    System.out.printf(
+//                        "Error: no neighbor nodes for node id: %d, attr %d, search %s\n",
+//                        modGet(neighbor_indices, i),
+//                        modGet(node_attributes, i),
+//                        modGet(node_queries, i));
+                out.println(result.size() + "," + (queryEnd - queryStart) / 1000);
 
                 // correctness check
                 if (resOut != null) {
