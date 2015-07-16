@@ -502,7 +502,7 @@ public:
         for(uint64_t i = 0; i < WARMUP_N; i++) {
             get_neighbors_attr_f_(result,
                 mod_get(warmup_neighbor_indices, i), mod_get(warmup_node_attributes, i), mod_get(warmup_node_queries, i));
-            assert(result.size() != 0 && "No result found in benchmarking getNeighborOfNode latency");
+            // assert(result.size() != 0 && "No result found in benchmarking getNeighborOfNode latency");
         }
         LOG_E("Warmup complete.\n");
 
@@ -513,7 +513,7 @@ public:
             get_neighbors_attr_f_(result,
                 mod_get(neighbor_indices, i), mod_get(node_attributes, i), mod_get(node_queries, i));
             t1 = get_timestamp();
-            assert(result.size() != 0 && "No result found in benchmarking getNeighborOfNode latency");
+            // assert(result.size() != 0 && "No result found in benchmarking getNeighborOfNode latency");
             res_stream << result.size() << "," << t1 - t0 << "\n";
 
 #ifdef BENCH_PRINT_RESULTS
