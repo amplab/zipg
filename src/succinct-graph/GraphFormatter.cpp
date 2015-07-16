@@ -157,6 +157,28 @@ void GraphFormatter::create_node_table(
     s_out.close();
 }
 
+
+std::vector<std::vector<int64_t>> GraphFormatter::read_edge_list(
+    const std::string& file,
+    char edge_inner_delim,
+    char edge_end_delim)
+{
+    std::ifstream in_stream(file);
+    std::string line, token;
+    std::vector<std::vector<int64_t>> result;
+    while (std::getline(in_stream, line)) {
+        if (line[0] == '#') {
+            continue;
+        }
+        std::stringstream ss(line);
+        std::getline(ss, token, edge_inner_delim);
+        int64_t src_id = std::stoll(token);
+        std::getline(ss, token, edge_end_delim);
+        int64_t dst_id = std::stoll(token);
+        result[src_id].push_back(dst_id);
+    }
+}
+
 void GraphFormatter::create_edge_table(
     const std::string& file,
     const std::string& attr_file,

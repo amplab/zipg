@@ -478,6 +478,9 @@ int main(int argc, char **argv) {
         graph->get_neighbors(nbhrs, 0, 0, "George");
         assert_eq(nbhrs, { 2 });
 
+        graph->get_neighbors(nbhrs, 0, 7, "slow");
+        assert_eq(nbhrs, { 2 });
+
         std::remove(node_tmp_pathname.c_str());
         std::remove(edge_tmp_pathname.c_str());
         graph->remove_generated_files();

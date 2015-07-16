@@ -29,7 +29,7 @@ constexpr char METADATA_DELIM = '\x06'; // delim after all these header metadata
 // *****Note that it is important the delim is not in DELIMITERS.*****
 constexpr char NODE_TABLE_HEADER_DELIM = '\x1F';
 const std::vector<unsigned char> SuccinctGraph::DELIMITERS = {
-    // non-ASCII delims (ord >= 128)
+    // 20 non-ASCII delims (ord >= 128)
     128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142,
     143, 144, 145, 146, 147,
     // ASCII delims that are not alphanumeric (unlikely to be used), ord < 128

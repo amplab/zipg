@@ -41,11 +41,11 @@ public:
     // where the inner delimiter defaults to a whitespace and the end delimiter
     // defaults to an end-of-line.
     //
-    // For each edge, we generate atype and timestamp uniformly at
-    // random from some range.
-    //
     // The input edge list file can contain comment lines that start with '#',
     // all of which will be ignored.
+    //
+    // For each edge, we generate atype and timestamp uniformly at
+    // random from some range.
     //
     // Edge attributes are taken from `attr_file`, with truncation/padding so
     // that each attribute has specified length.  The output edge file can be
@@ -58,6 +58,18 @@ public:
         char edge_inner_delim = ' ',
         char edge_end_delim = '\n',
         int num_atype = 5);
+
+    // Each input line is of the form
+    //     "srcId<edge_inner_delim>dstId<edge_end_delim>",
+    // where the inner delimiter defaults to a whitespace and the end delimiter
+    // defaults to an end-of-line.
+    //
+    // The input edge list file can contain comment lines that start with '#',
+    // all of which will be ignored.
+    static std::vector<std::vector<int64_t>> read_edge_list(
+        const std::string& file,
+        char edge_inner_delim = ' ',
+        char edge_end_delim = '\n');
 
     // Applies special delimiter logic: prepend each attribute with a unique
     // delimiter that doesn't appear in the input; concatenates these into a
