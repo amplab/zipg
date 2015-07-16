@@ -8,6 +8,7 @@ import java.io.*;
 import java.util.*;
 
 import static edu.berkeley.cs.succinctgraph.neo4jbench.BenchUtils.modGet;
+import static edu.berkeley.cs.succinctgraph.neo4jbench.BenchUtils.printMemoryFootprint;
 
 public class BenchNode {
     private static final long WARMUP_TIME = (long) (60 * 1E9); // 60 seconds
@@ -126,6 +127,7 @@ public class BenchNode {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
+            printMemoryFootprint();
             System.out.println("Shutting down database ...");
             graphDb.shutdown();
         }
@@ -212,6 +214,7 @@ public class BenchNode {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
+            printMemoryFootprint();
             System.out.println("Shutting down database ...");
             graphDb.shutdown();
         }

@@ -7,6 +7,7 @@ import java.io.*;
 import java.util.*;
 
 import static edu.berkeley.cs.succinctgraph.neo4jbench.BenchUtils.modGet;
+import static edu.berkeley.cs.succinctgraph.neo4jbench.BenchUtils.printMemoryFootprint;
 
 public class NeighborNodeBench {
     private static int WARMUP_N = 20000;
@@ -135,9 +136,10 @@ public class NeighborNodeBench {
             out.close();
             if (resOut != null) resOut.close();
             tx.close();
+            printMemoryFootprint();
+            System.out.println("Shutting down database ...");
+            graphDb.shutdown();
         }
-        System.out.println("Shutting down database ...");
-        graphDb.shutdown();
     }
 
     private static List<Long> getNeighborNode(GraphDatabaseService graphDb,

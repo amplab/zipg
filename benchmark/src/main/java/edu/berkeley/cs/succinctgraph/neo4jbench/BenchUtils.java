@@ -40,4 +40,12 @@ public class BenchUtils {
         out.println();
     }
 
+    public static void printMemoryFootprint() {
+        Runtime rt = Runtime.getRuntime();
+        long max = rt.maxMemory();
+        long allocated = rt.totalMemory();
+        System.out.printf("JVM memory: Max %d, Allocated %d, Used %d\n",
+            max, allocated, allocated - rt.freeMemory());
+    }
+
 }

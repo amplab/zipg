@@ -127,6 +127,7 @@ public class BenchNeighborAtype {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
+            BenchUtils.printMemoryFootprint();
             System.out.println("Shutting down database ...");
             graphDb.shutdown();
         }
