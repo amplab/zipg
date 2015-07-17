@@ -7,6 +7,7 @@ yum -y install openssl-devel
 yum -y install mysql-devel ruby-devel rubygems
 yum -y install boost-devel
 yum -y install flex bison byacc
+yum -y install java-devel
 
 
 ## Install Autoconf

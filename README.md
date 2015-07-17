@@ -1,13 +1,14 @@
-# succinct-graph
-Compressed graph datastore on top of Succinct.
+# Succinct Graph
+Compressed graph store on top of Succinct.
 
 # Build
 To build the benchmark driver `bin/bench`, do:
 ```
+git submodule update --init
 make clean && SGFLAGS=-DLOG_DEBUG make -j && make bench
 ```
 
-To build the RPC component (which depends on Thrift), do `make rpc`. Note that this target is not yet correctly set up for parallel build. To successfully build Thrift for the first time on EC2, some prereqs need to be installed first: run `bash scripts/ec2-prereqs.sh`.
+To build the RPC component (which depends on Thrift), do `make rpc`. This target is not yet correctly set up for parallel build. The major hassle here is to successfully install the Thrift compiler for the first time: on EC2, some prereqs need to be installed first: run `sudo bash scripts/ec2-prereqs.sh`; if errors occur, try to fix them manually (e.g. don't run the `autoreconf --force --install` command in Succinct's `build-thrift` target).
 
 # Quickstart: API
 TODO: docs
@@ -30,4 +31,11 @@ This would start the cluster (aggregators and worker shards). Then you could lau
 To stop the cluster, run
 ```
 sbin/stop-all.sh
+```
+
+# Building benchmarks
+The Neo4j benchmark is written in Java and can be built and started as follows:
+```
+sbt/sbt assembly
+bash scripts/bench_neo4j.sh
 ```
