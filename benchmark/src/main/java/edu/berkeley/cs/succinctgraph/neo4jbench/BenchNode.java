@@ -7,8 +7,7 @@ import org.neo4j.graphdb.factory.GraphDatabaseSettings;
 import java.io.*;
 import java.util.*;
 
-import static edu.berkeley.cs.succinctgraph.neo4jbench.BenchUtils.modGet;
-import static edu.berkeley.cs.succinctgraph.neo4jbench.BenchUtils.printMemoryFootprint;
+import static edu.berkeley.cs.succinctgraph.neo4jbench.BenchUtils.*;
 
 public class BenchNode {
     private static final long WARMUP_TIME = (long) (60 * 1E9); // 60 seconds
@@ -81,6 +80,8 @@ public class BenchNode {
             }
 
             // warmup
+            fullWarmup(graphDb);
+
             System.out.println("Warming up for " + WARMUP_N + " queries");
             for (int i = 0; i < WARMUP_N; i++) {
                 if (i % 10000 == 0) {
