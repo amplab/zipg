@@ -1,13 +1,14 @@
 package edu.berkeley.cs.succinctgraph.neo4jbench;
 
-import org.neo4j.graphdb.*;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.ResourceIterable;
 import org.neo4j.graphdb.schema.Schema;
 import org.neo4j.tooling.GlobalGraphOperations;
 
 import java.io.PrintWriter;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 public class BenchUtils {
@@ -54,41 +55,22 @@ public class BenchUtils {
     /** Scans through all data including edge properties and node properties. */
     public static void fullWarmup(GraphDatabaseService graphDb) {
         long start = System.nanoTime();
-        Object prop;
         Iterable<Relationship> iter = GlobalGraphOperations.at(graphDb)
             .getAllRelationships();
-        Set<String> propKeySet = new HashSet<String>();
         for (Relationship rel : iter) {
-            RelationshipType relType = rel.getType();
-            Iterable<String> propKeys = rel.getPropertyKeys();
-            for (String key : propKeys) {
-                prop = rel.getProperty(key, "");
-                if (!propKeySet.contains(key)) {
-                    // hopefully this prevents aggressive optimization
-                    System.out.println(
-                        "New edge prop key: " + key +
-                        " value: " + prop +
-                        " relType: " + relType);
-                    propKeySet.add(key);
-                }
-            }
+            rel.getId();
+            rel.getType();
+            rel.getStartNode();
+            rel.getEndNode();
+            rel.getPropertyKeys();
         }
-
         ResourceIterable<Node> nodes = GlobalGraphOperations.at(graphDb)
             .getAllNodes();
         for (Node node : nodes) {
-            Iterable<String> propKeys = node.getPropertyKeys();
-            for (String key : propKeys) {
-                prop = node.getProperty(key, "");
-                if (!propKeySet.contains(key)) {
-                    // hopefully this prevents aggressive optimization
-                    System.out.println(
-                        "New node prop key: " + key +
-                            " value: " + prop +
-                            " node id: " + node.getId());
-                    propKeySet.add(key);
-                }
-            }
+            node.getId();
+            node.getRelationshipTypes();
+            node.getRelationships();
+            node.getPropertyKeys();
         }
         long end = System.nanoTime();
         printMemoryFootprint();
