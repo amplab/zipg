@@ -6,6 +6,7 @@ import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import java.io.*;
 import java.util.*;
 
+import static edu.berkeley.cs.succinctgraph.neo4jbench.BenchUtils.fullWarmup;
 import static edu.berkeley.cs.succinctgraph.neo4jbench.BenchUtils.modGet;
 import static edu.berkeley.cs.succinctgraph.neo4jbench.BenchUtils.printMemoryFootprint;
 
@@ -69,6 +70,7 @@ public class NeighborNodeBench {
             BenchUtils.awaitIndexes(graphDb);
 
             // warmup
+            fullWarmup(graphDb);
             System.out.println("Warming up for " + WARMUP_N + " queries");
             for (int i = 0; i < WARMUP_N; i++) {
                 List<Long> result;

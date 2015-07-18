@@ -67,6 +67,7 @@ public class BenchNeighbor {
                     new FileWriter(output_file + ".neo4j_result")));
             }
 
+            fullWarmup(graphDb);
             System.out.println("Warming up for " + WARMUP_N + " queries");
             for (int i = 0; i < WARMUP_N; i++) {
                 if (i % 10000 == 0) {

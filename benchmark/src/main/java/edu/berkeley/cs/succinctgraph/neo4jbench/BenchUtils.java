@@ -48,8 +48,11 @@ public class BenchUtils {
         Runtime rt = Runtime.getRuntime();
         long max = rt.maxMemory();
         long allocated = rt.totalMemory();
-        System.out.printf("JVM memory: Max %d, Allocated %d, Used %d\n",
-            max, allocated, allocated - rt.freeMemory());
+        System.out.printf(
+            "JVM memory: Max %.1f GB, Allocated %.1f GB, Used %.1f GB\n",
+            max * 1. / (1L << 30),
+            allocated * 1. / (1L << 30),
+            (allocated - rt.freeMemory()) * 1. / (1L << 30));
     }
 
     /** Scans through all data including edge properties and node properties. */
