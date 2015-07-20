@@ -17,18 +17,18 @@ void RangePartitioner::partition(
         lines.push_back(line);
     }
 
-    assert(this->num_shards_ <= lines.size()); // we can relax this assumption
+    assert(static_cast<size_t>(this->num_shards_) <= lines.size()); // we can relax this assumption
     int lines_per_split = lines.size() / this->num_shards_;
     int num_shards_digits = num_digits(this->num_shards_);
     int diff = lines.size() - lines_per_split * this->num_shards_;
     int shard_idx = 0;
 
-    int split_start_line = 0;
+    size_t split_start_line = 0;
     while (split_start_line < lines.size()) {
         std::string s(format_out_name(
             node_file_in, num_shards_digits, shard_idx, this->num_shards_));
         std::ofstream curr_split_ofstream(s);
-        int j = split_start_line;
+        size_t j = split_start_line;
         for ( ; j < split_start_line + lines_per_split && j < lines.size(); ++j)
             curr_split_ofstream << lines.at(j) << std::endl;
 
@@ -104,7 +104,7 @@ void HashPartitioner::partition(
         const std::vector< std::vector<std::string> >& lines,
         const std::string& file_prefix)
     {
-        for (int i = 0; i < lines.size(); ++i) {
+        for (size_t i = 0; i < lines.size(); ++i) {
             auto shard_lines = lines[i];
             if (!shard_lines.empty()) {
                 std::string out_name(

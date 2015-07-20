@@ -97,7 +97,7 @@ std::vector<int64_t> SuccinctGraphSerde::decode_multi_node_ids(
     assert(encoded.length() % padded_width == 0);
     std::vector<int64_t> result;
     result.reserve(encoded.length() / padded_width);
-    for (int i = 0; i < encoded.length(); i += padded_width) {
+    for (size_t i = 0; i < encoded.length(); i += padded_width) {
         result.push_back(std::stol(encoded.substr(i, padded_width)));
     }
     return result;
@@ -108,7 +108,7 @@ std::map<char, int> SuccinctGraphSerde::alphabet_char2pos =
 
 std::map<char, int> SuccinctGraphSerde::init_map() {
     alphabet_char2pos.clear();
-    for (int i = 0; i < ENCODE_ALPHABET.length(); ++i) {
+    for (size_t i = 0; i < ENCODE_ALPHABET.length(); ++i) {
         alphabet_char2pos[ENCODE_ALPHABET.at(i)] = i;
     }
     assert(alphabet_char2pos.size() == SIZE_ENCODE_ALPHABET);
@@ -193,7 +193,7 @@ SuccinctGraphSerde::unpad_multi_int64(const std::string& encoded) {
     assert(encoded.length() % WIDTH_NODE_ID_PADDED == 0);
     std::vector<int64_t> result;
     result.reserve(encoded.length() / WIDTH_NODE_ID_PADDED);
-    for (int i = 0; i < encoded.length(); i += WIDTH_NODE_ID_PADDED) {
+    for (size_t i = 0; i < encoded.length(); i += WIDTH_NODE_ID_PADDED) {
         result.push_back(std::stol(encoded.substr(i, WIDTH_NODE_ID_PADDED)));
     }
     return result;

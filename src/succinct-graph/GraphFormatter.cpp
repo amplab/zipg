@@ -115,6 +115,7 @@ void GraphFormatter::create_node_table(
     std::ofstream s_out(out_file);
     std::vector<std::vector<std::string>> attributes;
     std::string attr, tmp;
+    size_t length = static_cast<size_t>(len);
 
     for (int j = 0; j < num_attr; ++j) {
         // need attributes for column `attr`, length num_nodes
@@ -123,12 +124,12 @@ void GraphFormatter::create_node_table(
         attr.clear();
         while (n > 0) {
             // multiple records concatenated together
-            while (attr.length() < len) {
+            while (attr.length() < length) {
                 std::getline(attr_in_stream, tmp);
                 attr += tmp;
             }
-            tmp = attr.substr(0, len); // possibly truncate
-            attr.erase(0, len); // can potentially reuse this row
+            tmp = attr.substr(0, length); // possibly truncate
+            attr.erase(0, length); // can potentially reuse this row
 
             int i = 0;
             while (n > 0 && i < freq) {
@@ -141,8 +142,8 @@ void GraphFormatter::create_node_table(
         attributes.push_back(attrs);
     }
     attr_in_stream.close();
-    assert(attributes.size() == num_attr &&
-        attributes.at(0).size() == num_nodes);
+    assert(attributes.size() == static_cast<size_t>(num_attr) &&
+        attributes.at(0).size() == static_cast<size_t>(num_nodes));
 
     std::vector<std::string> node_attrs;
     for (int i = 0; i < num_nodes; i++) {
@@ -231,7 +232,7 @@ void GraphFormatter::create_edge_table(
         }
         std::string attr;
         std::getline(attr_in_stream, attr);
-        if (attr.length() > bytes_per_attr) {
+        if (attr.length() > static_cast<size_t>(bytes_per_attr)) {
             attr = attr.substr(0, bytes_per_attr);
         } else {
             // just pad with '|'
@@ -268,7 +269,7 @@ std::string GraphFormatter::format_node_attrs_str(
     for (auto attrs : node_attrs) {
         assert(attrs.size() <= SuccinctGraph::MAX_NUM_NODE_ATTRS);
         formatted.clear();
-        for (int i = 0; i < attrs.size(); ++i) {
+        for (size_t i = 0; i < attrs.size(); ++i) {
             assert(attrs[i].find(static_cast<char>(
                 SuccinctGraph::DELIMITERS[i])) == std::string::npos); // weak check
             formatted += static_cast<char>(SuccinctGraph::DELIMITERS[i]) + attrs[i];
@@ -297,7 +298,7 @@ void GraphFormatter::format_neo4j_node_from_node_file(
         out_stream << node_id;
         // parse the delim-ed node attrs, replace all delims with neo4j_delim
         for (unsigned char node_attr_delim : SuccinctGraph::DELIMITERS) {
-            int pos = line.find(static_cast<char>(node_attr_delim));
+            size_t pos = line.find(static_cast<char>(node_attr_delim));
             // NOTE: hacky! This assumes input uses the first few delims
             // consecutively only.
             if (pos == std::string::npos) break;

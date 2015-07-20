@@ -250,7 +250,7 @@ void SuccinctGraph::construct_edge_table(std::string edge_file) {
         // edge attributes
         for (auto it2 = assoc_list.begin(); it2 != assoc_list.end(); ++it2) {
             std::string attr = it2->attr; // note: no encoding
-            assert(attr.length() == edge_width);
+            assert(attr.length() == static_cast<size_t>(edge_width));
             edge_file_out << attr;
         }
     }
@@ -427,7 +427,7 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_range(
         std::vector<int64_t> decoded_dst_ids =
             SuccinctGraphSerde::decode_multi_node_ids(dst_ids, dst_id_width);
 
-        for (int i = 0; i < decoded_timestamps.size(); ++i) {
+        for (size_t i = 0; i < decoded_timestamps.size(); ++i) {
             result.push_back(
                 { src,
                   decoded_dst_ids[i],
@@ -573,7 +573,7 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_get(
 
         // filter
         std::vector<int64_t> in_set_indexes;
-        for (int i = 0; i < decoded_dst_ids.size(); ++i) {
+        for (size_t i = 0; i < decoded_dst_ids.size(); ++i) {
             LOG("decoded_dst_id[i=%d] = %lld\n", i, decoded_dst_ids[i]);
 
             if (dst_id_set.count(decoded_dst_ids[i]) != 0) {
@@ -587,7 +587,7 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_get(
         curr_off += cnt * dst_id_width;
         std::vector<std::string> valid_attrs;
         int idx;
-        for (int i = 0; i < in_set_indexes.size(); ++i) {
+        for (size_t i = 0; i < in_set_indexes.size(); ++i) {
             idx = in_set_indexes[i];
             std::string attr;
             this->edge_table->extract(attr, curr_off + idx * edge_width, edge_width);
@@ -596,7 +596,7 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_get(
 
         std::vector<int64_t> decoded_timestamps =
             SuccinctGraphSerde::decode_multi_timestamps(timestamps);
-        for (int i = 0; i < in_set_indexes.size(); ++i) {
+        for (size_t i = 0; i < in_set_indexes.size(); ++i) {
             idx = in_set_indexes[i];
             // decoded dst ids and timestamps start w/ absolute idx range_left
             result.push_back(
@@ -793,7 +793,7 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_time_range(
             SuccinctGraphSerde::decode_multi_timestamps(timestamps);
         std::vector<int64_t> decoded_dst_ids =
             SuccinctGraphSerde::decode_multi_node_ids(dst_ids, dst_id_width);
-        for (int i = 0; i < decoded_timestamps.size(); ++i) {
+        for (size_t i = 0; i < decoded_timestamps.size(); ++i) {
             result.push_back(
                 { src,
                   decoded_dst_ids[i],
