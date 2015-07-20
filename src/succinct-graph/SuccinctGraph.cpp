@@ -819,9 +819,13 @@ int64_t SuccinctGraph::num_edges() {
 }
 
 size_t SuccinctGraph::storage_size() {
+    assert(false && "not implemented");
+    return -1;
 }
 
 size_t SuccinctGraph::serialize() {
+    assert(false && "not implemented");
+    return -1;
 }
 
 /******* Primitive APIs *******/

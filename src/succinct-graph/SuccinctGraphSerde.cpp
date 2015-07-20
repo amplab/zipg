@@ -107,11 +107,12 @@ std::map<char, int> SuccinctGraphSerde::alphabet_char2pos =
     SuccinctGraphSerde::init_map();
 
 std::map<char, int> SuccinctGraphSerde::init_map() {
-    alphabet_char2pos.clear();
+    std::map<char, int> map;
     for (size_t i = 0; i < ENCODE_ALPHABET.length(); ++i) {
-        alphabet_char2pos[ENCODE_ALPHABET.at(i)] = i;
+        map[ENCODE_ALPHABET.at(i)] = i;
     }
-    assert(alphabet_char2pos.size() == SIZE_ENCODE_ALPHABET);
+    assert(map.size() == SIZE_ENCODE_ALPHABET);
+    return map;
 }
 
 std::string SuccinctGraphSerde::pad_int32(int32_t x) {

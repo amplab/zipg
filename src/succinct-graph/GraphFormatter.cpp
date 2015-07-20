@@ -178,6 +178,7 @@ std::vector<std::vector<int64_t>> GraphFormatter::read_edge_list(
         int64_t dst_id = std::stoll(token);
         result[src_id].push_back(dst_id);
     }
+    return result;
 }
 
 void GraphFormatter::create_edge_table(
