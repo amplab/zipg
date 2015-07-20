@@ -159,9 +159,9 @@ void SuccinctGraph::construct_edge_table(std::string edge_file) {
     std::map<AssocListKey, std::vector<Assoc>> assoc_map;
     std::string line, token;
     std::ifstream edge_file_stream(edge_file);
-    AType atype;
-    Timestamp time;
-    NodeId src_id, dst_id;
+    AType atype = -1LL;
+    Timestamp time = -1LL;
+    NodeId src_id = -1LL, dst_id = -1LL;
 
     while (std::getline(edge_file_stream, line)) {
         std::stringstream ss(line);
