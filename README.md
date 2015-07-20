@@ -13,8 +13,8 @@ To build the RPC component (which depends on Thrift), do `make rpc`. This target
 # Quickstart: API
 TODO: docs
 
-# Partitioning an input graph
-TODO: docs
+# Importing an input graph 
+Given an edge list, Succinct Graph provides various formatter utilities to convert it into a ready-to-use format (including randomly producing node/edge attributes from a specified attribute file). See `formatter.sh` for an example usage.
 
 # Starting a cluster
 The list of server hostnames should be put in `conf/hosts`. The master node should be able to SSH into them passwordless.
