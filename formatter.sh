@@ -12,6 +12,8 @@ if [[ "$dataset" == "liveJournal-40attr16each" ]]; then
   node_attr_size_each=16
   inner_delim='	'
   end_delim=''
+  assoc_out_file=liveJournal.assoc
+  node_out_file=liveJournal-${num_node_attr}attr${node_attr_size_each}each-tpch.node
 elif [[ "$dataset" == "higgs-40attr16each" ]]; then
   edgelist=./data/higgs-social_network.assoc
   num_nodes=456627
@@ -20,6 +22,8 @@ elif [[ "$dataset" == "higgs-40attr16each" ]]; then
   node_attr_size_each=16
   inner_delim='	'
   end_delim=''
+  assoc_out_file=NOT_NEEDED_FOR_NOW
+  node_out_file=${dataset}-tpch.node
 else 
   exit 1
 fi
@@ -28,8 +32,8 @@ fi
   format-input \
   $edgelist \
   data/data_0 \
-  data/liveJournal.assoc \
-  data/liveJournal-${num_node_attr}attr${node_attr_size_each}each-tpch.node \
+  data/${assoc_out_file} \
+  data/${node_out_file} \
   $num_nodes \
   $num_node_attr \
   $node_attr_freq \
