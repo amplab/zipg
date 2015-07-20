@@ -6,44 +6,47 @@ source ${SCRIPT_DIR}/config.sh
 source ${SCRIPT_DIR}/../conf/succinct-env.sh
 
 num_nodes=100000 # hack
-dataset="-liveJournal"
-#dataset="-2attr350each"
+#dataset="-liveJournal"
+dataset="-2attr350each"
+dataset="-20attr35each"
 
 # NOTE: comment this out for non-sharded bench
-SHARDED=T
+#SHARDED=T
+if [[ -z "$SHARDED" ]]; then
+  TOTAL_NUM_SHARDS=no
+fi
 
-#benchNeighbor=T
+benchNeighbor=T
 benchNeighborAtype=T
-#benchNeighborNode=T
-#benchNode=T
-#benchNodeNode=T
+benchNeighborNode=T
+benchNode=T
+benchNodeNode=T
 
 function bench() {
 
-  #EDGE_FILE="../data/higgs-social_network.opts-npa${npa}sa${sa}isa${isa}.assoc"
-  #NODE_FILE="../data/higgs${dataset}-tpch-npa${npa}sa${sa}isa${isa}.node"
-  EDGE_FILE="/mnt2T/data/liveJournal-npa${npa}sa${sa}isa${isa}.assoc"
-  NODE_FILE="/mnt2T/data/liveJournal-40attr16each-tpch-npa${npa}sa${sa}isa${isa}.node"
-  #NODE_FILE="${DATA_DIR}/higgs${dataset}-tpch-npa${npa}sa${sa}isa${isa}.nodeWithPtrs"
+  EDGE_FILE="data/higgs-social_network.opts-npa${npa}sa${sa}isa${isa}.edge_table"
+  NODE_FILE="data/higgs${dataset}-tpch-npa${npa}sa${sa}isa${isa}.nodeWithPtrs"
+  # EDGE_FILE="/mnt2T/data/liveJournal-npa${npa}sa${sa}isa${isa}.assoc"
+  # NODE_FILE="/mnt2T/data/liveJournal-40attr16each-tpch-npa${npa}sa${sa}isa${isa}.node"
 
-  bash ${SCRIPT_DIR}/../sbin/stop-all.sh
-  sleep 2
-
-  bash ${SCRIPT_DIR}/../sbin/start-servers.sh $NODE_FILE $EDGE_FILE $sa $isa $npa &
-  sleep 2
-
-  bash ${SCRIPT_DIR}/../sbin/start-handlers.sh &
-  sleep 2
-
+  if [[ -n "$SHARDED" ]]; then
+    bash ${SCRIPT_DIR}/../sbin/stop-all.sh
+    sleep 2
+  
+    bash ${SCRIPT_DIR}/../sbin/start-servers.sh $NODE_FILE $EDGE_FILE $sa $isa $npa &
+    sleep 2
+  
+    bash ${SCRIPT_DIR}/../sbin/start-handlers.sh &
+    sleep 2
+  fi
+  
     if [[ -n "$benchNode" ]]; then
       sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
-
       ${BIN_DIR}/bench -t node-latency -x ${warmup_node} \
       -y ${measure_node} -w ${QUERY_DIR}/node_warmup_${num_nodes}.txt \
       -q ${QUERY_DIR}/node_query_${num_nodes}.txt \
       -o ${HOME_DIR}/node_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
       ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
-
     fi
 
     if [[ -n "$benchNodeNode" ]]; then
@@ -86,10 +89,12 @@ function bench() {
 #  avg=$(cut -d',' -f2 ${HOME_DIR}/node_latency-npa${npa}sa${sa}isa${isa}.txt | awk '{x += $1} END {print x/NR}')
 #  echo "npa${npa} sa${sa} isa${isa}, get_nodes(attr) average: ${avg}"
 
-  bash ${SCRIPT_DIR}/../sbin/stop-all.sh
+  if [[ -n "$SHARDED" ]]; then
+  	bash ${SCRIPT_DIR}/../sbin/stop-all.sh
+  fi
 }
 
-#sa=4; isa=16; npa=16; bench
+sa=4; isa=16; npa=16; bench
 sa=8; isa=64; npa=64; bench
 sa=32; isa=64; npa=128; bench
 
