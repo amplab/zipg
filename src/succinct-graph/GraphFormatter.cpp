@@ -180,6 +180,32 @@ std::vector<std::vector<int64_t>> GraphFormatter::read_edge_list(
     return result;
 }
 
+std::map<std::pair<int64_t, int64_t>, std::vector<int64_t>>
+GraphFormatter::read_assoc_list(
+    const std::string& file,
+    char edge_inner_delim_between_ids,
+    char edge_inner_delim_after_ids,
+    char edge_end_delim)
+{
+    std::ifstream in_stream(file);
+    std::string line, token;
+    std::map<std::pair<int64_t, int64_t>, std::vector<int64_t>> result;
+    while (std::getline(in_stream, line)) {
+        if (line[0] == '#') {
+            continue;
+        }
+        std::stringstream ss(line);
+        std::getline(ss, token, edge_inner_delim_between_ids);
+        int64_t src_id = std::stoll(token);
+        std::getline(ss, token, edge_inner_delim_after_ids);
+        int64_t dst_id = std::stoll(token);
+        std::getline(ss, token, edge_end_delim);
+        int64_t atype = std::stoll(token);
+        result[std::make_pair(src_id, atype)].push_back(dst_id);
+    }
+    return result;
+}
+
 void GraphFormatter::create_edge_table(
     const std::string& file,
     const std::string& attr_file,

@@ -822,6 +822,73 @@ int main(int argc, char **argv) {
             neo4j_edge_out
         );
 
+    } else if (type == "nhbr-exp") {
+
+        std::string edge_file = argv[2];
+        std::map<std::pair<int64_t, int64_t>, std::vector<int64_t>> assoc_map(
+            GraphFormatter::read_assoc_list(edge_file, ' ', ' ', ' '));
+
+        auto num_digits = [](int64_t number) {
+            if (number == 0) return 1;
+            if (number < 0) number = -number;
+            int32_t digits = 0;
+            while (number != 0) {
+                number /= 10;
+                ++digits;
+            }
+            return digits;
+        };
+
+        int64_t total_bytes = 0, total_bytes_with_diff = 0, savings = 0;
+        for (auto it = assoc_map.begin(); it != assoc_map.end(); ++it) {
+            int64_t src_id = (it->first).first;
+            auto nhbr_ids = it->second;
+
+            int64_t maxDstId = -1, minDstId = 1000000000;
+            for (auto dst_id : nhbr_ids) {
+                maxDstId = std::max(maxDstId, dst_id);
+                minDstId = std::min(minDstId, dst_id);
+            }
+            int64_t curr = num_digits(maxDstId) * nhbr_ids.size() +
+                num_digits(num_digits(maxDstId)) + 1; // +1 for delim
+
+            int diff1 = num_digits(minDstId - src_id);
+            int diff2 = num_digits(maxDstId - src_id);
+            int64_t max_diff_width;
+            if (diff1 > diff2) {
+                max_diff_width = diff1;
+                max_diff_width += minDstId < src_id ? 1 : 0;
+                // LOG_E("minDstId %lld, src id %lld, diff width %d, ", minDstId, src_id, max_diff_width);
+            } else {
+                max_diff_width = diff2;
+                max_diff_width += maxDstId < src_id ? 1 : 0;
+                // LOG_E("maxDstId %lld, src id %lld, diff width %d, ", maxDstId, src_id, max_diff_width);
+            }
+
+            // if all nhbr ids smaller than src id, don't bother storing - signs
+            // use this bit to indicate whether differences or negative
+            // differences are encoded
+            int extra_bit = 1;
+            if (minDstId < src_id && maxDstId < src_id) {
+                --max_diff_width;
+            }
+
+            int64_t diff_scheme = max_diff_width * nhbr_ids.size() +
+                 num_digits(max_diff_width) + 1 // delim
+                 + extra_bit;
+            savings += curr - diff_scheme;
+
+            total_bytes += curr;
+            total_bytes_with_diff += diff_scheme;
+            // LOG_E("curr scheme width %d, diff scheme width %d\n",
+            //     num_digits(maxDstId), max_diff_width);
+        }
+
+        LOG_E("total nhbr list bytes: (1) now: %lld (2) diff opt: %lld\n",
+            total_bytes, total_bytes_with_diff);
+        LOG_E("average savings per assoc list: %.2f\n",
+            savings * 1. / assoc_map.size());
+
     } else {
         printf("Unsupported command type: '%s'\n", type.c_str());
         assert(1); // not supported

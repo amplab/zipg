@@ -1,6 +1,7 @@
 #ifndef GRAPH_FORMATTER_H
 #define GRAPH_FORMATTER_H
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -77,6 +78,18 @@ public:
         const std::string& file,
         char edge_inner_delim = ' ',
         char edge_end_delim = '\n');
+
+    // Hybrid of read_edge_list().  Input is of the form:
+    //     "srcId <edge_inner_delim_between_ids>
+    //      dstId <edge_inner_delim_after_ids>
+    //      atype <edge_end_delim> ..."
+    // on each line.
+    static std::map<std::pair<int64_t, int64_t>, std::vector<int64_t>>
+    read_assoc_list(
+        const std::string& file,
+        char edge_inner_delim_between_ids = ' ',
+        char edge_inner_delim_after_ids = ' ',
+        char edge_end_delim = ' ');
 
     // Applies special delimiter logic: prepend each attribute with a unique
     // delimiter that doesn't appear in the input; concatenates these into a
