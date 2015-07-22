@@ -75,7 +75,8 @@ public class BenchNeighbor {
                     tx.close();
                     tx = graphDb.beginTx();
                 }
-                List<Long> neighbors = getNeighbors(graphDb, warmupQueries[i % warmupQueries.length]);
+                List<Long> neighbors = getNeighborsSorted(
+                    graphDb, warmupQueries[i % warmupQueries.length]);
 //                if (neighbors.size() == 0) {
 //                    System.err.println("Error: no results for neighbor of " + warmupQueries[i % warmupQueries.length]);
 //                }
@@ -90,7 +91,8 @@ public class BenchNeighbor {
                     tx = graphDb.beginTx();
                 }
                 long queryStart = System.nanoTime();
-                List<Long> neighbors = getNeighbors(graphDb, queries[i % queries.length]);
+                List<Long> neighbors = getNeighborsSorted(
+                    graphDb, queries[i % queries.length]);
                 long queryEnd = System.nanoTime();
                 double microsecs = (queryEnd - queryStart) / ((double) 1000);
                 out.println(neighbors.size() + "," + microsecs);
@@ -190,6 +192,40 @@ public class BenchNeighbor {
         return neighbors;
     }
 
+    static class TimestampedId implements Comparable<TimestampedId> {
+        public long timestamp = -1, id = -1;
+        public TimestampedId(long timestamp, long id) {
+            this.timestamp = timestamp;
+            this.id = id;
+        }
+        // Larger timestamp comes first.
+        public int compareTo(TimestampedId that) {
+            long diff = that.timestamp - this.timestamp;
+            if (diff == 0) return 0;
+            return diff > 0 ? 1 : -1;
+        }
+    }
+
+    private static List<Long> getNeighborsSorted(GraphDatabaseService graphDb,
+                                                 long id) {
+        Node n = graphDb.getNodeById(id);
+        Iterable<Relationship> rels = n.getRelationships(Direction.OUTGOING);
+
+        List<TimestampedId> timestampedNhbrs = new ArrayList<TimestampedId>();
+        long timestamp, nhbrId;
+        for (Relationship r : rels) {
+            timestamp = (long) (r.getProperty("timestamp"));
+            nhbrId = r.getOtherNode(n).getId();
+            timestampedNhbrs.add(new TimestampedId(timestamp, nhbrId));
+        }
+
+        List<Long> neighbors = new ArrayList<Long>(timestampedNhbrs.size());
+        Collections.sort(timestampedNhbrs);
+        for (TimestampedId timestampedId : timestampedNhbrs) {
+            neighbors.add(timestampedId.id);
+        }
+        return neighbors;
+    }
 
     private static int[] getQueries(String file) {
         try {
