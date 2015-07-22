@@ -89,7 +89,7 @@ public class BenchNode {
                     tx.close();
                     tx = graphDb.beginTx();
                 }
-                List<Long> nodes = getNodes(graphDb, label, modGet(warmupAttributes, i),
+                Set<Long> nodes = getNodes(graphDb, label, modGet(warmupAttributes, i),
                     modGet(warmupQueries, i));
                 if (nodes.size() == 0) {
                     System.out.println("Error: no results for attribute " +
@@ -110,15 +110,15 @@ public class BenchNode {
                 int attr = modGet(attributes, i);
                 String query = modGet(queries, i);
                 long queryStart = System.nanoTime();
-                List<Long> nodes = getNodes(graphDb, label, attr, query);
+                Set<Long> nodes = getNodes(graphDb, label, attr, query);
                 long queryEnd = System.nanoTime();
                 double microsecs = (queryEnd - queryStart) / ((double) 1000);
                 out.println(nodes.size() + "," + microsecs);
 
                 // correctness
                 if (resOut != null) {
-                    Collections.sort(nodes);
-                    BenchUtils.print(String.format("attr %d: %s", attr, query), nodes, resOut);
+//                    Collections.sort(nodes);
+//                    BenchUtils.print(String.format("attr %d: %s", attr, query), nodes, resOut);
                 }
             }
 
@@ -167,7 +167,7 @@ public class BenchNode {
                     tx.close();
                     tx = graphDb.beginTx();
                 }
-                List<Long> nodes = getNodes(graphDb, label,
+                Set<Long> nodes = getNodes(graphDb, label,
                     modGet(warmupAttributes1, i),
                     modGet(warmupQueries1, i),
                     modGet(warmupAttributes2, i),
@@ -190,7 +190,7 @@ public class BenchNode {
                     tx = graphDb.beginTx();
                 }
                 long queryStart = System.nanoTime();
-                List<Long> nodes = getNodes(graphDb, label,
+                Set<Long> nodes = getNodes(graphDb, label,
                     modGet(attributes1, i),
                     modGet(queries1, i),
                     modGet(attributes2, i),
@@ -206,8 +206,8 @@ public class BenchNode {
                         modGet(queries1, i),
                         modGet(attributes2, i),
                         modGet(queries2, i));
-                    Collections.sort(nodes);
-                    BenchUtils.print(header, nodes, resOut);
+//                    Collections.sort(nodes);
+//                    BenchUtils.print(header, nodes, resOut);
                 }
             }
 
@@ -241,7 +241,7 @@ public class BenchNode {
             System.out.println("Warming up queries");
             long warmupStart = System.nanoTime();
             while (System.nanoTime() - warmupStart < WARMUP_TIME) {
-                List<Long> nodes = getNodes(graphDb, label, modGet(warmupAttributes, i),
+                Set<Long> nodes = getNodes(graphDb, label, modGet(warmupAttributes, i),
                     modGet(warmupQueries, i));
                 if (nodes.size() == 0) {
                     System.out.println("wtf " + modGet(warmupAttributes, i) + " " +
@@ -258,7 +258,7 @@ public class BenchNode {
             long start = System.nanoTime();
             while (System.nanoTime() - start < MEASURE_TIME) {
                 long queryStart = System.nanoTime();
-                List<Long> nodes = getNodes(graphDb, label, modGet(attributes, i),
+                Set<Long> nodes = getNodes(graphDb, label, modGet(attributes, i),
                     modGet(queries, i));
                 long queryEnd = System.nanoTime();
                 totalSeconds += (queryEnd - queryStart) / 1E9;
@@ -279,7 +279,7 @@ public class BenchNode {
             i = 0;
             long cooldownStart = System.nanoTime();
             while (System.nanoTime() - cooldownStart < COOLDOWN_TIME) {
-                List<Long> nodes = getNodes(graphDb, label, modGet(warmupAttributes, i),
+                Set<Long> nodes = getNodes(graphDb, label, modGet(warmupAttributes, i),
                     modGet(warmupQueries, i));
                 i++;
             }
@@ -289,11 +289,11 @@ public class BenchNode {
         graphDb.shutdown();
     }
 
-    private static List<Long> getNodes(GraphDatabaseService graphDb,
+    private static Set<Long> getNodes(GraphDatabaseService graphDb,
                                        Label label, int attr, String search) {
         ResourceIterator<Node> nodes = graphDb.findNodes(label, "name" + attr, search);
         try {
-            ArrayList<Long> userIds = new ArrayList<>();
+            Set<Long> userIds = new HashSet<Long>();
             while (nodes.hasNext()) {
                 userIds.add(nodes.next().getId());
             }
@@ -304,7 +304,7 @@ public class BenchNode {
         }
     }
 
-    private static List<Long> getNodes(
+    private static Set<Long> getNodes(
         GraphDatabaseService graphDb,
         Label label, int attr1, String search1, int attr2, String search2) {
 
@@ -320,8 +320,7 @@ public class BenchNode {
                 s2.add(nodes2.next().getId());
             }
             s1.retainAll(s2);
-            List<Long> ans = new ArrayList<>(s1);
-            return ans;
+            return s1;
         } catch (Exception e) {
             e.printStackTrace();
             return null;
