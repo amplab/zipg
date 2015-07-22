@@ -37,9 +37,11 @@ public class BenchNode {
         List<Integer> attributes2 = new ArrayList<Integer>();
         List<String> queries1 = new ArrayList<String>();
         List<String> queries2 = new ArrayList<String>();
-        getQueries(warmup_query_path, warmupAttributes1, warmupAttributes2,
-            warmupQueries1, warmupQueries2);
-        getQueries(query_path, attributes1, attributes2, queries1, queries2);
+
+        BenchUtils.getNodeQueries(warmup_query_path, warmupAttributes1,
+            warmupAttributes2, warmupQueries1, warmupQueries2);
+        BenchUtils.getNodeQueries(query_path, attributes1, attributes2,
+            queries1, queries2);
 
         if (type.equals("node-throughput"))
             nodeThroughput(db_path, warmupAttributes1, warmupQueries1,
@@ -324,24 +326,6 @@ public class BenchNode {
         } catch (Exception e) {
             e.printStackTrace();
             return null;
-        }
-    }
-
-    private static void getQueries(String file, List<Integer> indices1, List<Integer> indices2,
-                                   List<String> queries1, List<String> queries2) {
-        try {
-            BufferedReader br = new BufferedReader(new FileReader(file));
-            String line = br.readLine();
-            while (line != null) {
-                String[] tokens = line.split("\\x02");
-                indices1.add(Integer.parseInt(tokens[0]));
-                queries1.add(tokens[1]);
-                indices2.add(Integer.parseInt(tokens[2]));
-                queries2.add(tokens[3]);
-                line = br.readLine();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 }

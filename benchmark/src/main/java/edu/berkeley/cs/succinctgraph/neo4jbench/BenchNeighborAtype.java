@@ -56,8 +56,10 @@ public class BenchNeighborAtype {
             atypeMap[i] = new AType(String.valueOf(i));
         }
 
-        getQueries(warmup_query_path, warmupIds, warmupAtypes);
-        getQueries(query_path, queryIds, queryAtypes);
+        BenchUtils.getNeighborAtypeQueries(
+            warmup_query_path, warmupIds, warmupAtypes);
+        BenchUtils.getNeighborAtypeQueries(
+            query_path, queryIds, queryAtypes);
 
         if (type.equals("latency")) {
             benchNeighborAtypeLatency(
@@ -171,23 +173,6 @@ public class BenchNeighborAtype {
             neighbors.add(timestampedId.id);
         }
         return neighbors;
-    }
-
-    private static void getQueries(
-        String file, List<Long> nodeIds, List<Integer> atypes) {
-
-        try {
-            BufferedReader br = new BufferedReader(new FileReader(file));
-            String line = br.readLine();
-            while (line != null) {
-                String[] toks = line.split(",");
-                nodeIds.add(Long.valueOf(toks[0]));
-                atypes.add(Integer.valueOf(toks[1]));
-                line = br.readLine();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
 }

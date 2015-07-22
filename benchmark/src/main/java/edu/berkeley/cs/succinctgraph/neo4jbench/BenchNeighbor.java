@@ -39,8 +39,8 @@ public class BenchNeighbor {
         if (args.length >= 8) neo4jPageCacheMemory = args[7];
         else neo4jPageCacheMemory = GraphDatabaseSettings.pagecache_memory.getDefaultValue();
 
-        int[] warmupQueries = getQueries(warmup_query_path);
-        int[] queries = getQueries(query_path);
+        int[] warmupQueries = BenchUtils.getNeighborQueries(warmup_query_path);
+        int[] queries = BenchUtils.getNeighborQueries(query_path);
         if (type.equals("neighbor-latency"))
             benchNeighborLatency(db_path, neo4jPageCacheMemory, warmupQueries, queries, output_file);
         else if (type.equals("neighbor-throughput"))
@@ -211,26 +211,6 @@ public class BenchNeighbor {
             neighbors.add(timestampedId.id);
         }
         return neighbors;
-    }
-
-    private static int[] getQueries(String file) {
-        try {
-            BufferedReader br = new BufferedReader(new FileReader(file));
-            List<String> lines = new ArrayList<String>();
-            String line = br.readLine();
-            while (line != null) {
-                lines.add(line);
-                line = br.readLine();
-            }
-            int[] queries = new int[lines.size()];
-            for (int i = 0; i < lines.size(); i++) {
-                queries[i] = Integer.parseInt(lines.get(i));
-            }
-            return queries;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
     }
 
 }

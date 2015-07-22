@@ -7,7 +7,11 @@ import org.neo4j.graphdb.ResourceIterable;
 import org.neo4j.graphdb.schema.Schema;
 import org.neo4j.tooling.GlobalGraphOperations;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -94,4 +98,80 @@ public class BenchUtils {
             return diff > 0 ? 1 : -1;
         }
     }
+
+    public static void getNodeQueries(
+        String file, List<Integer> indices1, List<Integer> indices2,
+        List<String> queries1, List<String> queries2) {
+
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(file));
+            String line = br.readLine();
+            while (line != null) {
+                String[] tokens = line.split("\\x02");
+                indices1.add(Integer.parseInt(tokens[0]));
+                queries1.add(tokens[1]);
+                indices2.add(Integer.parseInt(tokens[2]));
+                queries2.add(tokens[3]);
+                line = br.readLine();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static int[] getNeighborQueries(String file) {
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(file));
+            List<String> lines = new ArrayList<String>();
+            String line = br.readLine();
+            while (line != null) {
+                lines.add(line);
+                line = br.readLine();
+            }
+            int[] queries = new int[lines.size()];
+            for (int i = 0; i < lines.size(); i++) {
+                queries[i] = Integer.parseInt(lines.get(i));
+            }
+            return queries;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static void getNeighborAtypeQueries(
+        String file, List<Long> nodeIds, List<Integer> atypes) {
+
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(file));
+            String line = br.readLine();
+            while (line != null) {
+                String[] toks = line.split(",");
+                nodeIds.add(Long.valueOf(toks[0]));
+                atypes.add(Integer.valueOf(toks[1]));
+                line = br.readLine();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void getNeighborNodeQueries(
+        String file, List<Integer> indices, List<Integer> attributes, List<String> queries) {
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(file));
+            String line = br.readLine();
+            while (line != null) {
+                int idx = line.indexOf(',');
+                indices.add(Integer.parseInt(line.substring(0, idx)));
+                int idx2 = line.indexOf(',', idx + 1);
+                attributes.add(Integer.parseInt(line.substring(idx + 1, idx2)));
+                queries.add(line.substring(idx2 + 1));
+                line = br.readLine();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 }

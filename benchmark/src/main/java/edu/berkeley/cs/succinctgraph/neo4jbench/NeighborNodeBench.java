@@ -35,13 +35,15 @@ public class NeighborNodeBench {
         List<Integer> warmup_neighbor_indices = new ArrayList<Integer>();
         List<Integer> warmup_node_attributes = new ArrayList<Integer>();
         List<String> warmup_node_queries = new ArrayList<String>();
-        getNeighborNodeQueries(
-            warmup_file, warmup_neighbor_indices, warmup_node_attributes, warmup_node_queries);
+        BenchUtils.getNeighborNodeQueries(
+            warmup_file, warmup_neighbor_indices, warmup_node_attributes,
+            warmup_node_queries);
 
         List<Integer> neighbor_indices = new ArrayList<Integer>();
         List<Integer> node_attributes = new ArrayList<Integer>();
         List<String> node_queries = new ArrayList<String>();
-        getNeighborNodeQueries(query_file, neighbor_indices, node_attributes, node_queries);
+        BenchUtils.getNeighborNodeQueries(query_file, neighbor_indices,
+            node_attributes, node_queries);
 
         if (type.equals("latency")) {
             neighborNodeLatency(db_path, out, resOut, warmup_neighbor_indices, neighbor_indices,
@@ -202,23 +204,5 @@ public class NeighborNodeBench {
 //        System.out.println("Result:\n" + queryResult.resultAsString());
 //        System.out.println("Plan:\n" + queryResult.getExecutionPlanDescription());
         return result;
-    }
-
-    private static void getNeighborNodeQueries(
-        String file, List<Integer> indices, List<Integer> attributes, List<String> queries) {
-        try {
-            BufferedReader br = new BufferedReader(new FileReader(file));
-            String line = br.readLine();
-            while (line != null) {
-                int idx = line.indexOf(',');
-                indices.add(Integer.parseInt(line.substring(0, idx)));
-                int idx2 = line.indexOf(',', idx + 1);
-                attributes.add(Integer.parseInt(line.substring(idx + 1, idx2)));
-                queries.add(line.substring(idx2 + 1));
-                line = br.readLine();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 }
