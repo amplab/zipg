@@ -192,20 +192,6 @@ public class BenchNeighbor {
         return neighbors;
     }
 
-    static class TimestampedId implements Comparable<TimestampedId> {
-        public long timestamp = -1, id = -1;
-        public TimestampedId(long timestamp, long id) {
-            this.timestamp = timestamp;
-            this.id = id;
-        }
-        // Larger timestamp comes first.
-        public int compareTo(TimestampedId that) {
-            long diff = that.timestamp - this.timestamp;
-            if (diff == 0) return 0;
-            return diff > 0 ? 1 : -1;
-        }
-    }
-
     private static List<Long> getNeighborsSorted(GraphDatabaseService graphDb,
                                                  long id) {
         Node n = graphDb.getNodeById(id);

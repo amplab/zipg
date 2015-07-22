@@ -1,11 +1,14 @@
 package edu.berkeley.cs.succinctgraph.neo4jbench;
 
+import static edu.berkeley.cs.succinctgraph.neo4jbench.BenchUtils.TimestampedId;
+
 import org.neo4j.graphdb.*;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.graphdb.factory.GraphDatabaseSettings;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class BenchNeighborAtype {
@@ -96,7 +99,7 @@ public class BenchNeighborAtype {
                     tx.close();
                     tx = graphDb.beginTx();
                 }
-                getNeighbors(
+                getNeighborsSorted(
                     graphDb,
                     warmupIds.get(i % warmupIds.size()),
                     atypeMap[warmupAtypes.get(i % warmupAtypes.size())]);
@@ -112,7 +115,7 @@ public class BenchNeighborAtype {
                 }
                 long queryStart = System.nanoTime();
 
-                neighbors = getNeighbors(
+                neighbors = getNeighborsSorted(
                     graphDb,
                     queryIds.get(i % queryIds.size()),
                     atypeMap[queryAtypes.get(i % queryAtypes.size())]);
@@ -143,6 +146,29 @@ public class BenchNeighborAtype {
             relType, Direction.OUTGOING);
         for (Relationship r : rels) {
             neighbors.add(r.getOtherNode(n).getId());
+        }
+        return neighbors;
+    }
+
+    private static List<Long> getNeighborsSorted(
+        GraphDatabaseService graphDb, long id, RelationshipType relType) {
+
+        Node n = graphDb.getNodeById(id);
+        Iterable<Relationship> rels = n.getRelationships(
+            relType, Direction.OUTGOING);
+
+        List<TimestampedId> timestampedNhbrs = new ArrayList<TimestampedId>();
+        long timestamp, nhbrId;
+        for (Relationship r : rels) {
+            timestamp = (long) (r.getProperty("timestamp"));
+            nhbrId = r.getOtherNode(n).getId();
+            timestampedNhbrs.add(new TimestampedId(timestamp, nhbrId));
+        }
+
+        List<Long> neighbors = new ArrayList<Long>(timestampedNhbrs.size());
+        Collections.sort(timestampedNhbrs);
+        for (TimestampedId timestampedId : timestampedNhbrs) {
+            neighbors.add(timestampedId.id);
         }
         return neighbors;
     }
