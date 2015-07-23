@@ -103,6 +103,7 @@ public class MixBench {
         }
     }
 
+    /** Note: the mixing order can affect query performance. */
     private static void mixLatency(
         String DB_PATH, String nhbrOutFile, String nhbrNodeOutFile,
         String nhbrAtypeOutFile, String nodeOutFile, String doubleNodeOutFile) {
@@ -139,6 +140,11 @@ public class MixBench {
                 BenchNeighbor.getNeighborsSorted(graphDb,
                     modGet(warmupNhbrs, i));
 
+                NeighborNodeBench.getNeighborNode(graphDb,
+                    modGet(warmupNhbrNodeIds, i),
+                    modGet(warmupNhbrNodeAttrIds, i),
+                    modGet(warmupNhbrNodeAttrs, i));
+
                 BenchNode.getNodes(graphDb, label,
                     modGet(warmupNodeAttrIds1, i),
                     modGet(warmupNodeAttrs1, i));
@@ -148,16 +154,11 @@ public class MixBench {
                     BenchNeighborAtype.atypeMap[modGet(
                         warmupNhbrAtypeAtypes, i)]);
 
-                BenchNode.getNodes(graphDb, label,
-                    modGet(warmupNodeAttrIds1, i),
-                    modGet(warmupNodeAttrs1, i),
-                    modGet(warmupNodeAttrIds2, i),
-                    modGet(warmupNodeAttrs2, i));
-
-                NeighborNodeBench.getNeighborNode(graphDb,
-                    modGet(warmupNhbrNodeIds, i),
-                    modGet(warmupNhbrNodeAttrIds, i),
-                    modGet(warmupNhbrNodeAttrs, i));
+//                BenchNode.getNodes(graphDb, label,
+//                    modGet(warmupNodeAttrIds1, i),
+//                    modGet(warmupNodeAttrs1, i),
+//                    modGet(warmupNodeAttrIds2, i),
+//                    modGet(warmupNodeAttrs2, i));
             }
 
             // measure
@@ -175,6 +176,15 @@ public class MixBench {
                     modGet(nhbrs, i));
                 end = System.nanoTime();
                 nhbrOut.println(nodes.size() + "," + (end - start) / 1e3);
+
+                // get_nhbrs(n, attr)
+                start = System.nanoTime();
+                nodes = NeighborNodeBench.getNeighborNode(graphDb,
+                    modGet(nhbrNodeIds, i),
+                    modGet(nhbrNodeAttrIds, i),
+                    modGet(nhbrNodeAttrs, i));
+                end = System.nanoTime();
+                nhbrNodeOut.println(nodes.size() + "," + (end - start) / 1e3);
 
                 // get_nodes(attr)
                 start = System.nanoTime();
@@ -194,24 +204,15 @@ public class MixBench {
                 nhbrAtypeOut.println(nodes.size() + "," + (end - start) / 1e3);
 
                 // get_nodes(attr1, attr2)
-                start = System.nanoTime();
-                nodeSet = BenchNode.getNodes(graphDb, label,
-                    modGet(nodeAttrIds1, i),
-                    modGet(nodeAttrs1, i),
-                    modGet(nodeAttrIds2, i),
-                    modGet(nodeAttrs2, i));
-                end = System.nanoTime();
-                doubleNodeOut.println(
-                    nodeSet.size() + "," + (end - start) / 1e3);
-
-                // get_nhbrs(n, attr)
-                start = System.nanoTime();
-                nodes = NeighborNodeBench.getNeighborNode(graphDb,
-                    modGet(nhbrNodeIds, i),
-                    modGet(nhbrNodeAttrIds, i),
-                    modGet(nhbrNodeAttrs, i));
-                end = System.nanoTime();
-                nhbrNodeOut.println(nodes.size() + "," + (end - start) / 1e3);
+//                start = System.nanoTime();
+//                nodeSet = BenchNode.getNodes(graphDb, label,
+//                    modGet(nodeAttrIds1, i),
+//                    modGet(nodeAttrs1, i),
+//                    modGet(nodeAttrIds2, i),
+//                    modGet(nodeAttrs2, i));
+//                end = System.nanoTime();
+//                doubleNodeOut.println(
+//                    nodeSet.size() + "," + (end - start) / 1e3);
             }
 
             nhbrOut.close();
