@@ -9,20 +9,36 @@ classpath=target/scala-2.10/succinctgraph-assembly-0.1.0-SNAPSHOT.jar
 TOTAL_MEM=249856
 AVAIL_MEM=$(( $TOTAL_MEM - 512 )) # reserve 512m for OS
 
-DATASET=higgs-twitter-20attr35each
-DATASET=liveJournal-40attr16each
+DATASET=higgs-twitter-40attr16each
+postfix="-40attr16each"
 
+DATASET=higgs-twitter-20attr35each
 postfix="-20attr35each"
+
+DATASET=liveJournal-40attr16each
 postfix=""
 
-benchNeighbor=T
-benchNeighborAtype=T
-#benchNeighborNodeIndexed=T
-benchNeighborNode=T
-benchNode=T
-benchNodeNode=T
+if [[ "$DATASET" == "liveJournal-40attr16each" ]]; then
+  pushd ${QUERY_DIR} >/dev/null
+  yes | cp -rf liveJournal-40attr16each-queries/*txt ./
+  popd >/dev/null
+elif [[ "$DATASET" == "higgs-twitter-20attr35each" ]]; then
+  pushd ${QUERY_DIR} >/dev/null
+  yes | cp -rf 20attr35each-queries/*txt ./
+  popd >/dev/null
+else
+  echo implement query copying for me!
+  exit 1
+fi
 
-for JVM_HEAP in 13312
+#benchNeighbor=T
+benchNeighborAtype=T
+#benchNeighborNode=T
+#benchNode=T
+#benchNodeNode=T
+#benchNeighborNodeIndexed=T
+
+for JVM_HEAP in 69632
 do
   # 1st is default neo4j setting; 2nd is "use more"
   for PC in Auto #`echo "0.75 * ($TOTAL_MEM - $JVM_HEAP)" | bc | awk '{printf("%d", $1)}'` #`echo "$AVAIL_MEM - $JVM_HEAP" | bc | awk '{printf("%d", $1)}'`
@@ -36,7 +52,7 @@ do
 
     if [[ -n "$benchNeighbor" ]]; then
         sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
-        java -server -XX:+UseConcMarkSweepGC -Xmx${JVM_HEAP}m -cp ${classpath} \
+        java -verbose:gc -server -XX:+UseConcMarkSweepGC -Xmx${JVM_HEAP}m -cp ${classpath} \
            edu.berkeley.cs.succinctgraph.neo4jbench.BenchNeighbor neighbor-latency \
            ${NEO4J_DIR}/${DATASET} \
            ${QUERY_DIR}/neighbor_warmup_${num_nodes}.txt \
@@ -48,7 +64,8 @@ do
 
     if [[ -n "$benchNode" ]]; then
         sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
-        java -server -XX:+UseConcMarkSweepGC -Xmx${JVM_HEAP}m -cp ${classpath} \
+        #find data/neo4j/${DATASET} -name "*store.db*" -type f -exec dd if={} of=/dev/null bs=1M \;
+        java -verbose:gc -server -XX:+UseConcMarkSweepGC -Xmx${JVM_HEAP}m -cp ${classpath} \
            edu.berkeley.cs.succinctgraph.neo4jbench.BenchNode node-latency \
            ${NEO4J_DIR}/${DATASET} \
            ${QUERY_DIR}/node_warmup_${num_nodes}.txt \
@@ -61,7 +78,7 @@ do
 
     if [[ -n "$benchNodeNode" ]]; then
         sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
-        java -server -XX:+UseConcMarkSweepGC -Xmx${JVM_HEAP}m -cp ${classpath} \
+        java -verbose:gc -server -XX:+UseConcMarkSweepGC -Xmx${JVM_HEAP}m -cp ${classpath} \
            edu.berkeley.cs.succinctgraph.neo4jbench.BenchNode node-node-latency \
            ${NEO4J_DIR}/${DATASET} \
            ${QUERY_DIR}/node_warmup_${num_nodes}.txt \
@@ -73,7 +90,7 @@ do
 
     if [[ -n "$benchNeighborNode" ]]; then
         sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
-        java -server -XX:+UseConcMarkSweepGC -Xmx${JVM_HEAP}m -cp ${classpath} \
+        java -verbose:gc -server -XX:+UseConcMarkSweepGC -Xmx${JVM_HEAP}m -cp ${classpath} \
             edu.berkeley.cs.succinctgraph.neo4jbench.NeighborNodeBench latency \
             ${NEO4J_DIR}/${DATASET} \
             ${QUERY_DIR}/neighbor_node_warmup_${num_nodes}.txt \
@@ -85,7 +102,7 @@ do
 
     if [[ -n "$benchNeighborAtype" ]]; then
         sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
-        java -server -XX:+UseConcMarkSweepGC -Xmx${JVM_HEAP}m -cp ${classpath} \
+        java -verbose:gc -server -XX:+UseConcMarkSweepGC -Xmx${JVM_HEAP}m -cp ${classpath} \
             edu.berkeley.cs.succinctgraph.neo4jbench.BenchNeighborAtype \
             latency \
             ${NEO4J_DIR}/${DATASET} \
@@ -98,7 +115,7 @@ do
 
       if [[ -n "$benchNeighborNodeIndexed" ]]; then
         sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
-        java -server -XX:+UseConcMarkSweepGC -Xmx${JVM_HEAP}m -cp ${classpath} \
+        java -verbose:gc -server -XX:+UseConcMarkSweepGC -Xmx${JVM_HEAP}m -cp ${classpath} \
             edu.berkeley.cs.succinctgraph.neo4jbench.NeighborNodeBench latency-index \
             ${NEO4J_DIR}/${DATASET} \
             ${QUERY_DIR}/neighbor_node_warmup_${num_nodes}.txt \
@@ -111,7 +128,7 @@ do
 
 
         # sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
-        # java -server -XX:+UseConcMarkSweepGC -Xmx${JVM_HEAP}m -cp ${classpath} \
+        # java -verbose:gc -server -XX:+UseConcMarkSweepGC -Xmx${JVM_HEAP}m -cp ${classpath} \
            # edu.berkeley.cs.succinctgraph.neo4jbench.MixBench latency \
            # ${NEO4J_DIR}/${DATASET} \
            # ${QUERY_DIR}/node_warmup_${DATASET}.txt \
