@@ -2,6 +2,7 @@ package edu.berkeley.cs.succinctgraph.neo4jbench;
 
 import org.neo4j.graphdb.*;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
+import org.neo4j.graphdb.factory.GraphDatabaseSettings;
 
 import java.io.*;
 import java.util.*;
@@ -65,7 +66,11 @@ public class NeighborNodeBench {
 
         System.out.println("Benchmarking getNeighborNode queries");
         // START SNIPPET: startDb
-        GraphDatabaseService graphDb = new GraphDatabaseFactory().newEmbeddedDatabase(DB_PATH);
+        GraphDatabaseService graphDb = new GraphDatabaseFactory()
+            .newEmbeddedDatabaseBuilder(DB_PATH)
+            .setConfig(GraphDatabaseSettings.cache_type, "none")
+            .newGraphDatabase();
+
         BenchUtils.registerShutdownHook(graphDb);
         Transaction tx = graphDb.beginTx();
         try {

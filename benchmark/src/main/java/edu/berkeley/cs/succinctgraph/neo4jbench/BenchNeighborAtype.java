@@ -82,6 +82,7 @@ public class BenchNeighborAtype {
         //System.out.println("Setting neo4j's dbms.pagecache.memory: " + neo4jPageCacheMem);
         GraphDatabaseService graphDb = new GraphDatabaseFactory()
             .newEmbeddedDatabaseBuilder(db_path)
+            .setConfig(GraphDatabaseSettings.cache_type, "none")
                 //.setConfig(GraphDatabaseSettings.pagecache_memory, neo4jPageCacheMem)
             .newGraphDatabase();
 

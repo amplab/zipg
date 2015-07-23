@@ -1,6 +1,7 @@
 package edu.berkeley.cs.succinctgraph.neo4jbench;
 
 import org.neo4j.graphdb.*;
+import org.neo4j.graphdb.factory.GraphDatabaseBuilder;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.graphdb.factory.GraphDatabaseSettings;
 
@@ -67,6 +68,7 @@ public class BenchNode {
         // START SNIPPET: startDb
         GraphDatabaseService graphDb = new GraphDatabaseFactory()
             .newEmbeddedDatabaseBuilder(DB_PATH)
+            .setConfig(GraphDatabaseSettings.cache_type, "none")
             //.setConfig(GraphDatabaseSettings.pagecache_memory, neo4jPageCacheMem)
             .newGraphDatabase();
         BenchUtils.registerShutdownHook(graphDb);
@@ -146,7 +148,10 @@ public class BenchNode {
         System.out.println("Benchmarking getNodeNode queries");
         // START SNIPPET: startDb
         GraphDatabaseService graphDb = new GraphDatabaseFactory()
-            .newEmbeddedDatabase(DB_PATH);
+            .newEmbeddedDatabaseBuilder(DB_PATH)
+            .setConfig(GraphDatabaseSettings.cache_type, "none")
+            .newGraphDatabase();
+
         BenchUtils.registerShutdownHook(graphDb);
         Label label = DynamicLabel.label("Node");
         Transaction tx = graphDb.beginTx();
