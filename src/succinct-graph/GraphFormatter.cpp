@@ -116,6 +116,7 @@ void GraphFormatter::create_node_table(
     std::vector<std::vector<std::string>> attributes;
     std::string attr, tmp;
     size_t length = static_cast<size_t>(len);
+    std::map<std::string, int> attr_to_freq;
 
     for (int j = 0; j < num_attr; ++j) {
         // need attributes for column `attr`, length num_nodes
@@ -131,11 +132,10 @@ void GraphFormatter::create_node_table(
             tmp = attr.substr(0, length); // possibly truncate
             attr.erase(0, length); // can potentially reuse this row
 
-            int i = 0;
-            while (n > 0 && i < freq) {
+            while (n > 0 && attr_to_freq[tmp] < freq) {
                 attrs.push_back(tmp);
                 --n;
-                ++i;
+                ++attr_to_freq[tmp];
             }
         }
         std::random_shuffle(attrs.begin(), attrs.end());
