@@ -1,20 +1,16 @@
 package edu.berkeley.cs.succinctgraph.neo4jbench;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.FileWriter;
-import java.io.PrintWriter;
-import java.util.*;
-
-import org.neo4j.graphdb.Direction;
-import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.*;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.graphdb.factory.GraphDatabaseSettings;
+
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 
 import static edu.berkeley.cs.succinctgraph.neo4jbench.BenchUtils.*;
 
@@ -25,7 +21,6 @@ public class BenchNeighbor {
 
     private static int WARMUP_N = 500000;
     private static int MEASURE_N = 500000;
-    private static int COOLDOWN_N = 500;
 
     public static void main(String[] args) {
         String type = args[0];
@@ -36,19 +31,30 @@ public class BenchNeighbor {
         WARMUP_N = Integer.parseInt(args[5]);
         MEASURE_N = Integer.parseInt(args[6]);
         String neo4jPageCacheMemory;
-        if (args.length >= 8) neo4jPageCacheMemory = args[7];
-        else neo4jPageCacheMemory = GraphDatabaseSettings.pagecache_memory.getDefaultValue();
+        if (args.length >= 8) {
+            neo4jPageCacheMemory = args[7];
+        } else {
+            neo4jPageCacheMemory = GraphDatabaseSettings.pagecache_memory
+                .getDefaultValue();
+        }
 
-        int[] warmupQueries = BenchUtils.getNeighborQueries(warmup_query_path);
-        int[] queries = BenchUtils.getNeighborQueries(query_path);
-        if (type.equals("neighbor-latency"))
-            benchNeighborLatency(db_path, neo4jPageCacheMemory, warmupQueries, queries, output_file);
-        else if (type.equals("neighbor-throughput"))
-            benchNeighborThroughput(db_path, warmupQueries, queries, output_file);
+        List<Long> warmupQueries = new ArrayList<>();
+        List<Long> queries = new ArrayList<>();
+        BenchUtils.getNeighborQueries(warmup_query_path, warmupQueries);
+        BenchUtils.getNeighborQueries(query_path, queries);
+
+        if (type.equals("neighbor-latency")) {
+            benchNeighborLatency(db_path,
+                neo4jPageCacheMemory, warmupQueries, queries, output_file);
+        } else if (type.equals("neighbor-throughput")) {
+            benchNeighborThroughput(
+                db_path, warmupQueries, queries, output_file);
+        }
     }
 
-    private static void benchNeighborLatency(String db_path, String neo4jPageCacheMem,
-            int[] warmupQueries, int[] queries, String output_file) {
+    private static void benchNeighborLatency(
+        String db_path, String neo4jPageCacheMem,
+        List<Long> warmupQueries, List<Long> queries, String output_file) {
 
         System.out.println("Benchmarking getNeighbor queries");
         //System.out.println("Setting neo4j's dbms.pagecache.memory: " + neo4jPageCacheMem);
@@ -60,7 +66,8 @@ public class BenchNeighbor {
         BenchUtils.registerShutdownHook(graphDb);
         Transaction tx = graphDb.beginTx();
         try {
-            PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(output_file)));
+            PrintWriter out = new PrintWriter(new BufferedWriter(
+                new FileWriter(output_file)));
             PrintWriter resOut = null;
             if (System.getenv("BENCH_PRINT_RESULTS") != null) {
                 resOut = new PrintWriter(new BufferedWriter(
@@ -76,7 +83,7 @@ public class BenchNeighbor {
                     tx = graphDb.beginTx();
                 }
                 List<Long> neighbors = getNeighborsSorted(
-                    graphDb, warmupQueries[i % warmupQueries.length]);
+                    graphDb, modGet(warmupQueries, i));
 //                if (neighbors.size() == 0) {
 //                    System.err.println("Error: no results for neighbor of " + warmupQueries[i % warmupQueries.length]);
 //                }
@@ -92,7 +99,7 @@ public class BenchNeighbor {
                 }
                 long queryStart = System.nanoTime();
                 List<Long> neighbors = getNeighborsSorted(
-                    graphDb, queries[i % queries.length]);
+                    graphDb, modGet(queries, i));
                 long queryEnd = System.nanoTime();
                 double microsecs = (queryEnd - queryStart) / ((double) 1000);
                 out.println(neighbors.size() + "," + microsecs);
@@ -100,7 +107,7 @@ public class BenchNeighbor {
                 if (resOut != null) {
                     // correctness validation
                     Collections.sort(neighbors);
-                    BenchUtils.print("node id: " + queries[i % queries.length], neighbors, resOut);
+//                    BenchUtils.print("node id: " + queries[i % queries.length], neighbors, resOut);
                 }
             }
 
@@ -117,20 +124,22 @@ public class BenchNeighbor {
     }
 
     private static void benchNeighborThroughput(String db_path,
-            int[] warmupQueries, int[] queries, String output_file) {
+        List<Long> warmupQueries, List<Long> queries, String output_file) {
 
         GraphDatabaseService graphDb = new GraphDatabaseFactory()
                 .newEmbeddedDatabase(db_path);
         BenchUtils.registerShutdownHook(graphDb);
         Transaction tx = graphDb.beginTx();
         try {
-            PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(output_file, true)));
+            PrintWriter out = new PrintWriter(new BufferedWriter(
+                new FileWriter(output_file, true)));
             // warmup
             System.out.println("Warming up neo4j neighbor throughput");
             int i = 0;
             long warmupStart = System.nanoTime();
             while (System.nanoTime() - warmupStart < WARMUP_TIME) {
-                List<Long> neighbors = getNeighbors(graphDb, warmupQueries[i % warmupQueries.length]);
+                List<Long> neighbors = getNeighbors(graphDb,
+                    modGet(warmupQueries, i));
 //                if (neighbors.size() == 0)
 //                    System.err.println("Error: no results found in neo4j neighbor throughput benchmarking");
                 i++;
@@ -149,7 +158,8 @@ public class BenchNeighbor {
                     tx = graphDb.beginTx();
                 }
                 long queryStart = System.nanoTime();
-                List<Long> neighbors = getNeighbors(graphDb, queries[i % queries.length]);
+                List<Long> neighbors = getNeighbors(graphDb,
+                    modGet(queries, i));
                 long queryEnd = System.nanoTime();
 //                if (neighbors.size() == 0)
 //                    System.err.println("Error: no results found in neo4j neighbor throughput benchmarking");
@@ -166,7 +176,8 @@ public class BenchNeighbor {
             i = 0;
             long cooldownStart = System.nanoTime();
             while (System.nanoTime() - cooldownStart < COOLDOWN_TIME) {
-                List<Long> neighbors = getNeighbors(graphDb, warmupQueries[i % warmupQueries.length]);
+                List<Long> neighbors = getNeighbors(graphDb,
+                    modGet(warmupQueries, i));
                 i++;
             }
 
@@ -182,7 +193,8 @@ public class BenchNeighbor {
         }
     }
 
-    private static List<Long> getNeighbors(GraphDatabaseService graphDb, long id) {
+    public static List<Long> getNeighbors(GraphDatabaseService graphDb,
+                                          long id) {
         List<Long> neighbors = new LinkedList<>();
         Node n = graphDb.getNodeById(id);
         Iterable<Relationship> rels = n.getRelationships(Direction.OUTGOING);
@@ -192,8 +204,8 @@ public class BenchNeighbor {
         return neighbors;
     }
 
-    private static List<Long> getNeighborsSorted(GraphDatabaseService graphDb,
-                                                 long id) {
+    public static List<Long> getNeighborsSorted(GraphDatabaseService graphDb,
+                                                long id) {
         Node n = graphDb.getNodeById(id);
         Iterable<Relationship> rels = n.getRelationships(Direction.OUTGOING);
 

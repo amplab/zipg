@@ -32,7 +32,14 @@ public class BenchNeighborAtype {
     private static List<Integer> warmupAtypes, queryAtypes;
 
     // assume 5 atypes
-    private static RelationshipType[] atypeMap = new RelationshipType[5];
+    public static RelationshipType[] atypeMap;
+    static {
+        atypeMap = new RelationshipType[5];
+        // assume 5 atypes
+        for (int i = 0; i < 5; ++i) {
+            atypeMap[i] = new AType(String.valueOf(i));
+        }
+    }
 
     public static void main(String[] args) {
         String type = args[0];
@@ -50,11 +57,6 @@ public class BenchNeighborAtype {
         queryIds = new ArrayList<>();
         warmupAtypes = new ArrayList<>();
         queryAtypes = new ArrayList<>();
-
-        // assume 5 atypes
-        for (int i = 0; i < 5; ++i) {
-            atypeMap[i] = new AType(String.valueOf(i));
-        }
 
         BenchUtils.getNeighborAtypeQueries(
             warmup_query_path, warmupIds, warmupAtypes);
@@ -139,7 +141,7 @@ public class BenchNeighborAtype {
         }
     }
 
-    private static List<Long> getNeighbors(
+    public static List<Long> getNeighbors(
         GraphDatabaseService graphDb, long id, RelationshipType relType) {
 
         List<Long> neighbors = new ArrayList<>();
@@ -152,7 +154,7 @@ public class BenchNeighborAtype {
         return neighbors;
     }
 
-    private static List<Long> getNeighborsSorted(
+    public static List<Long> getNeighborsSorted(
         GraphDatabaseService graphDb, long id, RelationshipType relType) {
 
         Node n = graphDb.getNodeById(id);

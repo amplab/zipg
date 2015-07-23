@@ -276,24 +276,17 @@ public class BenchNode {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
-            // cooldown
-            i = 0;
-            long cooldownStart = System.nanoTime();
-            while (System.nanoTime() - cooldownStart < COOLDOWN_TIME) {
-                Set<Long> nodes = getNodes(graphDb, label, modGet(warmupAttributes, i),
-                    modGet(warmupQueries, i));
-                i++;
-            }
             tx.success();
         }
         System.out.println("Shutting down database ...");
         graphDb.shutdown();
     }
 
-    private static Set<Long> getNodes(GraphDatabaseService graphDb,
-                                       Label label, int attr, String search) {
-        ResourceIterator<Node> nodes = graphDb.findNodes(label, "name" + attr, search);
+    public static Set<Long> getNodes(GraphDatabaseService graphDb,
+                                     Label label, int attr, String search) {
+
+        ResourceIterator<Node> nodes = graphDb.findNodes(
+            label, "name" + attr, search);
         try {
             Set<Long> userIds = new HashSet<Long>();
             while (nodes.hasNext()) {
@@ -306,12 +299,14 @@ public class BenchNode {
         }
     }
 
-    private static Set<Long> getNodes(
+    public static Set<Long> getNodes(
         GraphDatabaseService graphDb,
         Label label, int attr1, String search1, int attr2, String search2) {
 
-        ResourceIterator<Node> nodes = graphDb.findNodes(label, "name" + attr1, search1);
-        ResourceIterator<Node> nodes2 = graphDb.findNodes(label, "name" + attr2, search2);
+        ResourceIterator<Node> nodes = graphDb.findNodes(
+            label, "name" + attr1, search1);
+        ResourceIterator<Node> nodes2 = graphDb.findNodes(
+            label, "name" + attr2, search2);
         try {
             Set<Long> s1 = new HashSet<Long>();
             while (nodes.hasNext()) {

@@ -10,13 +10,10 @@ TOTAL_MEM=249856
 AVAIL_MEM=$(( $TOTAL_MEM - 512 )) # reserve 512m for OS
 
 DATASET=higgs-twitter-40attr16each
-postfix="-40attr16each"
 
 DATASET=higgs-twitter-20attr35each
-postfix="-20attr35each"
 
 DATASET=liveJournal-40attr16each
-postfix=""
 
 if [[ "$DATASET" == "liveJournal-40attr16each" ]]; then
   pushd ${QUERY_DIR} >/dev/null
@@ -32,11 +29,12 @@ else
 fi
 
 #benchNeighbor=T
-benchNeighborAtype=T
+# benchNeighborAtype=T
 #benchNeighborNode=T
 #benchNode=T
 #benchNodeNode=T
 #benchNeighborNodeIndexed=T
+benchMixed=T
 
 for JVM_HEAP in 69632
 do
@@ -57,7 +55,7 @@ do
            ${NEO4J_DIR}/${DATASET} \
            ${QUERY_DIR}/neighbor_warmup_${num_nodes}.txt \
            ${QUERY_DIR}/neighbor_query_${num_nodes}.txt \
-           ${HOME_DIR}/neo4j_${DATASET}_neighbor_latency_jvm${JVM_HEAP}m_pagecache${PC}m${postfix}.txt \
+           ${HOME_DIR}/neo4j_${DATASET}_neighbor_latency_jvm${JVM_HEAP}m_pagecache${PC}m.txt \
            ${neo4j_warmup_neighbor} \
            ${neo4j_measure_neighbor} 5g
       fi
@@ -70,7 +68,7 @@ do
            ${NEO4J_DIR}/${DATASET} \
            ${QUERY_DIR}/node_warmup_${num_nodes}.txt \
            ${QUERY_DIR}/node_query_${num_nodes}.txt \
-           ${HOME_DIR}/neo4j_${DATASET}_node_latency_jvm${JVM_HEAP}m_pagecache${PC}m${postfix}.txt \
+           ${HOME_DIR}/neo4j_${DATASET}_node_latency_jvm${JVM_HEAP}m_pagecache${PC}m.txt \
            ${neo4j_warmup_node} \
            ${neo4j_measure_node} 5g #\
            #${PC}m
@@ -83,7 +81,7 @@ do
            ${NEO4J_DIR}/${DATASET} \
            ${QUERY_DIR}/node_warmup_${num_nodes}.txt \
            ${QUERY_DIR}/node_query_${num_nodes}.txt \
-           ${HOME_DIR}/neo4j_${DATASET}_node_node_latency_jvm${JVM_HEAP}m_pagecache${PC}m${postfix}.txt \
+           ${HOME_DIR}/neo4j_${DATASET}_node_node_latency_jvm${JVM_HEAP}m_pagecache${PC}m.txt \
            ${neo4j_warmup_node} \
            ${neo4j_measure_node} 5g
       fi
@@ -95,7 +93,7 @@ do
             ${NEO4J_DIR}/${DATASET} \
             ${QUERY_DIR}/neighbor_node_warmup_${num_nodes}.txt \
             ${QUERY_DIR}/neighbor_node_query_${num_nodes}.txt \
-            ${HOME_DIR}/neo4j_${DATASET}_neighbor_node_latency_jvm${JVM_HEAP}m_pagecache${PC}m${postfix}.txt \
+            ${HOME_DIR}/neo4j_${DATASET}_neighbor_node_latency_jvm${JVM_HEAP}m_pagecache${PC}m.txt \
             ${neo4j_warmup_neighbor_node} \
             ${neo4j_measure_neighbor_node} 5g
       fi
@@ -108,7 +106,7 @@ do
             ${NEO4J_DIR}/${DATASET} \
             ${QUERY_DIR}/neighborAtype_warmup_${num_nodes}.txt \
             ${QUERY_DIR}/neighborAtype_query_${num_nodes}.txt \
-            ${HOME_DIR}/neo4j_${DATASET}_neighborAtype_latency_jvm${JVM_HEAP}m_pagecache${PC}m${postfix}.txt \
+            ${HOME_DIR}/neo4j_${DATASET}_neighborAtype_latency_jvm${JVM_HEAP}m_pagecache${PC}m.txt \
             ${neo4j_warmup_neighbor_atype} \
             ${neo4j_measure_neighbor_atype}
       fi
@@ -125,19 +123,29 @@ do
             ${neo4j_measure_neighbor_node}
       fi
 
+      if [[ -n "$benchMixed" ]]; then
+        sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
 
+        java -verbose:gc -server -XX:+UseConcMarkSweepGC -Xmx${JVM_HEAP}m -cp ${classpath} \
+           edu.berkeley.cs.succinctgraph.neo4jbench.MixBench latency \
+           ${NEO4J_DIR}/${DATASET} \
+           ${QUERY_DIR}/neighbor_warmup_${DATASET}.txt \
+           ${QUERY_DIR}/neighbor_query_${DATASET}.txt \
+           ${QUERY_DIR}/neighbor_node_warmup_${num_nodes}.txt \
+           ${QUERY_DIR}/neighbor_node_query_${num_nodes}.txt \
+           ${QUERY_DIR}/neighborAtype_warmup_${num_nodes}.txt \
+           ${QUERY_DIR}/neighborAtype_query_${num_nodes}.txt \
+           ${QUERY_DIR}/node_warmup_${DATASET}.txt \
+           ${QUERY_DIR}/node_query_${DATASET}.txt \
+           ${HOME_DIR}/neo4j_${DATASET}_mix_neighbor_latency_jvm${JVM_HEAP}m.txt \
+           ${HOME_DIR}/neo4j_${DATASET}_mix_neighbor_node_latency_jvm${JVM_HEAP}m.txt \
+           ${HOME_DIR}/neo4j_${DATASET}_mix_neighborAtype_latency_jvm${JVM_HEAP}m.txt \
+           ${HOME_DIR}/neo4j_${DATASET}_mix_node_latency_jvm${JVM_HEAP}m.txt \
+           ${HOME_DIR}/neo4j_${DATASET}_mix_node_node_latency_jvm${JVM_HEAP}m.txt \
+           ${neo4j_warmup_mix} \
+           ${neo4j_measure_mix}
 
-        # sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
-        # java -verbose:gc -server -XX:+UseConcMarkSweepGC -Xmx${JVM_HEAP}m -cp ${classpath} \
-           # edu.berkeley.cs.succinctgraph.neo4jbench.MixBench latency \
-           # ${NEO4J_DIR}/${DATASET} \
-           # ${QUERY_DIR}/node_warmup_${DATASET}.txt \
-           # ${QUERY_DIR}/node_query_${DATASET}.txt \
-           # ${QUERY_DIR}/neighbor_warmup_${DATASET}.txt \
-           # ${QUERY_DIR}/neighbor_query_${DATASET}.txt \
-           # ${HOME_DIR}/neo4j_${DATASET}_mix_latency.txt \
-           # ${neo4j_warmup_mix} \
-           # ${neo4j_measure_mix}
+      fi
 
     done
   done

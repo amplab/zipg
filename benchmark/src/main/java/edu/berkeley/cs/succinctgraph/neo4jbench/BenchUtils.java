@@ -119,7 +119,7 @@ public class BenchUtils {
         }
     }
 
-    public static int[] getNeighborQueries(String file) {
+    public static void getNeighborQueries(String file, List<Long> nhbrs) {
         try {
             BufferedReader br = new BufferedReader(new FileReader(file));
             List<String> lines = new ArrayList<String>();
@@ -128,14 +128,11 @@ public class BenchUtils {
                 lines.add(line);
                 line = br.readLine();
             }
-            int[] queries = new int[lines.size()];
             for (int i = 0; i < lines.size(); i++) {
-                queries[i] = Integer.parseInt(lines.get(i));
+                nhbrs.add(Long.parseLong(lines.get(i)));
             }
-            return queries;
         } catch (IOException e) {
             e.printStackTrace();
-            return null;
         }
     }
 
@@ -157,13 +154,15 @@ public class BenchUtils {
     }
 
     public static void getNeighborNodeQueries(
-        String file, List<Integer> indices, List<Integer> attributes, List<String> queries) {
+        String file, List<Long> indices,
+        List<Integer> attributes, List<String> queries) {
+
         try {
             BufferedReader br = new BufferedReader(new FileReader(file));
             String line = br.readLine();
             while (line != null) {
                 int idx = line.indexOf(',');
-                indices.add(Integer.parseInt(line.substring(0, idx)));
+                indices.add(Long.parseLong(line.substring(0, idx)));
                 int idx2 = line.indexOf(',', idx + 1);
                 attributes.add(Integer.parseInt(line.substring(idx + 1, idx2)));
                 queries.add(line.substring(idx2 + 1));

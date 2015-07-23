@@ -32,14 +32,14 @@ public class NeighborNodeBench {
                 new FileWriter(output_file + ".neo4j_result")));
         }
 
-        List<Integer> warmup_neighbor_indices = new ArrayList<Integer>();
+        List<Long> warmup_neighbor_indices = new ArrayList<Long>();
         List<Integer> warmup_node_attributes = new ArrayList<Integer>();
         List<String> warmup_node_queries = new ArrayList<String>();
         BenchUtils.getNeighborNodeQueries(
             warmup_file, warmup_neighbor_indices, warmup_node_attributes,
             warmup_node_queries);
 
-        List<Integer> neighbor_indices = new ArrayList<Integer>();
+        List<Long> neighbor_indices = new ArrayList<Long>();
         List<Integer> node_attributes = new ArrayList<Integer>();
         List<String> node_queries = new ArrayList<String>();
         BenchUtils.getNeighborNodeQueries(query_file, neighbor_indices,
@@ -58,7 +58,7 @@ public class NeighborNodeBench {
 
     private static void neighborNodeLatency(
         String DB_PATH, PrintWriter out, PrintWriter resOut,
-        List<Integer> warmup_neighbor_indices, List<Integer> neighbor_indices,
+        List<Long> warmup_neighbor_indices, List<Long> neighbor_indices,
         List<Integer> warmup_node_attributes, List<String> warmup_node_queries,
         List<Integer> node_attributes, List<String> node_queries,
         boolean useIndex) {
@@ -144,8 +144,9 @@ public class NeighborNodeBench {
         }
     }
 
-    private static List<Long> getNeighborNode(GraphDatabaseService graphDb,
-                                              long node_id, int attr, String search) {
+    public static List<Long> getNeighborNode(
+        GraphDatabaseService graphDb, long node_id, int attr, String search) {
+
         Node n = graphDb.getNodeById(node_id);
         List<Long> result = new LinkedList<>();
         for (Relationship r : n.getRelationships(Direction.OUTGOING)) {
@@ -158,7 +159,7 @@ public class NeighborNodeBench {
     }
 
     // slow
-    private static List<Long> getNeighborNodeUsingIndex(
+    public static List<Long> getNeighborNodeUsingIndex(
         GraphDatabaseService graphDb, long node_id, int attr, String search) {
 
         Set<Long> neighbors = new HashSet<Long>();
@@ -182,7 +183,7 @@ public class NeighborNodeBench {
     }
 
     // cypher version: slow
-    private static List<Long> getNeighborNodeUsingIndex0(
+    public static List<Long> getNeighborNodeUsingIndex0(
         GraphDatabaseService graphDb, long node_id, int attr, String search) {
         List<Long> result = new LinkedList<Long>();
 
