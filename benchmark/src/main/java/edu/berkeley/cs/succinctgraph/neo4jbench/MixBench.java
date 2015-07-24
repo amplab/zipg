@@ -12,6 +12,7 @@ import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 
 import static edu.berkeley.cs.succinctgraph.neo4jbench.BenchUtils.*;
@@ -141,6 +142,10 @@ public class MixBench {
             BenchUtils.fullWarmup(graphDb);
             BenchUtils.awaitIndexes(graphDb);
 
+            long seed = 1618L;
+            Random rand = new Random(seed);
+            int randQuery;
+
             // warmup
             System.out.println("Warming up queries");
             for (int i = 0; i < WARMUP_N; i++) {
@@ -149,29 +154,40 @@ public class MixBench {
                     tx.close();
                     tx = graphDb.beginTx();
                 }
-                BenchNeighbor.getNeighborsSorted(graphDb,
-                    modGet(warmupNhbrs, i));
-
-                NeighborNodeBench.getNeighborNode(graphDb,
-                    modGet(warmupNhbrNodeIds, i),
-                    modGet(warmupNhbrNodeAttrIds, i),
-                    modGet(warmupNhbrNodeAttrs, i));
-
-                BenchNode.getNodes(graphDb, label,
-                    modGet(warmupNodeAttrIds1, i),
-                    modGet(warmupNodeAttrs1, i));
-
-                BenchNeighborAtype.getNeighborsSorted(graphDb,
-                    modGet(warmupNhbrAtypeIds, i),
-                    BenchNeighborAtype.atypeMap[modGet(
-                        warmupNhbrAtypeAtypes, i)]);
-
-//                BenchNode.getNodes(graphDb, label,
-//                    modGet(warmupNodeAttrIds1, i),
-//                    modGet(warmupNodeAttrs1, i),
-//                    modGet(warmupNodeAttrIds2, i),
-//                    modGet(warmupNodeAttrs2, i));
+                randQuery = rand.nextInt(5);
+                switch (randQuery) {
+                    case 0:
+                        BenchNeighbor.getNeighborsSorted(graphDb,
+                            modGet(warmupNhbrs, i));
+                        break;
+                    case 1:
+                        NeighborNodeBench.getNeighborNode(graphDb,
+                            modGet(warmupNhbrNodeIds, i),
+                            modGet(warmupNhbrNodeAttrIds, i),
+                            modGet(warmupNhbrNodeAttrs, i));
+                        break;
+                    case 2:
+                        BenchNode.getNodes(graphDb, label,
+                            modGet(warmupNodeAttrIds1, i),
+                            modGet(warmupNodeAttrs1, i));
+                        break;
+                    case 3:
+                        BenchNeighborAtype.getNeighborsSorted(graphDb,
+                            modGet(warmupNhbrAtypeIds, i),
+                            BenchNeighborAtype.atypeMap[modGet(
+                                warmupNhbrAtypeAtypes, i)]);
+                        break;
+                    case 4:
+                        BenchNode.getNodes(graphDb, label,
+                            modGet(warmupNodeAttrIds1, i),
+                            modGet(warmupNodeAttrs1, i),
+                            modGet(warmupNodeAttrIds2, i),
+                            modGet(warmupNodeAttrs2, i));
+                        break;
+                }
             }
+
+            rand.setSeed(1618L); // re-seed
 
             // measure
             System.out.println("Measure queries");
@@ -182,49 +198,62 @@ public class MixBench {
                     tx.close();
                     tx = graphDb.beginTx();
                 }
-                // get_nhbrs(n)
-                start = System.nanoTime();
-                List<Long> nodes = BenchNeighbor.getNeighborsSorted(graphDb,
-                    modGet(nhbrs, i));
-                end = System.nanoTime();
-                nhbrOut.println(nodes.size() + "," + (end - start) / 1e3);
-
-                // get_nhbrs(n, attr)
-                start = System.nanoTime();
-                nodes = NeighborNodeBench.getNeighborNode(graphDb,
-                    modGet(nhbrNodeIds, i),
-                    modGet(nhbrNodeAttrIds, i),
-                    modGet(nhbrNodeAttrs, i));
-                end = System.nanoTime();
-                nhbrNodeOut.println(nodes.size() + "," + (end - start) / 1e3);
-
-                // get_nodes(attr)
-                start = System.nanoTime();
-                Set<Long> nodeSet = BenchNode.getNodes(graphDb, label,
-                    modGet(nodeAttrIds1, i),
-                    modGet(nodeAttrs1, i));
-                end = System.nanoTime();
-                nodeOut.println(nodeSet.size() + "," + (end - start) / 1e3);
-
-                // get_nhbrs(n, atype)
-                start = System.nanoTime();
-                nodes = BenchNeighborAtype.getNeighborsSorted(graphDb,
-                    modGet(nhbrAtypeIds, i),
-                    BenchNeighborAtype.atypeMap[modGet(
-                        nhbrAtypeAtypes, i)]);
-                end = System.nanoTime();
-                nhbrAtypeOut.println(nodes.size() + "," + (end - start) / 1e3);
-
-                // get_nodes(attr1, attr2)
-//                start = System.nanoTime();
-//                nodeSet = BenchNode.getNodes(graphDb, label,
-//                    modGet(nodeAttrIds1, i),
-//                    modGet(nodeAttrs1, i),
-//                    modGet(nodeAttrIds2, i),
-//                    modGet(nodeAttrs2, i));
-//                end = System.nanoTime();
-//                doubleNodeOut.println(
-//                    nodeSet.size() + "," + (end - start) / 1e3);
+                randQuery = rand.nextInt(5);
+                switch (randQuery) {
+                    case 0:
+                        // get_nhbrs(n)
+                        start = System.nanoTime();
+                        List<Long> nodes = BenchNeighbor.getNeighborsSorted(
+                            graphDb, modGet(nhbrs, i));
+                        end = System.nanoTime();
+                        nhbrOut.println(
+                            nodes.size() + "," + (end - start) / 1e3);
+                        break;
+                    case 1:
+                        // get_nhbrs(n, attr)
+                        start = System.nanoTime();
+                        nodes = NeighborNodeBench.getNeighborNode(graphDb,
+                            modGet(nhbrNodeIds, i),
+                            modGet(nhbrNodeAttrIds, i),
+                            modGet(nhbrNodeAttrs, i));
+                        end = System.nanoTime();
+                        nhbrNodeOut.println(
+                            nodes.size() + "," + (end - start) / 1e3);
+                        break;
+                    case 2:
+                        // get_nodes(attr)
+                        start = System.nanoTime();
+                        Set<Long> nodeSet = BenchNode.getNodes(graphDb, label,
+                            modGet(nodeAttrIds1, i),
+                            modGet(nodeAttrs1, i));
+                        end = System.nanoTime();
+                        nodeOut.println(
+                            nodeSet.size() + "," + (end - start) / 1e3);
+                        break;
+                    case 3:
+                        // get_nhbrs(n, atype)
+                        start = System.nanoTime();
+                        nodes = BenchNeighborAtype.getNeighborsSorted(graphDb,
+                            modGet(nhbrAtypeIds, i),
+                            BenchNeighborAtype.atypeMap[modGet(
+                                nhbrAtypeAtypes, i)]);
+                        end = System.nanoTime();
+                        nhbrAtypeOut.println(
+                            nodes.size() + "," + (end - start) / 1e3);
+                        break;
+                    case 4:
+                    // get_nodes(attr1, attr2)
+                        start = System.nanoTime();
+                        nodeSet = BenchNode.getNodes(graphDb, label,
+                            modGet(nodeAttrIds1, i),
+                            modGet(nodeAttrs1, i),
+                            modGet(nodeAttrIds2, i),
+                            modGet(nodeAttrs2, i));
+                        end = System.nanoTime();
+                        doubleNodeOut.println(
+                            nodeSet.size() + "," + (end - start) / 1e3);
+                        break;
+                }
             }
 
             nhbrOut.close();
