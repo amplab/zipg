@@ -5,6 +5,7 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
+import org.neo4j.graphdb.factory.GraphDatabaseSettings;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -67,6 +68,11 @@ public class MixBench {
 
         WARMUP_N = Integer.parseInt(args[15]);
         MEASURE_N = Integer.parseInt(args[16]);
+        String neo4jPageCacheMemory = GraphDatabaseSettings.pagecache_memory
+            .getDefaultValue();;
+        if (args.length > 17) {
+            neo4jPageCacheMemory = args[17];
+        }
 
         // get_nhbrs(n)
         getNeighborQueries(warmupNeighborFile, warmupNhbrs);
@@ -96,7 +102,7 @@ public class MixBench {
         // start!
 
         if (type.equals("latency")) {
-            mixLatency(dbPath,
+            mixLatency(dbPath, neo4jPageCacheMemory,
                 nhbrOut, nhbrNodeOut, nhbrAtypeOut, nodeOut, doubleNodeOut);
         } else {
             System.out.println("No type " + type + " is supported!");
@@ -105,12 +111,18 @@ public class MixBench {
 
     /** Note: the mixing order can affect query performance. */
     private static void mixLatency(
-        String DB_PATH, String nhbrOutFile, String nhbrNodeOutFile,
+        String DB_PATH, String neo4jPageCacheMem,
+        String nhbrOutFile, String nhbrNodeOutFile,
         String nhbrAtypeOutFile, String nodeOutFile, String doubleNodeOutFile) {
 
         // START SNIPPET: startDb
-        GraphDatabaseService graphDb =
-            new GraphDatabaseFactory().newEmbeddedDatabase(DB_PATH);
+        GraphDatabaseService graphDb = new GraphDatabaseFactory()
+            .newEmbeddedDatabaseBuilder(DB_PATH)
+            .setConfig(GraphDatabaseSettings.cache_type, "none")
+            .setConfig(
+                GraphDatabaseSettings.pagecache_memory, neo4jPageCacheMem)
+            .newGraphDatabase();
+
         BenchUtils.registerShutdownHook(graphDb);
         Label label = DynamicLabel.label("Node");
         Transaction tx = graphDb.beginTx();
