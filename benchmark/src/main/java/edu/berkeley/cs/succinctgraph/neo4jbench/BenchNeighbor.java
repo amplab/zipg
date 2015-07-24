@@ -61,7 +61,8 @@ public class BenchNeighbor {
         GraphDatabaseService graphDb = new GraphDatabaseFactory()
             .newEmbeddedDatabaseBuilder(db_path)
             .setConfig(GraphDatabaseSettings.cache_type, "none")
-            //.setConfig(GraphDatabaseSettings.pagecache_memory, neo4jPageCacheMem)
+            .setConfig(
+                GraphDatabaseSettings.pagecache_memory, neo4jPageCacheMem)
             .newGraphDatabase();
 
         BenchUtils.registerShutdownHook(graphDb);

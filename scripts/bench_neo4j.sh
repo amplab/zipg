@@ -36,13 +36,17 @@ fi
 #benchNeighborNodeIndexed=T
 benchMixed=T
 
-for JVM_HEAP in 69632
-do
-  # 1st is default neo4j setting; 2nd is "use more"
-  for PC in Auto #`echo "0.75 * ($TOTAL_MEM - $JVM_HEAP)" | bc | awk '{printf("%d", $1)}'` #`echo "$AVAIL_MEM - $JVM_HEAP" | bc | awk '{printf("%d", $1)}'`
-  do
+for JVM_HEAP in 69632; do
+  # "use more": #`echo "0.75 * ($TOTAL_MEM - $JVM_HEAP)" | bc | awk '{printf("%d", $1)}'` #`echo "$AVAIL_MEM - $JVM_HEAP" | bc | awk '{printf("%d", $1)}'`
+  # For default neo4j setting, use "Auto"; otherwise support custom value with postfix k/m/g
+  for PC in Auto; do
     echo "Setting -Xmx to ${JVM_HEAP}m"
     echo "Setting neo4j pagecache to ${PC}m"
+
+    pageCacheMem=$PC
+    if [[ "$PC" == "Auto" ]]; then
+      pageCacheMem=""
+    fi
 
     for num_nodes in ${nodes[@]}
     do
@@ -57,7 +61,8 @@ do
            ${QUERY_DIR}/neighbor_query_${num_nodes}.txt \
            ${HOME_DIR}/neo4j_${DATASET}_neighbor_latency_jvm${JVM_HEAP}m_pagecache${PC}m.txt \
            ${neo4j_warmup_neighbor} \
-           ${neo4j_measure_neighbor} 5g
+           ${neo4j_measure_neighbor} \
+           ${pageCacheMem}
       fi
 
     if [[ -n "$benchNode" ]]; then
@@ -70,8 +75,8 @@ do
            ${QUERY_DIR}/node_query_${num_nodes}.txt \
            ${HOME_DIR}/neo4j_${DATASET}_node_latency_jvm${JVM_HEAP}m_pagecache${PC}m.txt \
            ${neo4j_warmup_node} \
-           ${neo4j_measure_node} 5g #\
-           #${PC}m
+           ${neo4j_measure_node} \
+           ${pageCacheMem}
       fi
 
     if [[ -n "$benchNodeNode" ]]; then
@@ -83,7 +88,8 @@ do
            ${QUERY_DIR}/node_query_${num_nodes}.txt \
            ${HOME_DIR}/neo4j_${DATASET}_node_node_latency_jvm${JVM_HEAP}m_pagecache${PC}m.txt \
            ${neo4j_warmup_node} \
-           ${neo4j_measure_node} 5g
+           ${neo4j_measure_node} \
+           ${pageCacheMem}
       fi
 
     if [[ -n "$benchNeighborNode" ]]; then
@@ -95,7 +101,8 @@ do
             ${QUERY_DIR}/neighbor_node_query_${num_nodes}.txt \
             ${HOME_DIR}/neo4j_${DATASET}_neighbor_node_latency_jvm${JVM_HEAP}m_pagecache${PC}m.txt \
             ${neo4j_warmup_neighbor_node} \
-            ${neo4j_measure_neighbor_node} 5g
+            ${neo4j_measure_neighbor_node} \
+            ${pageCacheMem}
       fi
 
     if [[ -n "$benchNeighborAtype" ]]; then
@@ -108,7 +115,8 @@ do
             ${QUERY_DIR}/neighborAtype_query_${num_nodes}.txt \
             ${HOME_DIR}/neo4j_${DATASET}_neighborAtype_latency_jvm${JVM_HEAP}m_pagecache${PC}m.txt \
             ${neo4j_warmup_neighbor_atype} \
-            ${neo4j_measure_neighbor_atype}
+            ${neo4j_measure_neighbor_atype} \
+            ${pageCacheMem}
       fi
 
       if [[ -n "$benchNeighborNodeIndexed" ]]; then
@@ -120,7 +128,8 @@ do
             ${QUERY_DIR}/neighbor_node_query_${num_nodes}.txt \
             ${HOME_DIR}/neo4j_${DATASET}_neighbor_node_latency_index.txt \
             ${neo4j_warmup_neighbor_node} \
-            ${neo4j_measure_neighbor_node}
+            ${neo4j_measure_neighbor_node} \
+            ${pageCacheMem}
       fi
 
       if [[ -n "$benchMixed" ]]; then
@@ -143,7 +152,8 @@ do
            ${HOME_DIR}/neo4j_${DATASET}_mix_node_latency_jvm${JVM_HEAP}m.txt \
            ${HOME_DIR}/neo4j_${DATASET}_mix_node_node_latency_jvm${JVM_HEAP}m.txt \
            ${neo4j_warmup_mix} \
-           ${neo4j_measure_mix}
+           ${neo4j_measure_mix} \
+           ${pageCacheMem}
 
       fi
 

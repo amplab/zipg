@@ -49,9 +49,11 @@ public class BenchNeighborAtype {
         String output_file = args[4];
         WARMUP_N = Integer.parseInt(args[5]);
         MEASURE_N = Integer.parseInt(args[6]);
-        String neo4jPageCacheMemory;
-        if (args.length >= 8) neo4jPageCacheMemory = args[7];
-        else neo4jPageCacheMemory = GraphDatabaseSettings.pagecache_memory.getDefaultValue();
+        String neo4jPageCacheMemory =
+            GraphDatabaseSettings.pagecache_memory.getDefaultValue();;
+        if (args.length >= 8) {
+            neo4jPageCacheMemory = args[7];
+        }
 
         warmupIds = new ArrayList<>();
         queryIds = new ArrayList<>();
@@ -72,9 +74,7 @@ public class BenchNeighborAtype {
     }
 
     private static void benchNeighborAtypeLatency(
-        String db_path,
-        String neo4jPageCacheMem,
-        String output_file) {
+        String db_path, String neo4jPageCacheMem, String output_file) {
 
         List<Long> neighbors;
 
@@ -83,13 +83,15 @@ public class BenchNeighborAtype {
         GraphDatabaseService graphDb = new GraphDatabaseFactory()
             .newEmbeddedDatabaseBuilder(db_path)
             .setConfig(GraphDatabaseSettings.cache_type, "none")
-                //.setConfig(GraphDatabaseSettings.pagecache_memory, neo4jPageCacheMem)
+            .setConfig(
+                GraphDatabaseSettings.pagecache_memory, neo4jPageCacheMem)
             .newGraphDatabase();
 
         BenchUtils.registerShutdownHook(graphDb);
         Transaction tx = graphDb.beginTx();
         try {
-            PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(output_file)));
+            PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(
+                output_file)));
             PrintWriter resOut = null;
             if (System.getenv("BENCH_PRINT_RESULTS") != null) {
                 resOut = new PrintWriter(new BufferedWriter(

@@ -1,19 +1,23 @@
 package edu.berkeley.cs.succinctgraph.neo4jbench;
 
 import org.neo4j.graphdb.*;
-import org.neo4j.graphdb.factory.GraphDatabaseBuilder;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.graphdb.factory.GraphDatabaseSettings;
 
-import java.io.*;
-import java.util.*;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import static edu.berkeley.cs.succinctgraph.neo4jbench.BenchUtils.*;
 
 public class BenchNode {
     private static final long WARMUP_TIME = (long) (60 * 1E9); // 60 seconds
     private static final long MEASURE_TIME = (long) (120 * 1E9); // 120 seconds
-    private static final long COOLDOWN_TIME = (long) (30 * 1E9); // 30 seconds
 
     private static int WARMUP_N = 100000;
     private static int MEASURE_N = 100000;
@@ -27,8 +31,12 @@ public class BenchNode {
         WARMUP_N = Integer.parseInt(args[5]);
         MEASURE_N = Integer.parseInt(args[6]);
         String neo4jPageCacheMemory;
-        //if (args.length >= 8) neo4jPageCacheMemory = args[7];
-        neo4jPageCacheMemory = GraphDatabaseSettings.pagecache_memory.getDefaultValue();
+        if (args.length >= 8) {
+            neo4jPageCacheMemory = args[7];
+        } else {
+            neo4jPageCacheMemory = GraphDatabaseSettings.pagecache_memory
+                .getDefaultValue();
+        }
 
         List<Integer> warmupAttributes1 = new ArrayList<Integer>();
         List<Integer> warmupAttributes2 = new ArrayList<Integer>();
@@ -44,18 +52,19 @@ public class BenchNode {
         BenchUtils.getNodeQueries(query_path, attributes1, attributes2,
             queries1, queries2);
 
-        if (type.equals("node-throughput"))
+        if (type.equals("node-throughput")) {
             nodeThroughput(db_path, warmupAttributes1, warmupQueries1,
                 attributes1, queries1, output_file);
-        else if (type.equals("node-latency"))
-            nodeLatency(db_path, neo4jPageCacheMemory, warmupAttributes1, warmupQueries1,
-                attributes1, queries1, output_file);
-        else if (type.equals("node-node-latency"))
-            nodeNodeLatency(db_path, warmupAttributes1, warmupAttributes2,
-                warmupQueries1, warmupQueries2,
+        } else if (type.equals("node-latency")) {
+            nodeLatency(db_path, neo4jPageCacheMemory, warmupAttributes1,
+                warmupQueries1, attributes1, queries1, output_file);
+        } else if (type.equals("node-node-latency")) {
+            nodeNodeLatency(db_path, neo4jPageCacheMemory, warmupAttributes1,
+                warmupAttributes2, warmupQueries1, warmupQueries2,
                 attributes1, attributes2, queries1, queries2, output_file);
-        else
+        } else {
             System.out.println("No type " + type + " is supported!");
+        }
     }
 
     private static void nodeLatency(
@@ -69,7 +78,8 @@ public class BenchNode {
         GraphDatabaseService graphDb = new GraphDatabaseFactory()
             .newEmbeddedDatabaseBuilder(DB_PATH)
             .setConfig(GraphDatabaseSettings.cache_type, "none")
-            //.setConfig(GraphDatabaseSettings.pagecache_memory, neo4jPageCacheMem)
+            .setConfig(
+                GraphDatabaseSettings.pagecache_memory, neo4jPageCacheMem)
             .newGraphDatabase();
         BenchUtils.registerShutdownHook(graphDb);
         Label label = DynamicLabel.label("Node");
@@ -139,7 +149,7 @@ public class BenchNode {
     }
 
     private static void nodeNodeLatency(
-        String DB_PATH,
+        String DB_PATH, String neo4jPageCacheMemory,
         List<Integer> warmupAttributes1, List<Integer> warmupAttributes2,
         List<String> warmupQueries1, List<String> warmupQueries2,
         List<Integer> attributes1, List<Integer> attributes2,
@@ -150,6 +160,8 @@ public class BenchNode {
         GraphDatabaseService graphDb = new GraphDatabaseFactory()
             .newEmbeddedDatabaseBuilder(DB_PATH)
             .setConfig(GraphDatabaseSettings.cache_type, "none")
+            .setConfig(
+                GraphDatabaseSettings.pagecache_memory, neo4jPageCacheMemory)
             .newGraphDatabase();
 
         BenchUtils.registerShutdownHook(graphDb);

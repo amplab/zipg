@@ -25,8 +25,14 @@ public class NeighborNodeBench {
         String output_file = args[4];
         WARMUP_N = Integer.parseInt(args[5]);
         MEASURE_N = Integer.parseInt(args[6]);
+        String neo4jPageCacheMem = GraphDatabaseSettings.pagecache_memory
+            .getDefaultValue();;
+        if (args.length > 7) {
+            neo4jPageCacheMem = args[7];
+        }
 
-        PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(output_file)));
+        PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(
+            output_file)));
         PrintWriter resOut = null;
         if (System.getenv("BENCH_PRINT_RESULTS") != null) {
             resOut = new PrintWriter(new BufferedWriter(
@@ -47,18 +53,27 @@ public class NeighborNodeBench {
             node_attributes, node_queries);
 
         if (type.equals("latency")) {
-            neighborNodeLatency(db_path, out, resOut, warmup_neighbor_indices, neighbor_indices,
-                warmup_node_attributes, warmup_node_queries, node_attributes, node_queries, false);
+
+            neighborNodeLatency(db_path, neo4jPageCacheMem, out, resOut,
+                warmup_neighbor_indices, neighbor_indices,
+                warmup_node_attributes, warmup_node_queries, node_attributes,
+                node_queries, false);
+
         } else if (type.equals("latency-index")) {
-            neighborNodeLatency(db_path, out, resOut, warmup_neighbor_indices, neighbor_indices,
-                warmup_node_attributes, warmup_node_queries, node_attributes, node_queries, true);
+
+            neighborNodeLatency(db_path, neo4jPageCacheMem, out, resOut,
+                warmup_neighbor_indices, neighbor_indices,
+                warmup_node_attributes, warmup_node_queries,
+                node_attributes, node_queries, true);
+
         } else {
             System.out.println("No type " + type + " is supported!");
         }
     }
 
     private static void neighborNodeLatency(
-        String DB_PATH, PrintWriter out, PrintWriter resOut,
+        String DB_PATH, String neo4jPageCacheMem,
+        PrintWriter out, PrintWriter resOut,
         List<Long> warmup_neighbor_indices, List<Long> neighbor_indices,
         List<Integer> warmup_node_attributes, List<String> warmup_node_queries,
         List<Integer> node_attributes, List<String> node_queries,
@@ -69,6 +84,8 @@ public class NeighborNodeBench {
         GraphDatabaseService graphDb = new GraphDatabaseFactory()
             .newEmbeddedDatabaseBuilder(DB_PATH)
             .setConfig(GraphDatabaseSettings.cache_type, "none")
+            .setConfig(
+                GraphDatabaseSettings.pagecache_memory, neo4jPageCacheMem)
             .newGraphDatabase();
 
         BenchUtils.registerShutdownHook(graphDb);
@@ -82,11 +99,15 @@ public class NeighborNodeBench {
             for (int i = 0; i < WARMUP_N; i++) {
                 List<Long> result;
                 if (!useIndex) {
-                    result = getNeighborNode(graphDb, modGet(warmup_neighbor_indices, i),
-                        modGet(warmup_node_attributes, i), modGet(warmup_node_queries, i));
+                    result = getNeighborNode(graphDb,
+                        modGet(warmup_neighbor_indices, i),
+                        modGet(warmup_node_attributes, i),
+                        modGet(warmup_node_queries, i));
                 } else {
-                    result = getNeighborNodeUsingIndex(graphDb, modGet(warmup_neighbor_indices, i),
-                        modGet(warmup_node_attributes, i), modGet(warmup_node_queries, i));
+                    result = getNeighborNodeUsingIndex(graphDb,
+                        modGet(warmup_neighbor_indices, i),
+                        modGet(warmup_node_attributes, i),
+                        modGet(warmup_node_queries, i));
                 }
                 if (result.size() == 0) {
 //                    System.out.printf(
@@ -111,12 +132,14 @@ public class NeighborNodeBench {
                 List<Long> result;
                 if (!useIndex) {
                     queryStart = System.nanoTime();
-                    result = getNeighborNode(graphDb, modGet(neighbor_indices, i),
+                    result = getNeighborNode(graphDb,
+                        modGet(neighbor_indices, i),
                         modGet(node_attributes, i), modGet(node_queries, i));
                     queryEnd = System.nanoTime();
                 } else {
                     queryStart = System.nanoTime();
-                    result = getNeighborNodeUsingIndex(graphDb, modGet(neighbor_indices, i),
+                    result = getNeighborNodeUsingIndex(graphDb,
+                        modGet(neighbor_indices, i),
                         modGet(node_attributes, i), modGet(node_queries, i));
                     queryEnd = System.nanoTime();
                 }
@@ -126,7 +149,8 @@ public class NeighborNodeBench {
 //                        modGet(neighbor_indices, i),
 //                        modGet(node_attributes, i),
 //                        modGet(node_queries, i));
-                out.println(result.size() + "," + (queryEnd - queryStart) / 1000);
+                out.println(result.size() + "," +
+                    (queryEnd - queryStart) / 1000);
 
                 // correctness check
                 if (resOut != null) {
