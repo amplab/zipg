@@ -18,7 +18,21 @@
 inline time_t get_timestamp() {
     struct timeval now;
     gettimeofday (&now, NULL);
-    return  now.tv_usec + (time_t)now.tv_sec * 1000000;
+    return now.tv_usec + (time_t)now.tv_sec * 1000000;
 }
+
+class scoped_timer {
+public:
+    scoped_timer(int64_t* latency) {
+        this->latency_ = latency;
+        this->start_ = get_timestamp();
+    }
+    ~scoped_timer() {
+        *(this->latency_) = (get_timestamp() - start_); // microsecs
+    }
+private:
+    int64_t* latency_;
+    time_t start_;
+};
 
 #endif
