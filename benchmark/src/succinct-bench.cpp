@@ -61,13 +61,20 @@ int main(int argc, char **argv) {
     int c;
     std::string type = "neighbor-throughput";
     int warmup_n = 20000; int measure_n = 100000;
-    std::string warmup_query_file = "warmup.txt";
-    std::string measure_query_file = "query_file.txt";
-    std::string warmup_neighbor_file = "warmup.txt";
-    std::string measure_neighbor_file = "query_file.txt";
-    std::string result_file_name = "benchmark_results.txt";
+    std::string warmup_query_file("warmup.txt");
+    std::string measure_query_file("query_file.txt");
+    std::string warmup_neighbor_file("warmup.txt");
+    std::string measure_neighbor_file("query_file.txt");
+    std::string result_file_name("benchmark_results.txt");
 
-    while ((c = getopt(argc, argv, "t:x:y:z:w:q:a:b:o:")) != -1) {
+    std::string warmup_nhbr_node_file, nhbr_node_file;
+    std::string warmup_node_file, query_node_file;
+    std::string nhbr_atype_res, nhbr_node_res, node_res, node_node_res;
+
+    // TODO: how the script uses these here is a mess.
+    while ((c = getopt(
+        argc, argv, "t:x:y:z:w:q:a:b:c:d:e:f:o:h:i:j:k:")) != -1)
+    {
         switch(c) {
         case 't':
             type = std::string(optarg);
@@ -90,8 +97,32 @@ int main(int argc, char **argv) {
         case 'b':
             measure_neighbor_file = std::string(optarg);
             break;
+        case 'c':
+            warmup_nhbr_node_file = std::string(optarg);
+            break;
+        case 'd':
+            nhbr_node_file = std::string(optarg);
+            break;
+        case 'e':
+            warmup_node_file = std::string(optarg);
+            break;
+        case 'f':
+            query_node_file = std::string(optarg);
+            break;
         case 'o':
             result_file_name = std::string(optarg);
+            break;
+        case 'h':
+            nhbr_atype_res = std::string(optarg);
+            break;
+        case 'i':
+            nhbr_node_res = std::string(optarg);
+            break;
+        case 'j':
+            node_res = std::string(optarg);
+            break;
+        case 'k':
+            node_node_res = std::string(optarg);
             break;
         }
     }
@@ -148,9 +179,13 @@ int main(int argc, char **argv) {
 
     } else if (type == "mix-latency") {
 
-        bench->benchmark_mix_latency(result_file_name, warmup_n, measure_n,
-                warmup_neighbor_file, measure_neighbor_file,
-                warmup_query_file, measure_query_file);
+        bench->benchmark_mix_latency(result_file_name, // nhbr
+            nhbr_atype_res, nhbr_node_res, node_res, node_node_res,
+            warmup_n, measure_n,
+            warmup_neighbor_file, measure_neighbor_file,
+            warmup_query_file, measure_query_file, // nhbr_atype
+            warmup_nhbr_node_file, nhbr_node_file,
+            warmup_node_file, query_node_file);
 
     } else if (type == "node-node-latency") {
 

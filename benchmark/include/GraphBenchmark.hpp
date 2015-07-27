@@ -1,6 +1,7 @@
 #ifndef SUCCINCT_GRAPH_BENCHMARK_H
 #define SUCCINCT_GRAPH_BENCHMARK_H
 
+#include <random>
 #include <string>
 #include <sstream>
 #include <vector>
@@ -409,73 +410,140 @@ public:
     }
 
     // BENCHMARKING MIX QUERIES
-    void benchmark_mix_latency(std::string res_path, count_t WARMUP_N, count_t MEASURE_N,
-            std::string warmup_neighbor_query_file, std::string neighbor_query_file,
-            std::string warmup_node_query_file, std::string node_query_file) {
-        std::ofstream res_stream(res_path);
+    void benchmark_mix_latency(
+        const std::string& nhbr_res_file,
+        const std::string& nhbr_atype_res_file,
+        const std::string& nhbr_node_res_file,
+        const std::string& node_res_file,
+        const std::string& node_node_res_file,
+        count_t WARMUP_N, count_t MEASURE_N,
+        const std::string& warmup_neighbor_query_file,
+        const std::string& neighbor_query_file,
+        const std::string& warmup_nhbr_atype_file,
+        const std::string& nhbr_atype_file,
+        const std::string& warmup_nhbr_node_file,
+        const std::string& nhbr_node_file,
+        const std::string& warmup_node_query_file,
+        const std::string& node_query_file)
+    {
+        std::ofstream nhbr_res(nhbr_res_file);
+        std::ofstream nhbr_atype_res(nhbr_atype_res_file);
+        std::ofstream nhbr_node_res(nhbr_node_res_file);
+        std::ofstream node_res(node_res_file);
+        std::ofstream node_node_res(node_node_res_file);
+
         read_neighbor_queries(warmup_neighbor_query_file, neighbor_query_file);
+        read_neighbor_atype_queries(warmup_nhbr_atype_file, nhbr_atype_file);
+        read_neighbor_node_queries(warmup_nhbr_node_file, nhbr_node_file);
         read_node_queries(warmup_node_query_file, node_query_file);
+
+        std::mt19937 rng(1618);
+        std::uniform_int_distribution<int> uni(0, 4);
+
+        std::vector<int64_t> result;
+        std::set<int64_t> result_set;
 
         LOG_E("Benchmarking mixQuery latency\n");
         try {
             // Warmup phase
             LOG_E("Warming up for %lu queries...\n", WARMUP_N);
-            for (int i = 0; i < WARMUP_N; i++) {
-                if (i % 2 == 0) {
-                    std::vector<int64_t> result;
-                    get_neighbors_f_(result, mod_get(warmup_neighbor_indices, i / 2));
-                    if (result.size() == 0) {
-                        LOG_E("Error getting neighbors for %lld.\n",
-                            mod_get(warmup_neighbor_indices, i / 2));
-                    }
-                } else {
-                    std::set<int64_t> result;
-                    get_nodes_f_(result,
-                        mod_get(warmup_node_attributes, i / 2),
-                        mod_get(warmup_node_queries, i / 2));
-                    if (result.size() == 0) {
-                        LOG_E("Error searching attr %d for %s\n",
-                            mod_get(warmup_node_attributes, i / 2),
-                            mod_get(warmup_node_queries, i / 2).c_str());
-                    }
+            for (int i = 0; i < WARMUP_N; ++i) {
+                int rand_query = uni(rng);
+                switch (rand_query) {
+                case 0:
+                    get_neighbors_f_(result,
+                        mod_get(warmup_neighbor_indices, i));
+                    break;
+                case 1:
+                    get_neighbors_attr_f_(result,
+                        mod_get(warmup_nhbrNode_indices, i),
+                        mod_get(warmup_nhbrNode_attr_ids, i),
+                        mod_get(warmup_nhbrNode_attrs, i));
+                    break;
+                case 2:
+                    get_nodes_f_(result_set,
+                        mod_get(warmup_node_attributes, i),
+                        mod_get(warmup_node_queries, i));
+                    break;
+                case 3:
+                    get_neighbors_atype_f_(result,
+                        mod_get(warmup_nhbrAtype_indices, i),
+                        mod_get(warmup_atypes, i));
+                    break;
+                case 4:
+                    get_nodes2_f_(result_set,
+                        mod_get(warmup_node_attributes, i),
+                        mod_get(warmup_node_queries, i),
+                        mod_get(warmup_node_attributes2, i),
+                        mod_get(warmup_node_queries2, i));
+                    break;
+                default:
+                    assert(false);
                 }
             }
             LOG_E("Warmup complete.\n");
 
+            rng.seed(1618);
+
             // Measure phase
             LOG_E("Measuring for %lu queries...\n", MEASURE_N);
-            for (int i = 0; i < MEASURE_N; i++) {
-                if (i % 2 == 0) {
-                    std::vector<int64_t> result;
-                    time_t query_start = get_timestamp();
-                    get_neighbors_f_(result, mod_get(neighbor_indices, i / 2));
-                    time_t query_end = get_timestamp();
-                    if (result.size() == 0) {
-                        LOG_E(
-                            "Error getting neighbors for %lld\n",
-                            mod_get(neighbor_indices, i / 2));
-                    } else {
-                        res_stream << result.size() << "," <<  (query_end - query_start) << "\n";
-                    }
-                } else {
-                    std::set<int64_t> result;
-                    time_t query_start = get_timestamp();
-                    get_nodes_f_(result,
-                        mod_get(node_attributes, i / 2),
-                        mod_get(node_queries, i / 2));
-                    time_t query_end = get_timestamp();
-                    if (result.size() == 0) {
-                        printf("Error searching for attr %d for %s\n",
-                            mod_get(node_attributes, i / 2),
-                            mod_get(node_queries, i / 2).c_str());
-                    } else {
-                        res_stream << result.size() << "," <<  (query_end - query_start) << "\n";
-                    }
+            int64_t latency = 0;
+            for (int i = 0; i < MEASURE_N; ++i) {
+                int rand_query = uni(rng);
+                switch (rand_query) {
+                case 0:
+                {
+                    scoped_timer t(&latency);
+                    get_neighbors_f_(result, mod_get(neighbor_indices, i));
+                    nhbr_res << result.size() << "," << latency << std::endl;
+                    break;
+                }
+                case 1:
+                {
+                    scoped_timer t(&latency);
+                    get_neighbors_attr_f_(result,
+                        mod_get(nhbrNode_indices, i),
+                        mod_get(nhbrNode_attr_ids, i),
+                        mod_get(nhbrNode_attrs, i));
+                    nhbr_node_res << result.size() << "," << latency << "\n";
+                    break;
+                }
+                case 2:
+                {
+                    scoped_timer t(&latency);
+                    get_nodes_f_(result_set,
+                        mod_get(node_attributes, i),
+                        mod_get(node_queries, i));
+                    node_res << result_set.size() << "," << latency << "\n";
+                    break;
+                }
+                case 3:
+                {
+                    scoped_timer t(&latency);
+                    get_neighbors_atype_f_(result,
+                        mod_get(nhbrAtype_indices, i),
+                        mod_get(atypes, i));
+                    nhbr_atype_res << result.size() << "," << latency << "\n";
+                    break;
+                }
+                case 4:
+                {
+                    scoped_timer t(&latency);
+                    get_nodes2_f_(result_set,
+                        mod_get(node_attributes, i),
+                        mod_get(node_queries, i),
+                        mod_get(node_attributes2, i),
+                        mod_get(node_queries2, i));
+                    node_node_res << result_set.size() << "," << latency << "\n";
+                    break;
+                }
+                default:
+                    assert(false);
                 }
             }
             LOG_E("Measure complete.\n");
         } catch (std::exception &e) {
-            LOG_E("Throughput test ends...\n");
+            LOG_E("Exception: %s\n", e.what());
         }
     }
 
@@ -621,21 +689,29 @@ protected:
     count_t WARMUP_N; count_t MEASURE_N;
     static const count_t COOLDOWN_N = 500;
 
+    // get_nhbrs(n)
     std::vector<int64_t> warmup_neighbor_indices, neighbor_indices;
 
+    // get_nhbrs(n, atype)
+    std::vector<int64_t> warmup_nhbrAtype_indices, nhbrAtype_indices;
     std::vector<int> warmup_atypes, atypes;
 
-    std::vector<int> warmup_node_attributes;
-    std::vector<std::string> warmup_node_queries;
-    std::vector<int> node_attributes;
-    std::vector<std::string> node_queries;
-    std::vector<int> warmup_node_attributes2;
-    std::vector<std::string> warmup_node_queries2;
-    std::vector<int> node_attributes2;
-    std::vector<std::string> node_queries2;
+    // get_nhbrs(n, attr)
+    std::vector<int64_t> warmup_nhbrNode_indices, nhbrNode_indices;
+    std::vector<int> warmup_nhbrNode_attr_ids, nhbrNode_attr_ids;
+    std::vector<std::string> warmup_nhbrNode_attrs, nhbrNode_attrs;
+
+    // 2 get_nodes()
+    std::vector<int> warmup_node_attributes, node_attributes;
+    std::vector<std::string> warmup_node_queries, node_queries;
+    std::vector<int> warmup_node_attributes2, node_attributes2;
+    std::vector<std::string> warmup_node_queries2, node_queries2;
 
     // READING QUERY FILES
-    void read_neighbor_queries(std::string warmup_neighbor_file, std::string query_neighbor_file) {
+    void read_neighbor_queries(
+        const std::string& warmup_neighbor_file,
+        const std::string& query_neighbor_file)
+    {
         std::ifstream warmup_input(warmup_neighbor_file);
         std::ifstream query_input(query_neighbor_file);
 
@@ -650,24 +726,28 @@ protected:
     }
 
     void read_neighbor_atype_queries(
-        std::string warmup_file, std::string query_file) {
-
+        const std::string& warmup_file,
+        const std::string& query_file)
+    {
         std::ifstream warmup_input(warmup_file);
         std::ifstream query_input(query_file);
         std::string line;
         while (getline(warmup_input, line)) {
             std::vector<std::string> toks = split(line, ',');
-            warmup_neighbor_indices.push_back(std::stoll(toks[0]));
+            warmup_nhbrAtype_indices.push_back(std::stoll(toks[0]));
             warmup_atypes.push_back(std::stoi(toks[1]));
         }
         while (getline(query_input, line)) {
             std::vector<std::string> toks = split(line, ',');
-            neighbor_indices.push_back(std::stoll(toks[0]));
+            nhbrAtype_indices.push_back(std::stoll(toks[0]));
             atypes.push_back(std::stoi(toks[1]));
         }
     }
 
-    void read_node_queries(std::string warmup_query_file, std::string query_file) {
+    void read_node_queries(
+        const std::string& warmup_query_file,
+        const std::string& query_file)
+    {
         std::ifstream warmup_input(warmup_query_file);
         std::ifstream query_input(query_file);
 
@@ -690,7 +770,10 @@ protected:
         }
     }
 
-    void read_neighbor_node_queries(std::string warmup_query_file, std::string query_file) {
+    void read_neighbor_node_queries(
+        const std::string& warmup_query_file,
+        const std::string& query_file)
+    {
         std::ifstream warmup_input(warmup_query_file);
         std::ifstream query_input(query_file);
 
@@ -699,17 +782,19 @@ protected:
             // Format: nodeId,attrId,[everything to EOL is attr]
             // Since attr can contain ',', we don't use split() to parse
             int pos = line.find(',');
-            warmup_neighbor_indices.push_back(std::stoll(line.substr(0, pos)));
+            warmup_nhbrNode_indices.push_back(std::stoll(line.substr(0, pos)));
             int pos2 = line.find(',', pos + 1);
-            warmup_node_attributes.push_back(std::stoi(line.substr(pos + 1, pos2 - pos - 1)));
-            warmup_node_queries.push_back(line.substr(pos2 + 1));
+            warmup_nhbrNode_attr_ids.push_back(
+                std::stoi(line.substr(pos + 1, pos2 - pos - 1)));
+            warmup_nhbrNode_attrs.push_back(line.substr(pos2 + 1));
         }
         while (getline(query_input, line)) {
             int pos = line.find(',');
-            neighbor_indices.push_back(std::stoll(line.substr(0, pos)));
+            nhbrNode_indices.push_back(std::stoll(line.substr(0, pos)));
             int pos2 = line.find(',', pos + 1);
-            node_attributes.push_back(std::stoi(line.substr(pos + 1, pos2 - pos - 1)));
-            node_queries.push_back(line.substr(pos2 + 1));
+            nhbrNode_attr_ids.push_back(
+            std::stoi(line.substr(pos + 1, pos2 - pos - 1)));
+            nhbrNode_attrs.push_back(line.substr(pos2 + 1));
         }
     }
 
