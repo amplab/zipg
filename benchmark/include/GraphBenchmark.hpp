@@ -495,9 +495,9 @@ public:
                 {
                     scoped_timer t(&latency);
                     get_neighbors_f_(result, mod_get(neighbor_indices, i));
+                }
                     nhbr_res << result.size() << "," << latency << std::endl;
                     break;
-                }
                 case 1:
                 {
                     scoped_timer t(&latency);
@@ -505,27 +505,27 @@ public:
                         mod_get(nhbrNode_indices, i),
                         mod_get(nhbrNode_attr_ids, i),
                         mod_get(nhbrNode_attrs, i));
+                }
                     nhbr_node_res << result.size() << "," << latency << "\n";
                     break;
-                }
                 case 2:
                 {
                     scoped_timer t(&latency);
                     get_nodes_f_(result_set,
                         mod_get(node_attributes, i),
                         mod_get(node_queries, i));
+                }
                     node_res << result_set.size() << "," << latency << "\n";
                     break;
-                }
                 case 3:
                 {
                     scoped_timer t(&latency);
                     get_neighbors_atype_f_(result,
                         mod_get(nhbrAtype_indices, i),
                         mod_get(atypes, i));
+                }
                     nhbr_atype_res << result.size() << "," << latency << "\n";
                     break;
-                }
                 case 4:
                 {
                     scoped_timer t(&latency);
@@ -534,9 +534,9 @@ public:
                         mod_get(node_queries, i),
                         mod_get(node_attributes2, i),
                         mod_get(node_queries2, i));
+                }
                     node_node_res << result_set.size() << "," << latency << "\n";
                     break;
-                }
                 default:
                     assert(false);
                 }
