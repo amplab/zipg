@@ -21,6 +21,7 @@ benchNeighborAtype=T
 benchNeighborNode=T
 benchNode=T
 benchNodeNode=T
+benchMix=T
 
 function bench() {
 
@@ -41,7 +42,7 @@ function bench() {
   fi
   
     if [[ -n "$benchNode" ]]; then
-      sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+      sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
       ${BIN_DIR}/bench -t node-latency -x ${warmup_node} \
       -y ${measure_node} -w ${QUERY_DIR}/node_warmup_${num_nodes}.txt \
       -q ${QUERY_DIR}/node_query_${num_nodes}.txt \
@@ -50,7 +51,7 @@ function bench() {
     fi
 
     if [[ -n "$benchNodeNode" ]]; then
-      sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+      sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
       ${BIN_DIR}/bench -t node-node-latency -x ${warmup_node} \
       -y ${measure_node} -w ${QUERY_DIR}/node_warmup_${num_nodes}.txt \
       -q ${QUERY_DIR}/node_query_${num_nodes}.txt \
@@ -59,7 +60,7 @@ function bench() {
     fi
     
     if [[ -n "$benchNeighborNode" ]]; then
-      sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+      sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
       ${BIN_DIR}/bench -t neighbor-node-latency -x ${warmup_neighbor_node} \
       -y ${measure_neighbor_node} -w ${QUERY_DIR}/neighbor_node_warmup_${num_nodes}.txt \
       -q ${QUERY_DIR}/neighbor_node_query_${num_nodes}.txt \
@@ -68,7 +69,7 @@ function bench() {
     fi
 
     if [[ -n "$benchNeighborAtype" ]]; then
-        sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+        sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
         ${BIN_DIR}/bench -t neighbor-atype-latency -x ${warmup_neighbor_atype} \
         -y ${measure_neighbor_atype} -w ${QUERY_DIR}/neighborAtype_warmup_${num_nodes}.txt \
         -q ${QUERY_DIR}/neighborAtype_query_${num_nodes}.txt \
@@ -77,7 +78,7 @@ function bench() {
     fi
 
     if [[ -n "$benchNeighbor" ]]; then
-      sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+      sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
       ${BIN_DIR}/bench -t neighbor-latency -x ${warmup_neighbor} \
       -y ${measure_neighbor} -w ${QUERY_DIR}/neighbor_warmup_${num_nodes}.txt \
       -q ${QUERY_DIR}/neighbor_query_${num_nodes}.txt \
@@ -85,9 +86,27 @@ function bench() {
       ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
     fi
 
+    if [[ -n "$benchMix" ]]; then
+      sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
 
-#  avg=$(cut -d',' -f2 ${HOME_DIR}/node_latency-npa${npa}sa${sa}isa${isa}.txt | awk '{x += $1} END {print x/NR}')
-#  echo "npa${npa} sa${sa} isa${isa}, get_nodes(attr) average: ${avg}"
+      ${BIN_DIR}/bench -t mix-latency \
+        -x ${warmup_mix} -y ${measure_mix} \
+        -w ${QUERY_DIR}/neighborAtype_warmup_${num_nodes}.txt \
+        -q ${QUERY_DIR}/neighborAtype_query_${num_nodes}.txt \
+        -a ${QUERY_DIR}/neighbor_warmup_${num_nodes}.txt \
+        -b ${QUERY_DIR}/neighbor_query_${num_nodes}.txt \
+        -c ${QUERY_DIR}/neighbor_node_warmup_${num_nodes}.txt \
+        -d ${QUERY_DIR}/neighbor_node_query_${num_nodes}.txt \
+        -e ${QUERY_DIR}/node_warmup_${num_nodes}.txt \
+        -f ${QUERY_DIR}/node_query_${num_nodes}.txt \
+        -o ${HOME_DIR}/mix_neighbor_latency.txt \
+        -h ${HOME_DIR}/mix_neighborAtype_latency.txt \
+        -i ${HOME_DIR}/mix_neighbor_node_latency.txt \
+        -j ${HOME_DIR}/mix_node_latency.txt \
+        -k ${HOME_DIR}/mix_double_node_latency.txt \
+        ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
+
+    fi
 
   if [[ -n "$SHARDED" ]]; then
   	bash ${SCRIPT_DIR}/../sbin/stop-all.sh
