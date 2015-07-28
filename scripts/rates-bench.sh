@@ -6,29 +6,29 @@ source ${SCRIPT_DIR}/config.sh
 source ${SCRIPT_DIR}/../conf/succinct-env.sh
 
 num_nodes=100000 # hack
-#dataset="-liveJournal"
 dataset="-2attr350each"
 dataset="-20attr35each"
+dataset="-liveJournal"
 
 # NOTE: comment this out for non-sharded bench
-#SHARDED=T
+SHARDED=T
 if [[ -z "$SHARDED" ]]; then
   TOTAL_NUM_SHARDS=no
 fi
 
-benchNeighbor=T
-benchNeighborAtype=T
-benchNeighborNode=T
-benchNode=T
-benchNodeNode=T
+#benchNeighbor=T
+#benchNeighborAtype=T
+#benchNeighborNode=T
+#benchNode=T
+#benchNodeNode=T
 benchMix=T
 
 function bench() {
 
-  EDGE_FILE="data/higgs-social_network.opts-npa${npa}sa${sa}isa${isa}.edge_table"
-  NODE_FILE="data/higgs${dataset}-tpch-npa${npa}sa${sa}isa${isa}.nodeWithPtrs"
-  # EDGE_FILE="/mnt2T/data/liveJournal-npa${npa}sa${sa}isa${isa}.assoc"
-  # NODE_FILE="/mnt2T/data/liveJournal-40attr16each-tpch-npa${npa}sa${sa}isa${isa}.node"
+  #EDGE_FILE="data/higgs-social_network.opts-npa${npa}sa${sa}isa${isa}.edge_table"
+  #NODE_FILE="data/higgs${dataset}-tpch-npa${npa}sa${sa}isa${isa}.nodeWithPtrs"
+  EDGE_FILE="../data/liveJournal-npa${npa}sa${sa}isa${isa}.assoc"
+  NODE_FILE="../data/liveJournal-40attr16each-tpch-npa${npa}sa${sa}isa${isa}.node"
 
   if [[ -n "$SHARDED" ]]; then
     bash ${SCRIPT_DIR}/../sbin/stop-all.sh
@@ -99,11 +99,11 @@ function bench() {
         -d ${QUERY_DIR}/neighbor_node_query_${num_nodes}.txt \
         -e ${QUERY_DIR}/node_warmup_${num_nodes}.txt \
         -f ${QUERY_DIR}/node_query_${num_nodes}.txt \
-        -o ${HOME_DIR}/mix_neighbor_latency.txt \
-        -h ${HOME_DIR}/mix_neighborAtype_latency.txt \
-        -i ${HOME_DIR}/mix_neighbor_node_latency.txt \
-        -j ${HOME_DIR}/mix_node_latency.txt \
-        -k ${HOME_DIR}/mix_double_node_latency.txt \
+        -o ${HOME_DIR}/mix_neighbor_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+        -h ${HOME_DIR}/mix_neighborAtype_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+        -i ${HOME_DIR}/mix_neighbor_node_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+        -j ${HOME_DIR}/mix_node_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+        -k ${HOME_DIR}/mix_double_node_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
         ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
 
     fi
@@ -113,7 +113,6 @@ function bench() {
   fi
 }
 
-sa=4; isa=16; npa=16; bench
-sa=8; isa=64; npa=64; bench
 sa=32; isa=64; npa=128; bench
-
+sa=8; isa=64; npa=64; bench
+sa=4; isa=16; npa=16; bench

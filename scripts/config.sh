@@ -99,7 +99,7 @@ measure_neighbor_atype=200000
 neo4j_warmup_neighbor_atype=100000
 neo4j_measure_neighbor_atype=200000
 
-warmup_mix=50000
-measure_mix=100000
+warmup_mix=2000
+measure_mix=400000
 neo4j_warmup_mix=100000
-neo4j_measure_mix=200000
+neo4j_measure_mix=400000

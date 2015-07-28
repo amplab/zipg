@@ -32,17 +32,21 @@ fi
 #benchNeighbor=T
 #benchNeighborAtype=T
 #benchNeighborNode=T
-#benchNode=T
+benchNode=T
 #benchNodeNode=T
 #benchNeighborNodeIndexed=T
-benchMixed=T
+#benchMixed=T
 
 pageCacheForNodes=6543m # works
 pageCacheForNodes=10543m # can finish, worsens too much
 pageCacheForNodes=8543m # works, has tradeoff
+pageCacheForNodes=9984m # did not finish
+pageCacheForNodes=6860m # did not finish
+pageCacheForNodes=7168m
 
 pageCacheNormal=12g
 
+for pageCacheForNodes in 9574m 9370m; do
 for JVM_HEAP in 2048; do
   # "use more": #`echo "0.75 * ($TOTAL_MEM - $JVM_HEAP)" | bc | awk '{printf("%d", $1)}'` #`echo "$AVAIL_MEM - $JVM_HEAP" | bc | awk '{printf("%d", $1)}'`
   # For default neo4j setting, use "Auto"; otherwise support custom value with postfix k/m/g
@@ -144,8 +148,8 @@ for JVM_HEAP in 2048; do
 
       if [[ -n "$benchMixed" ]]; then
         sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
-        find data/neo4j/${DATASET}/schema/index -type f -exec dd if={} of=/dev/null bs=1M 2>/dev/null \;
         find data/neo4j/${DATASET}/ -name "*store.db*" -type f -exec dd if={} of=/dev/null bs=1M 2>/dev/null \;
+        find data/neo4j/${DATASET}/schema/index -type f -exec dd if={} of=/dev/null bs=1M 2>/dev/null \;
 
         java -verbose:gc -server -XX:+UseConcMarkSweepGC -Xmx${JVM_HEAP}m -cp ${classpath} \
            edu.berkeley.cs.succinctgraph.neo4jbench.MixBench latency \
@@ -171,3 +175,4 @@ for JVM_HEAP in 2048; do
 
     done
   done
+done
