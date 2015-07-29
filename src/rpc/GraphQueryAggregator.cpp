@@ -215,6 +215,7 @@ private:
     std::vector<GraphQueryServiceClient> local_shards_;
 };
 
+// Dummy factory that just delegates fields.
 class ProcessorFactory : public TProcessorFactory {
 public:
     ProcessorFactory(
@@ -236,7 +237,6 @@ public:
             new GraphQueryAggregatorServiceProcessor(handler));
         return handlerProcessor;
     }
-
 private:
     int total_num_shards_;
     int local_num_shards_;
@@ -289,31 +289,22 @@ int main(int argc, char **argv) {
 
     int port = QUERY_HANDLER_PORT;
     try {
-        shared_ptr<GraphQueryAggregatorServiceHandler> handler(
-            new GraphQueryAggregatorServiceHandler(
-                total_num_shards,
-                local_num_shards,
-                local_host_id,
-                hostnames));
-        shared_ptr<TProcessor> processor(
-            new GraphQueryAggregatorServiceProcessor(handler));
-
-        shared_ptr<ProcessorFactory> processorFactory(
+        shared_ptr<ProcessorFactory> processor_factory(
             new ProcessorFactory(
                 total_num_shards,
                 local_num_shards,
                 local_host_id,
                 hostnames));
-
         shared_ptr<TServerTransport> server_transport(new TServerSocket(port));
         shared_ptr<TTransportFactory> transport_factory(
             new TBufferedTransportFactory());
         shared_ptr<TProtocolFactory> protocol_factory(
             new TBinaryProtocolFactory());
 
+        // Note: 1st arg being a processor factory is essential in supporting
+        // multiple clients (e.g. in throughput benchmarks).
         TThreadedServer server(
-            // processor,
-            processorFactory,
+            processor_factory,
             server_transport,
             transport_factory,
             protocol_factory);

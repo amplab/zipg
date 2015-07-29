@@ -314,7 +314,7 @@ public:
                 query_thput, edges_thput);
             std::ofstream ofs("throughput_get_nhbrs.txt",
                 std::ofstream::out | std::ofstream::app);
-            ofs << query_thput << " " << edges_thput;
+            ofs << query_thput << " " << edges_thput << std::endl;
 
         } catch (std::exception &e) {
             LOG_E("Throughput test ends...: '%s'\n", e.what());
@@ -341,10 +341,7 @@ public:
                 shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
                 shared_ptr<GraphQueryAggregatorServiceClient> client(
                     new GraphQueryAggregatorServiceClient(protocol));
-
                 transport->open();
-                client->connect_to_local_shards();
-                client->init();
 
                 shared_ptr<benchmark_thread_data_t> thread_data(
                     new benchmark_thread_data_t);
