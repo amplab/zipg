@@ -71,9 +71,11 @@ int main(int argc, char **argv) {
     std::string warmup_node_file, query_node_file;
     std::string nhbr_atype_res, nhbr_node_res, node_res, node_node_res;
 
+    int throughput_threads = 1;
+
     // TODO: how the script uses these here is a mess.
     while ((c = getopt(
-        argc, argv, "t:x:y:z:w:q:a:b:c:d:e:f:o:h:i:j:k:")) != -1)
+        argc, argv, "t:x:y:z:w:q:a:b:c:d:e:f:o:h:i:j:k:p:")) != -1)
     {
         switch(c) {
         case 't':
@@ -124,6 +126,9 @@ int main(int argc, char **argv) {
         case 'k':
             node_node_res = std::string(optarg);
             break;
+        case 'p':
+            throughput_threads = std::stoi(optarg);
+            break;
         }
     }
 
@@ -155,10 +160,8 @@ int main(int argc, char **argv) {
 
     } else if (type == "neighbor-throughput") {
 
-        std::pair<double, double> thput_pair = bench->benchmark_neighbor_throughput(
-                warmup_query_file, measure_query_file);
-        result_file << "Get Neighbor Throughput: " << thput_pair.first << "\n";
-        result_file << "Get Edges Throughput: " << thput_pair.second << "\n";
+        bench->benchmark_neighbor_throughput(
+            throughput_threads, warmup_query_file, measure_query_file);
 
     } else if (type == "node-latency") {
 

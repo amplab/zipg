@@ -4,6 +4,7 @@
 #include <random>
 #include <string>
 #include <sstream>
+#include <thread>
 #include <vector>
 
 #include <thrift/protocol/TBinaryProtocol.h>
@@ -28,6 +29,27 @@ private:
     inline T mod_get(const std::vector<T>& xs, int i) {
         return xs[i % xs.size()];
     }
+
+    typedef struct {
+        shared_ptr<GraphQueryAggregatorServiceClient> client;
+        // get_nhbrs(n)
+        std::vector<int64_t> warmup_neighbor_indices, neighbor_indices;
+
+//        // get_nhbrs(n, atype)
+//        std::vector<int64_t> warmup_nhbrAtype_indices, nhbrAtype_indices;
+//        std::vector<int> warmup_atypes, atypes;
+//
+//        // get_nhbrs(n, attr)
+//        std::vector<int64_t> warmup_nhbrNode_indices, nhbrNode_indices;
+//        std::vector<int> warmup_nhbrNode_attr_ids, nhbrNode_attr_ids;
+//        std::vector<std::string> warmup_nhbrNode_attrs, nhbrNode_attrs;
+//
+//        // 2 get_nodes()
+//        std::vector<int> warmup_node_attributes, node_attributes;
+//        std::vector<std::string> warmup_node_queries, node_queries;
+//        std::vector<int> warmup_node_attributes2, node_attributes2;
+//        std::vector<std::string> warmup_node_queries2, node_queries2;
+    } benchmark_thread_data_t;
 
 public:
 
@@ -242,43 +264,93 @@ public:
         LOG_E("Measure complete.\n");
     }
 
-    std::pair<double, double> benchmark_neighbor_throughput(
-            std::string warmup_query_file, std::string query_file) {
-        double get_neighbor_thput = 0;
+    // TODO: read queries from thread_data
+    std::pair<double, double> benchmark_neighbor_throughput_helper(
+        shared_ptr<benchmark_thread_data_t> thread_data)
+    {
+        double query_thput = 0;
         double edges_thput = 0;
-        read_neighbor_queries(warmup_query_file, query_file);
 
         try {
+            std::vector<int64_t> result;
             // Warmup phase
-            long i = 0;
-            time_t warmup_start = get_timestamp();
-            while (get_timestamp() - warmup_start < WARMUP_T) {
-                std::vector<int64_t> result;
-                get_neighbors_f_(result, mod_get(warmup_neighbor_indices, i));
-                i++;
+            int64_t i = 0;
+            time_t start = get_timestamp();
+            while (get_timestamp() - start < WARMUP_T) {
+                get_neighbors_f_(
+                    result, mod_get(thread_data->warmup_neighbor_indices, i));
+                ++i;
             }
 
             // Measure phase
             i = 0;
-            long edges = 0;
-            double totsecs = 0;
-            time_t start = get_timestamp();
+            int64_t edges = 0;
+            start = get_timestamp();
             while (get_timestamp() - start < MEASURE_T) {
-                std::vector<int64_t> result;
-                time_t query_start = get_timestamp();
-                get_neighbors_f_(result, mod_get(neighbor_indices, i));
-                time_t query_end = get_timestamp();
-                totsecs += (double) (query_end - query_start) / (1E6);
+                get_neighbors_f_(
+                    result, mod_get(thread_data->neighbor_indices, i));
                 edges += result.size();
-                i++;
+                ++i;
             }
-            get_neighbor_thput = ((double) i / totsecs);
-            edges_thput = ((double) edges / totsecs);
+            time_t end = get_timestamp();
+            double total_secs = (end - start) * 1. / 1e6;
+            query_thput = i * 1. / total_secs;
+            edges_thput = edges * 1. / total_secs;
+
+            // FIXME: cool down?
+
+            LOG_E("query throughput %lld\nedge throughput %lld\n",
+                query_thput, edges_thput); // TODO: works? proper output?
+
         } catch (std::exception &e) {
-            LOG_E("Throughput test ends...\n");
+            LOG_E("Throughput test ends...: '%s'\n", e.what());
+        }
+        return std::make_pair(query_thput, edges_thput);
+    }
+
+    void benchmark_neighbor_throughput(
+        int num_threads,
+        const std::string& warmup_neighbor_query_file,
+        const std::string& neighbor_query_file)
+    {
+        std::vector<shared_ptr<benchmark_thread_data_t>> thread_datas;
+        read_neighbor_queries(warmup_neighbor_query_file, neighbor_query_file);
+        for (int i = 0; i < num_threads; ++i) {
+            try {
+                shared_ptr<TSocket> socket(
+                    new TSocket("localhost", QUERY_HANDLER_PORT));
+                shared_ptr<TTransport> transport(
+                    new TBufferedTransport(socket));
+                shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
+                shared_ptr<GraphQueryAggregatorServiceClient> client(
+                    new GraphQueryAggregatorServiceClient(protocol));
+
+                shared_ptr<benchmark_thread_data_t> thread_data(
+                    new benchmark_thread_data_t);
+                thread_data->client = client;
+                // FIXME: randomize
+                thread_data->warmup_neighbor_indices = warmup_neighbor_indices;
+                thread_data->neighbor_indices = neighbor_indices;
+
+                thread_datas.push_back(thread_data);
+
+            } catch (std::exception& e) {
+                LOG_E("Exception opening clients: %s\n", e.what());
+            }
         }
 
-        return std::make_pair(get_neighbor_thput, edges_thput);
+        std::vector<shared_ptr<std::thread>> threads;
+        for (auto thread_data : thread_datas) {
+            shared_ptr<std::thread> thread(new std::thread(
+                &GraphBenchmark::benchmark_neighbor_throughput_helper,
+                this,
+                thread_data));
+            threads.push_back(thread);
+        }
+
+        for (auto thread : threads) {
+            thread->join();
+        }
     }
 
     // NODE BENCHMARKING
