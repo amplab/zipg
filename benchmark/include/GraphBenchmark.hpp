@@ -309,7 +309,10 @@ public:
             }
 
             LOG_E("query throughput %.1f\nedge throughput %.1f\n",
-                query_thput, edges_thput); // TODO: works? proper output?
+                query_thput, edges_thput);
+            std::ofstream ofs("throughput_get_nhbrs.txt",
+                std::ofstream::out | std::ofstream::app);
+            ofs << query_thput << " " << edges_thput;
 
         } catch (std::exception &e) {
             LOG_E("Throughput test ends...: '%s'\n", e.what());
