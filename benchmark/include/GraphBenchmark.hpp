@@ -285,6 +285,7 @@ public:
                     result, mod_get(thread_data->warmup_neighbor_indices, i));
                 ++i;
             }
+            LOG_E("Warmup done: served %" PRId64 " queries\n", i);
 
             // Measure phase
             i = 0;
@@ -300,6 +301,7 @@ public:
             double total_secs = (end - start) * 1. / 1e6;
             query_thput = i * 1. / total_secs;
             edges_thput = edges * 1. / total_secs;
+            LOG_E("Query done: served %" PRId64 " queries\n", i);
 
             // Cooldown
             time_t cooldown_start = get_timestamp();

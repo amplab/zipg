@@ -215,6 +215,35 @@ private:
     std::vector<GraphQueryServiceClient> local_shards_;
 };
 
+class ProcessorFactory : public TProcessorFactory {
+public:
+    ProcessorFactory(
+        int total_num_shards,
+        int local_num_shards,
+        int local_host_id,
+        const std::vector<std::string>& hostnames)
+    : total_num_shards_(total_num_shards),
+      local_num_shards_(local_num_shards),
+      local_host_id_(local_host_id),
+      hostnames_(hostnames)
+    { }
+
+    boost::shared_ptr<TProcessor> getProcessor(const TConnectionInfo&) {
+        boost::shared_ptr<GraphQueryAggregatorServiceHandler> handler(
+            new GraphQueryAggregatorServiceHandler(total_num_shards_,
+                local_num_shards_, local_host_id_, hostnames_));
+        boost::shared_ptr<TProcessor> handlerProcessor(
+            new GraphQueryAggregatorServiceProcessor(handler));
+        return handlerProcessor;
+    }
+
+private:
+    int total_num_shards_;
+    int local_num_shards_;
+    int local_host_id_;
+    const std::vector<std::string>& hostnames_;
+};
+
 void print_usage(char *exec) {
     LOG_E(
         "Usage: %s [-t total_num_shards] [-s local_num_shards] "
@@ -266,16 +295,25 @@ int main(int argc, char **argv) {
                 local_num_shards,
                 local_host_id,
                 hostnames));
-
         shared_ptr<TProcessor> processor(
             new GraphQueryAggregatorServiceProcessor(handler));
+
+        shared_ptr<ProcessorFactory> processorFactory(
+            new ProcessorFactory(
+                total_num_shards,
+                local_num_shards,
+                local_host_id,
+                hostnames));
+
         shared_ptr<TServerTransport> server_transport(new TServerSocket(port));
         shared_ptr<TTransportFactory> transport_factory(
             new TBufferedTransportFactory());
         shared_ptr<TProtocolFactory> protocol_factory(
             new TBinaryProtocolFactory());
+
         TThreadedServer server(
-            processor,
+            // processor,
+            processorFactory,
             server_transport,
             transport_factory,
             protocol_factory);
