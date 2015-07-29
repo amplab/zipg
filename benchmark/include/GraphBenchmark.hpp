@@ -281,7 +281,7 @@ public:
             int64_t i = 0;
             time_t start = get_timestamp();
             while (get_timestamp() - start < warmup_microsecs) {
-                get_neighbors_f_(
+                thread_data->client->get_neighbors(
                     result, mod_get(thread_data->warmup_neighbor_indices, i));
                 ++i;
             }
@@ -291,7 +291,7 @@ public:
             int64_t edges = 0;
             start = get_timestamp();
             while (get_timestamp() - start < measure_microsecs) {
-                get_neighbors_f_(
+                thread_data->client->get_neighbors(
                     result, mod_get(thread_data->neighbor_indices, i));
                 edges += result.size();
                 ++i;
@@ -304,7 +304,7 @@ public:
             // Cooldown
             time_t cooldown_start = get_timestamp();
             while (get_timestamp() - cooldown_start < cooldown_microsecs) {
-                get_neighbors_f_(
+                thread_data->client->get_neighbors(
                     result, mod_get(thread_data->neighbor_indices, i));
             }
 
