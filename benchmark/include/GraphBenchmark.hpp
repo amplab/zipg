@@ -11,7 +11,6 @@
 #include <thrift/transport/TBufferTransports.h>
 #include <thrift/transport/TSocket.h>
 
-#include "Benchmark.hpp"
 #include "succinct-graph/SuccinctGraph.hpp"
 #include "rpc/ports.h"
 #include "succinct-graph/utils.h"
@@ -22,7 +21,7 @@ using namespace ::apache::thrift;
 using namespace ::apache::thrift::protocol;
 using namespace ::apache::thrift::transport;
 
-class GraphBenchmark : public Benchmark {
+class GraphBenchmark {
 private:
 
     template<typename T>
@@ -53,7 +52,7 @@ private:
 
 public:
 
-    GraphBenchmark(SuccinctGraph *graph) : Benchmark() {
+    GraphBenchmark(SuccinctGraph *graph) {
         graph_ = graph;
 
         if (graph_ == nullptr) {
@@ -168,8 +167,8 @@ public:
     // BENCHMARKING NEIGHBOR QUERIES
     void benchmark_neighbor_latency(
         std::string res_path,
-        count_t WARMUP_N,
-        count_t MEASURE_N,
+        uint64_t WARMUP_N,
+        uint64_t MEASURE_N,
         std::string warmup_query_file,
         std::string query_file)
     {
@@ -183,7 +182,7 @@ public:
 #endif
 
         // Warmup
-        LOG_E("Warming up for %lu queries...\n", WARMUP_N);
+        LOG_E("Warming up for %" PRIu64 " queries...\n", WARMUP_N);
         std::vector<int64_t> result;
         for (uint64_t i = 0; i < WARMUP_N; i++) {
             get_neighbors_f_(result, mod_get(warmup_neighbor_indices, i));
@@ -191,7 +190,7 @@ public:
         LOG_E("Warmup complete.\n");
 
         // Measure
-        LOG_E("Measuring for %lu queries...\n", MEASURE_N);
+        LOG_E("Measuring for %" PRIu64 " queries...\n", MEASURE_N);
         for (uint64_t i = 0; i < MEASURE_N; i++) {
             t0 = get_timestamp();
             get_neighbors_f_(result, mod_get(neighbor_indices, i));
@@ -200,7 +199,8 @@ public:
 
 #ifdef BENCH_PRINT_RESULTS
             // correctness validation
-            query_res_stream << "node id: " << mod_get(neighbor_indices, i) << "\n";
+            query_res_stream << "node id: " << mod_get(neighbor_indices, i)
+                << "\n";
             std:sort(result.begin(), result.end());
             for (auto it = result.begin(); it != result.end(); ++it) {
                 query_res_stream << *it << " ";
@@ -214,8 +214,8 @@ public:
     // get_neighbor(nodeId, atype)
     void benchmark_neighbor_atype_latency(
         std::string res_path,
-        count_t WARMUP_N,
-        count_t MEASURE_N,
+        uint64_t WARMUP_N,
+        uint64_t MEASURE_N,
         std::string warmup_query_file,
         std::string query_file)
     {
@@ -229,7 +229,7 @@ public:
 #endif
 
         // Warmup
-        LOG_E("Warming up for %lu queries...\n", WARMUP_N);
+        LOG_E("Warming up for %" PRIu64 " queries...\n", WARMUP_N);
         std::vector<int64_t> result;
         for (uint64_t i = 0; i < WARMUP_N; i++) {
             get_neighbors_atype_f_(
@@ -240,7 +240,7 @@ public:
         LOG_E("Warmup complete.\n");
 
         // Measure
-        LOG_E("Measuring for %lu queries...\n", MEASURE_N);
+        LOG_E("Measuring for %" PRIu64 " queries...\n", MEASURE_N);
         for (uint64_t i = 0; i < MEASURE_N; i++) {
             t0 = get_timestamp();
             get_neighbors_atype_f_(
@@ -252,7 +252,8 @@ public:
 
 #ifdef BENCH_PRINT_RESULTS
             // correctness validation
-            query_res_stream << "node id: " << mod_get(neighbor_indices, i) << "\n";
+            query_res_stream << "node id: " << mod_get(neighbor_indices, i)
+                << "\n";
             query_res_stream << "atype:  " << mod_get(atypes, i) << "\n";
             std:sort(result.begin(), result.end());
             for (auto it = result.begin(); it != result.end(); ++it) {
@@ -264,19 +265,22 @@ public:
         LOG_E("Measure complete.\n");
     }
 
-    // TODO: read queries from thread_data
     std::pair<double, double> benchmark_neighbor_throughput_helper(
-        shared_ptr<benchmark_thread_data_t> thread_data)
+        shared_ptr<benchmark_thread_data_t> thread_data,
+        int64_t warmup_microsecs,
+        int64_t measure_microsecs,
+        int64_t cooldown_microsecs)
     {
         double query_thput = 0;
         double edges_thput = 0;
 
         try {
             std::vector<int64_t> result;
+
             // Warmup phase
             int64_t i = 0;
             time_t start = get_timestamp();
-            while (get_timestamp() - start < WARMUP_T) {
+            while (get_timestamp() - start < warmup_microsecs) {
                 get_neighbors_f_(
                     result, mod_get(thread_data->warmup_neighbor_indices, i));
                 ++i;
@@ -286,7 +290,7 @@ public:
             i = 0;
             int64_t edges = 0;
             start = get_timestamp();
-            while (get_timestamp() - start < MEASURE_T) {
+            while (get_timestamp() - start < measure_microsecs) {
                 get_neighbors_f_(
                     result, mod_get(thread_data->neighbor_indices, i));
                 edges += result.size();
@@ -297,9 +301,14 @@ public:
             query_thput = i * 1. / total_secs;
             edges_thput = edges * 1. / total_secs;
 
-            // FIXME: cool down?
+            // Cooldown
+            time_t cooldown_start = get_timestamp();
+            while (get_timestamp() - cooldown_start < cooldown_microsecs) {
+                get_neighbors_f_(
+                    result, mod_get(thread_data->neighbor_indices, i));
+            }
 
-            LOG_E("query throughput %lld\nedge throughput %lld\n",
+            LOG_E("query throughput %.1f\nedge throughput %.1f\n",
                 query_thput, edges_thput); // TODO: works? proper output?
 
         } catch (std::exception &e) {
@@ -310,6 +319,9 @@ public:
 
     void benchmark_neighbor_throughput(
         int num_threads,
+        int64_t warmup_microsecs,
+        int64_t measure_microsecs,
+        int64_t cooldown_microsecs,
         const std::string& warmup_neighbor_query_file,
         const std::string& neighbor_query_file)
     {
@@ -328,7 +340,15 @@ public:
                 shared_ptr<benchmark_thread_data_t> thread_data(
                     new benchmark_thread_data_t);
                 thread_data->client = client;
-                // FIXME: randomize
+
+                // shuffle & copy-assign the queries for each thread
+                std::srand(1618 + i);
+                std::random_shuffle(
+                    warmup_neighbor_indices.begin(),
+                    warmup_neighbor_indices.end());
+                std::random_shuffle(
+                    neighbor_indices.begin(),
+                    neighbor_indices.end());
                 thread_data->warmup_neighbor_indices = warmup_neighbor_indices;
                 thread_data->neighbor_indices = neighbor_indices;
 
@@ -344,7 +364,10 @@ public:
             shared_ptr<std::thread> thread(new std::thread(
                 &GraphBenchmark::benchmark_neighbor_throughput_helper,
                 this,
-                thread_data));
+                thread_data,
+                warmup_microsecs,
+                measure_microsecs,
+                cooldown_microsecs));
             threads.push_back(thread);
         }
 
@@ -354,8 +377,13 @@ public:
     }
 
     // NODE BENCHMARKING
-    void benchmark_node_latency(std::string res_path, count_t WARMUP_N, count_t MEASURE_N,
-            std::string warmup_query_file, std::string query_file) {
+    void benchmark_node_latency(
+        std::string res_path,
+        uint64_t WARMUP_N,
+        uint64_t MEASURE_N,
+        std::string warmup_query_file,
+        std::string query_file)
+    {
         time_t t0, t1;
         read_node_queries(warmup_query_file, query_file);
         std::ofstream res_stream(res_path);
@@ -367,27 +395,32 @@ public:
         LOG_E("Benchmarking getNode latency\n");
 
         // Warmup
-        LOG_E("Warming up for %lu queries...\n", WARMUP_N);
+        LOG_E("Warming up for %" PRIu64 " queries...\n", WARMUP_N);
         std::set<int64_t> result;
         for(uint64_t i = 0; i < WARMUP_N; i++) {
             get_nodes_f_(
-                result, mod_get(warmup_node_attributes, i), mod_get(warmup_node_queries, i));
-            assert(result.size() != 0 && "No result found in benchmarking node latency");
+                result, mod_get(warmup_node_attributes, i),
+                mod_get(warmup_node_queries, i));
+            assert(result.size() != 0 && "No result found in"
+                " benchmarking node latency");
         }
         LOG_E("Warmup complete.\n");
 
         // Measure
-        LOG_E("Measuring for %lu queries...\n", MEASURE_N);
+        LOG_E("Measuring for %" PRIu64 " queries...\n", MEASURE_N);
         for(uint64_t i = 0; i < MEASURE_N; i++) {
             t0 = get_timestamp();
-            get_nodes_f_(result, mod_get(node_attributes, i), mod_get(node_queries, i));
+            get_nodes_f_(result, mod_get(node_attributes, i),
+                mod_get(node_queries, i));
             t1 = get_timestamp();
-            assert(result.size() != 0 && "No result found in benchmarking node latency");
+            assert(result.size() != 0 && "No result found in"
+                " benchmarking node latency");
             res_stream << result.size() << "," << t1 - t0 << "\n";
 
 #ifdef BENCH_PRINT_RESULTS
             // correctness validation
-            query_res_stream << "attr " << mod_get(node_attributes, i) << ": " << mod_get(node_queries, i) << "\n";
+            query_res_stream << "attr " << mod_get(node_attributes, i) << ": "
+                << mod_get(node_queries, i) << "\n";
             for (auto it = result.begin(); it != result.end(); ++it)
                 query_res_stream << *it << " "; // sets are sorted
             query_res_stream << "\n";
@@ -396,8 +429,13 @@ public:
         LOG_E("Measure complete.\n");
     }
 
-    void benchmark_node_node_latency(std::string res_path, count_t WARMUP_N, count_t MEASURE_N,
-            std::string warmup_query_file, std::string query_file) {
+    void benchmark_node_node_latency(
+        std::string res_path,
+        uint64_t WARMUP_N,
+        uint64_t MEASURE_N,
+        std::string warmup_query_file,
+        std::string query_file)
+    {
         read_node_queries(warmup_query_file, query_file);
         time_t t0, t1;
         std::ofstream res_stream(res_path);
@@ -409,76 +447,43 @@ public:
         LOG_E("Benchmarking getNode with two attributes latency\n");
 
         // Warmup
-        LOG_E("Warming up for %lu queries...\n", WARMUP_N);
+        LOG_E("Warming up for %" PRIu64 " queries...\n", WARMUP_N);
         std::set<int64_t> result;
         for(uint64_t i = 0; i < WARMUP_N; i++) {
             get_nodes2_f_(result,
-                mod_get(warmup_node_attributes, i), mod_get(warmup_node_queries, i),
-                mod_get(warmup_node_attributes2, i), mod_get(warmup_node_queries2, i));
-            assert(result.size() != 0 && "No result found in benchmarking node two attributes latency");
+                mod_get(warmup_node_attributes, i),
+                mod_get(warmup_node_queries, i),
+                mod_get(warmup_node_attributes2, i),
+                mod_get(warmup_node_queries2, i));
+            assert(result.size() != 0 && "No result found in benchmarking node"
+                " two attributes latency");
         }
         LOG_E("Warmup complete.\n");
 
         // Measure
-        LOG_E("Measuring for %lu queries...\n", MEASURE_N);
+        LOG_E("Measuring for %" PRIu64 " queries...\n", MEASURE_N);
         for(uint64_t i = 0; i < MEASURE_N; i++) {
             t0 = get_timestamp();
-            get_nodes2_f_(result, mod_get(node_attributes, i), mod_get(node_queries, i),
-                                              mod_get(node_attributes2, i), mod_get(node_queries2, i));
+            get_nodes2_f_(result, mod_get(node_attributes, i),
+                mod_get(node_queries, i), mod_get(node_attributes2, i),
+                mod_get(node_queries2, i));
             t1 = get_timestamp();
-            assert(result.size() != 0 && "No result found in benchmarking node two attributes latency");
+            assert(result.size() != 0 && "No result found in benchmarking node"
+                " two attributes latency");
             res_stream << result.size() << "," << t1 - t0 << "\n";
 
 #ifdef BENCH_PRINT_RESULTS
             // correctness
-            query_res_stream << "attr1 " << mod_get(node_attributes, i) << ": " << mod_get(node_queries, i) << "; ";
-            query_res_stream << "attr2 " << mod_get(node_attributes2, i) << ": " << mod_get(node_queries2, i) << "\n";
+            query_res_stream << "attr1 " << mod_get(node_attributes, i) << ": "
+                << mod_get(node_queries, i) << "; ";
+            query_res_stream << "attr2 " << mod_get(node_attributes2, i) << ": "
+                << mod_get(node_queries2, i) << "\n";
             for (auto it = result.begin(); it != result.end(); ++it)
                 query_res_stream << *it << " "; // sets are sorted
             query_res_stream << "\n";
 #endif
         }
         LOG_E("Measure complete.\n");
-    }
-
-    double benchmark_node_throughput(std::string warmup_query_file, std::string query_file) {
-        double thput = 0;
-        read_node_queries(warmup_query_file, query_file);
-
-        try {
-            // Warmup phase
-            long i = 0;
-            time_t warmup_start = get_timestamp();
-            std::cout << "Warming up" << std::endl;
-            while (get_timestamp() - warmup_start < WARMUP_T) {
-                std::set<int64_t> result;
-                get_nodes_f_(result,
-                    mod_get(warmup_node_attributes, i), mod_get(warmup_node_queries, i));
-                assert(result.size() != 0 && "No result found in benchmarking node throughput");
-            }
-            LOG_E("Warmup complete.\n");
-
-            // Measure phase
-            i = 0;
-            double totsecs = 0;
-            time_t start = get_timestamp();
-            std::cout << "Measuring throughput" << std::endl;
-            while (get_timestamp() - start < MEASURE_T) {
-                std::set<int64_t> result;
-                time_t query_start = get_timestamp();
-                get_nodes_f_(result, mod_get(node_attributes, i), mod_get(node_queries, i));
-                time_t query_end = get_timestamp();
-                assert(result.size() != 0 && "No result found in benchmarking node throughput");
-                totsecs += (double) (query_end - query_start) / (double(1E6));
-                i++;
-            }
-            thput = ((double) i / totsecs);
-            std::cout << "Throughput: " << thput << std::endl;
-        } catch (std::exception &e) {
-            LOG_E("Throughput test ends...\n");
-        }
-
-        return thput;
     }
 
     // BENCHMARKING MIX QUERIES
@@ -488,7 +493,7 @@ public:
         const std::string& nhbr_node_res_file,
         const std::string& node_res_file,
         const std::string& node_node_res_file,
-        count_t WARMUP_N, count_t MEASURE_N,
+        uint64_t WARMUP_N, uint64_t MEASURE_N,
         const std::string& warmup_neighbor_query_file,
         const std::string& neighbor_query_file,
         const std::string& warmup_nhbr_atype_file,
@@ -518,7 +523,7 @@ public:
         LOG_E("Benchmarking mixQuery latency\n");
         try {
             // Warmup phase
-            LOG_E("Warming up for %lu queries...\n", WARMUP_N);
+            LOG_E("Warming up for %" PRIu64 " queries...\n", WARMUP_N);
             for (int i = 0; i < WARMUP_N; ++i) {
                 int rand_query = uni(rng);
                 switch (rand_query) {
@@ -558,7 +563,7 @@ public:
             rng.seed(1618);
 
             // Measure phase
-            LOG_E("Measuring for %lu queries...\n", MEASURE_N);
+            LOG_E("Measuring for %" PRIu64 " queries...\n", MEASURE_N);
             int64_t latency = 0;
             for (int i = 0; i < MEASURE_N; ++i) {
                 int rand_query = uni(rng);
@@ -607,7 +612,8 @@ public:
                         mod_get(node_attributes2, i),
                         mod_get(node_queries2, i));
                 }
-                    node_node_res << result_set.size() << "," << latency << "\n";
+                    node_node_res << result_set.size() << "," << latency
+                    << "\n";
                     break;
                 default:
                     assert(false);
@@ -621,11 +627,11 @@ public:
 
     void benchmark_neighbor_node_latency(
         std::string res_path,
-        count_t WARMUP_N,
-        count_t MEASURE_N,
+        uint64_t WARMUP_N,
+        uint64_t MEASURE_N,
         std::string warmup_query_file,
-        std::string query_file) {
-
+        std::string query_file)
+    {
         read_neighbor_node_queries(warmup_query_file, query_file);
         time_t t0, t1;
         std::ofstream res_stream(res_path);
@@ -637,28 +643,31 @@ public:
         LOG_E("Benchmarking getNeighborOfNode latency\n");
 
         // Warmup
-        LOG_E("Warming up for %lu queries...\n", WARMUP_N);
+        LOG_E("Warming up for %" PRIu64 " queries...\n", WARMUP_N);
         std::vector<int64_t> result;
         for(uint64_t i = 0; i < WARMUP_N; i++) {
             get_neighbors_attr_f_(result,
-                mod_get(warmup_neighbor_indices, i), mod_get(warmup_node_attributes, i), mod_get(warmup_node_queries, i));
-            // assert(result.size() != 0 && "No result found in benchmarking getNeighborOfNode latency");
+                mod_get(warmup_neighbor_indices, i),
+                mod_get(warmup_node_attributes, i),
+                mod_get(warmup_node_queries, i));
         }
         LOG_E("Warmup complete.\n");
 
         // Measure
-        LOG_E("Measuring for %lu queries...\n", MEASURE_N);
+        LOG_E("Measuring for %" PRIu64 " queries...\n", MEASURE_N);
         for (uint64_t i = 0; i < MEASURE_N; i++) {
             t0 = get_timestamp();
             get_neighbors_attr_f_(result,
-                mod_get(neighbor_indices, i), mod_get(node_attributes, i), mod_get(node_queries, i));
+                mod_get(neighbor_indices, i),
+                mod_get(node_attributes, i),
+                mod_get(node_queries, i));
             t1 = get_timestamp();
-            // assert(result.size() != 0 && "No result found in benchmarking getNeighborOfNode latency");
             res_stream << result.size() << "," << t1 - t0 << "\n";
 
 #ifdef BENCH_PRINT_RESULTS
             // correctness
-            query_res_stream << "id " << mod_get(neighbor_indices, i) << " attr " << mod_get(node_attributes, i);
+            query_res_stream << "id " << mod_get(neighbor_indices, i)
+                << " attr " << mod_get(node_attributes, i);
             query_res_stream << " query " << mod_get(node_queries, i) << "\n";
             std::sort(result.begin(), result.end());
             for (auto it = result.begin(); it != result.end(); ++it)
@@ -668,63 +677,6 @@ public:
         }
 
         LOG_E("Measure complete.\n");
-    }
-
-    double benchmark_mix_throughput(std::string warmup_neighbor_query_file, std::string neighbor_query_file,
-            std::string warmup_node_query_file, std::string node_query_file) {
-        read_neighbor_queries(warmup_neighbor_query_file, neighbor_query_file);
-        read_node_queries(warmup_node_query_file, node_query_file);
-
-        double thput = 0;
-        try {
-            // Warmup phase
-            std::cout << "Warming up" << std::endl;
-            for (int i = 0; i < WARMUP_N; i++) {
-                if (i % 2 == 0) {
-                    std::vector<int64_t> result;
-                    get_neighbors_f_(result, mod_get(warmup_neighbor_indices, i / 2));
-                    if (result.size() == 0) {
-                        LOG_E(
-                            "Error getting neighbors for %lld\n",
-                            mod_get(warmup_neighbor_indices, i / 2));
-                        std::exit(1);
-                    }
-                } else {
-                    std::set<int64_t> result;
-                    get_nodes_f_(result,
-                        mod_get(warmup_node_attributes, i / 2),
-                        mod_get(warmup_node_queries, i / 2));
-                    if (result.size() == 0) {
-                        printf("Error searching for attr %d for %s\n",
-                            mod_get(warmup_node_attributes, i / 2),
-                            mod_get(warmup_node_queries, i / 2).c_str());
-                        std::exit(1);
-                    }
-                }
-            }
-
-            // Measure phase
-            double totsecs = 0;
-            std::cout << "Measuring throughput" << std::endl;
-            for (int i = 0; i < MEASURE_N; i++) {
-                time_t query_start = get_timestamp();
-                if (i % 2 == 0) {
-                    std::vector<int64_t> result;
-                    get_neighbors_f_(result, mod_get(neighbor_indices, i / 2));
-                } else {
-                    std::set<int64_t> result;
-                    get_nodes_f_(result, mod_get(node_attributes, i / 2), mod_get(node_queries, i / 2));
-                }
-                time_t query_end = get_timestamp();
-                totsecs += (double) (query_end - query_start) / (double(1E6));
-            }
-            thput = ((double) MEASURE_N / totsecs);
-            printf("Throughput: %f\n total queries: %lu, total time: %f\n\n", thput, MEASURE_N, totsecs);
-        } catch (std::exception &e) {
-            LOG_E("Throughput test ends...\n");
-        }
-
-        return thput;
     }
 
 
@@ -758,8 +710,8 @@ protected:
         int,
         const std::string&)> get_nodes2_f_;
 
-    count_t WARMUP_N; count_t MEASURE_N;
-    static const count_t COOLDOWN_N = 500;
+    uint64_t WARMUP_N; uint64_t MEASURE_N;
+    static const uint64_t COOLDOWN_N = 500;
 
     // get_nhbrs(n)
     std::vector<int64_t> warmup_neighbor_indices, neighbor_indices;

@@ -158,27 +158,37 @@ int main(int argc, char **argv) {
         bench->benchmark_neighbor_latency(result_file_name, warmup_n, measure_n,
                 warmup_query_file, measure_query_file);
 
-    } else if (type == "neighbor-throughput") {
-
-        bench->benchmark_neighbor_throughput(
-            throughput_threads, warmup_query_file, measure_query_file);
-
     } else if (type == "node-latency") {
 
         bench->benchmark_node_latency(result_file_name, warmup_n, measure_n,
                 warmup_query_file, measure_query_file);
 
+    } else if (type == "neighbor-throughput") {
+
+        int64_t warmup_microsecs = 120 * 1000 * 1000; // 2 min
+        int64_t measure_microsecs = 300 * 1000 * 1000; // 5 min
+        int64_t cooldown_microsecs = 5 * 1000 * 1000; // 5 sec
+
+        bench->benchmark_neighbor_throughput(
+            throughput_threads,
+            warmup_microsecs,
+            measure_microsecs,
+            cooldown_microsecs,
+            warmup_query_file,
+            measure_query_file);
+
     } else if (type == "node-throughput") {
 
-        double thput = bench->benchmark_node_throughput(warmup_query_file, measure_query_file);
-        result_file << "Get Name Throughput: " << thput << "\n\n";
+//        double thput = bench->benchmark_node_throughput(
+//            warmup_query_file, measure_query_file);
+//        result_file << "Get Name Throughput: " << thput << "\n\n";
 
     } else if (type == "mix-throughput") {
 
-        double thput = bench->benchmark_mix_throughput(
-                warmup_neighbor_file, measure_neighbor_file,
-                warmup_query_file, measure_query_file);
-        result_file << "Mix throughput: " << thput << "\n\n";
+//        double thput = bench->benchmark_mix_throughput(
+//                warmup_neighbor_file, measure_neighbor_file,
+//                warmup_query_file, measure_query_file);
+//        result_file << "Mix throughput: " << thput << "\n\n";
 
     } else if (type == "mix-latency") {
 
@@ -192,8 +202,9 @@ int main(int argc, char **argv) {
 
     } else if (type == "node-node-latency") {
 
-        bench->benchmark_node_node_latency(result_file_name, warmup_n, measure_n,
-                warmup_query_file, measure_query_file);
+        bench->benchmark_node_node_latency(
+            result_file_name, warmup_n, measure_n,
+            warmup_query_file, measure_query_file);
 
     } else if (type == "neighbor-node-latency") {
 
