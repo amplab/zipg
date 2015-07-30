@@ -25,7 +25,7 @@ class GraphBenchmark {
 private:
 
     template<typename T>
-    inline T mod_get(const std::vector<T>& xs, int i) {
+    inline T mod_get(const std::vector<T>& xs, int64_t i) {
         return xs[i % xs.size()];
     }
 
@@ -273,6 +273,7 @@ public:
     {
         double query_thput = 0;
         double edges_thput = 0;
+        LOG_E("About to start querying on this thread...\n");
 
         try {
             std::vector<int64_t> result;
@@ -310,8 +311,6 @@ public:
                     result, mod_get(thread_data->neighbor_indices, i));
             }
 
-            LOG_E("query throughput %.1f\nedge throughput %.1f\n",
-                query_thput, edges_thput);
             std::ofstream ofs("throughput_get_nhbrs.txt",
                 std::ofstream::out | std::ofstream::app);
             ofs << query_thput << " " << edges_thput << std::endl;
@@ -341,7 +340,10 @@ public:
                 shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
                 shared_ptr<GraphQueryAggregatorServiceClient> client(
                     new GraphQueryAggregatorServiceClient(protocol));
+
                 transport->open();
+                client->connect_to_local_shards();
+                client->init();
 
                 shared_ptr<benchmark_thread_data_t> thread_data(
                     new benchmark_thread_data_t);
