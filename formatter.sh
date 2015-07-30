@@ -3,6 +3,7 @@ set -e
 make bench
 
 dataset=higgs-40attr16each
+dataset=liveJournal-40attr16each
 
 if [[ "$dataset" == "liveJournal-40attr16each" ]]; then
   edgelist=/mnt/soc-LiveJournal1.txt

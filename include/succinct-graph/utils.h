@@ -3,6 +3,10 @@
 
 #include <sys/time.h>
 
+// For proper (u)int64t printing
+#define __STDC_FORMAT_MACROS
+#include <inttypes.h>
+
 #ifndef LOG_E
 #define LOG_E(fmt, ...) fprintf(stderr, fmt, ##__VA_ARGS__)
 #endif

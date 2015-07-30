@@ -23,6 +23,9 @@ fi
 #benchNodeNode=T
 benchMix=T
 
+throughput_threads=4
+benchNeighborThput=T
+
 function bench() {
 
   #EDGE_FILE="data/higgs-social_network.opts-npa${npa}sa${sa}isa${isa}.edge_table"
@@ -84,6 +87,18 @@ function bench() {
       -q ${QUERY_DIR}/neighbor_query_${num_nodes}.txt \
       -o ${HOME_DIR}/neighbor_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
       ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
+    fi
+
+    # FIXME: output?
+    if [[ -n "$benchNeighborThput" ]]; then
+      sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+      ${BIN_DIR}/bench -t neighbor-throughput \
+        -p ${throughput_threads} \
+        -x ${warmup_neighbor} -y ${measure_neighbor} \
+        -w ${QUERY_DIR}/neighbor_warmup_${num_nodes}.txt \
+        -q ${QUERY_DIR}/neighbor_query_${num_nodes}.txt \
+        -o ${HOME_DIR}/neighbor_throughput-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards-${throughput_threads}clients.txt \
+        ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
     fi
 
     if [[ -n "$benchMix" ]]; then

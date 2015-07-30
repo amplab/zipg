@@ -7,14 +7,14 @@ function par_create() {
   dataset=20attr35each
   dataset=40attr16each
  
-  # assoc_file="higgs-social_network.opts-npa${npa}sa${sa}isa${isa}.assoc"
-  # node_file="higgs-${dataset}-tpch-npa${npa}sa${sa}isa${isa}.node"
-  # ln -sf higgs-social_network.assoc ${assoc_file}
-  # ln -sf higgs-${dataset}-tpch.node ${node_file}
-  assoc_file="liveJournal-npa${npa}sa${sa}isa${isa}.assoc"
-  node_file="liveJournal-${dataset}-tpch-npa${npa}sa${sa}isa${isa}.node"
-  ln -sf liveJournal.assoc ${assoc_file}
-  ln -sf liveJournal-${dataset}-tpch.node ${node_file}
+  assoc_file="higgs-social_network.opts-npa${npa}sa${sa}isa${isa}.assoc"
+  node_file="higgs-${dataset}-tpch-npa${npa}sa${sa}isa${isa}.node"
+  ln -sf higgs-social_network.assoc ${assoc_file}
+  ln -sf higgs-${dataset}-tpch.node ${node_file}
+  #assoc_file="/mnt2T/data/liveJournal-npa${npa}sa${sa}isa${isa}.assoc"
+  #node_file="/mnt2T/data/liveJournal-${dataset}-tpch-npa${npa}sa${sa}isa${isa}.node"
+  #ln -sf /mnt2T/data/liveJournal.assoc ${assoc_file}
+  #ln -sf /mnt2T/data/liveJournal-${dataset}-tpch.node ${node_file}
  
   popd >/dev/null
 
@@ -25,11 +25,6 @@ function par_create() {
   fi
 
   source "./sbin/load-succinct-env.sh"
-#  cmd="$prog \
-#    -n $TOTAL_NUM_SHARDS \
-#    data/${node_file} \
-#    data/${assoc_file}"
-#  echo cmd: $cmd
 
   $prog \
     -n $TOTAL_NUM_SHARDS \
@@ -39,8 +34,6 @@ function par_create() {
 }
 
 sa=8; isa=64; npa=64; par_create &
-
 sa=32; isa=64; npa=128; par_create &
-
 sa=4; isa=16; npa=16; par_create &
 wait
