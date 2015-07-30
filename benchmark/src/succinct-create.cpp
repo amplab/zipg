@@ -491,7 +491,8 @@ int main(int argc, char **argv) {
             128,
             edge_inner_delim,
             edge_end_delim,
-            5);
+            5,
+            -1);
 
         // 456626 + 1, since unclear if original data is 0-indexed
 //        int num_nodes = 456627;

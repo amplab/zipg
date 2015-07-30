@@ -158,7 +158,6 @@ void GraphFormatter::create_node_table(
     s_out.close();
 }
 
-
 std::vector<std::vector<int64_t>> GraphFormatter::read_edge_list(
     const std::string& file,
     char edge_inner_delim,
@@ -188,7 +187,8 @@ void GraphFormatter::create_edge_table(
     int bytes_per_attr,
     char edge_inner_delim,
     char edge_end_delim,
-    int num_atype)
+    int num_atype,
+    int min_out_degree)
 {
     std::ifstream in_stream(file);
     std::ifstream attr_in_stream(attr_file);
@@ -196,8 +196,6 @@ void GraphFormatter::create_edge_table(
 
     std::map<SuccinctGraph::AssocListKey, std::vector<SuccinctGraph::Assoc>>
         assoc_map;
-    SuccinctGraph::AType atype;
-    SuccinctGraph::Timestamp time;
     SuccinctGraph::NodeId src_id, dst_id;
 
     std::random_device rd1, rd2;
@@ -206,25 +204,22 @@ void GraphFormatter::create_edge_table(
     std::uniform_int_distribution<int> time_dis(
         0, std::numeric_limits<int>::max());
 
-    while (std::getline(in_stream, line)) {
-        if (line[0] == '#') {
-            continue;
-        }
+    std::vector<std::set<int64_t>> edge_list_set;
+    int64_t max_node = -1;
 
-        std::stringstream ss(line);
-        std::getline(ss, token, edge_inner_delim);
-        src_id = std::stoll(token);
-        std::getline(ss, token, edge_end_delim);
-        dst_id = std::stoll(token);
-
+    auto make_rand_assoc = [&atype_dis, &time_dis, &rng1, &rng2, &attr_file,
+        bytes_per_attr]
+        (int64_t src_id, int64_t dst_id, std::ifstream& attr_in_stream,
+         bool augmented_assoc = false)
+    {
         // Generate atype and timestamp
-        atype = atype_dis(rng1);
+        SuccinctGraph::AType atype = atype_dis(rng1);
         // C.f. LinkBench
         // Choose something from now back to about 50 days
         // return (System.currentTimeMillis() - Integer.MAX_VALUE - 1L)
         //                                        + rng.nextInt();
-        time = time_millis() - std::numeric_limits<int>::max()
-            - 1 + time_dis(rng2);
+        SuccinctGraph::Timestamp time = time_millis() -
+            std::numeric_limits<int>::max() - 1 + time_dis(rng2);
 
         if (attr_in_stream.eof()) {
             // if attrs exhausted, recycle
@@ -239,10 +234,66 @@ void GraphFormatter::create_edge_table(
             // just pad with '|'
             attr += std::string(bytes_per_attr - attr.length(), '|');
         }
-        SuccinctGraph::Assoc assoc = { src_id, dst_id, atype, time, attr };
-        assoc_map[std::make_pair(src_id, atype)].push_back(assoc);
+        SuccinctGraph::Assoc assoc;
+        if (!augmented_assoc) {
+            assoc = { src_id, dst_id, atype, time, attr };
+        } else {
+            // Augmented edges should have as low overhead as possible, for
+            // the purpose is to increase average degree for experimentation.
+            assoc = { src_id, dst_id, atype, 0, "" };
+        }
+        return assoc;
+    };
+
+    while (std::getline(in_stream, line)) {
+        if (line[0] == '#') {
+            continue;
+        }
+        std::stringstream ss(line);
+        std::getline(ss, token, edge_inner_delim);
+        src_id = std::stoll(token);
+        std::getline(ss, token, edge_end_delim);
+        dst_id = std::stoll(token);
+
+        SuccinctGraph::Assoc assoc = make_rand_assoc(
+            src_id, dst_id, attr_in_stream);
+        assoc_map[std::make_pair(src_id, assoc.atype)].push_back(assoc);
+
+        // maintain info for augmentation
+        edge_list_set[src_id].insert(dst_id);
+        max_node = std::max(max_node, src_id);
+        max_node = std::max(max_node, dst_id);
     }
     in_stream.close();
+
+    // augment!
+    if (min_out_degree != -1) {
+        assert(min_out_degree > 0);
+        std::random_device rd;
+        std::mt19937 rng(rd());
+        std::uniform_int_distribution<int64_t> dist(0, max_node);
+        int64_t total_edges = 0;
+
+        for (int64_t node_id = 0; node_id <= max_node; ++node_id) {
+            // TODO: we need a few asserts here to be safe...
+            while (edge_list_set[node_id].size() < min_out_degree) {
+                int64_t dst_id = dist(rng);
+                if (edge_list_set[node_id].count(dst_id) == 0) {
+                    edge_list_set[node_id].insert(dst_id);
+
+                    // also insert into assoc map
+                    SuccinctGraph::Assoc assoc = make_rand_assoc(
+                        src_id, dst_id, attr_in_stream, true);
+                    assoc_map[std::make_pair(src_id, assoc.atype)].push_back(
+                        assoc);
+                }
+            }
+            total_edges += edge_list_set[node_id].size();
+        }
+        LOG_E("Augmentation done, #nodes %" PRId64 ", #edges %" PRId64 ", "
+            "avg deg %.1f\n",
+            max_node + 1, total_edges, total_edges * 1. / (max_node + 1));
+    }
     attr_in_stream.close();
 
     std::ofstream out_stream(out_file);

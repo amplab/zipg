@@ -50,6 +50,12 @@ public:
     // Edge attributes are taken from `attr_file`, with truncation/padding so
     // that each attribute has specified length.  The output edge file can be
     // fed into SuccinctGraph::construct().
+    //
+    // If `min_out_degree` is not -1, augment a node's out-neighbor list
+    // randomly if its out-degree is less than `min_out_degree`.  These dummy
+    // edges are assigned empty edge attribute and a timestamp of 0. The
+    // function also tries its best to have these dummy edges distinct
+    // from real, existing ones (hence no parallel edges).
     static void create_edge_table(
         const std::string& file,
         const std::string& attr_file,
@@ -57,7 +63,8 @@ public:
         int bytes_per_attr,
         char edge_inner_delim = ' ',
         char edge_end_delim = '\n',
-        int num_atype = 5);
+        int num_atype = 5,
+        int min_out_degree = -1);
 
     // Each input line is of the form
     //     "srcId<edge_inner_delim>dstId<edge_end_delim>",
