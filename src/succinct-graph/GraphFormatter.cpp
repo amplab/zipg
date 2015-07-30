@@ -286,8 +286,8 @@ void GraphFormatter::create_edge_table(
 
                     // also insert into assoc map
                     SuccinctGraph::Assoc assoc = make_rand_assoc(
-                        src_id, dst_id, attr_in_stream, true);
-                    assoc_map[std::make_pair(src_id, assoc.atype)].push_back(
+                        node_id, dst_id, attr_in_stream, true);
+                    assoc_map[std::make_pair(node_id, assoc.atype)].push_back(
                         assoc);
                 }
             }
