@@ -212,7 +212,16 @@ public class BenchNeighbor {
                 GraphDatabaseSettings.pagecache_memory, neo4jPageCacheMemory)
             .newGraphDatabase();
         BenchUtils.registerShutdownHook(graphDb);
-        BenchUtils.fullWarmup(graphDb);
+        Transaction tx = null;
+        try {
+          tx = graphDb.beginTx();
+          BenchUtils.fullWarmup(graphDb);
+        } finally {
+          if (tx != null) {
+            tx.success();
+            tx.close();
+          }
+        }
 
         try {
             List<Thread> clients = new ArrayList<>(numClients);
