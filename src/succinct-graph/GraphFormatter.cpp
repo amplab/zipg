@@ -260,6 +260,9 @@ void GraphFormatter::create_edge_table(
         assoc_map[std::make_pair(src_id, assoc.atype)].push_back(assoc);
 
         // maintain info for augmentation
+        if (src_id >= edge_list_set.size()) {
+          edge_list_set.resize(src_id + 1);
+        }
         edge_list_set[src_id].insert(dst_id);
         max_node = std::max(max_node, src_id);
         max_node = std::max(max_node, dst_id);
