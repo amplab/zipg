@@ -482,6 +482,10 @@ int main(int argc, char **argv) {
         int node_attr_size_each = std::stoi(argv[9]);
         char edge_inner_delim = std::string(argv[10]).at(0);
         char edge_end_delim = std::string(argv[11]).at(0);
+        int min_out_degree = -1;
+        if (argc >= 13) {
+            min_out_degree = std::stoi(argv[12]);
+        }
 
         std::thread edge_table_thread(
             &GraphFormatter::create_edge_table,
@@ -492,7 +496,7 @@ int main(int argc, char **argv) {
             edge_inner_delim,
             edge_end_delim,
             5,
-            -1);
+            min_out_degree);
 
         // 456626 + 1, since unclear if original data is 0-indexed
 //        int num_nodes = 456627;
