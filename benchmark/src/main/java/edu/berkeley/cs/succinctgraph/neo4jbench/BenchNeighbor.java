@@ -7,17 +7,14 @@ import org.neo4j.graphdb.factory.GraphDatabaseSettings;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 import static edu.berkeley.cs.succinctgraph.neo4jbench.BenchUtils.*;
 
 public class BenchNeighbor {
-    private static final long WARMUP_TIME = (long) (60 * 1E9); // 60 seconds
-    private static final long MEASURE_TIME = (long) (120 * 1E9); // 120 seconds
-    private static final long COOLDOWN_TIME = (long) (10 * 1E9); // 10 seconds
+    private static final long WARMUP_TIME = (long) (60 * 1e9); // 1e9 = 1 sec
+    private static final long MEASURE_TIME = (long) (120 * 1e9);
+    private static final long COOLDOWN_TIME = (long) (5 * 1e9);
 
     private static int WARMUP_N = 500000;
     private static int MEASURE_N = 500000;
@@ -30,12 +27,12 @@ public class BenchNeighbor {
         String output_file = args[4];
         WARMUP_N = Integer.parseInt(args[5]);
         MEASURE_N = Integer.parseInt(args[6]);
-        String neo4jPageCacheMemory;
-        if (args.length >= 8) {
-            neo4jPageCacheMemory = args[7];
-        } else {
-            neo4jPageCacheMemory = GraphDatabaseSettings.pagecache_memory
-                .getDefaultValue();
+        int numClients = Integer.parseInt(args[7]);
+
+        String neo4jPageCacheMemory = GraphDatabaseSettings.pagecache_memory
+            .getDefaultValue();
+        if (args.length >= 9) {
+            neo4jPageCacheMemory = args[8];
         }
 
         List<Long> warmupQueries = new ArrayList<>();
@@ -44,11 +41,11 @@ public class BenchNeighbor {
         BenchUtils.getNeighborQueries(query_path, queries);
 
         if (type.equals("neighbor-latency")) {
-            benchNeighborLatency(db_path,
-                neo4jPageCacheMemory, warmupQueries, queries, output_file);
+            benchNeighborLatency(db_path, neo4jPageCacheMemory, warmupQueries,
+                queries, output_file);
         } else if (type.equals("neighbor-throughput")) {
-            benchNeighborThroughput(
-                db_path, warmupQueries, queries, output_file);
+            benchNeighborThroughput(db_path, neo4jPageCacheMemory,
+                warmupQueries, queries, numClients);
         }
     }
 
@@ -86,9 +83,6 @@ public class BenchNeighbor {
                 }
                 List<Long> neighbors = getNeighborsSorted(
                     graphDb, modGet(warmupQueries, i));
-//                if (neighbors.size() == 0) {
-//                    System.err.println("Error: no results for neighbor of " + warmupQueries[i % warmupQueries.length]);
-//                }
             }
 
             System.out.println("Measuring for " + MEASURE_N + " queries");
@@ -109,7 +103,6 @@ public class BenchNeighbor {
                 if (resOut != null) {
                     // correctness validation
                     Collections.sort(neighbors);
-//                    BenchUtils.print("node id: " + queries[i % queries.length], neighbors, resOut);
                 }
             }
 
@@ -125,70 +118,117 @@ public class BenchNeighbor {
         }
     }
 
-    private static void benchNeighborThroughput(String db_path,
-        List<Long> warmupQueries, List<Long> queries, String output_file) {
+    static class RunNeighborThroughput implements Runnable {
+        private int clientId;
+        private List<Long> warmupQueries, queries;
+        private GraphDatabaseService graphDb;
+
+        public RunNeighborThroughput(
+            int clientId, List<Long> warmupQueries, List<Long> queries,
+            GraphDatabaseService graphDb) {
+
+            this.clientId = clientId;
+            this.warmupQueries = warmupQueries;
+            this.queries = queries;
+            this.graphDb = graphDb;
+        }
+
+        public void run() {
+            Transaction tx = graphDb.beginTx();
+            PrintWriter out = null;
+            Random rand = new Random(1618 + clientId);
+            try {
+                // true for append
+                 out = new PrintWriter(new BufferedWriter(
+                    new FileWriter("neo4j_throughput_get_nhbrs.txt", true)));
+
+                // warmup
+                int i = 0, queryIdx = 0;
+                long warmupStart = System.nanoTime();
+                while (System.nanoTime() - warmupStart < WARMUP_TIME) {
+                    if (i % 10000 == 0) {
+                        tx.success();
+                        tx.close();
+                        tx = graphDb.beginTx();
+                    }
+                    queryIdx = rand.nextInt(warmupQueries.size());
+                    getNeighbors(graphDb, modGet(warmupQueries, queryIdx));
+                    ++i;
+                }
+
+                // measure
+                i = 0;
+                long edges = 0;
+                int querySize = queries.size();
+                List<Long> neighbors;
+                long start = System.nanoTime();
+                while (System.nanoTime() - start < MEASURE_TIME) {
+                    if (i % 10000 == 0) {
+                        tx.success();
+                        tx.close();
+                        tx = graphDb.beginTx();
+                    }
+                    queryIdx = rand.nextInt(querySize);
+                    neighbors = getNeighbors(
+                        graphDb, modGet(queries, queryIdx));
+                    edges += neighbors.size();
+                    ++i;
+                }
+                long end = System.nanoTime();
+                double totalSeconds = (end - start) * 1. / 1e9;
+                double queryThput = ((double) i) / totalSeconds;
+                double edgesThput = ((double) edges) / totalSeconds;
+
+                // cooldown
+                long cooldownStart = System.nanoTime();
+                while (System.nanoTime() - cooldownStart < COOLDOWN_TIME) {
+                    getNeighbors(graphDb, modGet(warmupQueries, i));
+                    ++i;
+                }
+                out.printf("%.1f %.1f\n", queryThput, edgesThput);
+
+            } catch (Exception e) {
+                System.err.printf("Client %d throughput bench exception: %s\n",
+                    clientId, e);
+                System.exit(1);
+            } finally {
+                if (out != null) {
+                    out.close();
+                }
+                tx.success();
+                tx.close();
+            }
+        }
+    }
+
+    private static void benchNeighborThroughput(String dbPath,
+        String neo4jPageCacheMemory, List<Long> warmupQueries,
+        List<Long> queries, int numClients) {
 
         GraphDatabaseService graphDb = new GraphDatabaseFactory()
-                .newEmbeddedDatabase(db_path);
+            .newEmbeddedDatabaseBuilder(dbPath)
+            .setConfig(GraphDatabaseSettings.cache_type, "none")
+            .setConfig(
+                GraphDatabaseSettings.pagecache_memory, neo4jPageCacheMemory)
+            .newGraphDatabase();
         BenchUtils.registerShutdownHook(graphDb);
-        Transaction tx = graphDb.beginTx();
+        BenchUtils.fullWarmup(graphDb);
+
         try {
-            PrintWriter out = new PrintWriter(new BufferedWriter(
-                new FileWriter(output_file, true)));
-            // warmup
-            System.out.println("Warming up neo4j neighbor throughput");
-            int i = 0;
-            long warmupStart = System.nanoTime();
-            while (System.nanoTime() - warmupStart < WARMUP_TIME) {
-                List<Long> neighbors = getNeighbors(graphDb,
-                    modGet(warmupQueries, i));
-//                if (neighbors.size() == 0)
-//                    System.err.println("Error: no results found in neo4j neighbor throughput benchmarking");
-                i++;
+            List<Thread> clients = new ArrayList<>(numClients);
+            for (int i = 0; i < numClients; ++i) {
+                clients.add(new Thread(new RunNeighborThroughput(
+                    i, warmupQueries, queries, graphDb)));
             }
-
-            // measure
-            System.out.println("Measuring neo4j neighbor throughput");
-            i = 0;
-            long edges = 0;
-            double totalSeconds = 0;
-            long start = System.nanoTime();
-            while (System.nanoTime() - start < MEASURE_TIME) {
-                if (i % 10000 == 0) {
-                    tx.success();
-                    tx.close();
-                    tx = graphDb.beginTx();
-                }
-                long queryStart = System.nanoTime();
-                List<Long> neighbors = getNeighbors(graphDb,
-                    modGet(queries, i));
-                long queryEnd = System.nanoTime();
-//                if (neighbors.size() == 0)
-//                    System.err.println("Error: no results found in neo4j neighbor throughput benchmarking");
-
-                totalSeconds += (queryEnd - queryStart) / ((double) 1E9);
-                edges += neighbors.size();
-                i++;
+            for (Thread thread : clients) {
+                thread.start();
             }
-            double getNeighborThput = ((double) i) / totalSeconds;
-            double edgesThput = ((double) edges) / totalSeconds;
-
-            // cooldown
-            System.out.println("cooling down neo4j neighbor throughput");
-            i = 0;
-            long cooldownStart = System.nanoTime();
-            while (System.nanoTime() - cooldownStart < COOLDOWN_TIME) {
-                List<Long> neighbors = getNeighbors(graphDb,
-                    modGet(warmupQueries, i));
-                i++;
+            for (Thread thread : clients) {
+                thread.join();
             }
-
-            System.out.println("neighbor throughput: " + getNeighborThput);
-            System.out.println("edge throughput: " + edgesThput);
-
-            tx.success();
         } catch (Exception e) {
-            e.printStackTrace();
+            System.err.printf("Benchmark throughput exception: %s\n", e);
+            System.exit(1);
         } finally {
             System.out.println("Shutting down database ...");
             graphDb.shutdown();

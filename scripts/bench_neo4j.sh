@@ -37,13 +37,10 @@ benchNode=T
 #benchNeighborNodeIndexed=T
 #benchMixed=T
 
-pageCacheForNodes=6543m # works
-pageCacheForNodes=10543m # can finish, worsens too much
-pageCacheForNodes=8543m # works, has tradeoff
-pageCacheForNodes=9984m # did not finish
-pageCacheForNodes=6860m # did not finish
-pageCacheForNodes=7168m
+thputThreads=8
+benchNhbrThput=T
 
+pageCacheForNodes=8543m # works, has tradeoff
 pageCacheNormal=12g
 
 for pageCacheForNodes in 9574m 9370m; do
@@ -170,6 +167,29 @@ for JVM_HEAP in 2048; do
            ${neo4j_warmup_mix} \
            ${neo4j_measure_mix} \
            ${pageCacheForNodes}
+
+      fi
+
+      if [[ -n "$benchNhbrThput" ]]; then
+        sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+        find data/neo4j/${DATASET}/ -name "*store.db*" -type f -exec dd if={} of=/dev/null bs=1M 2>/dev/null \;
+        find data/neo4j/${DATASET}/schema/index -type f -exec dd if={} of=/dev/null bs=1M 2>/dev/null \;
+
+        java -verbose:gc -server -XX:+UseConcMarkSweepGC -Xmx${JVM_HEAP}m -cp ${classpath} \
+           edu.berkeley.cs.succinctgraph.neo4jbench.BenchNeighbor \
+           neighbor-throughput \
+           ${NEO4J_DIR}/${DATASET} \
+           ${QUERY_DIR}/neighbor_warmup_${num_nodes}.txt \
+           ${QUERY_DIR}/neighbor_query_${num_nodes}.txt \
+           NONE \
+           0 \
+           0 \
+           ${thputThreads} \
+           ${pageCacheForNodes}
+
+        x=$(cut -d' ' -f1 neo4j_throughput_get_nhbrs.txt | awk '{ sum += $1 } END { print sum }')
+        mv neo4j_throughput_get_nhbrs.txt neo4j_throughput_get_nhbrs-${thputThreads}clients.txt
+        echo ${thputThreads} clients, $x get_nhbr queries/sec
 
       fi
 
