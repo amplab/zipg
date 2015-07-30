@@ -29,25 +29,20 @@ private:
         return xs[i % xs.size()];
     }
 
-    typedef struct {
-        shared_ptr<GraphQueryAggregatorServiceClient> client;
-        // get_nhbrs(n)
-        std::vector<int64_t> warmup_neighbor_indices, neighbor_indices;
+    template<typename T>
+    inline T mod_get(shared_ptr<std::vector<T>> xs, int64_t i) {
+        return (*xs)[i % xs->size()];
+    }
 
-//        // get_nhbrs(n, atype)
-//        std::vector<int64_t> warmup_nhbrAtype_indices, nhbrAtype_indices;
-//        std::vector<int> warmup_atypes, atypes;
-//
-//        // get_nhbrs(n, attr)
-//        std::vector<int64_t> warmup_nhbrNode_indices, nhbrNode_indices;
-//        std::vector<int> warmup_nhbrNode_attr_ids, nhbrNode_attr_ids;
-//        std::vector<std::string> warmup_nhbrNode_attrs, nhbrNode_attrs;
-//
-//        // 2 get_nodes()
-//        std::vector<int> warmup_node_attributes, node_attributes;
-//        std::vector<std::string> warmup_node_queries, node_queries;
-//        std::vector<int> warmup_node_attributes2, node_attributes2;
-//        std::vector<std::string> warmup_node_queries2, node_queries2;
+    typedef struct {
+
+        int client_id;
+        shared_ptr<GraphQueryAggregatorServiceClient> client;
+
+        // get_nhbrs(n)
+        shared_ptr<std::vector<int64_t>> warmup_neighbor_indices;
+        shared_ptr<std::vector<int64_t>> neighbor_indices;
+
     } benchmark_thread_data_t;
 
 public:
@@ -275,15 +270,27 @@ public:
         double edges_thput = 0;
         LOG_E("About to start querying on this thread...\n");
 
+        std::mt19937 rng(1618 + thread_data->client_id);
+        std::uniform_int_distribution<int> dist1(
+            0, (thread_data->warmup_neighbor_indices->size()) - 1);
+        std::uniform_int_distribution<int> dist2(
+            0, (thread_data->neighbor_indices->size()) - 1);
+
         try {
             std::vector<int64_t> result;
+            auto client = thread_data->client;
+            const std::vector<int64_t>& neighbor_indices =
+                *(thread_data->neighbor_indices);
 
             // Warmup phase
             int64_t i = 0;
+            int rand_query;
             time_t start = get_timestamp();
             while (get_timestamp() - start < warmup_microsecs) {
-                thread_data->client->get_neighbors(
-                    result, mod_get(thread_data->warmup_neighbor_indices, i));
+                rand_query = dist1(rng);
+                client->get_neighbors(
+                    result,
+                    mod_get(thread_data->warmup_neighbor_indices, rand_query));
                 ++i;
             }
             LOG_E("Warmup done: served %" PRId64 " queries\n", i);
@@ -293,8 +300,9 @@ public:
             int64_t edges = 0;
             start = get_timestamp();
             while (get_timestamp() - start < measure_microsecs) {
-                thread_data->client->get_neighbors(
-                    result, mod_get(thread_data->neighbor_indices, i));
+                rand_query = dist2(rng);
+                client->get_neighbors(
+                    result, mod_get(neighbor_indices, rand_query));
                 edges += result.size();
                 ++i;
             }
@@ -348,17 +356,14 @@ public:
                 shared_ptr<benchmark_thread_data_t> thread_data(
                     new benchmark_thread_data_t);
                 thread_data->client = client;
+                thread_data->client_id = i;
 
                 // shuffle & copy-assign the queries for each thread
                 std::srand(1618 + i);
-                std::random_shuffle(
-                    warmup_neighbor_indices.begin(),
-                    warmup_neighbor_indices.end());
-                std::random_shuffle(
-                    neighbor_indices.begin(),
-                    neighbor_indices.end());
-                thread_data->warmup_neighbor_indices = warmup_neighbor_indices;
-                thread_data->neighbor_indices = neighbor_indices;
+                thread_data->warmup_neighbor_indices =
+                    shared_ptr<std::vector<int64_t>>(&warmup_neighbor_indices);
+                thread_data->neighbor_indices =
+                    shared_ptr<std::vector<int64_t>>(&neighbor_indices);
 
                 thread_datas.push_back(thread_data);
 
