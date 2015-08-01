@@ -1,6 +1,8 @@
 #include "thrift/GraphQueryAggregatorService.h"
 
+#include <chrono>
 #include <fstream>
+#include <thread>
 #include <unordered_map>
 
 #include <thrift/protocol/TBinaryProtocol.h>
@@ -68,6 +70,23 @@ public:
     void init() {
         for (auto shard : local_shards_)
             shard.send_init();
+
+        // Wait for some new guys to get back online
+        int curr_size = local_shards_.size();
+        int slept_times = 0;
+        while (curr_size < local_num_shards_ && slept_times < 3) {
+            LOG_E("Aggregator will wait for all shards in 300 secs"
+                " (slept %d times)\n", slept_times);
+            std::this_thread::sleep_for(std::chrono::seconds(300));
+            ++slept_times; // sleep for at most 900 secs in total
+            connect_to_local_shards();
+            for (int i = curr_size; i < local_num_shards_; ++i) {
+                local_shards_[i].send_init();
+            }
+        }
+        LOG_E("Aggregator is now connected to %d shards (specified %d)\n",
+            local_shards_.size(), local_num_shards_);
+
         for (auto shard : local_shards_)
             shard.recv_init();
     }
