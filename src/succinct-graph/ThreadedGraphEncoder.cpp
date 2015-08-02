@@ -21,7 +21,6 @@ void ThreadedGraphEncoder::construct_edge_file(
     graph.set_sa_sampling_rate(saSamplingRate);
     graph.set_isa_sampling_rate(isaSamplingRate);
     graph.set_npa_sampling_rate(npaSamplingRate);
-    LOG_E("Waiting for this worker to finish\n");
     lock.unlock();
 
     graph.construct_edge_table(edge_file);
@@ -32,7 +31,7 @@ void ThreadedGraphEncoder::construct_edge_file(
     LOG_E("Worker finished! Currently active #: %d\n", currActiveThreads_);
     lock.unlock();
     hasFree_.notify_all();
-    LOG_E("notified!\n");
+    LOG_E("Notified!\n");
 
     return;
 }
