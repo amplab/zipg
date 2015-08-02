@@ -70,6 +70,10 @@ THRIFTBUILDDIR := build/thrift
 THRIFT_GENERATED_SOURCES := $(THRIFTSRCDIR)/GraphQueryService.cpp $(THRIFTSRCDIR)/succinct_graph_constants.cpp $(THRIFTSRCDIR)/succinct_graph_types.cpp $(THRIFTSRCDIR)/GraphQueryAggregatorService.cpp
 THRIFT_GENERATED_OBJECTS := $(patsubst $(THRIFTSRCDIR)/%,$(THRIFTBUILDDIR)/%,$(THRIFT_GENERATED_SOURCES:.cpp=.o))
 
+TARGET_THREADED_GRAPH_ENCODER := $(BINDIR)/graph_encoder
+SRC_THREADED_GRAPH_ENCODER := $(SRCDIR)/ThreadedGraphEncoder.cpp
+OBJECTS_THREADED_GRAPH_ENCODER := $(BUILDDIR)/ThreadedGraphEncoder.o
+
 target_graph_partitioner := $(BINDIR)/graph-partitioner
 obj_graph_partitioner := $(BUILDDIR)/partitioners.o
 src_graph_partitioner := $(SRCDIR)/partitioners.cpp
@@ -84,6 +88,17 @@ $(target_graph_partitioner): $(obj_graph_partitioner)
 $(obj_graph_partitioner): $(src_graph_partitioner)
 	@mkdir -p $(BUILDDIR)
 	$(CC) $(CFLAGS) $(INC) -c -o $@ $<
+
+graph-encoder: succinct graph $(TARGET_THREADED_GRAPH_ENCODER)
+$(TARGET_THREADED_GRAPH_ENCODER): $(OBJECTS_THREADED_GRAPH_ENCODER)
+	@echo "Linking..."
+	@mkdir -p $(BINDIR)
+	$(CC) $^ -o $@ $(THRIFTLIB)
+	# $(CC) $^ -o $(TARGET_THREADED_GRAPH_ENCODER) -L./lib -lsuccinctgraph
+$(OBJECTS_THREADED_GRAPH_ENCODER): $(SRC_THREADED_GRAPH_ENCODER)
+	@mkdir -p $(BUILDDIR)
+	$(CC) $(CFLAGS) $(INC) -c -o $@ $<
+
 
 $(THRIFT_BIN):
 	cd $(SUCCINCTDIR) && make -j build-thrift
@@ -124,6 +139,7 @@ $(RPC_TARGET_GRAPH_QUERY_AGGREGATOR): $(RPC_OBJECTS_GRAPH_QUERY_AGGREGATOR) $(TH
 rpc: succinct graph $(RPC_TARGET_GRAPH_QUERY_SERVER) $(RPC_TARGET_GRAPH_QUERY_AGGREGATOR)
 graph-server: succinct graph $(RPC_TARGET_GRAPH_QUERY_SERVER)
 graph-aggregator: succinct graph $(RPC_TARGET_GRAPH_QUERY_AGGREGATOR)
+
 
 succinct:
 	mkdir -p $(LIBDIR)

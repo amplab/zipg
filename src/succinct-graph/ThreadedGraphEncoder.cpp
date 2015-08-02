@@ -1,5 +1,5 @@
 #include "succinct-graph/SuccinctGraph.hpp"
-#include "succinct-graph/ThreadedGraphEncoder.hpp"
+#include "succinct-graph/ThreadedGraphEncoder.h"
 #include "succinct-graph/utils.h"
 
 void ThreadedGraphEncoder::construct_edge_file(
@@ -46,7 +46,7 @@ int main(int argc, char **argv) {
     LOG_E("SA %d, ISA %d, NPA %d\n",
         saSamplingRate, isaSamplingRate, npaSamplingRate);
     ThreadedGraphEncoder encoder(maxConcurrentThreads);
-    for (int i = 2; i < argc; ++i) {
+    for (int i = 5; i < argc; ++i) {
         std::string s = argv[i];
         LOG_E("Submitting edge file '%s' to be encoded\n", s.c_str());
         encoder.construct_edge_file(
