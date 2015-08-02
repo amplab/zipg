@@ -1,29 +1,20 @@
 package edu.berkeley.cs.succinctgraph.neo4jbench;
 
-import static edu.berkeley.cs.succinctgraph.neo4jbench.BenchUtils.TimestampedId;
-
+import edu.berkeley.cs.succinctgraph.neo4jbench.tao.AType;
 import org.neo4j.graphdb.*;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.graphdb.factory.GraphDatabaseSettings;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static edu.berkeley.cs.succinctgraph.neo4jbench.BenchUtils.TimestampedId;
+
 public class BenchNeighborAtype {
-
-    static class AType implements RelationshipType {
-        String name_;
-
-        public AType(String name) {
-            this.name_ = name;
-        }
-
-        public String name() {
-            return this.name_;
-        }
-    }
 
     private static int WARMUP_N;
     private static int MEASURE_N;
