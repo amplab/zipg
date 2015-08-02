@@ -16,6 +16,7 @@ void ThreadedGraphEncoder::construct_edge_file(
     // critical section: lk is acquired
     ++currActiveThreads_;
     LOG_E("Acquired thread! Currently active #: %d\n", currActiveThreads_);
+    LOG_E("Submitting edge file '%s' to be encoded\n", edge_file.c_str());
     SuccinctGraph graph(""); // no-op
     graph.set_sa_sampling_rate(saSamplingRate);
     graph.set_isa_sampling_rate(isaSamplingRate);
@@ -46,23 +47,52 @@ int main(int argc, char **argv) {
     LOG_E("Launching at most %d threads concurrently\n", maxConcurrentThreads);
     LOG_E("SA %d, ISA %d, NPA %d\n",
         saSamplingRate, isaSamplingRate, npaSamplingRate);
+
     ThreadedGraphEncoder encoder(maxConcurrentThreads);
-
     std::vector<shared_ptr<std::thread>> threads;
+    std::map<int, bool> finished;
 
-    LOG_E("argc = %d\n", argc);
+    int badAllocSleep = 60;
+    int badAllocCount = 0;
+    while (true) {
+        bool allFinished = true;
+        for (int i = 5; i < argc; ++i) {
+            allFinished = allFinished && finished[i - 5];
+        }
+        if (allFinished) {
+            LOG_E("All jobs done!\n");
+            break;
+        }
 
-    for (int i = 5; i < argc; ++i) {
-        std::string s(argv[i]);
-        LOG_E("Submitting edge file '%s' to be encoded\n", s.c_str());
-        threads.push_back(shared_ptr<std::thread>(new std::thread(
-            &ThreadedGraphEncoder::construct_edge_file,
-            &encoder, s, saSamplingRate, isaSamplingRate, npaSamplingRate)));
-    }
-    LOG_E("launched all, joining\n");
+        try {
+            for (int i = 5; i < argc; ++i) {
+                if (!finished[i - 5]) {
+                    std::string s(argv[i]);
+                    threads.push_back(shared_ptr<std::thread>(new std::thread(
+                        &ThreadedGraphEncoder::construct_edge_file,
+                        &encoder, s,
+                        saSamplingRate, isaSamplingRate, npaSamplingRate)));
+                }
+            }
 
-    for (const auto thread : threads) {
-        thread->join();
+            for (int i = 0; i < threads.size(); ++i) {
+                if (threads[i]->joinable()) {
+                    threads[i]->join();
+                    finished[i] = true;
+                }
+            }
+        } catch (const std::bad_alloc&) {
+            ++badAllocCount;
+            if (badAllocCount == 3) {
+                LOG_E("bad_alloc 3 times, exiting\n");
+                std::terminate();
+            }
+            badAllocSleep = 60 * badAllocCount;
+            LOG_E("bad_alloc thrown (%d times), sleeping %d secs\n",
+                badAllocCount, badAllocSleep);
+            std::this_thread::sleep_for(std::chrono::seconds(badAllocSleep));
+            continue;
+        }
     }
 
     return 0;
