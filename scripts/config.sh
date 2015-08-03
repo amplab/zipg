@@ -103,3 +103,7 @@ warmup_mix=2000
 measure_mix=400000
 neo4j_warmup_mix=100000
 neo4j_measure_mix=400000
+
+## TAO queries
+warmup_assoc_range=100000
+measure_assoc_range=200000

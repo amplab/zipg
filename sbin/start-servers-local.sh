@@ -41,9 +41,9 @@ fi
 
 # These can be set when calling this script; otherwise, use defaults
 # Only need be set / meaningful when constructing graphs (if loading, no effects)
-sa_sr=${6:=32}
-isa_sr=${7:=64}
-npa_sr=${8:=128}
+sa_sr=${6:-32}
+isa_sr=${7:-64}
+npa_sr=${8:-128}
 
 # ??
 num_replicas=$( wc -l < ${SUCCINCT_CONF_DIR}/repl)
