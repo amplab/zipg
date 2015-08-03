@@ -173,4 +173,29 @@ public class BenchUtils {
         }
     }
 
+    public static void readAssocRangeQueries(
+        String file, List<Long> nodes, List<Long> atypes,
+        List<Integer> offsets, List<Integer> lengths) {
+
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(file));
+            String line = br.readLine();
+            while (line != null) {
+                int idx = line.indexOf(',');
+                nodes.add(Long.parseLong(line.substring(0, idx)));
+
+                int idx2 = line.indexOf(',', idx + 1);
+                atypes.add(Long.parseLong(line.substring(idx + 1, idx2)));
+
+                int idx3 = line.indexOf(',', idx2 + 1);
+                offsets.add(Integer.parseInt(line.substring(idx2 + 1, idx3)));
+
+                lengths.add(Integer.parseInt(line.substring(idx3 + 1)));
+                line = br.readLine();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 }

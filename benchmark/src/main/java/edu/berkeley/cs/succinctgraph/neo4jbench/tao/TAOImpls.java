@@ -12,13 +12,16 @@ import java.util.*;
 
 public class TAOImpls implements TAOIface {
 
-    private RelationshipType[] atypeMap = null;
-    private Comparator<Assoc> sortAssocByDescendingTime = null;
+    private static int MAX_NUM_ATYPES = 1618;
+    private static RelationshipType[] atypeMap;
+    private static Comparator<Assoc> sortAssocByDescendingTime;
+    {
+        System.out.printf(
+            "Neo4j's TAO impls assume max # atypes = " + MAX_NUM_ATYPES);
 
-    public TAOImpls(int maxATypes) {
-        atypeMap = new RelationshipType[maxATypes];
+        atypeMap = new RelationshipType[MAX_NUM_ATYPES];
         // Assumes atypes are consecutive ints in range [0, maxATypes).
-        for (int i = 0; i < maxATypes; ++i) {
+        for (int i = 0; i < MAX_NUM_ATYPES; ++i) {
             atypeMap[i] = new AType(String.valueOf(i));
         }
 

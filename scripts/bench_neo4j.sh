@@ -40,8 +40,10 @@ benchNode=T
 thputThreads=8
 benchNhbrThput=T
 
+benchAssocRange=T
+
 pageCacheForNodes=8543m # works, has tradeoff
-pageCacheNormal=12g
+pageCacheIgnoreIndexes=12g
 
 for pageCacheForNodes in 9574m 9370m; do
 for JVM_HEAP in 2048; do
@@ -97,7 +99,7 @@ for JVM_HEAP in 2048; do
             ${HOME_DIR}/neo4j_${DATASET}_neighbor_node_latency_jvm${JVM_HEAP}m_pagecache${PC}m.txt \
             ${neo4j_warmup_neighbor_node} \
             ${neo4j_measure_neighbor_node} \
-            ${pageCacheNormal}
+            ${pageCacheIgnoreIndexes}
       fi
 
     if [[ -n "$benchNeighbor" ]]; then
@@ -111,7 +113,7 @@ for JVM_HEAP in 2048; do
            ${HOME_DIR}/neo4j_${DATASET}_neighbor_latency_jvm${JVM_HEAP}m_pagecache${PC}m.txt \
            ${neo4j_warmup_neighbor} \
            ${neo4j_measure_neighbor} \
-           ${pageCacheNormal}
+           ${pageCacheIgnoreIndexes}
       fi
 
     if [[ -n "$benchNeighborAtype" ]]; then
@@ -126,7 +128,7 @@ for JVM_HEAP in 2048; do
             ${HOME_DIR}/neo4j_${DATASET}_neighborAtype_latency_jvm${JVM_HEAP}m_pagecache${PC}m.txt \
             ${neo4j_warmup_neighbor_atype} \
             ${neo4j_measure_neighbor_atype} \
-            ${pageCacheNormal}
+            ${pageCacheIgnoreIndexes}
       fi
 
       if [[ -n "$benchNeighborNodeIndexed" ]]; then
@@ -140,7 +142,7 @@ for JVM_HEAP in 2048; do
             ${HOME_DIR}/neo4j_${DATASET}_neighbor_node_latency_index.txt \
             ${neo4j_warmup_neighbor_node} \
             ${neo4j_measure_neighbor_node} \
-	    ${pageCacheNormal}
+	    ${pageCacheIgnoreIndexes}
       fi
 
       if [[ -n "$benchMixed" ]]; then
@@ -191,6 +193,21 @@ for JVM_HEAP in 2048; do
         mv neo4j_throughput_get_nhbrs.txt neo4j_throughput_get_nhbrs-${thputThreads}clients.txt
         echo ${thputThreads} clients, $x get_nhbr queries/sec
 
+      fi
+
+    if [[ -n "$benchAssocRange" ]]; then
+        sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+        find data/neo4j/${DATASET}/ -name "*store.db*" -type f -exec dd if={} of=/dev/null bs=1M 2>/dev/null \;
+        java -verbose:gc -server -XX:+UseConcMarkSweepGC -Xmx${JVM_HEAP}m -cp ${classpath} \
+           edu.berkeley.cs.succinctgraph.neo4jbench.tao.BenchTAOAssocRange \
+           latency \
+           ${NEO4J_DIR}/${DATASET} \
+           ${QUERY_DIR}/assocRange_warmup.txt \
+           ${QUERY_DIR}/assocRange_query.txt \
+           ${HOME_DIR}/neo4j_${DATASET}_assocRange_latency_jvm${JVM_HEAP}m_pagecache${PC}m.txt \
+           ${warmup_assoc_range} \
+           ${measure_assoc_range} \
+           ${pageCacheIgnoreIndexes}
       fi
 
     done

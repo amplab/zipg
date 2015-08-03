@@ -40,8 +40,8 @@ if [[ -n "$assocRange" ]]; then
     ${max_num_atype} \
     ${warmup_assoc_range} \
     ${measure_assoc_range} \
-    ${QUERY_DIR}/assoc_range_warmup.txt \
-    ${QUERY_DIR}/assoc_range_query.txt
+    ${QUERY_DIR}/assocRange_warmup.txt \
+    ${QUERY_DIR}/assocRange_query.txt
 
   stop_all
 fi
