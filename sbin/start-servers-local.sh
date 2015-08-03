@@ -39,7 +39,8 @@ if [ "$edge_file_raw" = "" ]; then
   edge_file_raw=${EDGE_FILE}
 fi
 
-# these can be set when calling this script; otherwise, use defaults
+# These can be set when calling this script; otherwise, use defaults
+# Only need be set / meaningful when constructing graphs (if loading, no effects)
 sa_sr=${6:=32}
 isa_sr=${7:=64}
 npa_sr=${8:=128}

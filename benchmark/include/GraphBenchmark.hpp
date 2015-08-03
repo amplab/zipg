@@ -142,9 +142,9 @@ public:
 
     void init_sharded_benchmark() {
         try {
-            int port = QUERY_HANDLER_PORT;
             LOG_E("Connecting to server...\n");
-            shared_ptr<TSocket> socket(new TSocket("localhost", port));
+            shared_ptr<TSocket> socket(
+                new TSocket("localhost", QUERY_HANDLER_PORT));
             shared_ptr<TTransport> transport(
                     new TBufferedTransport(socket));
             shared_ptr<TProtocol> protocol(

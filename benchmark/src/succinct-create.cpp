@@ -7,8 +7,20 @@
 #include <vector>
 #include <list>
 
+#include <thrift/protocol/TBinaryProtocol.h>
+#include <thrift/transport/TBufferTransports.h>
+#include <thrift/transport/TSocket.h>
+
+#include "rpc/ports.h"
 #include "succinct-graph/GraphFormatter.hpp"
 #include "succinct-graph/SuccinctGraph.hpp"
+#include "succinct-graph/utils.h"
+#include "thrift/GraphQueryAggregatorService.h"
+
+using boost::shared_ptr;
+using namespace ::apache::thrift;
+using namespace ::apache::thrift::protocol;
+using namespace ::apache::thrift::transport;
 
 constexpr char alphanum[] =
     "0123456789"
@@ -351,6 +363,80 @@ void generate_neighbor_node_queries(
     }
 }
 
+// TODO: code duplicated with init_sharded_benchmark() in GraphBenchmark.
+// Assumes the shards and the aggregator processes are started externally, prior
+// to the entry into this function.  Processes are assumed to be local for now,
+// using sockets ports defined in ports.h.
+shared_ptr<GraphQueryAggregatorServiceClient> init_sharded_graph() {
+    shared_ptr<GraphQueryAggregatorServiceClient> aggregator(nullptr);
+    try {
+        LOG_E("Connecting to server...\n");
+        shared_ptr<TSocket> socket(
+            new TSocket("localhost", QUERY_HANDLER_PORT));
+        shared_ptr<TTransport> transport(
+                new TBufferedTransport(socket));
+        shared_ptr<TProtocol> protocol(
+                new TBinaryProtocol(transport));
+        aggregator = shared_ptr<GraphQueryAggregatorServiceClient>(
+            new GraphQueryAggregatorServiceClient(protocol));
+        transport->open();
+        LOG_E("Connected to aggregator!\n");
+
+        int ret = aggregator->connect_to_local_shards();
+        LOG_E("Aggregator connected to local shards, return code = %d\n", ret);
+
+        aggregator->init();
+        LOG_E("Done init all shards\n");
+    } catch (std::exception& e) {
+        LOG_E("Exception in initializing sharded graph: %s\n", e.what());
+        std::terminate();
+    }
+    return aggregator;
+}
+
+// Loads the graph first. Samples (nodeId, atype) uniformly at random.
+// With this tuple generated, extracts this real assoc list in the graph, then
+// generates `off` unif. at random.  Once `off` is fixed, `len` is generated
+// unif. at random from [1, actualLengthOfAssocList - off].
+void generate_tao_assoc_range_queries(
+    int64_t num_nodes, int max_num_atype,
+    int warmup_size, int query_size,
+    const std::string& warmup_file, const std::string& query_file)
+{
+    auto aggregator = init_sharded_graph();
+
+    std::random_device rd;
+    std::mt19937 rng(rd());
+    std::uniform_int_distribution<int64_t> uni_node(0, num_nodes - 1);
+    std::uniform_int_distribution<int> uni_atype(0, max_num_atype - 1);
+
+    auto output = [&](const std::string& out_file, int out_size) {
+        std::ofstream out(out_file);
+        int i = 0;
+        while (i < out_size) {
+            int64_t node_id = uni_node(rng);
+            int atype = uni_atype(rng);
+
+            std::vector<int64_t> vec;
+            aggregator->get_neighbors_atype(vec, node_id, atype);
+            if (vec.empty()) {
+                continue;
+            }
+
+            // unif. from [0, realLength)
+            int off = std::rand() % vec.size();
+            // unif. from [1, realLength - off]
+            int len = 1 + (std::rand() % (vec.size() - off));
+
+            out << uni_node(rng) << "," << atype << ",";
+            out << off << "," << len << std::endl;
+            ++i;
+        }
+    };
+    output(warmup_file, warmup_size);
+    output(query_file, query_size);
+}
+
 int main(int argc, char **argv) {
     std::string type = argv[1];
     if (type == "nodes") {
@@ -469,6 +555,28 @@ int main(int argc, char **argv) {
             query_size,
             warmup_file,
             query_file);
+
+//    } else if (type == "tao-node-get-queries") {
+//
+//        int64_t num_nodes = std::stoll(argv[2]);
+//        int warmup_size = std::stoi(argv[3]);
+//        int query_size = std::stoi(argv[4]);
+//        std::string warmup_file = argv[5];
+//        std::string query_file = argv[6];
+//        generate_tao_node_get_queries(
+//            num_nodes, warmup_size, query_size, warmup_file, query_file);
+
+    } else if (type == "tao-assoc-range-queries") {
+
+        int64_t num_nodes = std::stoll(argv[2]);
+        int max_num_atype = std::stoi(argv[3]);
+        int warmup_size = std::stoi(argv[4]);
+        int query_size = std::stoi(argv[5]);
+        std::string warmup_file = argv[6];
+        std::string query_file = argv[7];
+        generate_tao_assoc_range_queries(
+            num_nodes, max_num_atype,
+            warmup_size, query_size, warmup_file, query_file);
 
     } else if (type == "format-input") {
 

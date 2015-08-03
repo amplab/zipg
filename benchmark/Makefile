@@ -47,7 +47,7 @@ bench: $(TARGET_S)
 $(TARGET_C): $(OBJ_C) $(OBJ)
 	@echo "Linking create file..."
 	@mkdir -p $(BINDIR)
-	$(CC) $^ -o $(TARGET_C) $(LIB)
+	$(CC) $^ -o $(TARGET_C) $(rpclib)
 
 $(TARGET_S): $(OBJ_S) $(OBJ)
 	@echo "Linking bench file..."

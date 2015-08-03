@@ -150,7 +150,7 @@ int main(int argc, char **argv) {
         graph = new SuccinctGraph(node_file, edge_file); // loads
         bench = new GraphBenchmark(graph);
     } else {
-        bench = new GraphBenchmark(nullptr); // constructs
+        bench = new GraphBenchmark(nullptr); // sharded; connects to aggregator
     }
 
     if (type == "neighbor-latency") {
