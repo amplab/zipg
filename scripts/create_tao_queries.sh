@@ -15,8 +15,8 @@ assocRange=T
 npa=128
 sa=32
 isa=64
-EDGE_FILE="../data/liveJournal-npa${npa}sa${sa}isa${isa}.assoc"
-NODE_FILE="../data/liveJournal-40attr16each-tpch-npa${npa}sa${sa}isa${isa}.node"
+EDGE_FILE="/mnt2T/data/liveJournal-npa${npa}sa${sa}isa${isa}.assoc"
+NODE_FILE="/mnt2T/data/liveJournal-40attr16each-tpch-npa${npa}sa${sa}isa${isa}.node"
 
 function start_all() {
   stop_all
