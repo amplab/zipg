@@ -38,8 +38,8 @@ if [[ -n "$assocRange" ]]; then
     tao-assoc-range-queries \
     $(wc -l ${NODE_FILE} | cut -d' ' -f 1) \
     ${max_num_atype} \
-    ${warmup_assoc_range} \
-    ${measure_assoc_range} \
+    ${warmup_assocRange} \
+    ${measure_assocRange} \
     ${QUERY_DIR}/assocRange_warmup.txt \
     ${QUERY_DIR}/assocRange_query.txt
 
@@ -51,8 +51,8 @@ if [[ -n "$objGet" ]]; then
   ${BIN_DIR}/create \
     tao-node-get-queries \
     $(wc -l ${NODE_FILE} | cut -d' ' -f 1) \
-    ${warmup_node_get} \
-    ${measure_node_get} \
+    ${warmup_objGet} \
+    ${measure_objGet} \
     ${QUERY_DIR}/objGet_warmup.txt \
     ${QUERY_DIR}/objGet_query.txt
 

@@ -59,11 +59,11 @@ public:
             // sharded bench
             init_sharded_benchmark();
 
-            get_neighbors_f_ = [=](std::vector<int64_t>& nhbrs, int64_t id) {
+            get_neighbors_f_ = [this](std::vector<int64_t>& nhbrs, int64_t id) {
                 aggregator_->get_neighbors(nhbrs, id);
             };
 
-            get_neighbors_atype_f_ = [=](
+            get_neighbors_atype_f_ = [this](
                 std::vector<int64_t>& nhbrs,
                 int64_t id,
                 int64_t atype)
@@ -71,7 +71,7 @@ public:
                 aggregator_->get_neighbors_atype(nhbrs, id, atype);
             };
 
-            get_neighbors_attr_f_ = [=](
+            get_neighbors_attr_f_ = [this](
                 std::vector<int64_t>& nhbrs,
                 int64_t id,
                 int attr,
@@ -80,7 +80,7 @@ public:
                 aggregator_->get_neighbors_attr(nhbrs, id, attr, key);
             };
 
-            get_nodes_f_ = [=](
+            get_nodes_f_ = [this](
                 std::set<int64_t>& nodes,
                 int attr,
                 const std::string& key)
@@ -88,7 +88,7 @@ public:
                 aggregator_->get_nodes(nodes, attr, key);
             };
 
-            get_nodes2_f_ = [=](
+            get_nodes2_f_ = [this](
                 std::set<int64_t>& nodes,
                 int attr1,
                 const std::string& key1,
@@ -97,13 +97,56 @@ public:
             {
                 aggregator_->get_nodes2(nodes, attr1, key1, attr2, key2);
             };
+
+//            obj_get_f_ = [this](std::string& result, int64_t obj_id) {
+//                aggregator_->obj_get(result, obj_id);
+//            };
+
+            assoc_range_f_ = [this](
+                std::vector<ThriftAssoc>& _return,
+                int64_t src,
+                int64_t atype,
+                int32_t off,
+                int32_t len)
+            {
+                aggregator_->assoc_range(_return, src, atype, off, len);
+            };
+
+//            assoc_get_f_ = [this](
+//                int64_t src,
+//                int64_t atype,
+//                const std::set<int64_t>& dst_id_set,
+//                int64_t t_low,
+//                int64_t t_high)
+//            {
+//                return aggregator_->assoc_get(
+//                    src, atype, dst_id_set, t_low, t_high);
+//            };
+//
+//            assoc_count_f_ = [this](int64_t src, int64_t atype) {
+//                return aggregator_->assoc_count(src, atype);
+//            };
+//
+//            assoc_time_range_f_ = [this](
+//                int64_t src,
+//                int64_t atype,
+//                int64_t t_low,
+//                int64_t t_high,
+//                int32_t len)
+//            {
+//                return aggregator_->assoc_time_range(
+//                    src, atype, t_low, t_high, len);
+//            };
+
         } else {
+            // TODO: too lazy to add assignments for TAO functions in this case
+
             // not sharded, so call graph
-            get_neighbors_f_ = [=](std::vector<int64_t>& nhbrs, int64_t id) {
+            get_neighbors_f_ = [this](std::vector<int64_t>& nhbrs, int64_t id) {
                 graph_->get_neighbors(nhbrs, id);
             };
 
-            get_neighbors_atype_f_ = [=](
+            get_neighbors_atype_f_ = [this](
                 std::vector<int64_t>& nhbrs,
                 int64_t id,
                 int64_t atype)
@@ -111,7 +154,7 @@ public:
                 graph_->get_neighbors(nhbrs, id, atype);
             };
 
-            get_neighbors_attr_f_ = [=](
+            get_neighbors_attr_f_ = [this](
                 std::vector<int64_t>& nhbrs,
                 int64_t id,
                 int attr,
@@ -120,7 +163,7 @@ public:
                 graph_->get_neighbors(nhbrs, id, attr, key);
             };
 
-            get_nodes_f_ = [=](
+            get_nodes_f_ = [this](
                 std::set<int64_t>& nodes,
                 int attr,
                 const std::string& key)
@@ -128,7 +171,7 @@ public:
                 graph_->get_nodes(nodes, attr, key);
             };
 
-            get_nodes2_f_ = [=](
+            get_nodes2_f_ = [this](
                 std::set<int64_t>& nodes,
                 int attr1,
                 const std::string& key1,
@@ -184,14 +227,14 @@ public:
         // Warmup
         LOG_E("Warming up for %" PRIu64 " queries...\n", WARMUP_N);
         std::vector<int64_t> result;
-        for (uint64_t i = 0; i < WARMUP_N; i++) {
+        for (uint64_t i = 0; i < WARMUP_N; ++i) {
             get_neighbors_f_(result, mod_get(warmup_neighbor_indices, i));
         }
         LOG_E("Warmup complete.\n");
 
         // Measure
         LOG_E("Measuring for %" PRIu64 " queries...\n", MEASURE_N);
-        for (uint64_t i = 0; i < MEASURE_N; i++) {
+        for (uint64_t i = 0; i < MEASURE_N; ++i) {
             t0 = get_timestamp();
             get_neighbors_f_(result, mod_get(neighbor_indices, i));
             t1 = get_timestamp();
@@ -231,7 +274,7 @@ public:
         // Warmup
         LOG_E("Warming up for %" PRIu64 " queries...\n", WARMUP_N);
         std::vector<int64_t> result;
-        for (uint64_t i = 0; i < WARMUP_N; i++) {
+        for (uint64_t i = 0; i < WARMUP_N; ++i) {
             get_neighbors_atype_f_(
                 result,
                 mod_get(warmup_neighbor_indices, i),
@@ -241,7 +284,7 @@ public:
 
         // Measure
         LOG_E("Measuring for %" PRIu64 " queries...\n", MEASURE_N);
-        for (uint64_t i = 0; i < MEASURE_N; i++) {
+        for (uint64_t i = 0; i < MEASURE_N; ++i) {
             t0 = get_timestamp();
             get_neighbors_atype_f_(
                 result,
@@ -405,7 +448,7 @@ public:
         // Warmup
         LOG_E("Warming up for %" PRIu64 " queries...\n", WARMUP_N);
         std::set<int64_t> result;
-        for(uint64_t i = 0; i < WARMUP_N; i++) {
+        for(uint64_t i = 0; i < WARMUP_N; ++i) {
             get_nodes_f_(
                 result, mod_get(warmup_node_attributes, i),
                 mod_get(warmup_node_queries, i));
@@ -416,7 +459,7 @@ public:
 
         // Measure
         LOG_E("Measuring for %" PRIu64 " queries...\n", MEASURE_N);
-        for(uint64_t i = 0; i < MEASURE_N; i++) {
+        for(uint64_t i = 0; i < MEASURE_N; ++i) {
             t0 = get_timestamp();
             get_nodes_f_(result, mod_get(node_attributes, i),
                 mod_get(node_queries, i));
@@ -457,7 +500,7 @@ public:
         // Warmup
         LOG_E("Warming up for %" PRIu64 " queries...\n", WARMUP_N);
         std::set<int64_t> result;
-        for(uint64_t i = 0; i < WARMUP_N; i++) {
+        for(uint64_t i = 0; i < WARMUP_N; ++i) {
             get_nodes2_f_(result,
                 mod_get(warmup_node_attributes, i),
                 mod_get(warmup_node_queries, i),
@@ -470,7 +513,7 @@ public:
 
         // Measure
         LOG_E("Measuring for %" PRIu64 " queries...\n", MEASURE_N);
-        for(uint64_t i = 0; i < MEASURE_N; i++) {
+        for(uint64_t i = 0; i < MEASURE_N; ++i) {
             t0 = get_timestamp();
             get_nodes2_f_(result, mod_get(node_attributes, i),
                 mod_get(node_queries, i), mod_get(node_attributes2, i),
@@ -653,7 +696,7 @@ public:
         // Warmup
         LOG_E("Warming up for %" PRIu64 " queries...\n", WARMUP_N);
         std::vector<int64_t> result;
-        for(uint64_t i = 0; i < WARMUP_N; i++) {
+        for(uint64_t i = 0; i < WARMUP_N; ++i) {
             get_neighbors_attr_f_(result,
                 mod_get(warmup_neighbor_indices, i),
                 mod_get(warmup_node_attributes, i),
@@ -663,7 +706,7 @@ public:
 
         // Measure
         LOG_E("Measuring for %" PRIu64 " queries...\n", MEASURE_N);
-        for (uint64_t i = 0; i < MEASURE_N; i++) {
+        for (uint64_t i = 0; i < MEASURE_N; ++i) {
             t0 = get_timestamp();
             get_neighbors_attr_f_(result,
                 mod_get(neighbor_indices, i),
@@ -687,6 +730,42 @@ public:
         LOG_E("Measure complete.\n");
     }
 
+    void benchmark_assoc_range_latency(
+        std::string res_path,
+        uint64_t warmup_n,
+        uint64_t measure_n,
+        std::string warmup_query_file,
+        std::string query_file)
+    {
+        read_assoc_range_queries(warmup_query_file, query_file);
+        time_t t0, t1;
+        std::ofstream res_stream(res_path);
+        LOG_E("Benchmarking assoc_range() latency\n");
+
+        LOG_E("Warming up for %" PRIu64 " queries...\n", warmup_n);
+        std::vector<ThriftAssoc> result;
+        for(uint64_t i = 0; i < warmup_n; ++i) {
+            assoc_range_f_(result,
+                mod_get(warmup_assoc_range_nodes, i),
+                mod_get(warmup_assoc_range_atypes, i),
+                mod_get(warmup_assoc_range_offs, i),
+                mod_get(warmup_assoc_range_lens, i));
+        }
+        LOG_E("Warmup complete.\n");
+
+        LOG_E("Measuring for %" PRIu64 " queries...\n", measure_n);
+        for (uint64_t i = 0; i < measure_n; ++i) {
+            t0 = get_timestamp();
+            assoc_range_f_(result,
+                mod_get(assoc_range_nodes, i),
+                mod_get(assoc_range_atypes, i),
+                mod_get(assoc_range_offs, i),
+                mod_get(assoc_range_lens, i));
+            t1 = get_timestamp();
+            res_stream << result.size() << "," << t1 - t0 << "\n";
+        }
+        LOG_E("Measure complete.\n");
+    }
 
 protected:
 
@@ -718,6 +797,22 @@ protected:
         int,
         const std::string&)> get_nodes2_f_;
 
+    // TAO functions
+
+    std::function<void(std::string&, int64_t)> obj_get_f_;
+
+    std::function<void(std::vector<ThriftAssoc>&,
+        int64_t, int64_t, int32_t, int32_t)> assoc_range_f_;
+
+    std::function<std::vector<ThriftAssoc>(
+        int64_t, int64_t,
+        const std::set<int64_t>&, int32_t, int32_t)> assoc_get_f_;
+
+    std::function<int64_t(int64_t, int64_t)> assoc_count_f_;
+
+    std::function<std::vector<ThriftAssoc>(
+        int64_t, int64_t, int64_t, int64_t, int32_t)> assoc_time_range_f_;
+
     uint64_t WARMUP_N; uint64_t MEASURE_N;
     static const uint64_t COOLDOWN_N = 500;
 
@@ -739,7 +834,45 @@ protected:
     std::vector<int> warmup_node_attributes2, node_attributes2;
     std::vector<std::string> warmup_node_queries2, node_queries2;
 
-    // READING QUERY FILES
+    // assoc_range()
+    std::vector<int64_t> warmup_assoc_range_nodes, assoc_range_nodes;
+    std::vector<int64_t> warmup_assoc_range_atypes, assoc_range_atypes;
+    std::vector<int32_t> warmup_assoc_range_offs, assoc_range_offs;
+    std::vector<int32_t> warmup_assoc_range_lens, assoc_range_lens;
+
+    void read_assoc_range_queries(
+        const std::string& warmup_file, const std::string& file)
+    {
+        auto read = [](
+            const std::string& file,
+            std::vector<int64_t>& nodes, std::vector<int64_t>& atypes,
+            std::vector<int32_t>& offs, std::vector<int32_t>& lens)
+        {
+            std::ifstream ifs(file);
+            std::string line, token;
+            while (std::getline(ifs, line)) {
+                std::stringstream ss(line);
+
+                std::getline(ss, token, ',');
+                nodes.push_back(std::stoll(token));
+
+                std::getline(ss, token, ',');
+                atypes.push_back(std::stoll(token));
+
+                std::getline(ss, token, ',');
+                offs.push_back(std::stoi(token));
+
+                std::getline(ss, token);
+                lens.push_back(std::stoll(token));
+            }
+        };
+        read(warmup_file, warmup_assoc_range_nodes, warmup_assoc_range_atypes,
+            warmup_assoc_range_offs, warmup_assoc_range_lens);
+
+        read(file, assoc_range_nodes, assoc_range_atypes,
+            assoc_range_offs, assoc_range_lens);
+    }
+
     void read_neighbor_queries(
         const std::string& warmup_neighbor_file,
         const std::string& query_neighbor_file)

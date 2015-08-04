@@ -209,8 +209,8 @@ for JVM_HEAP in 2048; do
            ${QUERY_DIR}/assocRange_warmup.txt \
            ${QUERY_DIR}/assocRange_query.txt \
            ${HOME_DIR}/neo4j_${DATASET}_assocRange_latency_jvm${JVM_HEAP}m_pagecache${PC}.txt \
-           ${warmup_assoc_range} \
-           ${measure_assoc_range} \
+           ${warmup_assocRange} \
+           ${measure_assocRange} \
            ${pageCacheIgnoreIndexes}
       fi
 
@@ -224,8 +224,8 @@ for JVM_HEAP in 2048; do
            ${QUERY_DIR}/objGet_warmup.txt \
            ${QUERY_DIR}/objGet_query.txt \
            ${HOME_DIR}/neo4j_${DATASET}_objGet_latency_jvm${JVM_HEAP}m_pagecache${PC}.txt \
-           ${warmup_assoc_range} \
-           ${measure_assoc_range} \
+           ${warmup_objGet} \
+           ${measure_objGet} \
            ${pageCacheIgnoreIndexes}
       fi
 

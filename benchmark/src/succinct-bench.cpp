@@ -224,6 +224,15 @@ int main(int argc, char **argv) {
             warmup_query_file,
             measure_query_file);
 
+    } else if (type == "tao-assoc-range-latency") {
+
+        bench->benchmark_assoc_range_latency(
+            result_file_name,
+            warmup_n,
+            measure_n,
+            warmup_query_file,
+            measure_query_file);
+
     } else if (type == "graph-format") {
 
         GraphFormatter::format_node_file(node_file);
