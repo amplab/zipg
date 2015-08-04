@@ -219,6 +219,17 @@ public:
         }
     }
 
+    int64_t assoc_count(int64_t src, int64_t atype) {
+        int shard_id = src % total_num_shards_;
+        int host_id = shard_id % total_num_hosts_;
+        if (host_id == local_host_id_) {
+            return local_shards_.at(shard_id / total_num_hosts_)
+                .assoc_count(src, atype);
+        } else {
+            assert(false && "routing not implemented");
+        }
+    }
+
 private:
     const int total_num_shards_; // total # of logical shards
     const int local_num_shards_;

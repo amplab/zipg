@@ -38,6 +38,8 @@ service GraphQueryService {
     list<ThriftAssoc> assoc_range(
         1: i64 src, 2: i64 atype, 3: i32 off, 4: i32 len),
 
+    i64 assoc_count(1: i64 src, 2: i64 atype),
+
 }
 
 // One per physical node; handles local aggregation and query routing.
@@ -73,5 +75,7 @@ service GraphQueryAggregatorService {
 
     list<ThriftAssoc> assoc_range(
         1: i64 src, 2: i64 atype, 3: i32 off, 4: i32 len),
+
+    i64 assoc_count(1: i64 src, 2: i64 atype),
 
 }

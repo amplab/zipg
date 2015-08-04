@@ -264,7 +264,9 @@ public:
     {
         time_t t0, t1;
         LOG_E("Benchmarking getNeighborAtype latency\n");
-        read_neighbor_atype_queries(warmup_query_file, query_file);
+        read_neighbor_atype_queries(warmup_query_file, query_file,
+            warmup_nhbrAtype_indices, nhbrAtype_indices,
+            warmup_atypes, atypes);
         std::ofstream res_stream(res_path);
 
 #ifdef BENCH_PRINT_RESULTS
@@ -561,7 +563,9 @@ public:
         std::ofstream node_node_res(node_node_res_file);
 
         read_neighbor_queries(warmup_neighbor_query_file, neighbor_query_file);
-        read_neighbor_atype_queries(warmup_nhbr_atype_file, nhbr_atype_file);
+        read_neighbor_atype_queries(warmup_nhbr_atype_file, nhbr_atype_file,
+            warmup_nhbrAtype_indices, nhbrAtype_indices,
+            warmup_atypes, atypes);
         read_neighbor_node_queries(warmup_nhbr_node_file, nhbr_node_file);
         read_node_queries(warmup_node_query_file, node_query_file);
 
@@ -734,8 +738,8 @@ public:
         std::string res_path,
         uint64_t warmup_n,
         uint64_t measure_n,
-        std::string warmup_query_file,
-        std::string query_file)
+        const std::string& warmup_query_file,
+        const std::string& query_file)
     {
         read_assoc_range_queries(warmup_query_file, query_file);
         time_t t0, t1;
@@ -744,7 +748,7 @@ public:
 
         LOG_E("Warming up for %" PRIu64 " queries...\n", warmup_n);
         std::vector<ThriftAssoc> result;
-        for(uint64_t i = 0; i < warmup_n; ++i) {
+        for (uint64_t i = 0; i < warmup_n; ++i) {
             assoc_range_f_(result,
                 mod_get(warmup_assoc_range_nodes, i),
                 mod_get(warmup_assoc_range_atypes, i),
@@ -763,6 +767,42 @@ public:
                 mod_get(assoc_range_lens, i));
             t1 = get_timestamp();
             res_stream << result.size() << "," << t1 - t0 << "\n";
+        }
+        LOG_E("Measure complete.\n");
+    }
+
+    void benchmark_assoc_count_latency(
+        std::string res_path,
+        uint64_t warmup_n,
+        uint64_t measure_n,
+        const std::string& warmup_query_file,
+        const std::string& query_file)
+    {
+        read_neighbor_atype_queries(warmup_query_file, query_file,
+            warmup_assoc_count_nodes, assoc_count_nodes,
+            warmup_assoc_count_atypes, assoc_count_atypes);
+        time_t t0, t1;
+        std::ofstream res_stream(res_path);
+        LOG_E("Benchmarking assoc_count() latency\n");
+
+        LOG_E("Warming up for %" PRIu64 " queries...\n", warmup_n);
+        std::vector<ThriftAssoc> result;
+        for (uint64_t i = 0; i < warmup_n; ++i) {
+            assoc_count_f_(
+                mod_get(warmup_assoc_count_nodes, i),
+                mod_get(warmup_assoc_count_atypes, i));
+        }
+        LOG_E("Warmup complete.\n");
+
+        int64_t cnt;
+        LOG_E("Measuring for %" PRIu64 " queries...\n", measure_n);
+        for (uint64_t i = 0; i < measure_n; ++i) {
+            t0 = get_timestamp();
+            cnt = assoc_count_f_(
+                mod_get(assoc_count_nodes, i),
+                mod_get(assoc_count_atypes, i));
+            t1 = get_timestamp();
+            res_stream << cnt << "," << t1 - t0 << "\n";
         }
         LOG_E("Measure complete.\n");
     }
@@ -821,7 +861,7 @@ protected:
 
     // get_nhbrs(n, atype)
     std::vector<int64_t> warmup_nhbrAtype_indices, nhbrAtype_indices;
-    std::vector<int> warmup_atypes, atypes;
+    std::vector<int64_t> warmup_atypes, atypes;
 
     // get_nhbrs(n, attr)
     std::vector<int64_t> warmup_nhbrNode_indices, nhbrNode_indices;
@@ -839,6 +879,10 @@ protected:
     std::vector<int64_t> warmup_assoc_range_atypes, assoc_range_atypes;
     std::vector<int32_t> warmup_assoc_range_offs, assoc_range_offs;
     std::vector<int32_t> warmup_assoc_range_lens, assoc_range_lens;
+
+    // assoc_count()
+    std::vector<int64_t> warmup_assoc_count_nodes, assoc_count_nodes;
+    std::vector<int64_t> warmup_assoc_count_atypes, assoc_count_atypes;
 
     void read_assoc_range_queries(
         const std::string& warmup_file, const std::string& file)
@@ -891,8 +935,11 @@ protected:
     }
 
     void read_neighbor_atype_queries(
-        const std::string& warmup_file,
-        const std::string& query_file)
+        const std::string& warmup_file, const std::string& query_file,
+        std::vector<int64_t>& warmup_nhbrAtype_indices,
+        std::vector<int64_t>& nhbrAtype_indices,
+        std::vector<int64_t>& warmup_atypes,
+        std::vector<int64_t>& atypes)
     {
         std::ifstream warmup_input(warmup_file);
         std::ifstream query_input(query_file);

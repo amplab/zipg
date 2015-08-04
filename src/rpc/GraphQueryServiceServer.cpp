@@ -219,6 +219,10 @@ public:
         }
     }
 
+    int64_t assoc_count(int64_t src, int64_t atype) {
+        return graph_->assoc_count(src, atype);
+    }
+
 private:
 
     inline bool file_or_dir_exists(const std::string& pathname) {
