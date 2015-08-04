@@ -5,10 +5,10 @@ source ${SCRIPT_DIR}/config.sh
 mkdir -p ${QUERY_DIR}
 
 # assocRange=T
-# assocGet=T
+assocGet=T
 # assocCount=T
 # assocTimeRange=T
-objGet=T
+# objGet=T
 
 # SR doesn't matter since we are just loading, as long as the graph *has* been
 # constructed.
@@ -58,3 +58,16 @@ if [[ -n "$objGet" ]]; then
 
 fi
 
+if [[ -n "$assocGet" ]]; then
+
+  ${BIN_DIR}/create \
+    tao-assoc-get-queries \
+    $(wc -l ${NODE_FILE} | cut -d' ' -f 1) \
+    ${max_num_atype} \
+    ${warmup_assoc_range} \
+    ${measure_assoc_range} \
+    ${ASSOC_FILE} \
+    ${QUERY_DIR}/assocGet_warmup.txt \
+    ${QUERY_DIR}/assocGet_query.txt
+
+fi

@@ -437,6 +437,73 @@ void generate_tao_assoc_range_queries(
     output(query_file, query_size);
 }
 
+// Scans the assoc file and for global minimum and maximum timestamps.  Then,
+// similar to assoc_range()'s query gen, with the change that `low` and `high`
+// are uniformly sampled in [globalMinTime, globalMaxTime].
+//
+// For `dst_id_set`, we load the graph and put *all* of the actual dst ids in
+// an assoc list into the set.  The purpose is to increase # of nhbrs extracted.
+//
+// Query output format, each line: src,atype,low,high,[dstId,]+
+void generate_tao_assoc_get_queries(
+    int64_t num_nodes, int max_num_atype,
+    int warmup_size, int query_size,
+    const std::string& assoc_file,
+    const std::string& warmup_file, const std::string& query_file)
+{
+    std::ifstream ifs(assoc_file);
+    std::string line, token;
+    int64_t min_time = 1LL << 60, max_time = -1, time;
+    while (std::getline(ifs, line)) {
+        std::stringstream ss(line);
+        std::getline(ss, token, ' '); // src_id
+        std::getline(ss, token, ' '); // dst_id
+        std::getline(ss, token, ' '); // atype
+        std::getline(ss, token, ' '); // bingo: timestamp
+        time = std::stoll(token);
+        min_time = std::min(min_time, time);
+        max_time = std::max(max_time, time);
+    }
+    ifs.close();
+    LOG_E("Assoc scan finishes: min timestamp %lld, max timestamp %lld\n",
+        min_time, max_time);
+
+    auto aggregator = init_sharded_graph();
+
+    std::random_device rd;
+    std::mt19937 rng(rd());
+    std::uniform_int_distribution<int64_t> uni_node(0, num_nodes - 1);
+    std::uniform_int_distribution<int> uni_atype(0, max_num_atype - 1);
+    std::uniform_int_distribution<int64_t> uni_time(min_time, max_time);
+
+    auto output = [&](const std::string& out_file, int out_size) {
+        std::ofstream out(out_file);
+        int i = 0;
+        while (i < out_size) {
+            int64_t node_id = uni_node(rng);
+            int atype = uni_atype(rng);
+
+            std::vector<int64_t> vec;
+            aggregator->get_neighbors_atype(vec, node_id, atype);
+            if (vec.empty()) {
+                continue;
+            }
+
+            int64_t t1 = uni_time(rng);
+            int64_t t2 = uni_time(rng);
+            out << node_id << "," << atype << ","
+                << std::min(t1, t2) << "," << std::max(t1, t2);
+            for (int64_t dst_id : vec) {
+                 out << "," << dst_id;
+            }
+            out << std::endl;
+            ++i;
+        }
+    };
+    output(warmup_file, warmup_size);
+    output(query_file, query_size);
+}
+
 int main(int argc, char **argv) {
     std::string type = argv[1];
     if (type == "nodes") {
@@ -563,9 +630,9 @@ int main(int argc, char **argv) {
         int query_size = std::stoi(argv[4]);
         std::string warmup_file = argv[5];
         std::string query_file = argv[6];
+
         generate_neighbor_queries(num_nodes,
-            warmup_size, query_size,
-            warmup_file, query_file);
+            warmup_size, query_size, warmup_file, query_file);
 
     } else if (type == "tao-assoc-range-queries") {
 
@@ -575,21 +642,24 @@ int main(int argc, char **argv) {
         int query_size = std::stoi(argv[5]);
         std::string warmup_file = argv[6];
         std::string query_file = argv[7];
-        generate_tao_assoc_range_queries(
-            num_nodes, max_num_atype,
-            warmup_size, query_size, warmup_file, query_file);
 
-//    } else if (type == "tao-assoc-get-queries") {
-//
-//        int64_t num_nodes = std::stoll(argv[2]);
-//        int max_num_atype = std::stoi(argv[3]);
-//        int warmup_size = std::stoi(argv[4]);
-//        int query_size = std::stoi(argv[5]);
-//        std::string warmup_file = argv[6];
-//        std::string query_file = argv[7];
-//        generate_tao_assoc_get_queries(
-//            num_nodes, max_num_atype,
-//            warmup_size, query_size, warmup_file, query_file);
+        generate_tao_assoc_range_queries(
+            num_nodes, max_num_atype, warmup_size, query_size,
+            warmup_file, query_file);
+
+    } else if (type == "tao-assoc-get-queries") {
+
+        int64_t num_nodes = std::stoll(argv[2]);
+        int max_num_atype = std::stoi(argv[3]);
+        int warmup_size = std::stoi(argv[4]);
+        int query_size = std::stoi(argv[5]);
+        std::string assoc_file(argv[6]);
+        std::string warmup_file(argv[7]);
+        std::string query_file(argv[8]);
+
+        generate_tao_assoc_get_queries(
+            num_nodes, max_num_atype, warmup_size, query_size,
+            assoc_file, warmup_file, query_file);
 
     } else if (type == "format-input") {
 

@@ -47,8 +47,9 @@ EDGE_FILE=${DATA_DIR}/higgs-social_network.opts-npa32sa2isa32.edge_table
 # 40attr, 16 each, higgs
 NODE_FILE=${DATA_DIR}/higgs-40attr16each-tpch.node
 
-ASSOC_FILE=${DATA_DIR}/liveJournal.assoc # used for formatting neo4j
-ASSOC_FILE=${DATA_DIR}/higgs-social_network.assoc # used for formatting neo4j
+# source assoc file, used for neo4j creation & query gen.
+ASSOC_FILE=${DATA_DIR}/higgs-social_network.assoc
+ASSOC_FILE=${DATA_DIR}/liveJournal.assoc
 
 # \x02
 NEO4J_DELIM=
