@@ -15,8 +15,8 @@ public class TAOImpls implements TAOIface {
     private static int MAX_NUM_ATYPES = 1618;
     private static RelationshipType[] atypeMap;
     private static Comparator<Assoc> sortAssocByDescendingTime;
-    {
-        System.out.printf(
+    static {
+        System.out.println(
             "Neo4j's TAO impls assume max # atypes = " + MAX_NUM_ATYPES);
 
         atypeMap = new RelationshipType[MAX_NUM_ATYPES];

@@ -23,8 +23,13 @@ public class Assoc {
         this.dstId = rel.getEndNode().getId();
         this.atype = Long.valueOf(rel.getType().name());
         this.timestamp = (long) (rel.getProperty("timestamp")); // hard-coded
-        this.attr = (String) (rel.getProperty(
-            rel.getPropertyKeys().iterator().next()));
+        this.attr = (String) (rel.getProperty("attr")); // hard-coded
+    }
+
+    public String toString() {
+        return String.format(
+            "Assoc[src=%d, dst=%d, atype=%d, time=%d, attr '%s']",
+            srcId, dstId, atype, timestamp, attr);
     }
 
 }
