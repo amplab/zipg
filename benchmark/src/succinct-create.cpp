@@ -428,7 +428,7 @@ void generate_tao_assoc_range_queries(
             // unif. from [1, realLength - off]
             int len = 1 + (std::rand() % (vec.size() - off));
 
-            out << uni_node(rng) << "," << atype << ",";
+            out << node_id << "," << atype << ",";
             out << off << "," << len << std::endl;
             ++i;
         }
