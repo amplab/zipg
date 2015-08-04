@@ -42,6 +42,8 @@ public class BenchTAOAssocTimeRange {
         assocTimeRangeTimeLows = new ArrayList<>();
         warmupAssocTimeRangeTimeHighs = new ArrayList<>();
         assocTimeRangeTimeHighs = new ArrayList<>();
+        warmupAssocTimeRangeLimits = new ArrayList<>();
+        assocTimeRangeLimits = new ArrayList<>();
 
         String neo4jPageCacheMemory = GraphDatabaseSettings.pagecache_memory
             .getDefaultValue();
