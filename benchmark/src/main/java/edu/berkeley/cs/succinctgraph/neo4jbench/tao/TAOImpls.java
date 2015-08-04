@@ -78,8 +78,11 @@ public class TAOImpls implements TAOIface {
         for (Relationship rel : rels) {
             assocs.add(new Assoc(rel));
         }
+        if (off < 0 || off >= assocs.size()) {
+            return Collections.emptyList();
+        }
         Collections.sort(assocs, sortAssocByDescendingTime);
-        return assocs;
+        return assocs.subList(off, Math.min(assocs.size(), off + len));
     }
 
     /** Scans (filters on the fly) the assoc list.  Sorts the filtered result.

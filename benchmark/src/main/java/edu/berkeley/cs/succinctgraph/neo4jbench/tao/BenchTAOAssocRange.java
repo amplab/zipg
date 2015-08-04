@@ -115,6 +115,8 @@ public class BenchTAOAssocRange {
                     modGet(assocRangeOffsets, i),
                     modGet(assocRangeLengths, i));
                 long queryEnd = System.nanoTime();
+                assert(assocs.size() <= modGet(assocRangeLengths, i));
+                assert(!assocs.isEmpty()); // due to our query generation scheme
                 double microsecs = (queryEnd - queryStart) / ((double) 1000);
                 out.println(assocs.size() + "," + microsecs);
             }
