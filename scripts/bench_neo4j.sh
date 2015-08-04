@@ -40,7 +40,8 @@ benchNode=T
 thputThreads=8
 benchNhbrThput=T
 
-benchAssocRange=T
+#benchAssocRange=T
+bencObjGet=T
 
 pageCacheForNodes=8543m # works, has tradeoff
 pageCacheIgnoreIndexes=12g
@@ -204,7 +205,22 @@ for JVM_HEAP in 2048; do
            ${NEO4J_DIR}/${DATASET} \
            ${QUERY_DIR}/assocRange_warmup.txt \
            ${QUERY_DIR}/assocRange_query.txt \
-           ${HOME_DIR}/neo4j_${DATASET}_assocRange_latency_jvm${JVM_HEAP}m_pagecache${PC}m.txt \
+           ${HOME_DIR}/neo4j_${DATASET}_assocRange_latency_jvm${JVM_HEAP}m_pagecache${PC}.txt \
+           ${warmup_assoc_range} \
+           ${measure_assoc_range} \
+           ${pageCacheIgnoreIndexes}
+      fi
+
+    if [[ -n "$benchObjGet" ]]; then
+        sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+        find data/neo4j/${DATASET}/ -name "*store.db*" -type f -exec dd if={} of=/dev/null bs=1M 2>/dev/null \;
+        java -verbose:gc -server -XX:+UseConcMarkSweepGC -Xmx${JVM_HEAP}m -cp ${classpath} \
+           edu.berkeley.cs.succinctgraph.neo4jbench.tao.BenchTAOObjGet \
+           latency \
+           ${NEO4J_DIR}/${DATASET} \
+           ${QUERY_DIR}/objGet_warmup.txt \
+           ${QUERY_DIR}/objGet_query.txt \
+           ${HOME_DIR}/neo4j_${DATASET}_objGet_latency_jvm${JVM_HEAP}m_pagecache${PC}.txt \
            ${warmup_assoc_range} \
            ${measure_assoc_range} \
            ${pageCacheIgnoreIndexes}

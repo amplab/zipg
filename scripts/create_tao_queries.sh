@@ -8,7 +8,7 @@ mkdir -p ${QUERY_DIR}
 # assocGet=T
 # assocCount=T
 # assocTimeRange=T
-nodeGet=T
+objGet=T
 
 # SR doesn't matter since we are just loading, as long as the graph *has* been
 # constructed.
@@ -46,15 +46,15 @@ if [[ -n "$assocRange" ]]; then
   stop_all
 fi
 
-if [[ -n "$nodeGet" ]]; then
+if [[ -n "$objGet" ]]; then
 
   ${BIN_DIR}/create \
     tao-node-get-queries \
     $(wc -l ${NODE_FILE} | cut -d' ' -f 1) \
     ${warmup_node_get} \
     ${measure_node_get} \
-    ${QUERY_DIR}/nodeGet_warmup.txt \
-    ${QUERY_DIR}/nodeGet_query.txt
+    ${QUERY_DIR}/objGet_warmup.txt \
+    ${QUERY_DIR}/objGet_query.txt
 
 fi
 

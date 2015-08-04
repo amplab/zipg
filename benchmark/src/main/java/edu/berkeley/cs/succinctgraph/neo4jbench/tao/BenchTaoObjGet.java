@@ -14,15 +14,12 @@ import java.util.List;
 
 import static edu.berkeley.cs.succinctgraph.neo4jbench.BenchUtils.modGet;
 
-public class BenchTAOAssocRange {
+public class BenchTAOObjGet {
 
     final static TAOImpls taoImpls = new TAOImpls();
 
     static int numWarmupQueries, numMeasureQueries;
-    static List<Long> warmupAssocRangeNodes, assocRangeNodes;
-    static List<Long> warmupAssocRangeAtypes, assocRangeAtypes;
-    static List<Integer> warmupAssocRangeOffsets, assocRangeOffsets;
-    static List<Integer> warmupAssocRangeLengths, assocRangeLengths;
+    static List<Long> warmupObjGetIds, objGetIds;
 
     public static void main(String[] args) {
         String type = args[0];
@@ -33,14 +30,8 @@ public class BenchTAOAssocRange {
         numWarmupQueries = Integer.parseInt(args[5]);
         numMeasureQueries = Integer.parseInt(args[6]);
 
-        warmupAssocRangeNodes = new ArrayList<>();
-        assocRangeNodes = new ArrayList<>();
-        warmupAssocRangeAtypes = new ArrayList<>();
-        assocRangeAtypes = new ArrayList<>();
-        warmupAssocRangeOffsets = new ArrayList<>();
-        assocRangeOffsets = new ArrayList<>();
-        warmupAssocRangeLengths = new ArrayList<>();
-        assocRangeLengths = new ArrayList<>();
+        warmupObjGetIds = new ArrayList<>();
+        objGetIds = new ArrayList<>();
 
         String neo4jPageCacheMemory = GraphDatabaseSettings.pagecache_memory
             .getDefaultValue();
@@ -48,25 +39,20 @@ public class BenchTAOAssocRange {
             neo4jPageCacheMemory = args[7];
         }
 
-        BenchUtils.readAssocRangeQueries(
-            warmupQueryFile, warmupAssocRangeNodes, warmupAssocRangeAtypes,
-            warmupAssocRangeOffsets, warmupAssocRangeLengths);
-
-        BenchUtils.readAssocRangeQueries(
-            queryFile, assocRangeNodes, assocRangeAtypes,
-            assocRangeOffsets, assocRangeLengths);
+        BenchUtils.getNeighborQueries(warmupQueryFile, warmupObjGetIds);
+        BenchUtils.getNeighborQueries(queryFile, objGetIds);
 
         if (type.equals("latency")) {
-            benchAssocRangeLatency(dbPath, neo4jPageCacheMemory, outputFile);
+            benchObjGetLatency(dbPath, neo4jPageCacheMemory, outputFile);
         } else {
             System.err.println("Unknown type: " + type);
         }
     }
 
-    private static void benchAssocRangeLatency(
+    private static void benchObjGetLatency(
         String dbPath, String neo4jPageCacheMem, String outputFile) {
 
-        System.out.println("Benchmarking assoc_range() queries");
+        System.out.println("Benchmarking obj_get() queries");
         System.out.println("Setting Neo4j's dbms.pagecache.memory: " +
             neo4jPageCacheMem);
 
@@ -93,11 +79,7 @@ public class BenchTAOAssocRange {
                     tx.close();
                     tx = db.beginTx();
                 }
-                taoImpls.assocRange(db,
-                    modGet(warmupAssocRangeNodes, i),
-                    modGet(warmupAssocRangeAtypes, i),
-                    modGet(warmupAssocRangeOffsets, i),
-                    modGet(warmupAssocRangeLengths, i));
+                taoImpls.objGet(db, modGet(warmupObjGetIds, i));
             }
 
             System.out.println(
@@ -109,16 +91,10 @@ public class BenchTAOAssocRange {
                     tx = db.beginTx();
                 }
                 long queryStart = System.nanoTime();
-                List<Assoc> assocs = taoImpls.assocRange(db,
-                    modGet(assocRangeNodes, i),
-                    modGet(assocRangeAtypes, i),
-                    modGet(assocRangeOffsets, i),
-                    modGet(assocRangeLengths, i));
+                String attrs = taoImpls.objGet(db, modGet(objGetIds, i));
                 long queryEnd = System.nanoTime();
-                assert(assocs.size() <= modGet(assocRangeLengths, i));
-                assert(!assocs.isEmpty()); // due to our query generation scheme
                 double microsecs = (queryEnd - queryStart) / ((double) 1000);
-                out.println(assocs.size() + "," + microsecs);
+                out.println(attrs.length() + "," + microsecs);
             }
             out.close();
 

@@ -58,7 +58,7 @@ public class TAOImpls implements TAOIface {
     }
 
     // TODO: assumes keys are in-order? (name0, name1, ..)
-    public String nodeGet(GraphDatabaseService db, long nodeId) {
+    public String objGet(GraphDatabaseService db, long nodeId) {
         Node n = db.getNodeById(nodeId);
         StringBuilder sb = new StringBuilder();
         for (String key : n.getPropertyKeys()) {
