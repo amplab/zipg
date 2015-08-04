@@ -4,11 +4,11 @@ SCRIPT_DIR=$(dirname $0)
 source ${SCRIPT_DIR}/config.sh
 mkdir -p ${QUERY_DIR}
 
-assocRange=T
+# assocRange=T
 # assocGet=T
 # assocCount=T
 # assocTimeRange=T
-# nodeGet=T
+nodeGet=T
 
 # SR doesn't matter since we are just loading, as long as the graph *has* been
 # constructed.
@@ -44,5 +44,17 @@ if [[ -n "$assocRange" ]]; then
     ${QUERY_DIR}/assocRange_query.txt
 
   stop_all
+fi
+
+if [[ -n "$nodeGet" ]]; then
+
+  ${BIN_DIR}/create \
+    tao-node-get-queries \
+    $(wc -l ${NODE_FILE} | cut -d' ' -f 1) \
+    ${warmup_node_get} \
+    ${measure_node_get} \
+    ${QUERY_DIR}/nodeGet_warmup.txt \
+    ${QUERY_DIR}/nodeGet_query.txt
+
 fi
 

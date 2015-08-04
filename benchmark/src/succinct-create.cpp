@@ -556,15 +556,16 @@ int main(int argc, char **argv) {
             warmup_file,
             query_file);
 
-//    } else if (type == "tao-node-get-queries") {
-//
-//        int64_t num_nodes = std::stoll(argv[2]);
-//        int warmup_size = std::stoi(argv[3]);
-//        int query_size = std::stoi(argv[4]);
-//        std::string warmup_file = argv[5];
-//        std::string query_file = argv[6];
-//        generate_tao_node_get_queries(
-//            num_nodes, warmup_size, query_size, warmup_file, query_file);
+    } else if (type == "tao-node-get-queries") {
+
+        int64_t num_nodes = std::stoll(argv[2]);
+        int warmup_size = std::stoi(argv[3]);
+        int query_size = std::stoi(argv[4]);
+        std::string warmup_file = argv[5];
+        std::string query_file = argv[6];
+        generate_neighbor_queries(num_nodes,
+            warmup_size, query_size,
+            warmup_file, query_file);
 
     } else if (type == "tao-assoc-range-queries") {
 
@@ -577,6 +578,18 @@ int main(int argc, char **argv) {
         generate_tao_assoc_range_queries(
             num_nodes, max_num_atype,
             warmup_size, query_size, warmup_file, query_file);
+
+//    } else if (type == "tao-assoc-get-queries") {
+//
+//        int64_t num_nodes = std::stoll(argv[2]);
+//        int max_num_atype = std::stoi(argv[3]);
+//        int warmup_size = std::stoi(argv[4]);
+//        int query_size = std::stoi(argv[5]);
+//        std::string warmup_file = argv[6];
+//        std::string query_file = argv[7];
+//        generate_tao_assoc_get_queries(
+//            num_nodes, max_num_atype,
+//            warmup_size, query_size, warmup_file, query_file);
 
     } else if (type == "format-input") {
 
