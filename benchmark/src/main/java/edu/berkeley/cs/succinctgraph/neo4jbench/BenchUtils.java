@@ -12,7 +12,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 public class BenchUtils {
@@ -191,6 +193,46 @@ public class BenchUtils {
                 offsets.add(Integer.parseInt(line.substring(idx2 + 1, idx3)));
 
                 lengths.add(Integer.parseInt(line.substring(idx3 + 1)));
+                line = br.readLine();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void readAssocGetQueries(
+        String file, List<Long> nodes, List<Long> atypes,
+        List<Set<Long>> dstIdSets, List<Long> tLows, List<Long> tHighs) {
+
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(file));
+            String line = br.readLine();
+            while (line != null) {
+                int idx = line.indexOf(',');
+                nodes.add(Long.parseLong(line.substring(0, idx)));
+
+                int idx2 = line.indexOf(',', idx + 1);
+                atypes.add(Long.parseLong(line.substring(idx + 1, idx2)));
+
+                int idx3 = line.indexOf(',', idx2 + 1);
+                tLows.add(Long.parseLong(line.substring(idx2 + 1, idx3)));
+
+                int idx4 = line.indexOf(',', idx3 + 1);
+                tHighs.add(Long.parseLong(line.substring(idx3 + 1, idx4)));
+
+                int idxLast = idx4, idxCurr;
+                Set<Long> dstIdSet = new HashSet<>();
+                while (true) {
+                    idxCurr = line.indexOf(',', idxLast + 1);
+                    if (idxCurr == -1) {
+                        break;
+                    }
+                    dstIdSet.add(Long.parseLong(
+                        line.substring(idxLast + 1, idxCurr)));
+                    idxLast = idxCurr;
+                }
+                dstIdSet.add(Long.parseLong(line.substring(idxLast + 1)));
+                dstIdSets.add(dstIdSet);
                 line = br.readLine();
             }
         } catch (IOException e) {
