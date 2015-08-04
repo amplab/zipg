@@ -113,4 +113,7 @@ warmup_node_get=100000
 measure_node_get=200000
 
 warmup_assocGet=100000
-measure_assocGet=100000
+measure_assocGet=200000
+
+warmup_assocCount=100000
+measure_assocCount=200000

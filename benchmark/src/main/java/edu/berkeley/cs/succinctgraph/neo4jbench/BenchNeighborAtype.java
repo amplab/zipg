@@ -20,7 +20,7 @@ public class BenchNeighborAtype {
     private static int MEASURE_N;
 
     private static List<Long> warmupIds, queryIds;
-    private static List<Integer> warmupAtypes, queryAtypes;
+    private static List<Long> warmupAtypes, queryAtypes;
 
     // assume 5 atypes
     public static RelationshipType[] atypeMap;
@@ -100,7 +100,8 @@ public class BenchNeighborAtype {
                 getNeighborsSorted(
                     graphDb,
                     warmupIds.get(i % warmupIds.size()),
-                    atypeMap[warmupAtypes.get(i % warmupAtypes.size())]);
+                    atypeMap[warmupAtypes.get(i % warmupAtypes.size())
+                        .intValue()]);
             }
 
             System.out.println("Measuring for " + MEASURE_N + " queries");
@@ -116,7 +117,8 @@ public class BenchNeighborAtype {
                 neighbors = getNeighborsSorted(
                     graphDb,
                     queryIds.get(i % queryIds.size()),
-                    atypeMap[queryAtypes.get(i % queryAtypes.size())]);
+                    atypeMap[queryAtypes.get(i % queryAtypes.size())
+                        .intValue()]);
 
                 long queryEnd = System.nanoTime();
                 double microsecs = (queryEnd - queryStart) / ((double) 1000);

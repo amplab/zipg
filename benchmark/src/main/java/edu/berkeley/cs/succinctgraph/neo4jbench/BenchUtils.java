@@ -139,7 +139,7 @@ public class BenchUtils {
     }
 
     public static void getNeighborAtypeQueries(
-        String file, List<Long> nodeIds, List<Integer> atypes) {
+        String file, List<Long> nodeIds, List<Long> atypes) {
 
         try {
             BufferedReader br = new BufferedReader(new FileReader(file));
@@ -147,7 +147,7 @@ public class BenchUtils {
             while (line != null) {
                 String[] toks = line.split(",");
                 nodeIds.add(Long.valueOf(toks[0]));
-                atypes.add(Integer.valueOf(toks[1]));
+                atypes.add(Long.valueOf(toks[1]));
                 line = br.readLine();
             }
         } catch (IOException e) {

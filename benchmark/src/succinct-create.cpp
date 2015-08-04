@@ -161,6 +161,7 @@ void generate_neighbor_queries(
 }
 
 // Format: randomNodeId,atype.
+// Since queries are generated randomly, the query results can be empty.
 void generate_neighbor_atype_queries(
     int64_t num_nodes,
     int max_num_atype,
@@ -660,6 +661,19 @@ int main(int argc, char **argv) {
         generate_tao_assoc_get_queries(
             num_nodes, max_num_atype, warmup_size, query_size,
             assoc_file, warmup_file, query_file);
+
+    } else if (type == "tao-assoc-count-queries") {
+
+        int64_t num_nodes = std::stoll(argv[2]);
+        int max_num_atype = std::stoi(argv[3]);
+        int warmup_size = std::stoi(argv[4]);
+        int query_size = std::stoi(argv[5]);
+        std::string warmup_file(argv[6]);
+        std::string query_file(argv[7]);
+
+        generate_neighbor_atype_queries(
+            num_nodes, max_num_atype, warmup_size, query_size,
+            warmup_file, query_file);
 
     } else if (type == "format-input") {
 

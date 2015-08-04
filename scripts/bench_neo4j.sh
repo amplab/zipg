@@ -42,7 +42,8 @@ thputThreads=8
 
 #benchAssocRange=T
 #benchObjGet=T
-benchAssocGet=T
+#benchAssocGet=T
+benchAssocCount=T
 
 pageCacheForNodes=8543m # works, has tradeoff
 pageCacheIgnoreIndexes=12g
@@ -239,6 +240,22 @@ for JVM_HEAP in 2048; do
            ${HOME_DIR}/neo4j_${DATASET}_assocGet_latency_jvm${JVM_HEAP}m_pagecache${PC}.txt \
            ${warmup_assocGet} \
            ${measure_assocGet} \
+           ${pageCacheIgnoreIndexes}
+      fi
+
+      if [[ -n "$benchAssocCount" ]]; then
+        sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+
+        find data/neo4j/${DATASET}/ -name "*store.db*" -type f -exec dd if={} of=/dev/null bs=1M 2>/dev/null \;
+        java -verbose:gc -server -XX:+UseConcMarkSweepGC -Xmx${JVM_HEAP}m -cp ${classpath} \
+           edu.berkeley.cs.succinctgraph.neo4jbench.tao.BenchTAOAssocCount \
+           latency \
+           ${NEO4J_DIR}/${DATASET} \
+           ${QUERY_DIR}/assocCount_warmup.txt \
+           ${QUERY_DIR}/assocCount_query.txt \
+           ${HOME_DIR}/neo4j_${DATASET}_assocCount_latency_jvm${JVM_HEAP}m_pagecache${PC}.txt \
+           ${warmup_assocCount} \
+           ${measure_assocCount} \
            ${pageCacheIgnoreIndexes}
       fi
 

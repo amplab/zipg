@@ -35,9 +35,9 @@ public class MixBench {
 
     // get_nhbrs(n, atype)
     static List<Long> warmupNhbrAtypeIds = new ArrayList<>();
-    static List<Integer> warmupNhbrAtypeAtypes = new ArrayList<>();
+    static List<Long> warmupNhbrAtypeAtypes = new ArrayList<>();
     static List<Long> nhbrAtypeIds = new ArrayList<>();
-    static List<Integer> nhbrAtypeAtypes = new ArrayList<>();
+    static List<Long> nhbrAtypeAtypes = new ArrayList<>();
 
     // get_nodes(attr) and get_nodes(attr1, attr2)
     static List<Integer> warmupNodeAttrIds1 = new ArrayList<Integer>();
@@ -175,7 +175,7 @@ public class MixBench {
                         BenchNeighborAtype.getNeighborsSorted(graphDb,
                             modGet(warmupNhbrAtypeIds, i),
                             BenchNeighborAtype.atypeMap[modGet(
-                                warmupNhbrAtypeAtypes, i)]);
+                                warmupNhbrAtypeAtypes, i).intValue()]);
                         break;
                     case 4:
                         BenchNode.getNodes(graphDb, label,
@@ -236,7 +236,7 @@ public class MixBench {
                         nodes = BenchNeighborAtype.getNeighborsSorted(graphDb,
                             modGet(nhbrAtypeIds, i),
                             BenchNeighborAtype.atypeMap[modGet(
-                                nhbrAtypeAtypes, i)]);
+                                nhbrAtypeAtypes, i).intValue()]);
                         end = System.nanoTime();
                         nhbrAtypeOut.println(
                             nodes.size() + "," + (end - start) / 1e3);

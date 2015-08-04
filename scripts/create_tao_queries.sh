@@ -5,8 +5,8 @@ source ${SCRIPT_DIR}/config.sh
 mkdir -p ${QUERY_DIR}
 
 # assocRange=T
-assocGet=T
-# assocCount=T
+# assocGet=T
+assocCount=T
 # assocTimeRange=T
 # objGet=T
 
@@ -65,11 +65,22 @@ if [[ -n "$assocGet" ]]; then
     tao-assoc-get-queries \
     $(wc -l ${NODE_FILE} | cut -d' ' -f 1) \
     ${max_num_atype} \
-    ${warmup_assoc_range} \
-    ${measure_assoc_range} \
+    ${warmup_assocGet} \
+    ${measure_assocGet} \
     ${ASSOC_FILE} \
     ${QUERY_DIR}/assocGet_warmup.txt \
     ${QUERY_DIR}/assocGet_query.txt
 
   stop_all
+fi
+
+if [[ -n "$assocCount" ]]; then
+  ${BIN_DIR}/create \
+    tao-assoc-count-queries \
+    $(wc -l ${NODE_FILE} | cut -d' ' -f 1) \
+    ${max_num_atype} \
+    ${warmup_assocCount} \
+    ${measure_assocCount} \
+    ${QUERY_DIR}/assocCount_warmup.txt \
+    ${QUERY_DIR}/assocCount_query.txt
 fi
