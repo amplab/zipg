@@ -18,6 +18,10 @@ isa=64
 EDGE_FILE="/mnt2T/data/liveJournal-npa${npa}sa${sa}isa${isa}.assoc"
 NODE_FILE="/mnt2T/data/liveJournal-40attr16each-tpch-npa${npa}sa${sa}isa${isa}.node"
 
+function stop_all() {
+  bash ${SCRIPT_DIR}/../sbin/stop-all.sh
+}
+
 function start_all() {
   stop_all
   sleep 2
@@ -25,10 +29,6 @@ function start_all() {
   sleep 2
   bash ${SCRIPT_DIR}/../sbin/start-handlers.sh &
   sleep 2
-}
-
-function stop_all() {
-  bash ${SCRIPT_DIR}/../sbin/stop-all.sh
 }
 
 if [[ -n "$assocRange" ]]; then
@@ -59,6 +59,7 @@ if [[ -n "$objGet" ]]; then
 fi
 
 if [[ -n "$assocGet" ]]; then
+  start_all
 
   ${BIN_DIR}/create \
     tao-assoc-get-queries \
@@ -70,4 +71,5 @@ if [[ -n "$assocGet" ]]; then
     ${QUERY_DIR}/assocGet_warmup.txt \
     ${QUERY_DIR}/assocGet_query.txt
 
+  stop_all
 fi
