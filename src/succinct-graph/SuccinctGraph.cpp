@@ -344,7 +344,7 @@ void SuccinctGraph::obj_get(std::string& result, int64_t obj_id) {
 std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_range(
     int64_t src, int64_t atype, int32_t off, int32_t len) {
 
-    printf("assoc_range(src = %lld, atype = %lld, off = %d, len = %d)\n",
+    COND_LOG_E("assoc_range(src = %lld, atype = %lld, off = %d, len = %d)\n",
         src, atype, off, len);
 
     std::vector<int64_t> eoffs = get_edge_table_offsets(src, atype);
@@ -449,7 +449,8 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_get(
     int64_t t_low,
     int64_t t_high)
 {
-    printf("assoc_get(src = %lld, atype = %lld, dstIdSet = ..., tLow = %lld, tHigh = %lld)\n",
+    COND_LOG_E("assoc_get(src = %lld, atype = %lld, dstIdSet = ...,"
+        " tLow = %lld, tHigh = %lld)\n",
         src, atype, t_low, t_high);
     std::vector<int64_t> eoffs = get_edge_table_offsets(src, atype);
 
@@ -653,7 +654,8 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_time_range(
     int64_t t_high,
     int32_t len) {
 
-    printf("assoc_time_range(src = %lld, atype = %lld, tLow = %lld, tHigh = %lld, len = %d)\n",
+    COND_LOG_E("assoc_time_range(src = %lld, atype = %lld, tLow = %lld, "
+        "tHigh = %lld, len = %d)\n",
         src, atype, t_low, t_high, len);
 
     std::vector<int64_t> eoffs = get_edge_table_offsets(src, atype);
