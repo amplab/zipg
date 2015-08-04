@@ -123,9 +123,9 @@ public:
 //                    src, atype, dst_id_set, t_low, t_high);
 //            };
 //
-//            assoc_count_f_ = [this](int64_t src, int64_t atype) {
-//                return aggregator_->assoc_count(src, atype);
-//            };
+            assoc_count_f_ = [this](int64_t src, int64_t atype) {
+                return aggregator_->assoc_count(src, atype);
+            };
 //
 //            assoc_time_range_f_ = [this](
 //                int64_t src,
