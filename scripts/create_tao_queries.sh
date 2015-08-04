@@ -6,8 +6,8 @@ mkdir -p ${QUERY_DIR}
 
 # assocRange=T
 # assocGet=T
-assocCount=T
-# assocTimeRange=T
+# assocCount=T
+assocTimeRange=T
 # objGet=T
 
 # SR doesn't matter since we are just loading, as long as the graph *has* been
@@ -83,4 +83,20 @@ if [[ -n "$assocCount" ]]; then
     ${measure_assocCount} \
     ${QUERY_DIR}/assocCount_warmup.txt \
     ${QUERY_DIR}/assocCount_query.txt
+fi
+
+if [[ -n "$assocTimeRange" ]]; then
+  start_all
+
+  ${BIN_DIR}/create \
+    tao-assoc-time-range-queries \
+    $(wc -l ${NODE_FILE} | cut -d' ' -f 1) \
+    ${max_num_atype} \
+    ${warmup_assocTimeRange} \
+    ${measure_assocTimeRange} \
+    ${ASSOC_FILE} \
+    ${QUERY_DIR}/assocTimeRange_warmup.txt \
+    ${QUERY_DIR}/assocTimeRange_query.txt
+
+  stop_all
 fi

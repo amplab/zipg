@@ -438,19 +438,9 @@ void generate_tao_assoc_range_queries(
     output(query_file, query_size);
 }
 
-// Scans the assoc file and for global minimum and maximum timestamps.  Then,
-// similar to assoc_range()'s query gen, with the change that `low` and `high`
-// are uniformly sampled in [globalMinTime, globalMaxTime].
-//
-// For `dst_id_set`, we load the graph and put *all* of the actual dst ids in
-// an assoc list into the set.  The purpose is to increase # of nhbrs extracted.
-//
-// Query output format, each line: src,atype,low,high,[dstId,]+
-void generate_tao_assoc_get_queries(
-    int64_t num_nodes, int max_num_atype,
-    int warmup_size, int query_size,
-    const std::string& assoc_file,
-    const std::string& warmup_file, const std::string& query_file)
+// Helper function that scans the assoc file and look for global minimum and
+// maximum timestamps.
+std::pair<int64_t, int64_t> get_min_max_timestamp(const std::string& assoc_file)
 {
     std::ifstream ifs(assoc_file);
     std::string line, token;
@@ -465,7 +455,20 @@ void generate_tao_assoc_get_queries(
         min_time = std::min(min_time, time);
         max_time = std::max(max_time, time);
     }
-    ifs.close();
+    return std::make_pair(min_time, max_time);
+}
+
+// Shared between assoc_get() and assoc_time_range().
+void generate_tao_time_related_queries_helper(
+    int64_t num_nodes, int max_num_atype,
+    int warmup_size, int query_size,
+    const std::string& assoc_file,
+    const std::string& warmup_file,
+    const std::string& query_file,
+    bool for_assoc_get)
+{
+    auto pair = get_min_max_timestamp(assoc_file);
+    int64_t min_time = pair.first, max_time = pair.second;
     LOG_E("Assoc scan finishes: min timestamp %lld, max timestamp %lld\n",
         min_time, max_time);
 
@@ -494,8 +497,15 @@ void generate_tao_assoc_get_queries(
             int64_t t2 = uni_time(rng);
             out << node_id << "," << atype << ","
                 << std::min(t1, t2) << "," << std::max(t1, t2);
-            for (int64_t dst_id : vec) {
-                 out << "," << dst_id;
+
+            if (for_assoc_get) {
+                for (int64_t dst_id : vec) {
+                     out << "," << dst_id;
+                }
+            } else {
+                // assoc_time_range(): generates `limit` from [1, actualLength].
+                int limit = 1 + (std::rand() % vec.size());
+                out << "," << limit;
             }
             out << std::endl;
             ++i;
@@ -503,6 +513,40 @@ void generate_tao_assoc_get_queries(
     };
     output(warmup_file, warmup_size);
     output(query_file, query_size);
+}
+
+// Scans the assoc file and for global minimum and maximum timestamps.  Then,
+// similar to assoc_range()'s query gen, with the change that `low` and `high`
+// are uniformly sampled in [globalMinTime, globalMaxTime].
+//
+// For `dst_id_set`, we load the graph and put *all* of the actual dst ids in
+// an assoc list into the set.  The purpose is to increase # of nhbrs extracted.
+//
+// Query output format, each line: src,atype,low,high,[dstId,]+
+void generate_tao_assoc_get_queries(
+    int64_t num_nodes, int max_num_atype,
+    int warmup_size, int query_size,
+    const std::string& assoc_file,
+    const std::string& warmup_file, const std::string& query_file)
+{
+    generate_tao_time_related_queries_helper(num_nodes, max_num_atype,
+        warmup_size, query_size, assoc_file, warmup_file, query_file,
+        true);
+}
+
+// Generates time ranges similar to assoc_get().  Samples `limit` uniformly at
+// random from the actual assoc list (hence, requires loading the actual graph).
+//
+// Format, each line: src,atype,low,high,limit
+void generate_tao_assoc_time_range_queries(
+    int64_t num_nodes, int max_num_atype,
+    int warmup_size, int query_size,
+    const std::string& assoc_file,
+    const std::string& warmup_file, const std::string& query_file)
+{
+    generate_tao_time_related_queries_helper(num_nodes, max_num_atype,
+        warmup_size, query_size, assoc_file, warmup_file, query_file,
+        false);
 }
 
 int main(int argc, char **argv) {
@@ -674,6 +718,20 @@ int main(int argc, char **argv) {
         generate_neighbor_atype_queries(
             num_nodes, max_num_atype, warmup_size, query_size,
             warmup_file, query_file);
+
+    } else if (type == "tao-assoc-time-range-queries") {
+
+        int64_t num_nodes = std::stoll(argv[2]);
+        int max_num_atype = std::stoi(argv[3]);
+        int warmup_size = std::stoi(argv[4]);
+        int query_size = std::stoi(argv[5]);
+        std::string assoc_file(argv[6]);
+        std::string warmup_file(argv[7]);
+        std::string query_file(argv[8]);
+
+        generate_tao_assoc_time_range_queries(
+            num_nodes, max_num_atype, warmup_size, query_size,
+            assoc_file, warmup_file, query_file);
 
     } else if (type == "format-input") {
 

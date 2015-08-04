@@ -117,3 +117,6 @@ measure_assocGet=200000
 
 warmup_assocCount=100000
 measure_assocCount=200000
+
+warmup_assocTimeRange=100000
+measure_assocTimeRange=200000
