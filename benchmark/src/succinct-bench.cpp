@@ -549,7 +549,8 @@ int main(int argc, char **argv) {
         // Demo code
 
     } else {
-        assert(0);
+        LOG_E("-t bench type: '%s'\n", type.c_str());
+        assert(false && "Unknown bench type (-t)");
     }
     return 0;
 }
