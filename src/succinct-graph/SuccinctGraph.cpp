@@ -445,10 +445,10 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_range(
 std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_get(
     int64_t src,
     int64_t atype,
-    std::set<int64_t> dst_id_set,
+    const std::set<int64_t>& dst_id_set,
     int64_t t_low,
-    int64_t t_high) {
-
+    int64_t t_high)
+{
     printf("assoc_get(src = %lld, atype = %lld, dstIdSet = ..., tLow = %lld, tHigh = %lld)\n",
         src, atype, t_low, t_high);
     std::vector<int64_t> eoffs = get_edge_table_offsets(src, atype);
