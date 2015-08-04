@@ -240,4 +240,33 @@ public class BenchUtils {
         }
     }
 
+    public static void readAssocTimeRangeQueries(
+        String file, List<Long> nodes, List<Long> atypes,
+        List<Long> tLows, List<Long> tHighs, List<Integer> limits) {
+
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(file));
+            String line = br.readLine();
+            while (line != null) {
+                int idx = line.indexOf(',');
+                nodes.add(Long.parseLong(line.substring(0, idx)));
+
+                int idx2 = line.indexOf(',', idx + 1);
+                atypes.add(Long.parseLong(line.substring(idx + 1, idx2)));
+
+                int idx3 = line.indexOf(',', idx2 + 1);
+                tLows.add(Long.parseLong(line.substring(idx2 + 1, idx3)));
+
+                int idx4 = line.indexOf(',', idx3 + 1);
+                tHighs.add(Long.parseLong(line.substring(idx3 + 1, idx4)));
+
+                limits.add(Integer.parseInt(line.substring(idx4 + 1)));
+
+                line = br.readLine();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 }
