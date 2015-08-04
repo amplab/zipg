@@ -41,7 +41,7 @@ thputThreads=8
 benchNhbrThput=T
 
 #benchAssocRange=T
-bencObjGet=T
+benchObjGet=T
 
 pageCacheForNodes=8543m # works, has tradeoff
 pageCacheIgnoreIndexes=12g
