@@ -1,3 +1,12 @@
+// An association. The included fields are the same as SuccinctGraph::Assoc.
+struct ThriftAssoc {
+    1: i64 srcId,
+    2: i64 dstId,
+    3: i64 atype,
+    4: i64 timestamp,
+    5: string attr,
+}
+
 // One per logical shard (there can be multiple shards per physical node).
 service GraphQueryService {
 
@@ -26,6 +35,9 @@ service GraphQueryService {
         2: i32 attrId,
         3: string attrKey),
 
+    list<ThriftAssoc> assoc_range(
+        1: i64 src, 2: i64 atype, 3: i32 off, 4: i32 len),
+
 }
 
 // One per physical node; handles local aggregation and query routing.
@@ -39,6 +51,8 @@ service GraphQueryAggregatorService {
 
     // Initialize local shards.
     void init(),
+
+    // Primitive queries
 
     list<i64> get_neighbors(1: i64 nodeId),
 
@@ -54,5 +68,10 @@ service GraphQueryAggregatorService {
         2: string attrKey1,
         3: i32 attrId2,
         4: string attrKey2),
+
+    // TAO queries
+
+    list<ThriftAssoc> assoc_range(
+        1: i64 src, 2: i64 atype, 3: i32 off, 4: i32 len),
 
 }

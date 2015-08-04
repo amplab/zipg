@@ -194,6 +194,31 @@ public:
         graph_->filter_nodes(_return, nodeIds, attrId, attrKey);
     }
 
+    void assoc_range(
+        std::vector<ThriftAssoc>& _return,
+        int64_t src,
+        int64_t atype,
+        int32_t off,
+        int32_t len)
+    {
+        std::vector<SuccinctGraph::Assoc> vec(
+            graph_->assoc_range(src, atype, off, len));
+
+        // TODO: any better way?
+        // NB: the fields are Thrift-generated, so this may not be portable.
+        _return.clear();
+        _return.reserve(vec.size());
+        for (const auto& assoc : vec) {
+            ThriftAssoc t_assoc;
+            t_assoc.srcId = assoc.src_id;
+            t_assoc.dstId = assoc.dst_id;
+            t_assoc.atype = assoc.atype;
+            t_assoc.timestamp = assoc.time;
+            t_assoc.attr.assign(std::move(assoc.attr)); // hopefully fast
+            _return.push_back(t_assoc);
+        }
+    }
+
 private:
 
     inline bool file_or_dir_exists(const std::string& pathname) {
