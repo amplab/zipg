@@ -347,7 +347,7 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_range(
     COND_LOG_E("assoc_range(src = %lld, atype = %lld, off = %d, len = %d)\n",
         src, atype, off, len);
 
-    std::vector<int64_t> eoffs = get_edge_table_offsets(src, atype);
+    std::vector<int64_t> eoffs(std::move(get_edge_table_offsets(src, atype)));
 
     std::vector<Assoc> result;
     std::string edge_width_str, data_width, timestamps, dst_ids, attrs;
@@ -452,7 +452,7 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_get(
     COND_LOG_E("assoc_get(src = %lld, atype = %lld, dstIdSet = ...,"
         " tLow = %lld, tHigh = %lld)\n",
         src, atype, t_low, t_high);
-    std::vector<int64_t> eoffs = get_edge_table_offsets(src, atype);
+    std::vector<int64_t> eoffs(std::move(get_edge_table_offsets(src, atype)));
 
     std::vector<Assoc> result;
     std::string edge_width_str, data_width, timestamps, dst_ids, attrs;
@@ -613,7 +613,7 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_get(
 }
 
 int64_t SuccinctGraph::assoc_count(int64_t src, int64_t atype) {
-    std::vector<int64_t> eoffs = get_edge_table_offsets(src, atype);
+    std::vector<int64_t> eoffs(std::move(get_edge_table_offsets(src, atype)));
     int64_t total_cnt = 0;
     std::string edge_width_str, data_width, dst_id_width_str;
     int32_t dst_id_width;
@@ -658,7 +658,7 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_time_range(
         "tHigh = %lld, len = %d)\n",
         src, atype, t_low, t_high, len);
 
-    std::vector<int64_t> eoffs = get_edge_table_offsets(src, atype);
+    std::vector<int64_t> eoffs(std::move(get_edge_table_offsets(src, atype)));
 
     std::vector<Assoc> result;
     std::string edge_width_str, data_width, timestamps, dst_ids, attrs;

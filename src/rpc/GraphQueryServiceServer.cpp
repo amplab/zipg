@@ -214,15 +214,9 @@ public:
             _return[i].dstId = assoc.dst_id;
             _return[i].atype = assoc.atype;
             _return[i].timestamp = assoc.time;
+            // should be the same as 'lhs = std::move(rhs)'
             _return[i].attr.assign(std::move(assoc.attr));
             ++i;
-//            ThriftAssoc t_assoc;
-//            t_assoc.srcId = assoc.src_id;
-//            t_assoc.dstId = assoc.dst_id;
-//            t_assoc.atype = assoc.atype;
-//            t_assoc.timestamp = assoc.time;
-//            t_assoc.attr.assign(std::move(assoc.attr)); // hopefully fast
-//            _return.push_back(t_assoc);
         }
     }
 
