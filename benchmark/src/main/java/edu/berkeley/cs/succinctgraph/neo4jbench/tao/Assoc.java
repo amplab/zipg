@@ -23,7 +23,8 @@ public class Assoc {
         this.dstId = rel.getEndNode().getId();
         this.atype = Long.valueOf(rel.getType().name());
         this.timestamp = (long) (rel.getProperty("timestamp")); // hard-coded
-        this.attr = (String) (rel.getProperty("attr")); // hard-coded
+        // Empty string to guard against empty attribute
+        this.attr = (String) (rel.getProperty("attr", "")); // hard-coded
     }
 
     public String toString() {
