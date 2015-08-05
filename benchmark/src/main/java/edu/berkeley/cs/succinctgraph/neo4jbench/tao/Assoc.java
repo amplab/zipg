@@ -29,7 +29,7 @@ public class Assoc {
 
     public String toString() {
         return String.format(
-            "Assoc[src=%d, dst=%d, atype=%d, time=%d, attr '%s']",
+            "[src=%d,dst=%d,atype=%d,time=%d,attr='%s']",
             srcId, dstId, atype, timestamp, attr);
     }
 

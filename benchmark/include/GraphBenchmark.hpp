@@ -244,7 +244,7 @@ public:
             // correctness validation
             query_res_stream << "node id: " << mod_get(neighbor_indices, i)
                 << "\n";
-            std:sort(result.begin(), result.end());
+            std::sort(result.begin(), result.end());
             for (auto it = result.begin(); it != result.end(); ++it) {
                 query_res_stream << *it << " ";
             }
@@ -300,7 +300,7 @@ public:
             query_res_stream << "node id: " << mod_get(neighbor_indices, i)
                 << "\n";
             query_res_stream << "atype:  " << mod_get(atypes, i) << "\n";
-            std:sort(result.begin(), result.end());
+            std::sort(result.begin(), result.end());
             for (auto it = result.begin(); it != result.end(); ++it) {
                 query_res_stream << *it << " ";
             }
@@ -744,6 +744,11 @@ public:
         read_assoc_range_queries(warmup_query_file, query_file);
         time_t t0, t1;
         std::ofstream res_stream(res_path);
+
+#ifdef BENCH_PRINT_RESULTS
+        std::ofstream query_res_stream(res_path + ".succinct_result");
+#endif
+
         LOG_E("Benchmarking assoc_range() latency\n");
 
         LOG_E("Warming up for %" PRIu64 " queries...\n", warmup_n);
@@ -767,6 +772,18 @@ public:
                 mod_get(assoc_range_lens, i));
             t1 = get_timestamp();
             res_stream << result.size() << "," << t1 - t0 << "\n";
+
+#ifdef BENCH_PRINT_RESULTS
+            for (const auto& assoc : result) {
+                query_res_stream
+                    << "[src=" << assoc.srcId
+                    << ",dst=" << assoc.dstId
+                    << ",atype=" << assoc.atype
+                    << ",time=" << assoc.timestamp
+                    << ",attr='" << assoc.attr << "'] ";
+            }
+            query_res_stream << std::endl;
+#endif
         }
         LOG_E("Measure complete.\n");
     }
