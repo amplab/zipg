@@ -202,20 +202,27 @@ public:
         int32_t len)
     {
         std::vector<SuccinctGraph::Assoc> vec(
-            graph_->assoc_range(src, atype, off, len));
+            std::move(graph_->assoc_range(src, atype, off, len)));
 
         // TODO: any better way?
         // NB: the fields are Thrift-generated, so this may not be portable.
         _return.clear();
-        _return.reserve(vec.size());
+        _return.resize(vec.size());
+        size_t i = 0;
         for (const auto& assoc : vec) {
-            ThriftAssoc t_assoc;
-            t_assoc.srcId = assoc.src_id;
-            t_assoc.dstId = assoc.dst_id;
-            t_assoc.atype = assoc.atype;
-            t_assoc.timestamp = assoc.time;
-            t_assoc.attr.assign(std::move(assoc.attr)); // hopefully fast
-            _return.push_back(t_assoc);
+            _return[i].srcId = assoc.src_id;
+            _return[i].dstId = assoc.dst_id;
+            _return[i].atype = assoc.atype;
+            _return[i].timestamp = assoc.time;
+            _return[i].attr.assign(std::move(assoc.attr));
+            ++i;
+//            ThriftAssoc t_assoc;
+//            t_assoc.srcId = assoc.src_id;
+//            t_assoc.dstId = assoc.dst_id;
+//            t_assoc.atype = assoc.atype;
+//            t_assoc.timestamp = assoc.time;
+//            t_assoc.attr.assign(std::move(assoc.attr)); // hopefully fast
+//            _return.push_back(t_assoc);
         }
     }
 
