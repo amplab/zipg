@@ -6,9 +6,15 @@ source ${SCRIPT_DIR}/config.sh
 source ${SCRIPT_DIR}/../conf/succinct-env.sh
 
 num_nodes=100000 # hack
-dataset="-2attr350each"
-dataset="-20attr35each"
-dataset="-liveJournal"
+
+minDeg="-minDeg45"
+minDeg="-minDeg60"
+minDeg="-minDeg30"
+minDeg=""
+dataset="-liveJournal${minDeg}"
+#dataset="-20attr35each"
+#dataset="-40attr16each"
+#dataset="-2attr350each"
 
 # NOTE: comment this out for non-sharded bench
 SHARDED=T
@@ -33,8 +39,8 @@ function bench() {
 
   #EDGE_FILE="data/higgs-social_network.opts-npa${npa}sa${sa}isa${isa}.edge_table"
   #NODE_FILE="data/higgs${dataset}-tpch-npa${npa}sa${sa}isa${isa}.nodeWithPtrs"
-  EDGE_FILE="../data/liveJournal-npa${npa}sa${sa}isa${isa}.assoc"
-  NODE_FILE="../data/liveJournal-40attr16each-tpch-npa${npa}sa${sa}isa${isa}.node"
+  EDGE_FILE="/mnt2T/data/liveJournal${minDeg}-npa${npa}sa${sa}isa${isa}.assoc"
+  NODE_FILE="/mnt2T/data/liveJournal-40attr16each-tpch-npa${npa}sa${sa}isa${isa}.node"
 
   if [[ -n "$SHARDED" ]]; then
     bash ${SCRIPT_DIR}/../sbin/stop-all.sh
@@ -46,7 +52,7 @@ function bench() {
     bash ${SCRIPT_DIR}/../sbin/start-handlers.sh &
     sleep 2
   fi
-  
+
     if [[ -n "$benchNode" ]]; then
       sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
       ${BIN_DIR}/bench -t node-latency -x ${warmup_node} \
@@ -92,20 +98,8 @@ function bench() {
       ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
     fi
 
-    # FIXME: output?
-    if [[ -n "$benchNeighborThput" ]]; then
-      sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
-      ${BIN_DIR}/bench -t neighbor-throughput \
-        -p ${throughput_threads} \
-        -x ${warmup_neighbor} -y ${measure_neighbor} \
-        -w ${QUERY_DIR}/neighbor_warmup_${num_nodes}.txt \
-        -q ${QUERY_DIR}/neighbor_query_${num_nodes}.txt \
-        -o ${HOME_DIR}/neighbor_throughput-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards-${throughput_threads}clients.txt \
-        ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
-    fi
-
     if [[ -n "$benchMix" ]]; then
-      sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+      #sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
 
       ${BIN_DIR}/bench -t mix-latency \
         -x ${warmup_mix} -y ${measure_mix} \
@@ -123,11 +117,26 @@ function bench() {
         -j ${HOME_DIR}/mix_node_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
         -k ${HOME_DIR}/mix_double_node_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
         ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
+    fi
 
+    if [[ -n "$benchNeighborThput" ]]; then
+      #sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+
+      ${BIN_DIR}/bench -t neighbor-throughput \
+        -p ${throughput_threads} \
+        -x ${warmup_neighbor} -y ${measure_neighbor} \
+        -w ${QUERY_DIR}/neighbor_warmup_${num_nodes}.txt \
+        -q ${QUERY_DIR}/neighbor_query_${num_nodes}.txt \
+        -o ${HOME_DIR}/neighbor_throughput-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards-${throughput_threads}clients.txt \
+        ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
+
+      x=$(cut -d' ' -f1 throughput_get_nhbrs.txt | awk '{sum += $1} END {print sum}')
+      mv throughput_get_nhbrs.txt throughput_get_nhbrs-${throughput_threads}clients.txt
+      echo $throughput_threads clients, $x aggregated queries/sec
     fi
 
     if [[ -n "$benchAssocRange" ]]; then
-      sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+      #sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
       ${BIN_DIR}/bench -t tao-assoc-range-latency \
         -x ${warmup_assocRange} -y ${measure_assocRange} \
         -w ${QUERY_DIR}/assocRange_warmup.txt -q ${QUERY_DIR}/assocRange_query.txt \
@@ -136,7 +145,7 @@ function bench() {
     fi
 
     if [[ -n "$benchAssocCount" ]]; then
-      sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+      #sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
       ${BIN_DIR}/bench -t tao-assoc-count-latency \
         -x ${warmup_assocCount} -y ${measure_assocCount} \
         -w ${QUERY_DIR}/assocCount_warmup.txt -q ${QUERY_DIR}/assocCount_query.txt \
@@ -144,11 +153,13 @@ function bench() {
         ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
     fi
 
-  if [[ -n "$SHARDED" ]]; then
-  	bash ${SCRIPT_DIR}/../sbin/stop-all.sh
-  fi
+    if [[ -n "$SHARDED" ]]; then
+    	bash ${SCRIPT_DIR}/../sbin/stop-all.sh
+    fi
 }
 
+#for throughput_threads in 32; do
+#done
 sa=32; isa=64; npa=128; bench
-sa=8; isa=64; npa=64; bench
 sa=4; isa=16; npa=16; bench
+sa=8; isa=64; npa=64; bench
