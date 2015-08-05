@@ -365,6 +365,7 @@ int main(int argc, char **argv) {
         // count edges from non-existent node or that has non-existent atype
         assert(graph->assoc_count(1618, -1) == 0 &&
                graph->assoc_count(-1, 1618) == 0);
+        assert(graph->assoc_count(5, 1) == 0);
 
         // assoc_get() tests
 
