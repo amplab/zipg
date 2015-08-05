@@ -40,6 +40,10 @@ service GraphQueryService {
 
     i64 assoc_count(1: i64 src, 2: i64 atype),
 
+    list<ThriftAssoc> assoc_get(
+        1: i64 src, 2: i64 atype, 3: set<i64> dstIdSet,
+        4: i64 tLow, 5: i64 tHigh),
+
 }
 
 // One per physical node; handles local aggregation and query routing.
@@ -77,5 +81,9 @@ service GraphQueryAggregatorService {
         1: i64 src, 2: i64 atype, 3: i32 off, 4: i32 len),
 
     i64 assoc_count(1: i64 src, 2: i64 atype),
+
+    list<ThriftAssoc> assoc_get(
+        1: i64 src, 2: i64 atype, 3: set<i64> dstIdSet,
+        4: i64 tLow, 5: i64 tHigh),
 
 }

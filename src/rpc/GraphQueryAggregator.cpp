@@ -230,6 +230,24 @@ public:
         }
     }
 
+    void assoc_get(
+        std::vector<ThriftAssoc>& _return,
+        const int64_t src,
+        const int64_t atype,
+        const std::set<int64_t>& dstIdSet,
+        const int64_t tLow,
+        const int64_t tHigh)
+    {
+        int shard_id = src % total_num_shards_;
+        int host_id = shard_id % total_num_hosts_;
+        if (host_id == local_host_id_) {
+            local_shards_[shard_id / total_num_hosts_]
+                .assoc_get(_return, src, atype, dstIdSet, tLow, tHigh);
+        } else {
+            assert(false && "routing not implemented");
+        }
+    }
+
 private:
     const int total_num_shards_; // total # of logical shards
     const int local_num_shards_;
