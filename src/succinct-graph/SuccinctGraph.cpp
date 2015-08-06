@@ -451,14 +451,8 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_range(
             result.back().dst_id = decoded_dst_ids[i];
             result.back().atype = atype;
             result.back().time = decoded_timestamps[i];
-
-            result.back().attr.reserve(edge_width);
-            for (int j = i * edge_width; j < (i + 1) * edge_width; ++j) {
-                result.back().attr[j] = attrs[j];
-            }
-//            result.back().attr = std::move(
-//                attrs.substr(i * edge_width, edge_width));
-
+            result.back().attr = std::move(
+                attrs.substr(i * edge_width, edge_width));
 //            result.push_back(
 //                { src,
 //                  decoded_dst_ids[i],
