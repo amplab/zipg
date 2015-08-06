@@ -348,12 +348,13 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_range(
     }
 
     std::vector<int64_t> eoffs = get_edge_table_offsets(src, atype);
-    std::vector<Assoc> result;
+    int32_t len_saved = len;
+    int32_t edge_width, dst_id_width;
+    int64_t cnt;
 
     std::string timestamps, dst_ids, attrs, str;
-
-    int32_t len_saved = len, edge_width, dst_id_width;
-    int64_t cnt;
+    std::vector<Assoc> result;
+    std::vector<int64_t> decoded_timestamps, decoded_dst_ids;
 
     for (int64_t curr_off : eoffs) {
         LOG("edge table offset = %llu\n", curr_off);
@@ -424,11 +425,11 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_range(
             len * edge_width);
         LOG("extracted attrs = '%s'\n", attrs.c_str());
 
-        std::vector<int64_t> decoded_timestamps =
-            SuccinctGraphSerde::decode_multi_timestamps(timestamps);
+        decoded_timestamps = std::move(
+            SuccinctGraphSerde::decode_multi_timestamps(timestamps));
 
-        std::vector<int64_t> decoded_dst_ids =
-            SuccinctGraphSerde::decode_multi_node_ids(dst_ids, dst_id_width);
+        decoded_dst_ids = std::move(
+            SuccinctGraphSerde::decode_multi_node_ids(dst_ids, dst_id_width));
 
         for (size_t i = 0; i < decoded_timestamps.size(); ++i) {
             result.push_back(
