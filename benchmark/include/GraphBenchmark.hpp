@@ -841,6 +841,11 @@ public:
             warmup_obj_get_nodes, obj_get_nodes);
         time_t t0, t1;
         std::ofstream res_stream(res_path);
+
+#ifdef BENCH_PRINT_RESULTS
+        std::ofstream query_res_stream(res_path + ".succinct_result");
+#endif
+
         LOG_E("Benchmarking obj_get() latency\n");
 
         LOG_E("Warming up for %" PRIu64 " queries...\n", warmup_n);
@@ -856,6 +861,13 @@ public:
             obj_get_f_(result, mod_get(obj_get_nodes, i));
             t1 = get_timestamp();
             res_stream << result.size() << "," << t1 - t0 << "\n";
+
+#ifdef BENCH_PRINT_RESULTS
+            for (const auto& attr : result) {
+                query_res_stream << "'" << attr << "', ";
+            }
+            query_res_stream << std::endl;
+#endif
         }
         LOG_E("Measure complete.\n");
     }
