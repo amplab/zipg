@@ -640,33 +640,41 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_get(
 int64_t SuccinctGraph::assoc_count(int64_t src, int64_t atype) {
     std::vector<int64_t> eoffs = get_edge_table_offsets(src, atype);
     int64_t total_cnt = 0;
-    std::string edge_width_str, data_width, dst_id_width_str;
-    int32_t dst_id_width;
+    std::string str;
+    int32_t dst_id_width, edge_width;
+    uint64_t suf_arr_idx;
 
-    for (auto curr_off : eoffs) {
-        if (curr_off == -1) continue;
+    for (int64_t curr_off : eoffs) {
+        if (curr_off == -1) {
+            continue;
+        }
 
+        suf_arr_idx = -1;
         curr_off = this->edge_table->skipping_extract_until(
-            curr_off, DST_ID_WIDTH_DELIM);
+            suf_arr_idx, curr_off, DST_ID_WIDTH_DELIM);
 
         this->edge_table->extract(
-            dst_id_width_str,
-            curr_off,
+            str,
+            suf_arr_idx,
+            curr_off, // unused
             SuccinctGraphSerde::WIDTH_DST_ID_WIDTH_PADDED);
-        LOG("extracted dst id width = '%s'\n", dst_id_width_str.c_str());
-        dst_id_width = std::stoi(dst_id_width_str);
-        curr_off += SuccinctGraphSerde::WIDTH_DST_ID_WIDTH_PADDED;
+        LOG("extracted dst id width = '%s'\n", str.c_str());
+        dst_id_width = std::stoi(str);
 
         curr_off = this->edge_table->extract_until(
-            edge_width_str, curr_off, DATA_WIDTH_DELIM);
-        int32_t edge_width = std::stoi(edge_width_str);
+            str,
+            suf_arr_idx,
+            // + here since last extract() doesn't return an updated offset
+            curr_off + SuccinctGraphSerde::WIDTH_DST_ID_WIDTH_PADDED,
+            DATA_WIDTH_DELIM);
+        edge_width = std::stoi(str);
 
         curr_off = this->edge_table->extract_until(
-            data_width, curr_off, METADATA_DELIM);
+            str, suf_arr_idx, curr_off, METADATA_DELIM);
 
-        assert(std::stol(data_width) %
+        assert(std::stol(str) %
             (WIDTH_TIMESTAMP + dst_id_width + edge_width) == 0);
-        total_cnt += std::stol(data_width) /
+        total_cnt += std::stol(str) /
             (WIDTH_TIMESTAMP + dst_id_width + edge_width);
     }
     return total_cnt;
