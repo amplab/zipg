@@ -115,17 +115,18 @@ public:
                 aggregator_->assoc_range(_return, src, atype, off, len);
             };
 
-//            assoc_get_f_ = [this](
-//                int64_t src,
-//                int64_t atype,
-//                const std::set<int64_t>& dst_id_set,
-//                int64_t t_low,
-//                int64_t t_high)
-//            {
-//                return aggregator_->assoc_get(
-//                    src, atype, dst_id_set, t_low, t_high);
-//            };
-//
+            assoc_get_f_ = [this](
+                std::vector<ThriftAssoc>& _return,
+                int64_t src,
+                int64_t atype,
+                const std::set<int64_t>& dst_id_set,
+                int64_t t_low,
+                int64_t t_high)
+            {
+                aggregator_->assoc_get(_return,
+                    src, atype, dst_id_set, t_low, t_high);
+            };
+
             assoc_count_f_ = [this](int64_t src, int64_t atype) {
                 return aggregator_->assoc_count(src, atype);
             };
@@ -830,6 +831,61 @@ public:
         LOG_E("Measure complete.\n");
     }
 
+    void benchmark_assoc_get_latency(
+        std::string res_path,
+        int64_t warmup_n,
+        int64_t measure_n,
+        const std::string& warmup_query_file,
+        const std::string& query_file)
+    {
+        read_assoc_get_queries(warmup_query_file, query_file);
+        time_t t0, t1;
+        std::ofstream res_stream(res_path);
+
+#ifdef BENCH_PRINT_RESULTS
+        std::ofstream query_res_stream(res_path + ".succinct_result");
+#endif
+        LOG_E("Benchmarking assoc_get() latency\n");
+
+        LOG_E("Warming up for %" PRIu64 " queries...\n", warmup_n);
+        std::vector<ThriftAssoc> result;
+        for (int64_t i = 0; i < warmup_n; ++i) {
+            assoc_get_f_(result,
+                mod_get(warmup_assoc_get_nodes, i),
+                mod_get(warmup_assoc_get_atypes, i),
+                mod_get(warmup_assoc_get_dst_id_sets, i),
+                mod_get(warmup_assoc_get_lows, i),
+                mod_get(warmup_assoc_get_highs, i));
+        }
+        LOG_E("Warmup complete.\n");
+
+        LOG_E("Measuring for %" PRIu64 " queries...\n", measure_n);
+        for (int64_t i = 0; i < measure_n; ++i) {
+            t0 = get_timestamp();
+            assoc_get_f_(result,
+                mod_get(assoc_get_nodes, i),
+                mod_get(assoc_get_atypes, i),
+                mod_get(assoc_get_dst_id_sets, i),
+                mod_get(assoc_get_lows, i),
+                mod_get(assoc_get_highs, i));
+            t1 = get_timestamp();
+            res_stream << result.size() << "," << t1 - t0 << "\n";
+
+#ifdef BENCH_PRINT_RESULTS
+            for (const auto& assoc : result) {
+                query_res_stream
+                    << "[src=" << assoc.srcId
+                    << ",dst=" << assoc.dstId
+                    << ",atype=" << assoc.atype
+                    << ",time=" << assoc.timestamp
+                    << ",attr='" << assoc.attr << "'] ";
+            }
+            query_res_stream << std::endl;
+#endif
+        }
+        LOG_E("Measure complete.\n");
+    }
+
     void benchmark_obj_get_latency(
         std::string res_path,
         uint64_t warmup_n,
@@ -909,7 +965,7 @@ protected:
     std::function<void(std::vector<ThriftAssoc>&,
         int64_t, int64_t, int32_t, int32_t)> assoc_range_f_;
 
-    std::function<std::vector<ThriftAssoc>(
+    std::function<void(std::vector<ThriftAssoc>&,
         int64_t, int64_t,
         const std::set<int64_t>&, int32_t, int32_t)> assoc_get_f_;
 
@@ -952,6 +1008,14 @@ protected:
     // obj_get
     std::vector<int64_t> warmup_obj_get_nodes, obj_get_nodes;
 
+    // assoc_get()
+    std::vector<int64_t> warmup_assoc_get_nodes, assoc_get_nodes;
+    std::vector<int64_t> warmup_assoc_get_atypes, assoc_get_atypes;
+    std::vector<std::set<int64_t>> warmup_assoc_get_dst_id_sets;
+    std::vector<std::set<int64_t>> assoc_get_dst_id_sets;
+    std::vector<int64_t> warmup_assoc_get_highs, assoc_get_highs;
+    std::vector<int64_t> warmup_assoc_get_lows, assoc_get_lows;
+
     void read_assoc_range_queries(
         const std::string& warmup_file, const std::string& file)
     {
@@ -983,6 +1047,47 @@ protected:
 
         read(file, assoc_range_nodes, assoc_range_atypes,
             assoc_range_offs, assoc_range_lens);
+    }
+
+    void read_assoc_get_queries(
+        const std::string& warmup_file, const std::string& file)
+    {
+        auto read = [](
+            const std::string& file,
+            std::vector<int64_t>& nodes, std::vector<int64_t>& atypes,
+            std::vector<int64_t>& lows, std::vector<int64_t>& highs,
+            std::vector<std::set<int64_t>> dst_id_sets)
+        {
+            std::ifstream ifs(file);
+            std::string line, token;
+            while (std::getline(ifs, line)) {
+                std::stringstream ss(line);
+
+                std::getline(ss, token, ',');
+                nodes.push_back(std::stoll(token));
+
+                std::getline(ss, token, ',');
+                atypes.push_back(std::stoll(token));
+
+                std::getline(ss, token, ',');
+                lows.push_back(std::stoi(token));
+
+                std::getline(ss, token, ',');
+                highs.push_back(std::stoll(token));
+
+                std::set<int64_t> dst_id_set;
+                while (std::getline(ss, token, ',')) {
+                    dst_id_set.insert(std::stoll(token));
+                }
+                dst_id_sets.push_back(dst_id_set);
+            }
+        };
+        read(warmup_file, warmup_assoc_get_nodes, warmup_assoc_get_atypes,
+            warmup_assoc_get_lows, warmup_assoc_get_highs,
+            warmup_assoc_get_dst_id_sets);
+
+        read(file, assoc_get_nodes, assoc_get_atypes,
+            assoc_get_lows, assoc_get_highs, assoc_get_dst_id_sets);
     }
 
     void read_neighbor_queries(
