@@ -470,8 +470,8 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_get(
     int64_t t_low,
     int64_t t_high)
 {
-    COND_LOG_E("assoc_get(src = %lld, atype = %lld, dstIdSet = ...,"
-        " tLow = %lld, tHigh = %lld)\n",
+    COND_LOG_E("assoc_get(src = %" PRId64 ", atype = %" PRId64 ","
+        " dstIdSet = ..., tLow = %" PRId64 ", tHigh = %" PRId64 ")\n",
         src, atype, t_low, t_high);
 
     std::vector<int64_t> eoffs = get_edge_table_offsets(src, atype);
