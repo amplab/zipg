@@ -430,14 +430,25 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_range(
         std::vector<int64_t> decoded_dst_ids =
             SuccinctGraphSerde::decode_multi_node_ids(dst_ids, dst_id_width);
 
+        // Perf comparisons:
+        // https://goo.gl/B3Wvj1 - naive
+        // https://goo.gl/ckAnB0 - add ctor to Assoc struct, emplace_back w/ it
+        // https://goo.gl/zcLovO - don't add ctor, emplace_back() no arg
         for (size_t i = 0; i < decoded_timestamps.size(); ++i) {
-            result.push_back(
-                { src,
-                  decoded_dst_ids[i],
-                  atype,
-                  decoded_timestamps[i],
-                  attrs.substr(i * edge_width, edge_width)
-                });
+            result.emplace_back();
+            result.back().src_id = src;
+            result.back().dst_id = decoded_dst_ids[i];
+            result.back().atype = atype;
+            result.back().time = decoded_timestamps[i];
+            result.back().attr = std::move(
+                attrs.substr(i * edge_width, edge_width));
+//            result.push_back(
+//                { src,
+//                  decoded_dst_ids[i],
+//                  atype,
+//                  decoded_timestamps[i],
+//                  attrs.substr(i * edge_width, edge_width)
+//                });
         }
         LOG("\n");
     }
