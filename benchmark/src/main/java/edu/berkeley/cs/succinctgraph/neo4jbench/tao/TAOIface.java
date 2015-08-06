@@ -7,8 +7,9 @@ import java.util.Set;
 
 public interface TAOIface {
 
-    /** Returns all attributes for an object (node), as a single String. */
-    public String objGet(GraphDatabaseService db, long nodeId);
+    /** Returns all attributes for an object (node), with size up to least
+     * index from which the node has only empty (missing) attributes. */
+    public List<String> objGet(GraphDatabaseService db, long nodeId);
 
     public List<Assoc> assocRange(
         GraphDatabaseService db, long src, long atype, int off, int len);

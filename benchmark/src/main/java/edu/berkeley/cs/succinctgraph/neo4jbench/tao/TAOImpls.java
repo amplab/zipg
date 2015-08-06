@@ -58,13 +58,13 @@ public class TAOImpls implements TAOIface {
     }
 
     // TODO: assumes keys are in-order? (name0, name1, ..)
-    public String objGet(GraphDatabaseService db, long nodeId) {
+    public List<String> objGet(GraphDatabaseService db, long nodeId) {
         Node n = db.getNodeById(nodeId);
-        StringBuilder sb = new StringBuilder();
+        List<String> res = new ArrayList<>();
         for (String key : n.getPropertyKeys()) {
-            sb.append((String) (n.getProperty(key)));
+            res.add((String) (n.getProperty(key)));
         }
-        return sb.toString();
+        return res;
     }
 
     /** Scans over all the assoc list and manually sorts by timestamp. */

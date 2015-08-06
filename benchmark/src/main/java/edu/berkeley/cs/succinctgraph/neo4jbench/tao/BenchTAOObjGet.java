@@ -91,10 +91,10 @@ public class BenchTAOObjGet {
                     tx = db.beginTx();
                 }
                 long queryStart = System.nanoTime();
-                String attrs = taoImpls.objGet(db, modGet(objGetIds, i));
+                List<String> attrs = taoImpls.objGet(db, modGet(objGetIds, i));
                 long queryEnd = System.nanoTime();
                 double microsecs = (queryEnd - queryStart) / ((double) 1000);
-                out.println(attrs.length() + "," + microsecs);
+                out.println(attrs.size() + "," + microsecs);
             }
             out.close();
 
