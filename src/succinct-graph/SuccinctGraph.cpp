@@ -338,65 +338,71 @@ SuccinctGraph::get_edge_table_offsets(NodeId id, AType atype) {
 }
 
 std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_range(
-    int64_t src, int64_t atype, int32_t off, int32_t len) {
-
+    int64_t src, int64_t atype, int32_t off, int32_t len)
+{
     COND_LOG_E("assoc_range(src = %lld, atype = %lld, off = %d, len = %d)\n",
         src, atype, off, len);
 
+    if (off == NONE) {
+        off = 0; // extract from start
+    }
+
     std::vector<int64_t> eoffs = get_edge_table_offsets(src, atype);
-
     std::vector<Assoc> result;
-    std::string edge_width_str, data_width, timestamps, dst_ids, attrs;
-    std::string dst_id_width_str;
-    std::string src_id_str, atype_str;
-    int32_t edge_width, dst_id_width;
-    int64_t cnt, curr_off;
 
-    if (off == NONE) off = 0; // extract from head
-    int32_t len_saved = len;
+    std::string timestamps, dst_ids, attrs, str;
 
-    for (auto it = eoffs.begin(); it != eoffs.end(); ++it) {
-        curr_off = *it;
+    int32_t len_saved = len, edge_width, dst_id_width;
+    int64_t cnt;
+
+    for (int64_t curr_off : eoffs) {
         LOG("edge table offset = %llu\n", curr_off);
-        if (curr_off == -1) continue;
+        if (curr_off == -1) {
+            continue;
+        }
 
-        // Since the passed-in src and atype can be None, extract nonetheless
+        // TODO: should we skip the extract when they are not wildcards?
+        // Since the passed-in src and atype can be NONE, extract nonetheless
         curr_off = this->edge_table->extract_until(
-            src_id_str, curr_off + 1, ATYPE_DELIM); // +1 for skip NODE_DELIM
-        src = std::stol(src_id_str);
+            str, curr_off + 1, ATYPE_DELIM); // +1 for skip NODE_DELIM
+        src = std::stoll(str);
 
         curr_off = this->edge_table->extract_until(
-            atype_str, curr_off, DST_ID_WIDTH_DELIM);
-        atype = std::stol(atype_str);
+            str, curr_off, DST_ID_WIDTH_DELIM);
+        atype = std::stoll(str);
 
         this->edge_table->extract(
-            dst_id_width_str,
+            str,
             curr_off,
             SuccinctGraphSerde::WIDTH_DST_ID_WIDTH_PADDED);
-        LOG("extracted dst id width = '%s'\n", dst_id_width_str.c_str());
-        dst_id_width = std::stoi(dst_id_width_str);
+        LOG("extracted dst id width = '%s'\n", str.c_str());
+        dst_id_width = std::stoi(str);
         curr_off += SuccinctGraphSerde::WIDTH_DST_ID_WIDTH_PADDED;
 
         curr_off = this->edge_table->extract_until(
-            edge_width_str, curr_off, DATA_WIDTH_DELIM);
-        LOG("extracted edge width = '%s'\n", edge_width_str.c_str());
-        edge_width = std::stoi(edge_width_str);
+            str, curr_off, DATA_WIDTH_DELIM);
+        LOG("extracted edge width = '%s'\n", str.c_str());
+        edge_width = std::stoi(str);
 
         curr_off = this->edge_table->extract_until(
-            data_width, curr_off, METADATA_DELIM);
-        LOG("extracted data width = '%s'\n", data_width.c_str());
+            str, curr_off, METADATA_DELIM);
+        LOG("extracted data width = '%s'\n", str.c_str());
 
-        assert(std::stol(data_width) %
+        assert(std::stol(str) %
             (WIDTH_TIMESTAMP + dst_id_width + edge_width) == 0);
-        cnt = std::stol(data_width) /
+        cnt = std::stol(str) /
             (WIDTH_TIMESTAMP + dst_id_width + edge_width);
         LOG("cnt = %llu\n", cnt);
 
         // if len is wildcard, extract all that's left
-        len = std::min((int64_t) len_saved, cnt - off);
-        if (len_saved == NONE) len = cnt - off;
+        len = std::min(static_cast<int64_t>(len_saved), cnt - off);
+        if (len_saved == NONE) {
+            len = cnt - off;
+        }
         assert(off + len <= cnt);
-        if (len <= 0) continue;
+        if (len <= 0) {
+            continue;
+        }
 
         this->edge_table->extract(
             timestamps,
@@ -412,9 +418,10 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_range(
         LOG("extracted dst ids: '%s'\n", dst_ids.c_str());
 
         curr_off += cnt * dst_id_width;
-        this->edge_table->extract(attrs,
-                                  curr_off + off * edge_width,
-                                  len * edge_width);
+        this->edge_table->extract(
+            attrs,
+            curr_off + off * edge_width,
+            len * edge_width);
         LOG("extracted attrs = '%s'\n", attrs.c_str());
 
         std::vector<int64_t> decoded_timestamps =
