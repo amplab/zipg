@@ -82,7 +82,7 @@ public:
 #ifdef DEBUG_RPC_NHBR
             auto t1 = get_timestamp();
 #endif
-            local_shards_.at(shard_id / total_num_hosts_)
+            local_shards_[shard_id / total_num_hosts_]
                 .get_neighbors(_return, nodeId);
 
 #ifdef DEBUG_RPC_NHBR
@@ -107,7 +107,7 @@ public:
 #ifdef DEBUG_RPC_NHBR
             auto t1 = get_timestamp();
 #endif
-            local_shards_.at(shard_id / total_num_hosts_)
+            local_shards_[shard_id / total_num_hosts_]
                 .get_neighbors_atype(_return, nodeId, atype);
 
 #ifdef DEBUG_RPC_NHBR
@@ -143,7 +143,7 @@ public:
 
         for (auto it = splits_by_keys.begin(); it != splits_by_keys.end(); ++it)
         {
-            local_shards_.at(it->first).send_filter_nodes(
+            local_shards_[it->first].send_filter_nodes(
                 it->second, attrId, attrKey);
         }
 
@@ -151,7 +151,7 @@ public:
         std::vector<int64_t> shard_result;
         for (auto it = splits_by_keys.begin(); it != splits_by_keys.end(); ++it)
         {
-            local_shards_.at(it->first).recv_filter_nodes(shard_result);
+            local_shards_[it->first].recv_filter_nodes(shard_result);
             for (int64_t local_key : shard_result) {
                 // globalKey = localKey * numShards + shardId
                 // localKey = (globalKey - shardId) / numShards
@@ -212,7 +212,7 @@ public:
         int shard_id = src % total_num_shards_;
         int host_id = shard_id % total_num_hosts_;
         if (host_id == local_host_id_) {
-            local_shards_.at(shard_id / total_num_hosts_)
+            local_shards_[shard_id / total_num_hosts_]
                 .assoc_range(_return, src, atype, off, len);
         } else {
             assert(false && "routing not implemented");
@@ -223,7 +223,7 @@ public:
         int shard_id = src % total_num_shards_;
         int host_id = shard_id % total_num_hosts_;
         if (host_id == local_host_id_) {
-            return local_shards_.at(shard_id / total_num_hosts_)
+            return local_shards_[shard_id / total_num_hosts_]
                 .assoc_count(src, atype);
         } else {
             assert(false && "routing not implemented");
