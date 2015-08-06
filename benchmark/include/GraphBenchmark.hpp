@@ -1070,7 +1070,7 @@ protected:
                 atypes.push_back(std::stoll(token));
 
                 std::getline(ss, token, ',');
-                lows.push_back(std::stoi(token));
+                lows.push_back(std::stoll(token));
 
                 std::getline(ss, token, ',');
                 highs.push_back(std::stoll(token));
