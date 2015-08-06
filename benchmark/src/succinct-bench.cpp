@@ -31,11 +31,23 @@ void assert_eq(
 
 void assert_eq(
     const std::vector<int64_t>& actual,
-    std::initializer_list<int64_t> expected) {
-
+    std::initializer_list<int64_t> expected)
+{
     assert(expected.size() == actual.size());
     int i = 0;
-    for (int64_t expected_elem : expected) {
+    for (auto expected_elem : expected) {
+        assert(actual[i] == expected_elem);
+        ++i;
+    }
+}
+
+void assert_eq(
+    const std::vector<std::string>& actual,
+    std::initializer_list<std::string> expected)
+{
+    assert(expected.size() == actual.size());
+    int i = 0;
+    for (const auto& expected_elem : expected) {
         assert(actual[i] == expected_elem);
         ++i;
     }
@@ -492,6 +504,17 @@ int main(int argc, char **argv) {
 
         std::vector<int64_t> nbhrs;
         std::set<int64_t> nodes;
+        std::vector<std::string> attributes;
+
+        graph->obj_get(attributes, 0);
+        assert_eq(attributes, { "Winter", "is", "coming" });
+        graph->obj_get(attributes, 2);
+        assert_eq(attributes,
+            { "George", "R", "R", "Martin", "writes", "too", "damn", "slow" });
+        graph->obj_get(attributes, 3);
+        assert_eq(attributes, { });
+        graph->obj_get(attributes, 1618);
+        assert_eq(attributes, { });
 
         graph->get_neighbors(nbhrs, 6);
         assert_eq(nbhrs, { 1 });

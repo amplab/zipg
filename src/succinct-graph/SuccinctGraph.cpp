@@ -337,10 +337,6 @@ SuccinctGraph::get_edge_table_offsets(NodeId id, AType atype) {
     return res;
 }
 
-void SuccinctGraph::obj_get(std::string& result, int64_t obj_id) {
-    this->node_table->get(result, obj_id);
-}
-
 std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_range(
     int64_t src, int64_t atype, int32_t off, int32_t len) {
 
@@ -985,6 +981,38 @@ void SuccinctGraph::filter_nodes(
             result.push_back(node_id);
         }
     }
+}
+
+void SuccinctGraph::obj_get(std::vector<std::string>& results, int64_t obj_id) {
+    std::string token;
+    uint64_t suf_arr_idx = -1ULL;
+    int64_t start_offset = this->node_table->extract_until(
+        token, suf_arr_idx, obj_id, NODE_TABLE_HEADER_DELIM);
+
+    // FIXME: due to a bug in SuccinctShard (or perhaps the way we use it), node
+    // `num_nodes()` will incorrectly have an entry (empty string). Therefore we
+    // special-case for now.
+    if (start_offset == -1 || obj_id == num_nodes()) {
+        results.clear();
+        return; // key doesn't exist
+    }
+
+    results.resize(MAX_NUM_NODE_ATTRS);
+    int32_t dist = std::stoi(token) + 1; // +1 for delim
+    int64_t curr_off = start_offset + dist;
+    int last_non_empty = -1;
+    suf_arr_idx = -1ULL;
+    for (int attr = 0; attr < MAX_NUM_NODE_ATTRS; ++attr) {
+        this->node_table->extract_until_hint(
+            results[attr],
+            suf_arr_idx,
+            curr_off,
+            static_cast<char>(DELIMITERS[attr + 1]));
+        if (!results[attr].empty()) {
+            last_non_empty = attr;
+        }
+    }
+    results.resize(last_non_empty + 1);
 }
 
 // Scans neighbors and looks for those that contain the desired attr.

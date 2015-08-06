@@ -142,8 +142,14 @@ public:
         printf("\n");
     }
 
-    // Gets the attribute data of node `obj_id` into `result`.
-    void obj_get(std::string& result, int64_t obj_id);
+    // Gets all attribute values of node `obj_id` into `result`.  Clears
+    // `result` for the caller.  Upon return, the size() of `result` equals
+    // to the smallest attr index the range from which to MAX_NUM_NODE_ATTRS
+    // (left inclusive, right exclusive) denotes empty attributes for this node.
+    //
+    // In other words, an empty string for an attribute is treated as if the
+    // node doesn't have that attribute set.
+    void obj_get(std::vector<std::string>& result, int64_t obj_id);
 
     // All arguments can be optional (use -1 for none) with the natural
     // semantics.
