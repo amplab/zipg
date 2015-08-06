@@ -191,13 +191,11 @@ SuccinctGraphSerde::decode_multi_int64(const std::string& encoded,
 std::vector<int64_t>
 SuccinctGraphSerde::unpad_multi_int64(const std::string& encoded) {
     // impl detail: assumes node ids 64 bits
-    size_t len = encoded.length();
-    assert(len % WIDTH_NODE_ID_PADDED == 0);
+    assert(encoded.length() % WIDTH_NODE_ID_PADDED == 0);
     std::vector<int64_t> result;
-    result.reserve(len / WIDTH_NODE_ID_PADDED);
-    // TODO: substr() constructs new string objects; inefficient?
-    for (size_t i = 0; i < len; i += WIDTH_NODE_ID_PADDED) {
-        result.push_back(std::stoll(encoded.substr(i, WIDTH_NODE_ID_PADDED)));
+    result.reserve(encoded.length() / WIDTH_NODE_ID_PADDED);
+    for (size_t i = 0; i < encoded.length(); i += WIDTH_NODE_ID_PADDED) {
+        result.push_back(std::stol(encoded.substr(i, WIDTH_NODE_ID_PADDED)));
     }
     return result;
 }
