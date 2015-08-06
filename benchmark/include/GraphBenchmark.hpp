@@ -98,9 +98,12 @@ public:
                 aggregator_->get_nodes2(nodes, attr1, key1, attr2, key2);
             };
 
-//            obj_get_f_ = [this](std::string& result, int64_t obj_id) {
-//                aggregator_->obj_get(result, obj_id);
-//            };
+            obj_get_f_ = [this](
+                std::vector<std::string>& result,
+                int64_t obj_id)
+            {
+                aggregator_->obj_get(result, obj_id);
+            };
 
             assoc_range_f_ = [this](
                 std::vector<ThriftAssoc>& _return,
@@ -217,7 +220,8 @@ public:
     {
         time_t t0, t1;
         LOG_E("Benchmarking getNeighbor latency\n");
-        read_neighbor_queries(warmup_query_file, query_file);
+        read_neighbor_queries(warmup_query_file, query_file,
+            warmup_neighbor_indices, neighbor_indices);
         std::ofstream res_stream(res_path);
 
 #ifdef BENCH_PRINT_RESULTS
@@ -375,7 +379,8 @@ public:
         const std::string& neighbor_query_file)
     {
         std::vector<shared_ptr<benchmark_thread_data_t>> thread_datas;
-        read_neighbor_queries(warmup_neighbor_query_file, neighbor_query_file);
+        read_neighbor_queries(warmup_neighbor_query_file, neighbor_query_file,
+            warmup_neighbor_indices, neighbor_indices);
         for (int i = 0; i < num_threads; ++i) {
             try {
                 shared_ptr<TSocket> socket(
@@ -562,7 +567,8 @@ public:
         std::ofstream node_res(node_res_file);
         std::ofstream node_node_res(node_node_res_file);
 
-        read_neighbor_queries(warmup_neighbor_query_file, neighbor_query_file);
+        read_neighbor_queries(warmup_neighbor_query_file, neighbor_query_file,
+            warmup_neighbor_indices, neighbor_indices);
         read_neighbor_atype_queries(warmup_nhbr_atype_file, nhbr_atype_file,
             warmup_nhbrAtype_indices, nhbrAtype_indices,
             warmup_atypes, atypes);
@@ -824,6 +830,36 @@ public:
         LOG_E("Measure complete.\n");
     }
 
+    void benchmark_obj_get_latency(
+        std::string res_path,
+        uint64_t warmup_n,
+        uint64_t measure_n,
+        const std::string& warmup_query_file,
+        const std::string& query_file)
+    {
+        read_neighbor_queries(warmup_query_file, query_file,
+            warmup_obj_get_nodes, obj_get_nodes);
+        time_t t0, t1;
+        std::ofstream res_stream(res_path);
+        LOG_E("Benchmarking obj_get() latency\n");
+
+        LOG_E("Warming up for %" PRIu64 " queries...\n", warmup_n);
+        std::vector<std::string> result;
+        for (uint64_t i = 0; i < warmup_n; ++i) {
+            obj_get_f_(result, mod_get(warmup_obj_get_nodes, i));
+        }
+        LOG_E("Warmup complete.\n");
+
+        LOG_E("Measuring for %" PRIu64 " queries...\n", measure_n);
+        for (uint64_t i = 0; i < measure_n; ++i) {
+            t0 = get_timestamp();
+            obj_get_f_(result, mod_get(obj_get_nodes, i));
+            t1 = get_timestamp();
+            res_stream << result.size() << "," << t1 - t0 << "\n";
+        }
+        LOG_E("Measure complete.\n");
+    }
+
 protected:
 
     SuccinctGraph * graph_;
@@ -856,7 +892,7 @@ protected:
 
     // TAO functions
 
-    std::function<void(std::string&, int64_t)> obj_get_f_;
+    std::function<void(std::vector<std::string>&, int64_t)> obj_get_f_;
 
     std::function<void(std::vector<ThriftAssoc>&,
         int64_t, int64_t, int32_t, int32_t)> assoc_range_f_;
@@ -901,6 +937,9 @@ protected:
     std::vector<int64_t> warmup_assoc_count_nodes, assoc_count_nodes;
     std::vector<int64_t> warmup_assoc_count_atypes, assoc_count_atypes;
 
+    // obj_get
+    std::vector<int64_t> warmup_obj_get_nodes, obj_get_nodes;
+
     void read_assoc_range_queries(
         const std::string& warmup_file, const std::string& file)
     {
@@ -936,7 +975,9 @@ protected:
 
     void read_neighbor_queries(
         const std::string& warmup_neighbor_file,
-        const std::string& query_neighbor_file)
+        const std::string& query_neighbor_file,
+        std::vector<int64_t>& warmup_neighbor_indices,
+        std::vector<int64_t>& neighbor_indices)
     {
         std::ifstream warmup_input(warmup_neighbor_file);
         std::ifstream query_input(query_neighbor_file);

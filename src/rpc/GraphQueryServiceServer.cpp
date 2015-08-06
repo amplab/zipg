@@ -251,6 +251,10 @@ public:
         }
     }
 
+    void obj_get(std::vector<std::string>& _return, const int64_t local_id) {
+        graph_->obj_get(_return, local_id);
+    }
+
 private:
 
     inline bool file_or_dir_exists(const std::string& pathname) {

@@ -134,10 +134,8 @@ public:
         int shard_id, host_id;
         for (int64_t nhbr_id : nhbrs) {
             shard_id = nhbr_id % total_num_shards_;
-            // globalKey = localKey * numShards + shardId
-            // localKey = (globalKey - shardId) / numShards
             splits_by_keys[shard_id].push_back(
-                (nhbr_id - shard_id) / total_num_shards_);
+                global_to_local_node_id(nhbr_id, shard_id));
 
             host_id = shard_id % total_num_hosts_;
             assert(host_id == local_host_id_);
@@ -155,6 +153,8 @@ public:
         {
             local_shards_.at(it->first).recv_filter_nodes(shard_result);
             for (int64_t local_key : shard_result) {
+                // globalKey = localKey * numShards + shardId
+                // localKey = (globalKey - shardId) / numShards
                 _return.push_back(local_key * total_num_shards_ + it->first);
             }
         }
@@ -248,7 +248,27 @@ public:
         }
     }
 
+    void obj_get(std::vector<std::string>& _return, const int64_t nodeId) {
+        int shard_id = nodeId % total_num_shards_;
+        int host_id = shard_id % total_num_hosts_;
+        if (host_id == local_host_id_) {
+            local_shards_[shard_id / total_num_hosts_]
+                .obj_get(_return, global_to_local_node_id(nodeId, shard_id));
+        } else {
+            assert(false && "routing not implemented");
+        }
+    }
+
 private:
+
+    // globalKey = localKey * numShards + shardId
+    // localKey = (globalKey - shardId) / numShards
+    inline int64_t global_to_local_node_id(
+        int64_t global_node_id, int shard_id)
+    {
+        return (global_node_id - shard_id) / total_num_shards_;
+    }
+
     const int total_num_shards_; // total # of logical shards
     const int local_num_shards_;
 
