@@ -1,4 +1,5 @@
 #include "succinct-graph/SuccinctGraphSerde.hpp"
+#include "succinct-graph/utils.h"
 
 #include <cassert>
 
@@ -27,6 +28,24 @@ std::string SuccinctGraphSerde::pad_dst_id_width(int32_t x) {
     assert(x <= WIDTH_NODE_ID_PADDED);
     if (x < 10) return '0' + std::to_string(x);
     return std::to_string(x);
+}
+
+inline void SuccinctGraphSerde::parse_multi_int64(
+    std::vector<int64_t>& result,
+    const std::string& encoded,
+    int pad_width)
+{
+    assert(encoded.length() % pad_width == 0);
+    result.reserve(encoded.length() / pad_width);
+    int64_t num;
+    for (size_t i = 0; i < encoded.length(); i += pad_width) {
+        num = 0;
+        for (int j = i; j < i + pad_width; ++j) {
+            num = num * 10 + (encoded[j] - '0');
+        }
+        result.push_back(num);
+    }
+    return;
 }
 
 std::string SuccinctGraphSerde::encode_timestamp(int64_t timestamp) {
@@ -89,17 +108,12 @@ std::vector<int64_t> SuccinctGraphSerde::decode_multi_node_ids(
 #endif
 }
 
-// TODO: code duplication.
 std::vector<int64_t> SuccinctGraphSerde::decode_multi_node_ids(
     const std::string& encoded,
-    int32_t padded_width) {
-
-    assert(encoded.length() % padded_width == 0);
+    int32_t padded_width)
+{
     std::vector<int64_t> result;
-    result.reserve(encoded.length() / padded_width);
-    for (size_t i = 0; i < encoded.length(); i += padded_width) {
-        result.push_back(std::stol(encoded.substr(i, padded_width)));
-    }
+    parse_multi_int64(result, encoded, padded_width);
     return result;
 }
 
@@ -174,6 +188,7 @@ int32_t SuccinctGraphSerde::decode_int32(const std::string& encoded) {
     return res;
 }
 
+// Unused
 std::vector<int64_t>
 SuccinctGraphSerde::decode_multi_int64(const std::string& encoded,
                                        int padded_width) {
@@ -191,11 +206,7 @@ SuccinctGraphSerde::decode_multi_int64(const std::string& encoded,
 std::vector<int64_t>
 SuccinctGraphSerde::unpad_multi_int64(const std::string& encoded) {
     // impl detail: assumes node ids 64 bits
-    assert(encoded.length() % WIDTH_NODE_ID_PADDED == 0);
     std::vector<int64_t> result;
-    result.reserve(encoded.length() / WIDTH_NODE_ID_PADDED);
-    for (size_t i = 0; i < encoded.length(); i += WIDTH_NODE_ID_PADDED) {
-        result.push_back(std::stol(encoded.substr(i, WIDTH_NODE_ID_PADDED)));
-    }
+    parse_multi_int64(result, encoded, WIDTH_NODE_ID_PADDED);
     return result;
 }

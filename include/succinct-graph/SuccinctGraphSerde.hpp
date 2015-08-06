@@ -84,6 +84,11 @@ private:
     static std::vector<int64_t> decode_multi_int64(const std::string& encoded,
                                                    int padded_width);
 
+    static void parse_multi_int64(
+        std::vector<int64_t>& result,
+        const std::string& encoded,
+        int pad_width);
+
     const static std::string ENCODE_ALPHABET;
     const static int SIZE_ENCODE_ALPHABET;
 
