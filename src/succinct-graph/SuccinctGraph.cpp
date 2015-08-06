@@ -314,11 +314,14 @@ SuccinctGraph::get_edge_table_offsets(NodeId id, AType atype) {
         this->edge_table->search(res, key);
         // filter by atype
         std::string atype_str;
+        uint64_t suf_arr_idx;
         for (auto it = res.begin(); it != res.end(); ) {
+            suf_arr_idx = -1ULL;
             int64_t curr_off = this->edge_table->skipping_extract_until(
-                *it, ATYPE_DELIM);
+                suf_arr_idx, *it, ATYPE_DELIM);
             // TODO: extract_compare() similar to SuccinctShard can be nice here
-            this->edge_table->extract_until(atype_str, curr_off, DST_ID_WIDTH_DELIM);
+            this->edge_table->extract_until(
+                atype_str, suf_arr_idx, curr_off, DST_ID_WIDTH_DELIM);
             if (std::stol(atype_str) != atype) {
                 it = res.erase(it);
             } else {
@@ -361,7 +364,7 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_range(
         if (curr_off == -1) {
             continue;
         }
-        suf_arr_idx = -1;
+        suf_arr_idx = -1ULL;
 
         // TODO: should we skip the extract when they are not wildcards?
         // Since the passed-in src and atype can be NONE, extract nonetheless
@@ -649,7 +652,7 @@ int64_t SuccinctGraph::assoc_count(int64_t src, int64_t atype) {
             continue;
         }
 
-        suf_arr_idx = -1;
+        suf_arr_idx = -1ULL;
         curr_off = this->edge_table->skipping_extract_until(
             suf_arr_idx, curr_off, DST_ID_WIDTH_DELIM);
 
@@ -872,7 +875,7 @@ void SuccinctGraph::get_attribute(
     int attr) {
 
     assert(attr < MAX_NUM_NODE_ATTRS);
-    uint64_t suf_arr_idx = -1;
+    uint64_t suf_arr_idx = -1ULL;
 
     this->node_table->extract_until(
         result, suf_arr_idx, node_id, static_cast<char>(DELIMITERS[attr]));
@@ -898,7 +901,7 @@ inline void SuccinctGraph::extract_neighbors(
     uint64_t suf_arr_idx;
     LOG("in extract_nhbrs()\n");
     for (auto it = offsets.begin(); it != offsets.end(); ++it) {
-        suf_arr_idx = -1;
+        suf_arr_idx = -1ULL;
 
         int64_t curr_off = this->edge_table->skipping_extract_until(
             suf_arr_idx, (*it) + skip_length, DST_ID_WIDTH_DELIM);
@@ -998,7 +1001,7 @@ void SuccinctGraph::filter_nodes(
     std::string tmp;
 
     for (int64_t node_id : node_ids) {
-        uint64_t suf_arr_idx = -1;
+        uint64_t suf_arr_idx = -1ULL;
         int64_t start_offset = this->node_table->extract_until(
             tmp, suf_arr_idx, node_id, NODE_TABLE_HEADER_DELIM);
         if (start_offset == -1) continue; // key doesn't exist
