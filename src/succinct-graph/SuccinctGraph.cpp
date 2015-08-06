@@ -354,38 +354,49 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_range(
 
     int32_t len_saved = len, edge_width, dst_id_width;
     int64_t cnt;
+    uint64_t suf_arr_idx;
 
     for (int64_t curr_off : eoffs) {
         LOG("edge table offset = %llu\n", curr_off);
         if (curr_off == -1) {
             continue;
         }
+        suf_arr_idx = -1;
 
         // TODO: should we skip the extract when they are not wildcards?
         // Since the passed-in src and atype can be NONE, extract nonetheless
         curr_off = this->edge_table->extract_until(
-            str, curr_off + 1, ATYPE_DELIM); // +1 for skip NODE_DELIM
+            str, suf_arr_idx,
+            curr_off + 1, // +1 for skipping NODE_DELIM
+            ATYPE_DELIM);
         src = std::stoll(str);
+        COND_LOG_E("extracted src = %lld, suf_arr_idx = %llu\n",
+            src, suf_arr_idx);
 
         curr_off = this->edge_table->extract_until(
-            str, curr_off, DST_ID_WIDTH_DELIM);
+            str, suf_arr_idx, curr_off, DST_ID_WIDTH_DELIM);
         atype = std::stoll(str);
+        COND_LOG_E("extracted atype = %lld, suf_arr_idx = %llu\n",
+            atype, suf_arr_idx);
 
         this->edge_table->extract(
             str,
-            curr_off,
+            suf_arr_idx,
+            curr_off, // unused
             SuccinctGraphSerde::WIDTH_DST_ID_WIDTH_PADDED);
         LOG("extracted dst id width = '%s'\n", str.c_str());
         dst_id_width = std::stoi(str);
-        curr_off += SuccinctGraphSerde::WIDTH_DST_ID_WIDTH_PADDED;
 
         curr_off = this->edge_table->extract_until(
-            str, curr_off, DATA_WIDTH_DELIM);
+            str, suf_arr_idx,
+            // since the last extract() doesn't return the "next" curr_off
+            curr_off + SuccinctGraphSerde::WIDTH_DST_ID_WIDTH_PADDED,
+            DATA_WIDTH_DELIM);
         LOG("extracted edge width = '%s'\n", str.c_str());
         edge_width = std::stoi(str);
 
         curr_off = this->edge_table->extract_until(
-            str, curr_off, METADATA_DELIM);
+            str, suf_arr_idx, curr_off, METADATA_DELIM);
         LOG("extracted data width = '%s'\n", str.c_str());
 
         assert(std::stol(str) %
