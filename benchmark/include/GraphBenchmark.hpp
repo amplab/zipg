@@ -1056,7 +1056,7 @@ protected:
             const std::string& file,
             std::vector<int64_t>& nodes, std::vector<int64_t>& atypes,
             std::vector<int64_t>& lows, std::vector<int64_t>& highs,
-            std::vector<std::set<int64_t>> dst_id_sets)
+            std::vector<std::set<int64_t>>& dst_id_sets)
         {
             std::ifstream ifs(file);
             std::string line, token;
