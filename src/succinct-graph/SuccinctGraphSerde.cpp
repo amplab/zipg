@@ -56,11 +56,12 @@ std::string SuccinctGraphSerde::encode_timestamp(int64_t timestamp) {
 #endif
 }
 
-int64_t SuccinctGraphSerde::decode_timestamp(const std::string& encoded) {
+int64_t SuccinctGraphSerde::decode_timestamp(const std::string& encoded)
+{
 #if ALPHABET_ENCODE
     return decode_int64(encoded);
 #else
-    return std::stol(encoded);
+    return std::stoll(encoded);
 #endif
 }
 
