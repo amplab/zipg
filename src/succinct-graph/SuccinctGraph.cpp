@@ -456,13 +456,6 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_range(
             result.back().time = decoded_timestamps[i];
             result.back().attr = std::move(
                 attrs.substr(i * edge_width, edge_width));
-//            result.push_back(
-//                { src,
-//                  decoded_dst_ids[i],
-//                  atype,
-//                  decoded_timestamps[i],
-//                  attrs.substr(i * edge_width, edge_width)
-//                });
         }
         LOG("\n");
     }
@@ -635,27 +628,18 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_get(
         // TODO: another choice is to do a single extract then filter; evaluate?
         // Now extract only the in-set (and in-range) attrs
         curr_off += cnt * dst_id_width;
-        std::vector<std::string> valid_attrs;
-        for (int64_t index : in_set_indexes) {
-            valid_attrs.emplace_back();
-            this->edge_table->extract(
-                valid_attrs.back(), curr_off + index * edge_width, edge_width);
-        }
-
         std::vector<int64_t> decoded_timestamps =
             SuccinctGraphSerde::decode_multi_timestamps(timestamps);
         int64_t idx;
-        for (size_t i = 0; i < in_set_indexes.size(); ++i) {
-            idx = in_set_indexes[i];
+        for (int64_t idx : in_set_indexes) {
+            result.emplace_back();
             // decoded dst ids and timestamps start w/ absolute idx range_left
-            // TODO: emplace_back(), then update in-place
-            result.push_back(
-                { src,
-                  decoded_dst_ids[idx - range_left],
-                  atype,
-                  decoded_timestamps[idx - range_left],
-                  valid_attrs[i]
-                });
+            result.back().src_id = src;
+            result.back().dst_id = decoded_dst_ids[idx - range_left];
+            result.back().atype = atype;
+            result.back().time = decoded_timestamps[idx - range_left];
+            this->edge_table->extract(
+                result.back().attr, curr_off + idx * edge_width, edge_width);
         }
     }
     return result;
