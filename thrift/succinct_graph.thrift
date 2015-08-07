@@ -46,16 +46,16 @@ service GraphQueryService {
 
     list<string> obj_get(1: i64 nodeId),
 
+    list<ThriftAssoc> assoc_time_range(
+        1: i64 src, 2: i64 atype,
+        3: i64 tLow, 4: i64 tHigh, 5: i32 limit),
+
 }
 
 // One per physical node; handles local aggregation and query routing.
 service GraphQueryAggregatorService {
 
     i32 connect_to_local_shards(),
-//    i32 connect_to_handlers(),
-//    i32 disconnect_from_handlers(),
-//    i32 connect_to_local_servers(),
-//    i32 disconnect_from_local_servers(),
 
     // Initialize local shards.
     void init(),
@@ -89,5 +89,9 @@ service GraphQueryAggregatorService {
         4: i64 tLow, 5: i64 tHigh),
 
     list<string> obj_get(1: i64 nodeId),
+
+    list<ThriftAssoc> assoc_time_range(
+        1: i64 src, 2: i64 atype,
+        3: i64 tLow, 4: i64 tHigh, 5: i32 limit),
 
 }

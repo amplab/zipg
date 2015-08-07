@@ -130,17 +130,18 @@ public:
             assoc_count_f_ = [this](int64_t src, int64_t atype) {
                 return aggregator_->assoc_count(src, atype);
             };
-//
-//            assoc_time_range_f_ = [this](
-//                int64_t src,
-//                int64_t atype,
-//                int64_t t_low,
-//                int64_t t_high,
-//                int32_t len)
-//            {
-//                return aggregator_->assoc_time_range(
-//                    src, atype, t_low, t_high, len);
-//            };
+
+            assoc_time_range_f_ = [this](
+                std::vector<ThriftAssoc>& _return,
+                int64_t src,
+                int64_t atype,
+                int64_t t_low,
+                int64_t t_high,
+                int32_t len)
+            {
+                aggregator_->assoc_time_range(
+                    _return, src, atype, t_low, t_high, len);
+            };
 
         } else {
             // TODO: too lazy to add assignments for TAO functions in this case
@@ -928,6 +929,61 @@ public:
         LOG_E("Measure complete.\n");
     }
 
+    void benchmark_assoc_time_range_latency(
+        std::string res_path,
+        int64_t warmup_n,
+        int64_t measure_n,
+        const std::string& warmup_query_file,
+        const std::string& query_file)
+    {
+        read_assoc_time_range_queries(warmup_query_file, query_file);
+        time_t t0, t1;
+        std::ofstream res_stream(res_path);
+
+#ifdef BENCH_PRINT_RESULTS
+        std::ofstream query_res_stream(res_path + ".succinct_result");
+#endif
+        LOG_E("Benchmarking assoc_time_range() latency\n");
+
+        LOG_E("Warming up for %" PRIu64 " queries...\n", warmup_n);
+        std::vector<ThriftAssoc> result;
+        for (int64_t i = 0; i < warmup_n; ++i) {
+            assoc_time_range_f_(result,
+                mod_get(warmup_assoc_time_range_nodes, i),
+                mod_get(warmup_assoc_time_range_atypes, i),
+                mod_get(warmup_assoc_time_range_lows, i),
+                mod_get(warmup_assoc_time_range_highs, i),
+                mod_get(warmup_assoc_time_range_limits, i));
+        }
+        LOG_E("Warmup complete.\n");
+
+        LOG_E("Measuring for %" PRIu64 " queries...\n", measure_n);
+        for (int64_t i = 0; i < measure_n; ++i) {
+            t0 = get_timestamp();
+            assoc_time_range_f_(result,
+                mod_get(assoc_time_range_nodes, i),
+                mod_get(assoc_time_range_atypes, i),
+                mod_get(assoc_time_range_lows, i),
+                mod_get(assoc_time_range_highs, i),
+                mod_get(assoc_time_range_limits, i));
+            t1 = get_timestamp();
+            res_stream << result.size() << "," << t1 - t0 << "\n";
+
+#ifdef BENCH_PRINT_RESULTS
+            for (const auto& assoc : result) {
+                query_res_stream
+                    << "[src=" << assoc.srcId
+                    << ",dst=" << assoc.dstId
+                    << ",atype=" << assoc.atype
+                    << ",time=" << assoc.timestamp
+                    << ",attr='" << assoc.attr << "'] ";
+            }
+            query_res_stream << std::endl;
+#endif
+        }
+        LOG_E("Measure complete.\n");
+    }
+
 protected:
 
     SuccinctGraph * graph_;
@@ -971,7 +1027,7 @@ protected:
 
     std::function<int64_t(int64_t, int64_t)> assoc_count_f_;
 
-    std::function<std::vector<ThriftAssoc>(
+    std::function<void(std::vector<ThriftAssoc>&,
         int64_t, int64_t, int64_t, int64_t, int32_t)> assoc_time_range_f_;
 
     uint64_t WARMUP_N; uint64_t MEASURE_N;
@@ -1015,6 +1071,15 @@ protected:
     std::vector<std::set<int64_t>> assoc_get_dst_id_sets;
     std::vector<int64_t> warmup_assoc_get_highs, assoc_get_highs;
     std::vector<int64_t> warmup_assoc_get_lows, assoc_get_lows;
+
+    // assoc_time_range()
+    std::vector<int64_t> warmup_assoc_time_range_nodes, assoc_time_range_nodes;
+    std::vector<int64_t> warmup_assoc_time_range_atypes;
+    std::vector<int64_t> assoc_time_range_atypes;
+    std::vector<int64_t> warmup_assoc_time_range_highs, assoc_time_range_highs;
+    std::vector<int64_t> warmup_assoc_time_range_lows, assoc_time_range_lows;
+    std::vector<int32_t> warmup_assoc_time_range_limits;
+    std::vector<int32_t> assoc_time_range_limits;
 
     void read_assoc_range_queries(
         const std::string& warmup_file, const std::string& file)
@@ -1088,6 +1153,46 @@ protected:
 
         read(file, assoc_get_nodes, assoc_get_atypes,
             assoc_get_lows, assoc_get_highs, assoc_get_dst_id_sets);
+    }
+
+    void read_assoc_time_range_queries(
+        const std::string& warmup_file, const std::string& file)
+    {
+        auto read = [](
+            const std::string& file,
+            std::vector<int64_t>& nodes, std::vector<int64_t>& atypes,
+            std::vector<int64_t>& lows, std::vector<int64_t>& highs,
+            std::vector<int32_t>& limits)
+        {
+            std::ifstream ifs(file);
+            std::string line, token;
+            while (std::getline(ifs, line)) {
+                std::stringstream ss(line);
+
+                std::getline(ss, token, ',');
+                nodes.push_back(std::stoll(token));
+
+                std::getline(ss, token, ',');
+                atypes.push_back(std::stoll(token));
+
+                std::getline(ss, token, ',');
+                lows.push_back(std::stoll(token));
+
+                std::getline(ss, token, ',');
+                highs.push_back(std::stoll(token));
+
+                std::getline(ss, token, ',');
+                limits.push_back(std::stoi(token));
+            }
+        };
+        read(warmup_file, warmup_assoc_time_range_nodes,
+            warmup_assoc_time_range_atypes,
+            warmup_assoc_time_range_lows, warmup_assoc_time_range_highs,
+            warmup_assoc_time_range_limits);
+
+        read(file, assoc_time_range_nodes, assoc_time_range_atypes,
+            assoc_time_range_lows, assoc_time_range_highs,
+            assoc_time_range_limits);
     }
 
     void read_neighbor_queries(

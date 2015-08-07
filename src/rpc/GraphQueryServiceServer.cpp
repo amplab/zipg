@@ -255,6 +255,33 @@ public:
         graph_->obj_get(_return, local_id);
     }
 
+    void assoc_time_range(
+        std::vector<ThriftAssoc>& _return,
+        const int64_t src,
+        const int64_t atype,
+        const int64_t tLow,
+        const int64_t tHigh,
+        const int32_t limit)
+    {
+        std::vector<SuccinctGraph::Assoc> vec(std::move(
+            graph_->assoc_time_range(src, atype, tLow, tHigh, limit)));
+
+        // TODO: any better way?
+        // NB: the fields are Thrift-generated, so this may not be portable.
+        _return.clear();
+        _return.resize(vec.size());
+        size_t i = 0;
+        for (const auto& assoc : vec) {
+            _return[i].srcId = assoc.src_id;
+            _return[i].dstId = assoc.dst_id;
+            _return[i].atype = assoc.atype;
+            _return[i].timestamp = assoc.time;
+            // should be the same as 'lhs = std::move(rhs)'
+            _return[i].attr.assign(std::move(assoc.attr));
+            ++i;
+        }
+    }
+
 private:
 
     inline bool file_or_dir_exists(const std::string& pathname) {

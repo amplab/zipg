@@ -35,7 +35,8 @@ throughput_threads=4
 #benchAssocRange=T
 #benchAssocCount=T
 #benchObjGet=T
-benchAssocGet=T
+#benchAssocGet=T
+benchAssocTimeRange=T
 
 function bench() {
 
@@ -170,6 +171,15 @@ function bench() {
         -x ${warmup_assocGet} -y ${measure_assocGet} \
         -w ${QUERY_DIR}/assocGet_warmup.txt -q ${QUERY_DIR}/assocGet_query.txt \
         -o ${HOME_DIR}/assocGet_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+        ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
+    fi
+
+    if [[ -n "$benchAssocTimeRange" ]]; then
+      #sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+      ${BIN_DIR}/bench -t tao-assoc-time-range-latency \
+        -x ${warmup_assocTimeRange} -y ${measure_assocTimeRange} \
+        -w ${QUERY_DIR}/assocTimeRange_warmup.txt -q ${QUERY_DIR}/assocTimeRange_query.txt \
+        -o ${HOME_DIR}/assocTimeRange_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
         ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
     fi
 
