@@ -361,9 +361,6 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_range(
 
     for (int64_t curr_off : eoffs) {
         LOG("edge table offset = %llu\n", curr_off);
-        if (curr_off == -1) {
-            continue;
-        }
         suf_arr_idx = -1ULL;
 
         // TODO: should we skip the extract when they are not wildcards?
@@ -553,9 +550,6 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_get(
 
     for (int64_t curr_off : eoffs) {
         LOG("edge table offset = %llu\n", curr_off);
-        if (curr_off == -1) {
-            continue;
-        }
         suf_arr_idx = -1;
 
         // Since the passed-in src and atype can be None, extract nonetheless
@@ -683,10 +677,6 @@ int64_t SuccinctGraph::assoc_count(int64_t src, int64_t atype) {
     uint64_t suf_arr_idx;
 
     for (int64_t curr_off : eoffs) {
-        if (curr_off == -1) {
-            continue;
-        }
-
         suf_arr_idx = -1ULL;
         curr_off = this->edge_table->skipping_extract_until(
             suf_arr_idx, curr_off, DST_ID_WIDTH_DELIM);
@@ -743,7 +733,6 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_time_range(
 
     for (int64_t curr_off : eoffs) {
         LOG("edge table offset = %llu\n", curr_off);
-        if (curr_off == -1) continue;
 
         // Since the passed-in src and atype can be None, extract nonetheless
         curr_off = this->edge_table->extract_until(
