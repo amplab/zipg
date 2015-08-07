@@ -394,7 +394,18 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_range(
         off = 0; // extract from start
     }
 
+#ifdef LATENCY_BREAKDOWN
+    time_t t0, t1;
+    t0 = get_timestamp();
+#endif
+
     std::vector<int64_t> eoffs = get_edge_table_offsets(src, atype);
+
+#ifdef LATENCY_BREAKDOWN
+    t1 = get_timestamp();
+    LOG_E("%lld;", t1 - t0);
+#endif
+
     std::vector<Assoc> result;
 
     std::string timestamps, dst_ids, attrs, str;
@@ -409,19 +420,27 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_range(
 
         // TODO: should we skip the extract when they are not wildcards?
         // Since the passed-in src and atype can be NONE, extract nonetheless
+
+#ifdef LATENCY_BREAKDOWN
+    t0 = get_timestamp();
+#endif
+
         curr_off = this->edge_table->extract_until(
             str, suf_arr_idx,
             curr_off + 1, // +1 for skipping NODE_DELIM
             ATYPE_DELIM);
+
         src = std::stoll(str);
         COND_LOG_E("extracted src = %lld, suf_arr_idx = %llu\n",
             src, suf_arr_idx);
 
         curr_off = this->edge_table->extract_until(
             str, suf_arr_idx, curr_off, TIMESTAMP_WIDTH_DELIM);
+
         atype = std::stoll(str);
         COND_LOG_E("extracted atype = %lld, suf_arr_idx = %llu\n",
             atype, suf_arr_idx);
+
 
         this->edge_table->extract(
             str,
@@ -437,6 +456,7 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_range(
             suf_arr_idx,
             curr_off, // unused
             SuccinctGraphSerde::WIDTH_DST_ID_WIDTH_PADDED);
+
         LOG("extracted dst id width = '%s', suf_arr_idx = %llu\n",
             str.c_str(), suf_arr_idx);
         dst_id_width = std::stoi(str);
@@ -448,13 +468,20 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_range(
                 SuccinctGraphSerde::WIDTH_TIMESTAMP_WIDTH_PADDED +
                 SuccinctGraphSerde::WIDTH_DST_ID_WIDTH_PADDED,
             EDGE_WIDTH_DELIM);
+
         cnt = std::stoll(str);
         LOG("extracted cnt = %llu\n", cnt);
 
         curr_off = this->edge_table->extract_until(
             str, suf_arr_idx, curr_off, METADATA_DELIM);
+
         edge_width = std::stoi(str);
         LOG("extracted edge width = '%s'\n", str.c_str());
+
+#ifdef LATENCY_BREAKDOWN
+    t1 = get_timestamp();
+    LOG_E("%lld,", t1 - t0);
+#endif
 
         // if len is wildcard, extract all that's left
         len = std::min(static_cast<int64_t>(len_saved), cnt - off);
@@ -466,25 +493,59 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_range(
             continue;
         }
 
+#ifdef LATENCY_BREAKDOWN
+    t0 = get_timestamp();
+#endif
+
         this->edge_table->extract(
             timestamps,
             curr_off + off * timestamp_width,
             len * timestamp_width);
+
+#ifdef LATENCY_BREAKDOWN
+    t1 = get_timestamp();
+    LOG_E("%lld,", t1 - t0);
+#endif
+
         LOG("extracted timestamps = '%s'\n", timestamps.c_str());
 
         curr_off += cnt * timestamp_width;
+
+#ifdef LATENCY_BREAKDOWN
+    t0 = get_timestamp();
+#endif
+
         this->edge_table->extract(
             dst_ids,
             curr_off + off * dst_id_width,
             len * dst_id_width);
+
+#ifdef LATENCY_BREAKDOWN
+    t1 = get_timestamp();
+    LOG_E("%lld,", t1 - t0);
+#endif
         LOG("extracted dst ids: '%s'\n", dst_ids.c_str());
 
         curr_off += cnt * dst_id_width;
+
+#ifdef LATENCY_BREAKDOWN
+    t0 = get_timestamp();
+#endif
+
         this->edge_table->extract(
             attrs,
             curr_off + off * edge_width,
             len * edge_width);
+
+#ifdef LATENCY_BREAKDOWN
+    t1 = get_timestamp();
+    LOG_E("%lld,", t1 - t0);
+#endif
         LOG("extracted attrs = '%s'\n", attrs.c_str());
+
+#ifdef LATENCY_BREAKDOWN
+    t0 = get_timestamp();
+#endif
 
         std::vector<int64_t> decoded_timestamps =
             SuccinctGraphSerde::decode_multi_timestamps(
@@ -492,6 +553,13 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_range(
 
         std::vector<int64_t> decoded_dst_ids =
             SuccinctGraphSerde::decode_multi_node_ids(dst_ids, dst_id_width);
+
+
+#ifdef LATENCY_BREAKDOWN
+    t1 = get_timestamp();
+    LOG_E("%lld,", t1 - t0);
+    t0 = get_timestamp();
+#endif
 
         // Perf comparisons:
         // https://goo.gl/B3Wvj1 - naive
@@ -506,8 +574,18 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_range(
             result.back().attr = std::move(
                 attrs.substr(i * edge_width, edge_width));
         }
+
+#ifdef LATENCY_BREAKDOWN
+    t1 = get_timestamp();
+    LOG_E("%lld;", t1 - t0);
+#endif
         LOG("\n");
     }
+
+#ifdef LATENCY_BREAKDOWN
+    LOG_E("\n");
+#endif
+
     return result;
 }
 
