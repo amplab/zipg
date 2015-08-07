@@ -202,6 +202,7 @@ public:
     std::string node_file_pathname, edge_file_pathname;
 
 private:
+
     SuccinctShard* node_table;
     SuccinctFile* edge_table;
 
@@ -217,6 +218,23 @@ private:
         std::vector<int64_t>& result,
         const std::vector<int64_t>& offsets,
         int32_t skip_length);
+
+    // Binary search: locates smallest timestamp t, such that t >= t_low.
+    // Upon entry, `curr_off` must point to the start of the timestamps of the
+    // current association list in the edge table, and `cnt` denotes the number
+    // of assocs in this list.  Returns -1 if no such indexes exist.
+    int time_range_binary_search_lower_bound(
+        Timestamp t_low,
+        int64_t cnt,
+        int64_t curr_off,
+        std::string& tmp_token);
+
+    // Binary search: locates largest timestamp t, such that t <= t_high.
+    int time_range_binary_search_upper_bound(
+        Timestamp t_high,
+        int64_t cnt,
+        int64_t curr_off,
+        std::string& tmp_token);
 
     inline static time_t get_timestamp() {
         struct timeval now;

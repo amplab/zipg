@@ -462,6 +462,75 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_range(
     return result;
 }
 
+int SuccinctGraph::time_range_binary_search_lower_bound(
+    Timestamp t_low,
+    int64_t cnt,
+    int64_t curr_off,
+    std::string& tmp_token)
+{
+    int l = 0, r = cnt, m;
+    Timestamp ts;
+
+    // check t_l >= t_low
+    this->edge_table->extract(
+        tmp_token, curr_off, SuccinctGraphSerde::WIDTH_TIMESTAMP);
+    ts = SuccinctGraphSerde::decode_timestamp(tmp_token);
+    if (ts < t_low) {
+        return -1;
+    }
+
+    // binary search: locates smallest t s.t. t >= t_low
+    // invariant: target in [l, r)
+    while (l + 1 < r) {
+        m = (l + r) / 2;
+        this->edge_table->extract(
+            tmp_token,
+            curr_off + m * SuccinctGraphSerde::WIDTH_TIMESTAMP,
+            SuccinctGraphSerde::WIDTH_TIMESTAMP);
+        ts = SuccinctGraphSerde::decode_timestamp(tmp_token);
+        if (ts >= t_low) {
+            l = m; // note timestamps are decreasing
+        }
+        else {
+            r = m;
+        }
+    }
+    assert(l + 1 == r);
+    return l;
+}
+
+int SuccinctGraph::time_range_binary_search_upper_bound(
+    Timestamp t_high,
+    int64_t cnt,
+    int64_t curr_off,
+    std::string& tmp_token)
+{
+    int l = -1, r = cnt - 1, m;
+    Timestamp ts;
+
+    // check t_r <= t_high
+    this->edge_table->extract(
+        tmp_token, curr_off + r * WIDTH_TIMESTAMP, WIDTH_TIMESTAMP);
+    ts = SuccinctGraphSerde::decode_timestamp(tmp_token);
+    if (ts > t_high) {
+        return -1;
+    }
+
+    while (l + 1 < r) {
+        m = (l + r) / 2;
+        this->edge_table->extract(
+            tmp_token, curr_off + m * WIDTH_TIMESTAMP, WIDTH_TIMESTAMP);
+        ts = SuccinctGraphSerde::decode_timestamp(tmp_token);
+        if (ts > t_high) {
+            l = m;
+        } else {
+            r = m;
+        }
+    }
+    assert(l + 1 == r);
+    return r;
+}
+
 // Basic impl idea: performs binary search on the timestamps.
 std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_get(
     int64_t src,
@@ -478,7 +547,6 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_get(
     std::vector<Assoc> result;
     std::string timestamps, dst_ids, attrs, str;
 
-    Timestamp ts;
     int32_t edge_width, dst_id_width;
     int64_t cnt;
     uint64_t suf_arr_idx;
@@ -528,30 +596,12 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_get(
 
         int range_left, range_right; // in-range: [left, right]
 
-        // binary search: locates smallest t s.t. t >= t_low
-        // invariant: target in [l, r)
-        int l = 0, r = cnt, m;
         if (t_low != NONE) {
-            // check t_l >= t_low
-            this->edge_table->extract(str, curr_off, WIDTH_TIMESTAMP);
-            ts = SuccinctGraphSerde::decode_timestamp(str);
-            if (ts < t_low) {
+            range_right = time_range_binary_search_lower_bound(
+                t_low, cnt, curr_off, str);
+            if (range_right == -1) {
                 continue;
             }
-
-            while (l + 1 < r) {
-                m = (l + r) / 2;
-                this->edge_table->extract(
-                    str, curr_off + m * WIDTH_TIMESTAMP, WIDTH_TIMESTAMP);
-                ts = SuccinctGraphSerde::decode_timestamp(str);
-                if (ts >= t_low) {
-                    l = m; // note timestamps are decreasing
-                } else {
-                    r = m;
-                }
-            }
-            assert(l + 1 == r);
-            range_right = l;
         } else {
             // if no time lower bound, just extract all early edges
             range_right = cnt - 1;
@@ -560,30 +610,11 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_get(
         // binary search: locates largest t s.t. t <= t_high
         // invariant: target in (l, r]
         if (t_high != NONE) {
-            l = -1;
-            r = cnt - 1;
-
-            // check t_r <= t_high
-            this->edge_table->extract(
-                str, curr_off + r * WIDTH_TIMESTAMP, WIDTH_TIMESTAMP);
-            ts = SuccinctGraphSerde::decode_timestamp(str);
-            if (ts > t_high) {
+            range_left = time_range_binary_search_upper_bound(
+                t_high, cnt, curr_off, str);
+            if (range_left == -1) {
                 continue;
             }
-
-            while (l + 1 < r) {
-                m = (l + r) / 2;
-                this->edge_table->extract(
-                    str, curr_off + m * WIDTH_TIMESTAMP, WIDTH_TIMESTAMP);
-                ts = SuccinctGraphSerde::decode_timestamp(str);
-                if (ts > t_high) {
-                    l = m;
-                } else {
-                    r = m;
-                }
-            }
-            assert(l + 1 == r);
-            range_left = r;
         } else {
             // if no time lower bound, just extract all latest edges
             range_left = 0;
@@ -630,7 +661,6 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_get(
         curr_off += cnt * dst_id_width;
         std::vector<int64_t> decoded_timestamps =
             SuccinctGraphSerde::decode_multi_timestamps(timestamps);
-        int64_t idx;
         for (int64_t idx : in_set_indexes) {
             result.emplace_back();
             // decoded dst ids and timestamps start w/ absolute idx range_left
