@@ -914,7 +914,7 @@ int main(int argc, char **argv) {
         int64_t savings = 0;
 
         for (auto it = assoc_map.begin(); it != assoc_map.end(); ++it) {
-            auto timestamps = it->second;
+            auto& timestamps = it->second;
             if (timestamps.empty()) {
                 continue;
             }
@@ -926,23 +926,32 @@ int main(int argc, char **argv) {
                 timestamps.size();
             curr_scheme_total_bytes += curr_scheme_bytes;
 
-            new_scheme_bytes = SuccinctGraphSerde::WIDTH_TIMESTAMP; // 1st time
-
-            int max_diff_width = -1;
+            int max_diff_width = -1, sum_diff_width = 0;
             for (size_t i = 1; i < timestamps.size(); ++i) {
                 int64_t diff = 0;
                 if (scheme == 0) {
                     diff = timestamps[0] - timestamps[i];
                 } else {
+                    // case: scheme 1 and 2
                     diff = timestamps[i - 1] - timestamps[i];
                 }
                 max_diff_width = std::max(max_diff_width, num_digits(diff));
+                sum_diff_width += num_digits(diff);
             }
-            // padded
-            new_scheme_bytes += max_diff_width * (timestamps.size() - 1);
-            // pad width; +1 for a delim
-            new_scheme_bytes += num_digits(max_diff_width) + 1;
-
+            if (scheme <= 1) {
+                // 1st timestamp padded in full
+                new_scheme_bytes = SuccinctGraphSerde::WIDTH_TIMESTAMP;
+                // padded
+                new_scheme_bytes += max_diff_width * (timestamps.size() - 1);
+                // pad width; +1 for a delim
+                new_scheme_bytes += num_digits(max_diff_width) + 1;
+            } else {
+                // case: scheme 2
+                // don't pad 1st timestamp or any diffs
+                new_scheme_bytes = num_digits(timestamps[0]) + sum_diff_width;
+                // add a delim at the end
+                ++new_scheme_bytes;
+            }
 
             new_scheme_total_bytes += new_scheme_bytes;
             savings += curr_scheme_bytes - new_scheme_bytes;
