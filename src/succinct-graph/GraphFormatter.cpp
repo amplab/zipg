@@ -183,9 +183,11 @@ std::vector<std::vector<int64_t>> GraphFormatter::read_edge_list(
 std::map<std::pair<int64_t, int64_t>, std::vector<int64_t>>
 GraphFormatter::read_assoc_list(
     const std::string& file,
+    bool read_dst_ids,
     char edge_inner_delim_between_ids,
     char edge_inner_delim_after_ids,
-    char edge_end_delim)
+    char edge_delim_after_atype,
+    char edge_delim_after_time)
 {
     std::ifstream in_stream(file);
     std::string line, token;
@@ -199,9 +201,15 @@ GraphFormatter::read_assoc_list(
         int64_t src_id = std::stoll(token);
         std::getline(ss, token, edge_inner_delim_after_ids);
         int64_t dst_id = std::stoll(token);
-        std::getline(ss, token, edge_end_delim);
+        std::getline(ss, token, edge_delim_after_atype);
         int64_t atype = std::stoll(token);
-        result[std::make_pair(src_id, atype)].push_back(dst_id);
+
+        if (read_dst_ids) {
+            result[std::make_pair(src_id, atype)].push_back(dst_id);
+        } else {
+            std::getline(ss, token, edge_delim_after_time);
+            result[std::make_pair(src_id, atype)].push_back(std::stoll(token));
+        }
     }
     return result;
 }

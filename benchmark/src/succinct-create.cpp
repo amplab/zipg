@@ -14,6 +14,7 @@
 #include "rpc/ports.h"
 #include "succinct-graph/GraphFormatter.hpp"
 #include "succinct-graph/SuccinctGraph.hpp"
+#include "succinct-graph/SuccinctGraphSerde.hpp"
 #include "succinct-graph/utils.h"
 #include "thrift/GraphQueryAggregatorService.h"
 
@@ -826,7 +827,7 @@ int main(int argc, char **argv) {
 
         std::string edge_file = argv[2];
         std::map<std::pair<int64_t, int64_t>, std::vector<int64_t>> assoc_map(
-            GraphFormatter::read_assoc_list(edge_file, ' ', ' ', ' '));
+            GraphFormatter::read_assoc_list(edge_file, true, ' ', ' ', ' '));
 
         auto num_digits = [](int64_t number) {
             if (number == 0) return 1;
@@ -886,6 +887,55 @@ int main(int argc, char **argv) {
 
         LOG_E("total nhbr list bytes: (1) now: %lld (2) diff opt: %lld\n",
             total_bytes, total_bytes_with_diff);
+        LOG_E("average savings per assoc list: %.2f\n",
+            savings * 1. / assoc_map.size());
+
+    } else if (type == "timestamp-diff-exp") {
+
+        auto num_digits = [](int64_t number) {
+            if (number == 0) return 1;
+            if (number < 0) number = -number;
+            int32_t digits = 0;
+            while (number != 0) {
+                number /= 10;
+                ++digits;
+            }
+            return digits;
+        };
+
+        std::string edge_file = argv[2];
+        auto assoc_map(GraphFormatter::read_assoc_list(
+            edge_file, false, ' ', ' ', ' ', ' '));
+
+        int64_t curr_scheme_total_bytes = 0, curr_scheme_bytes;
+        int64_t new_scheme_total_bytes = 0, new_scheme_bytes;
+        int64_t savings = 0;
+
+        for (auto it = assoc_map.begin(); it != assoc_map.end(); ++it) {
+            auto timestamps = it->second;
+            if (timestamps.empty()) {
+                continue;
+            }
+
+            std::sort(timestamps.begin(), timestamps.end(),
+                [](const int64_t& a, const int64_t& b) { return a > b; });
+
+            curr_scheme_bytes = SuccinctGraphSerde::WIDTH_TIMESTAMP *
+                timestamps.size();
+            curr_scheme_total_bytes += curr_scheme_bytes;
+
+            new_scheme_bytes = SuccinctGraphSerde::WIDTH_TIMESTAMP; // 1st time
+            for (size_t i = 1; i < timestamps.size(); ++i) {
+                int64_t diff = timestamps[0] - timestamps[i];
+                new_scheme_bytes += num_digits(diff);
+            }
+            new_scheme_total_bytes += new_scheme_bytes;
+            savings += curr_scheme_bytes - new_scheme_bytes;
+        }
+
+        LOG_E("Result for assoc list '%s':\n", edge_file.c_str());
+        LOG_E("total timestamps bytes: curr %lld, new scheme %lld\n",
+            curr_scheme_total_bytes, new_scheme_total_bytes);
         LOG_E("average savings per assoc list: %.2f\n",
             savings * 1. / assoc_map.size());
 
