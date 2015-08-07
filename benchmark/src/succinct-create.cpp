@@ -947,10 +947,9 @@ int main(int argc, char **argv) {
                 new_scheme_bytes += num_digits(max_diff_width) + 1;
             } else {
                 // case: scheme 2
-                // don't pad 1st timestamp or any diffs
-                new_scheme_bytes = num_digits(timestamps[0]) + sum_diff_width;
-                // add a delim at the end
-                ++new_scheme_bytes;
+                // don't pad 1st timestamp or any diffs; plus stuff is delims
+                new_scheme_bytes = num_digits(timestamps[0]) + 1;
+                new_scheme_bytes += sum_diff_width + (timestamps.size() - 1);
             }
 
             new_scheme_total_bytes += new_scheme_bytes;
