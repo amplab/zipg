@@ -402,6 +402,13 @@ int main(int argc, char **argv) {
         std::set<int64_t> dst_id_set;
         dst_id_set.insert(1618);
 
+        assert_eq(graph->assoc_get(
+            0, 2, dst_id_set, 1435055631064LL,1436667356522LL),
+            {});
+        assert_eq(graph->assoc_get(
+            0, 2, dst_id_set, 1435055631064,1436667356522),
+            {});
+
         SuccinctGraph::print_assoc_results(
             graph->assoc_get(0, 2, dst_id_set, 9324, 93245));
         assert_eq(graph->assoc_get(0, 2, dst_id_set, 9324, 93245),
