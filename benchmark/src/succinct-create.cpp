@@ -892,6 +892,8 @@ int main(int argc, char **argv) {
 
     } else if (type == "timestamp-diff-exp") {
 
+        int scheme = std::stoi(argv[3]); // 0 for diff-with-largest, 1 for diffs
+
         auto num_digits = [](int64_t number) {
             if (number == 0) return 1;
             if (number < 0) number = -number;
@@ -925,15 +927,22 @@ int main(int argc, char **argv) {
             curr_scheme_total_bytes += curr_scheme_bytes;
 
             new_scheme_bytes = SuccinctGraphSerde::WIDTH_TIMESTAMP; // 1st time
+
             int max_diff_width = -1;
             for (size_t i = 1; i < timestamps.size(); ++i) {
-                int64_t diff = timestamps[0] - timestamps[i];
+                int64_t diff = 0;
+                if (scheme == 0) {
+                    diff = timestamps[0] - timestamps[i];
+                } else {
+                    diff = timestamps[i - 1] - timestamps[i];
+                }
                 max_diff_width = std::max(max_diff_width, num_digits(diff));
             }
             // padded
             new_scheme_bytes += max_diff_width * (timestamps.size() - 1);
-            // pad width
-            new_scheme_bytes += num_digits(max_diff_width) + 1; // 1 for a delim
+            // pad width; +1 for a delim
+            new_scheme_bytes += num_digits(max_diff_width) + 1;
+
 
             new_scheme_total_bytes += new_scheme_bytes;
             savings += curr_scheme_bytes - new_scheme_bytes;
