@@ -89,6 +89,11 @@ public class BenchTAOAssocGet {
 
             PrintWriter out = new PrintWriter(new BufferedWriter(
                 new FileWriter(outputFile)));
+            PrintWriter resOut = null;
+            if (System.getenv("BENCH_PRINT_RESULTS") != null) {
+                resOut = new PrintWriter(new BufferedWriter(
+                    new FileWriter(outputFile + ".neo4j_result")));
+            }
 
             System.out.println(
                 "Warming up for " + numWarmupQueries + " queries");
@@ -124,8 +129,19 @@ public class BenchTAOAssocGet {
                 long queryEnd = System.nanoTime();
                 double microsecs = (queryEnd - queryStart) / ((double) 1000);
                 out.println(assocs.size() + "," + microsecs);
+
+                if (resOut != null) {
+                    for (Assoc assoc : assocs) {
+                        resOut.print(assoc.toString());
+                        resOut.print(" ");
+                    }
+                    resOut.println();
+                }
             }
             out.close();
+            if (resOut != null) {
+                resOut.close();
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
