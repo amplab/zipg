@@ -967,7 +967,7 @@ protected:
 
     std::function<void(std::vector<ThriftAssoc>&,
         int64_t, int64_t,
-        const std::set<int64_t>&, int32_t, int32_t)> assoc_get_f_;
+        const std::set<int64_t>&, int64_t, int64_t)> assoc_get_f_;
 
     std::function<int64_t(int64_t, int64_t)> assoc_count_f_;
 
