@@ -12,12 +12,15 @@ import java.util.*;
 
 public class TAOImpls implements TAOIface {
 
-    private static int MAX_NUM_ATYPES = 1618;
+    private static final int MAX_NUM_ATYPES = 1618;
+    private static final int MAX_NUM_NODE_ATTRS = 40; // same as SuccinctGraph
     private static RelationshipType[] atypeMap;
     private static Comparator<Assoc> sortAssocByDescendingTime;
     static {
-        System.out.println(
+        System.out.printf(
             "Neo4j's TAO impls assume max # atypes = " + MAX_NUM_ATYPES);
+        System.out.println(
+            ", max # node attrs = " + MAX_NUM_NODE_ATTRS);
 
         atypeMap = new RelationshipType[MAX_NUM_ATYPES];
         // Assumes atypes are consecutive ints in range [0, maxATypes).
@@ -60,11 +63,18 @@ public class TAOImpls implements TAOIface {
     // TODO: assumes keys are in-order? (name0, name1, ..)
     public List<String> objGet(GraphDatabaseService db, long nodeId) {
         Node n = db.getNodeById(nodeId);
-        List<String> res = new ArrayList<>();
+        List<String> res = new ArrayList<>(MAX_NUM_NODE_ATTRS);
+        String attr;
+        int lastNoneEmpty = -1, attrIdx = 0;
         for (String key : n.getPropertyKeys()) {
-            res.add((String) (n.getProperty(key)));
+            attr = (String) (n.getProperty(key));
+            res.add(attr);
+            if (!attr.isEmpty()) {
+                lastNoneEmpty = attrIdx;
+            }
+            ++attrIdx;
         }
-        return res;
+        return res.subList(0, lastNoneEmpty + 1);
     }
 
     /** Scans over all the assoc list and manually sorts by timestamp. */
