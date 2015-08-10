@@ -72,7 +72,7 @@ public class BenchTAOAssocTimeRange {
     private static void benchAssocTimeRangeLatency(
         String dbPath, String neo4jPageCacheMem, String outputFile) {
 
-        System.out.println("Benchmarking assoc_get() queries");
+        System.out.println("Benchmarking assoc_time_range() queries");
         System.out.println("Setting Neo4j's dbms.pagecache.memory: " +
             neo4jPageCacheMem);
 
