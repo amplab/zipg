@@ -749,6 +749,10 @@ int main(int argc, char **argv) {
         if (argc >= 13) {
             min_out_degree = std::stoi(argv[12]);
         }
+        bool assign_ts_attr = false;
+        if (argc >= 14) {
+            assign_ts_attr = true;
+        }
 
         std::thread edge_table_thread(
             &GraphFormatter::create_edge_table,
@@ -759,13 +763,8 @@ int main(int argc, char **argv) {
             edge_inner_delim,
             edge_end_delim,
             5,
-            min_out_degree);
-
-        // 456626 + 1, since unclear if original data is 0-indexed
-//        int num_nodes = 456627;
-//        int num_attr = 2;
-//        int freq = 1000;
-//        int len = 350; // so total node attr = len * num_attr
+            min_out_degree,
+            assign_ts_attr);
 
         GraphFormatter::create_node_table(
             node_out_file,

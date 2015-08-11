@@ -188,7 +188,8 @@ void GraphFormatter::create_edge_table(
     char edge_inner_delim,
     char edge_end_delim,
     int num_atype,
-    int min_out_degree)
+    int min_out_degree,
+    bool assign_ts_attr_to_dummy_edges)
 {
     std::ifstream in_stream(file);
     std::ifstream attr_in_stream(attr_file);
@@ -210,7 +211,7 @@ void GraphFormatter::create_edge_table(
     auto make_rand_assoc = [&atype_dis, &time_dis, &rng1, &rng2, &attr_file,
         bytes_per_attr]
         (int64_t src_id, int64_t dst_id, std::ifstream& attr_in_stream,
-         bool augmented_assoc = false)
+         bool augmented_assoc = false, bool assign_ts_attr_to_dummy = false)
     {
         // Generate atype and timestamp
         SuccinctGraph::AType atype = atype_dis(rng1);
@@ -235,11 +236,17 @@ void GraphFormatter::create_edge_table(
             attr += std::string(bytes_per_attr - attr.length(), '|');
         }
         SuccinctGraph::Assoc assoc;
-        if (!augmented_assoc) {
+        if (!augmented_assoc || assign_ts_attr_to_dummy) {
+            // There are two cases where we assign a random timestamp and an
+            // extracted attribute:
+            // (1) Either the edge is a real, existing edge, or
+            // (2) the edge is an augmented dummy edge, and
+            // `assign_ts_attr_to_dummy` is set to true.
             assoc = { src_id, dst_id, atype, time, attr };
         } else {
-            // Augmented edges should have as low overhead as possible, for
-            // the purpose is to increase average degree for experimentation.
+            // UNSAFE: Augmented edges are assigned empty attribute value,
+            // which is unsafe since the existing assoc lists likely already
+            // have a positive edge attr width.
             assoc = { src_id, dst_id, atype, 0, "" };
         }
         return assoc;
@@ -285,8 +292,9 @@ void GraphFormatter::create_edge_table(
                     edge_list_set[node_id].insert(dst_id);
 
                     // also insert into assoc map
-                    SuccinctGraph::Assoc assoc = make_rand_assoc(
-                        node_id, dst_id, attr_in_stream, true);
+                    SuccinctGraph::Assoc assoc(make_rand_assoc(
+                        node_id, dst_id, attr_in_stream,
+                        true, assign_ts_attr_to_dummy_edges));
                     assoc_map[std::make_pair(node_id, assoc.atype)].push_back(
                         assoc);
                 }

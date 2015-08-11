@@ -52,10 +52,11 @@ public:
     // fed into SuccinctGraph::construct().
     //
     // If `min_out_degree` is not -1, augment a node's out-neighbor list
-    // randomly if its out-degree is less than `min_out_degree`.  These dummy
-    // edges are assigned empty edge attribute and a timestamp of 0. The
-    // function also tries its best to have these dummy edges distinct
-    // from real, existing ones (hence no parallel edges).
+    // randomly if its out-degree is less than `min_out_degree`.  By default,
+    // these dummy edges are assigned empty edge attribute and a timestamp of 0.
+    // This behavior can be overriden by setting `assign_ts_attr_to_dummy_edges`
+    // to true.  This function also tries its best to have these dummy edges
+    // distinct from the real, existing ones (hence no parallel edges).
     static void create_edge_table(
         const std::string& file,
         const std::string& attr_file,
@@ -64,7 +65,8 @@ public:
         char edge_inner_delim = ' ',
         char edge_end_delim = '\n',
         int num_atype = 5,
-        int min_out_degree = -1);
+        int min_out_degree = -1,
+        bool assign_ts_attr_to_dummy_edges = false);
 
     // Each input line is of the form
     //     "srcId<edge_inner_delim>dstId<edge_end_delim>",
