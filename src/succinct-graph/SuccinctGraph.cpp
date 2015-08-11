@@ -231,9 +231,11 @@ void SuccinctGraph::construct_edge_table(std::string edge_file) {
                 it2->time);
 
             if (SuccinctGraphSerde::decode_timestamp(encoded) != it2->time) {
-                printf("Failed: time = [%lld], encoded = [%s], decoded = [%lld]\n",
-                    it2->time, encoded.c_str(), SuccinctGraphSerde::decode_timestamp(encoded));
-                assert(0);
+                LOG_E(
+                    "Failed: time = [%lld], encoded = [%s], decoded = [%lld]\n",
+                    it2->time, encoded.c_str(),
+                    SuccinctGraphSerde::decode_timestamp(encoded));
+                exit(1);
             }
 
             edge_file_out << encoded;
@@ -243,14 +245,29 @@ void SuccinctGraph::construct_edge_table(std::string edge_file) {
             std::string encoded = SuccinctGraphSerde::encode_node_id(
                 it2->dst_id, dst_id_width);
 
-            assert(SuccinctGraphSerde::decode_node_id(encoded) == it2->dst_id);
+            if (SuccinctGraphSerde::decode_node_id(encoded) != it2->dst_id) {
+                LOG_E(
+                    "Failed: dst id = [%lld], encoded = [%s], "
+                    "decoded = [%lld]\n",
+                    it2->dst_id, encoded.c_str(),
+                    SuccinctGraphSerde::decode_timestamp(encoded));
+                exit(1);
+            }
 
             edge_file_out << encoded;
         }
         // edge attributes
         for (auto it2 = assoc_list.begin(); it2 != assoc_list.end(); ++it2) {
             std::string attr = it2->attr; // note: no encoding
-            assert(attr.length() == static_cast<size_t>(edge_width));
+            if (attr.length() != static_cast<size_t>(edge_width)) {
+                LOG_E(
+                    "Failed: assumption that the edge attr width for each assoc"
+                    " list is broken: src = %lld, atype = %lld, edge width = %d"
+                    ", but found attr '%s' (length %d)\n",
+                    it2->src_id, it2->atype, edge_width, attr.c_str(),
+                    attr.length());
+                exit(1);
+            }
             edge_file_out << attr;
         }
     }
