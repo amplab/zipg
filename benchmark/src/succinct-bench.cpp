@@ -519,8 +519,11 @@ int main(int argc, char **argv) {
 
         std::string edge_file_content = "0 1 2 41842148 a b\n"
                                         "0 1618 2 93244 sup\n"
+                                        "7 6 0 0 \n" // edge has empty attr
+                                        "7 6 1 0 \n" // edge has empty attr
                                         "0 1 2 9324 suc\n"
                                         "0 2 0 9324 succinct is cool\n"
+                                        "8 6 1 0 \n" // edge has empty attr
                                         "6 1 1 111111 abcd\n";
 
         std::string node_tmp_pathname = std::tmpnam(NULL);
@@ -539,6 +542,10 @@ int main(int argc, char **argv) {
         std::vector<int64_t> nbhrs;
         std::set<int64_t> nodes;
         std::vector<std::string> attributes;
+
+        assert_eq(graph->assoc_range(7, 0, -1, -1), { {7, 6, 0, 0, ""} });
+        assert_eq(graph->assoc_range(7, 1, -1, -1), { {7, 6, 1, 0, ""} });
+        assert_eq(graph->assoc_range(8, -1, -1, -1), { {8, 6, 1, 0, ""} });
 
         graph->obj_get(attributes, 0);
         assert_eq(attributes, { "Winter", "is", "coming" });
