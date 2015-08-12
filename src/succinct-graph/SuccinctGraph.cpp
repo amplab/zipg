@@ -169,7 +169,6 @@ void SuccinctGraph::construct_edge_table(std::string edge_file) {
         return;
     }
 
-    LOG_E("Initializing edge table (SuccinctFile)\n");
     std::map<AssocListKey, std::vector<Assoc>> assoc_map;
     std::string line, token;
     std::ifstream edge_file_stream(edge_file);
@@ -177,111 +176,124 @@ void SuccinctGraph::construct_edge_table(std::string edge_file) {
     Timestamp time = -1LL;
     NodeId src_id = -1LL, dst_id = -1LL;
 
-    while (std::getline(edge_file_stream, line)) {
-        std::stringstream ss(line);
-        int token_idx = 0;
-        while (std::getline(ss, token, ' ')) {
-            ++token_idx;
-            if (token_idx == 1) src_id = std::stoll(token);
-            else if (token_idx == 2) dst_id = std::stoll(token);
-            else if (token_idx == 3) atype = std::stoll(token);
-            else if (token_idx == 4) time = std::stoll(token);
-            token.clear();
-            if (token_idx == 4) break;
+    if (!file_or_dir_exists(edge_file_name)) {
+        LOG_E("Initializing edge table (SuccinctFile)\n");
+        while (std::getline(edge_file_stream, line)) {
+            std::stringstream ss(line);
+            int token_idx = 0;
+            while (std::getline(ss, token, ' ')) {
+                ++token_idx;
+                if (token_idx == 1) src_id = std::stoll(token);
+                else if (token_idx == 2) dst_id = std::stoll(token);
+                else if (token_idx == 3) atype = std::stoll(token);
+                else if (token_idx == 4) time = std::stoll(token);
+                token.clear();
+                if (token_idx == 4) break;
+            }
+            std::getline(ss, token); // rest of the data is attr
+            Assoc assoc = { src_id, dst_id, atype, time, token };
+            assoc_map[std::make_pair(src_id, atype)].push_back(assoc);
         }
-        std::getline(ss, token); // rest of the data is attr
-        Assoc assoc = { src_id, dst_id, atype, time, token };
-        assoc_map[std::make_pair(src_id, atype)].push_back(assoc);
-    }
-    edge_file_stream.close();
+        edge_file_stream.close();
 
-    for (auto it = assoc_map.begin(); it != assoc_map.end(); ++it) {
-        std::sort(it->second.begin(),
-                  it->second.end(),
-                  cmp_assoc_by_decreasing_time);
-    }
-    std::ofstream edge_file_out(edge_file_name);
-
-    for (auto it = assoc_map.begin(); it != assoc_map.end(); ++it) {
-        auto src_id_and_atype = it->first;
-
-        edge_file_out << NODE_ID_DELIM
-            << src_id_and_atype.first;
-
-        edge_file_out << ATYPE_DELIM
-            << src_id_and_atype.second
-            << DST_ID_WIDTH_DELIM;
-
-        std::vector<Assoc> assoc_list = it->second;
-
-        NodeId maxDstId = -1;
-        for (auto it2 = assoc_list.begin(); it2 != assoc_list.end(); ++it2) {
-            maxDstId = std::max(maxDstId, it2->dst_id);
+        for (auto it = assoc_map.begin(); it != assoc_map.end(); ++it) {
+            std::sort(it->second.begin(),
+                      it->second.end(),
+                      cmp_assoc_by_decreasing_time);
         }
+        std::ofstream edge_file_out(edge_file_name);
 
-        int32_t dst_id_width = num_digits(maxDstId);
-        int32_t edge_width = assoc_list.begin()->attr.length();
-        int64_t data_width = assoc_list.size() *
-            (WIDTH_TIMESTAMP +
-             dst_id_width +
-             edge_width);
+        for (auto it = assoc_map.begin(); it != assoc_map.end(); ++it) {
+            auto src_id_and_atype = it->first;
 
-        edge_file_out
-            << SuccinctGraphSerde::pad_dst_id_width(dst_id_width)
-            << std::to_string(edge_width)
-            << DATA_WIDTH_DELIM
-            << std::to_string(data_width)
-            << METADATA_DELIM;
+            edge_file_out << NODE_ID_DELIM
+                << src_id_and_atype.first;
 
-        // timestamps
-        for (auto it2 = assoc_list.begin(); it2 != assoc_list.end(); ++it2) {
-            std::string encoded = SuccinctGraphSerde::encode_timestamp(
-                it2->time);
+            edge_file_out << ATYPE_DELIM
+                << src_id_and_atype.second
+                << DST_ID_WIDTH_DELIM;
 
-            if (SuccinctGraphSerde::decode_timestamp(encoded) != it2->time) {
-                LOG_E(
-                    "Failed: time = [%lld], encoded = [%s], decoded = [%lld]\n",
-                    it2->time, encoded.c_str(),
-                    SuccinctGraphSerde::decode_timestamp(encoded));
-                exit(1);
+            std::vector<Assoc> assoc_list = it->second;
+
+            NodeId maxDstId = -1;
+            for (auto it2 = assoc_list.begin(); it2 != assoc_list.end(); ++it2)
+            {
+                maxDstId = std::max(maxDstId, it2->dst_id);
             }
 
-            edge_file_out << encoded;
-        }
-        // dst node ids
-        for (auto it2 = assoc_list.begin(); it2 != assoc_list.end(); ++it2) {
-            std::string encoded = SuccinctGraphSerde::encode_node_id(
-                it2->dst_id, dst_id_width);
+            int32_t dst_id_width = num_digits(maxDstId);
+            int32_t edge_width = assoc_list.begin()->attr.length();
+            int64_t data_width = assoc_list.size() *
+                (WIDTH_TIMESTAMP +
+                 dst_id_width +
+                 edge_width);
 
-            if (SuccinctGraphSerde::decode_node_id(encoded) != it2->dst_id) {
-                LOG_E(
-                    "Failed: dst id = [%lld], encoded = [%s], "
-                    "decoded = [%lld]\n",
-                    it2->dst_id, encoded.c_str(),
-                    SuccinctGraphSerde::decode_timestamp(encoded));
-                exit(1);
-            }
+            edge_file_out
+                << SuccinctGraphSerde::pad_dst_id_width(dst_id_width)
+                << std::to_string(edge_width)
+                << DATA_WIDTH_DELIM
+                << std::to_string(data_width)
+                << METADATA_DELIM;
 
-            edge_file_out << encoded;
-        }
-        // edge attributes
-        for (auto it2 = assoc_list.begin(); it2 != assoc_list.end(); ++it2) {
-            std::string attr = it2->attr; // note: no encoding
-            if (attr.length() != static_cast<size_t>(edge_width)) {
-                LOG_E(
-                    "Failed: assumption that the edge attr width for each assoc"
-                    " list is broken: src = %lld, atype = %lld, edge width = %d"
-                    ", but found attr '%s' (length %d)\n",
-                    it2->src_id, it2->atype, edge_width, attr.c_str(),
-                    attr.length());
-                exit(1);
+            // timestamps
+            for (auto it2 = assoc_list.begin(); it2 != assoc_list.end(); ++it2)
+            {
+                std::string encoded = SuccinctGraphSerde::encode_timestamp(
+                    it2->time);
+
+                if (SuccinctGraphSerde::decode_timestamp(encoded) != it2->time)
+                {
+                    LOG_E(
+                        "Failed: time = [%lld], encoded = [%s], decoded = "
+                        "[%lld]\n",
+                        it2->time, encoded.c_str(),
+                        SuccinctGraphSerde::decode_timestamp(encoded));
+                    exit(1);
+                }
+
+                edge_file_out << encoded;
             }
-            edge_file_out << attr;
+            // dst node ids
+            for (auto it2 = assoc_list.begin(); it2 != assoc_list.end(); ++it2)
+            {
+                std::string encoded = SuccinctGraphSerde::encode_node_id(
+                    it2->dst_id, dst_id_width);
+
+                if (SuccinctGraphSerde::decode_node_id(encoded) != it2->dst_id)
+                {
+                    LOG_E(
+                        "Failed: dst id = [%lld], encoded = [%s], "
+                        "decoded = [%lld]\n",
+                        it2->dst_id, encoded.c_str(),
+                        SuccinctGraphSerde::decode_timestamp(encoded));
+                    exit(1);
+                }
+
+                edge_file_out << encoded;
+            }
+            // edge attributes
+            for (auto it2 = assoc_list.begin(); it2 != assoc_list.end(); ++it2)
+            {
+                std::string attr = it2->attr; // note: no encoding
+                if (attr.length() != static_cast<size_t>(edge_width)) {
+                    LOG_E(
+                        "Failed: assumption that the edge attr width for each "
+                        "assoc list is broken: src = %lld, atype = %lld, edge "
+                        "width = %d, but found attr '%s' (length %d)\n",
+                        it2->src_id, it2->atype, edge_width, attr.c_str(),
+                        attr.length());
+                    exit(1);
+                }
+                edge_file_out << attr;
+            }
         }
+         // FIXME: without this, SuccinctCore ctor segfaults
+        edge_file_out << "\n";
+        edge_file_out.close();
+        LOG_E("Edge table written out to disk, now to Succinct-encode it\n");
+    } else {
+        LOG_E("Edge table '%s' exists, directly starting Succinct-encoding\n");
     }
-    edge_file_out << "\n"; // FIXME: without this, SuccinctCore ctor segfaults
-    edge_file_out.close();
-    LOG_E("Edge table written out to disk, now to Succinct-encode it\n");
 
     LOG_E("constructing edge table with npa %d, sa %d, isa %d\n",
         npa_sampling_rate, sa_sampling_rate, isa_sampling_rate);
