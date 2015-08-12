@@ -2,6 +2,7 @@
 #define THREADED_GRAPH_ENCODER_H
 
 #include <condition_variable>
+#include <future>
 #include <mutex>
 #include <thread>
 #include <vector>
@@ -22,6 +23,7 @@ public:
 
     void construct_edge_file(
         const std::string& edge_file,
+        std::promise<void>& promise,
         int saSamplingRate,
         int isaSamplingRate,
         int npaSamplingRate);
