@@ -1,6 +1,7 @@
 #ifndef SUCCINCT_GRAPH_UTILS_H
 #define SUCCINCT_GRAPH_UTILS_H
 
+#include <sys/stat.h>
 #include <sys/time.h>
 
 // For proper (u)int64t printing
@@ -38,5 +39,10 @@ private:
     int64_t* latency_;
     time_t start_;
 };
+
+inline bool file_or_dir_exists(const std::string& pathname) {
+    struct stat buffer;
+    return (stat(pathname.c_str(), &buffer) == 0);
+}
 
 #endif

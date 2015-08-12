@@ -8,8 +8,6 @@
 #include "succinct-graph/utils.h"
 #include "rpc/ports.h"
 
-#include <sys/stat.h>
-
 using namespace ::apache::thrift;
 using namespace ::apache::thrift::protocol;
 using namespace ::apache::thrift::transport;
@@ -283,11 +281,6 @@ public:
     }
 
 private:
-
-    inline bool file_or_dir_exists(const std::string& pathname) {
-        struct stat buffer;
-        return (stat(pathname.c_str(), &buffer) == 0);
-    }
 
     const int shard_id_;
     const int total_num_shards_;

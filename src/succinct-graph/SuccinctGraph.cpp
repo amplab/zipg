@@ -155,6 +155,19 @@ void SuccinctGraph::construct_node_table(std::string node_file) {
 }
 
 void SuccinctGraph::construct_edge_table(std::string edge_file) {
+    // Serialize to an .edge_table file (flat file layout)
+    size_t postfix_pos = edge_file.rfind(".assoc");
+    std::string edge_file_name = edge_file + ".edge_table";
+    if (postfix_pos != std::string::npos) {
+        edge_file_name = edge_file.replace(postfix_pos, 6, ".edge_table");
+    }
+
+    if (file_or_dir_exists(edge_file_name + ".succinct")) {
+        LOG_E("Dir '%s' already exists, exiting normally from construction\n",
+            (edge_file_name + ".succinct").c_str());
+        return;
+    }
+
     LOG_E("Initializing edge table (SuccinctFile)\n");
     std::map<AssocListKey, std::vector<Assoc>> assoc_map;
     std::string line, token;
@@ -186,12 +199,6 @@ void SuccinctGraph::construct_edge_table(std::string edge_file) {
                   it->second.end(),
                   cmp_assoc_by_decreasing_time);
     }
-
-    // Serialize to an .edge_table file (flat file layout)
-    size_t postfix_pos = edge_file.rfind(".assoc");
-    std::string edge_file_name = edge_file + ".edge_table";
-    if (postfix_pos != std::string::npos)
-        edge_file_name = edge_file.replace(postfix_pos, 6, ".edge_table");
     std::ofstream edge_file_out(edge_file_name);
 
     for (auto it = assoc_map.begin(); it != assoc_map.end(); ++it) {
