@@ -292,7 +292,8 @@ void SuccinctGraph::construct_edge_table(std::string edge_file) {
         edge_file_out.close();
         LOG_E("Edge table written out to disk, now to Succinct-encode it\n");
     } else {
-        LOG_E("Edge table '%s' exists, directly starting Succinct-encoding\n");
+        LOG_E("Edge table '%s' exists, directly starting Succinct-encoding\n",
+            edge_file_name.c_str());
     }
 
     LOG_E("constructing edge table with npa %d, sa %d, isa %d\n",
