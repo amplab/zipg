@@ -2,6 +2,7 @@
 #define THREADED_GRAPH_ENCODER_H
 
 #include <condition_variable>
+#include <future>
 #include <mutex>
 #include <thread>
 #include <vector>
@@ -16,12 +17,15 @@ public:
 
     ThreadedGraphEncoder(int maxConcurrentThreads)
     : maxConcurrentThreads_(maxConcurrentThreads),
-      currActiveThreads_(0)
+      currActiveThreads_(0),
+      mutex_(),
+      hasFree_()
     {
     }
 
     void construct_edge_file(
-        const std::string& edge_file,
+        const std::string edge_file,
+        std::promise<void> promise,
         int saSamplingRate,
         int isaSamplingRate,
         int npaSamplingRate);
