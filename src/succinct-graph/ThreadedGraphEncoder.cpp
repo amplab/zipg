@@ -11,7 +11,6 @@ void ThreadedGraphEncoder::construct_edge_file(
     int npaSamplingRate)
 {
     try {
-        promise.set_value_at_thread_exit();
         std::unique_lock<std::mutex> lock(mutex_);
         hasFree_.wait(lock, [this] {
             return currActiveThreads_ < maxConcurrentThreads_;
@@ -36,9 +35,10 @@ void ThreadedGraphEncoder::construct_edge_file(
         lock.unlock();
         hasFree_.notify_all();
         LOG_E("Notified!\n");
+        promise.set_value();
     } catch (const std::bad_alloc&) {
         LOG_E("Worker encountered bad_alloc, about to exit(1)\n");
-        promise.set_exception_at_thread_exit(std::current_exception());
+        promise.set_exception(std::current_exception());
         std::exit(1);
     }
 }
