@@ -4,8 +4,8 @@
 
 
 void ThreadedGraphEncoder::construct_edge_file(
-    const std::string& edge_file,
-    std::promise<void>& promise,
+    const std::string edge_file,
+    std::promise<void> promise,
     int saSamplingRate,
     int isaSamplingRate,
     int npaSamplingRate)
@@ -33,11 +33,13 @@ void ThreadedGraphEncoder::construct_edge_file(
         --currActiveThreads_;
         LOG_E("Worker finished! Currently active #: %d\n", currActiveThreads_);
         lock.unlock();
-        hasFree_.notify_all();
-        LOG_E("Notified!\n");
+
         promise.set_value();
-    } catch (const std::bad_alloc&) {
-        LOG_E("Worker encountered bad_alloc, about to exit(1)\n");
+        hasFree_.notify_one();
+        LOG_E("Notified!\n");
+        return;
+    } catch (...) {
+        LOG_E("Worker encountered exception, about to exit(1)\n");
         promise.set_exception(std::current_exception());
         std::exit(1);
     }
@@ -61,7 +63,7 @@ int main(int argc, char **argv) {
     std::map<int, bool> finished; // all false
     std::map<int, bool> to_be_submits; // init to all true
     for (int i = 5; i < argc; ++i) {
-        to_be_submits[i] = true;
+        to_be_submits[i - 5] = true;
     }
 
     int badAllocSleep = 60;
@@ -89,11 +91,9 @@ int main(int argc, char **argv) {
                 future_indices.push_back(i - 5);
 
                 // launch
-                std::thread([&] {
-                    encoder.construct_edge_file(
-                        s, promises.back(),
-                        saSamplingRate, isaSamplingRate, npaSamplingRate);
-                }).detach();
+                std::thread(&ThreadedGraphEncoder::construct_edge_file,
+                    &encoder, s, std::move(promises.back()), 
+                    saSamplingRate, isaSamplingRate, npaSamplingRate).detach();
             }
         }
 
@@ -108,16 +108,16 @@ int main(int argc, char **argv) {
                     finished[future_indices[i]] = true;
                 }
             }
-        } catch (const std::bad_alloc&) {
+        } catch (...) {
             to_be_submits[future_indices[i]] = true; // needs to be re-submitted
 
             ++badAllocCount;
             if (badAllocCount == 3) {
-                LOG_E("bad_alloc 3 times, exiting\n");
+                LOG_E("exception (likely bad_alloc) 3 times, exiting\n");
                 std::terminate();
             }
             badAllocSleep = 60 * badAllocCount;
-            LOG_E("bad_alloc thrown (%d times), sleeping for %d secs\n",
+            LOG_E("exception thrown (%d times), sleeping for %d secs\n",
                 badAllocCount, badAllocSleep);
             std::this_thread::sleep_for(std::chrono::seconds(badAllocSleep));
             continue;
