@@ -159,7 +159,8 @@ void SuccinctGraph::construct_edge_table(std::string edge_file) {
     size_t postfix_pos = edge_file.rfind(".assoc");
     std::string edge_file_name = edge_file + ".edge_table";
     if (postfix_pos != std::string::npos) {
-        edge_file_name = edge_file.replace(postfix_pos, 6, ".edge_table");
+        edge_file_name = std::string(edge_file).replace(
+            postfix_pos, 6, ".edge_table");
     }
 
     if (file_or_dir_exists(edge_file_name + ".succinct")) {
@@ -181,10 +182,10 @@ void SuccinctGraph::construct_edge_table(std::string edge_file) {
         int token_idx = 0;
         while (std::getline(ss, token, ' ')) {
             ++token_idx;
-            if (token_idx == 1) src_id = std::stol(token);
-            else if (token_idx == 2) dst_id = std::stol(token);
-            else if (token_idx == 3) atype = std::stol(token);
-            else if (token_idx == 4) time = std::stol(token);
+            if (token_idx == 1) src_id = std::stoll(token);
+            else if (token_idx == 2) dst_id = std::stoll(token);
+            else if (token_idx == 3) atype = std::stoll(token);
+            else if (token_idx == 4) time = std::stoll(token);
             token.clear();
             if (token_idx == 4) break;
         }
