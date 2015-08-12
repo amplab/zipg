@@ -203,8 +203,8 @@ public:
 
 private:
 
-    SuccinctShard* node_table;
-    SuccinctFile* edge_table;
+    SuccinctShard* node_table = nullptr;
+    SuccinctFile* edge_table = nullptr;
 
     std::string succinct_dir;
     int64_t edges;
