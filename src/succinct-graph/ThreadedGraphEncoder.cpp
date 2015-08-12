@@ -37,12 +37,11 @@ void ThreadedGraphEncoder::construct_edge_file(
         promise.set_value();
         hasFree_.notify_one();
         LOG_E("Notified!\n");
-        return;
     } catch (...) {
-        LOG_E("Worker encountered exception, about to exit(1)\n");
+        LOG_E("Worker encountered exception, about to exit\n");
         promise.set_exception(std::current_exception());
-        std::exit(1);
     }
+    return;
 }
 
 int main(int argc, char **argv) {
