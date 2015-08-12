@@ -54,6 +54,7 @@ int main(int argc, char **argv) {
 
     ThreadedGraphEncoder encoder(maxConcurrentThreads);
 
+    std::vector<std::promise<void>> promises;
     std::vector<std::future<void>> futures;
     std::vector<int> future_indices;
 
@@ -83,14 +84,14 @@ int main(int argc, char **argv) {
                 to_be_submits[i - 5] = false;
                 std::string s(argv[i]);
 
-                std::promise<void> promise;
-                futures.emplace_back(promise.get_future());
+                promises.emplace_back();
+                futures.emplace_back(promises.back().get_future());
                 future_indices.push_back(i - 5);
 
                 // launch
                 std::thread([&] {
                     encoder.construct_edge_file(
-                        s, promise,
+                        s, promises.back(),
                         saSamplingRate, isaSamplingRate, npaSamplingRate);
                 }).detach();
             }
