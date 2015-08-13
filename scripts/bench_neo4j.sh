@@ -10,8 +10,12 @@ TOTAL_MEM=249856
 TOTAL_MEM=15043 # c4.2x, 15GB
 AVAIL_MEM=$(( $TOTAL_MEM - 512 )) # reserve 512m for OS
 
-minDeg="-minDeg30"
-minDeg=""
+minDegs=('' '-minDeg30')
+minDegs=('')
+minDegs=('-minDeg60')
+minDegs=('-minDeg30WithTsAttr')
+
+for minDeg in "${minDegs[@]}"; do
 
 DATASET=higgs-twitter-40attr16each
 DATASET=higgs-twitter-20attr35each
@@ -43,10 +47,10 @@ thputThreads=1
 #benchNhbrThput=T
 
 benchAssocRange=T
-benchObjGet=T
-benchAssocGet=T
-benchAssocCount=T
-benchAssocTimeRange=T
+#benchObjGet=T
+#benchAssocGet=T
+#benchAssocCount=T
+#benchAssocTimeRange=T
 
 pageCacheForNodes=8543m # works, has tradeoff
 pageCacheForNodes=""
@@ -291,3 +295,4 @@ for JVM_HEAP in 6900; do
 
     done
   done
+done

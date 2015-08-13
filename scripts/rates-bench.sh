@@ -16,6 +16,12 @@ dataset="-liveJournal${minDeg}"
 #dataset="-40attr16each"
 #dataset="-2attr350each"
 
+minDegs=('-minDeg30')
+minDegs=('' '-minDeg30')
+minDegs=('-minDeg60')
+minDegs=('-minDeg30WithTsAttr')
+minDegs=('')
+
 # NOTE: comment this out for non-sharded bench
 SHARDED=T
 if [[ -z "$SHARDED" ]]; then
@@ -32,13 +38,21 @@ fi
 throughput_threads=4
 #benchNeighborThput=T
 
-#benchAssocRange=T
-#benchAssocCount=T
+benchAssocRange=T
+benchAssocCount=T
 #benchObjGet=T
 #benchAssocGet=T
-benchAssocTimeRange=T
+#benchAssocTimeRange=T
 
 function bench() {
+  if [[ "$dataset" == "-liveJournal"* ]]; then
+    pushd ${QUERY_DIR} >/dev/null
+    yes | cp -rf liveJournal-40attr16each${minDeg}-queries/*txt ./
+    popd >/dev/null
+  else
+    echo implement query copying for me! dataset: '${dataset}'
+    exit 1
+  fi
 
   #EDGE_FILE="data/higgs-social_network.opts-npa${npa}sa${sa}isa${isa}.edge_table"
   #NODE_FILE="data/higgs${dataset}-tpch-npa${npa}sa${sa}isa${isa}.nodeWithPtrs"
@@ -190,6 +204,9 @@ function bench() {
 
 #for throughput_threads in 32; do
 #done
-sa=32; isa=64; npa=128; bench
-sa=4; isa=16; npa=16; bench
-sa=8; isa=64; npa=64; bench
+for minDeg in "${minDegs[@]}"; do
+  dataset="-liveJournal${minDeg}"
+  sa=32; isa=64; npa=128; bench
+  sa=8; isa=64; npa=64; bench
+  sa=4; isa=16; npa=16; bench
+done
