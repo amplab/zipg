@@ -4,19 +4,24 @@ SCRIPT_DIR=$(dirname $0)
 source ${SCRIPT_DIR}/config.sh
 mkdir -p ${QUERY_DIR}
 
-# assocRange=T
-# assocGet=T
-# assocCount=T
+#assocRange=T
+assocGet=T
+#assocCount=T
 assocTimeRange=T
-# objGet=T
+#objGet=T
 
 # SR doesn't matter since we are just loading, as long as the graph *has* been
 # constructed.
 npa=128
 sa=32
 isa=64
-EDGE_FILE="/mnt2T/data/liveJournal-npa${npa}sa${sa}isa${isa}.assoc"
+minDeg=""
+minDeg="-minDeg60"
+minDeg="-minDeg30WithTsAttr"
+EDGE_FILE="/mnt2T/data/liveJournal${minDeg}-npa${npa}sa${sa}isa${isa}.assoc"
 NODE_FILE="/mnt2T/data/liveJournal-40attr16each-tpch-npa${npa}sa${sa}isa${isa}.node"
+
+ASSOC_FILE=/mnt2T/data/liveJournal-minDeg30WithTsAttr.assoc
 
 function stop_all() {
   bash ${SCRIPT_DIR}/../sbin/stop-all.sh
