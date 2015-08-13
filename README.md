@@ -4,11 +4,12 @@ Compressed graph store on top of Succinct.
 # Build
 To build the benchmark driver `bin/bench`, do:
 ```
+sudo bash scripts/ec2-prereqs.sh # needed on EC2
 git submodule update --init
-make clean && SGFLAGS=-DLOG_DEBUG make -j && make bench
+make clean && SGFLAGS=-DNDEBUG make -j && SGFLAGS=-DNDEBUG make rpc bench
 ```
 
-To build the RPC component (which depends on Thrift), do `make rpc`. This target is not yet correctly set up for parallel build. The major hassle here is to successfully install the Thrift compiler for the first time: on EC2, some prereqs need to be installed first: run `sudo bash scripts/ec2-prereqs.sh`; if errors occur, try to fix them manually (e.g. don't run the `autoreconf --force --install` command in Succinct's `build-thrift` target).
+To build the RPC component (which depends on Thrift), do `make rpc`. This target is not yet correctly set up for parallel build. The major hassle here is to successfully install the Thrift compiler for the first time; if errors occur, try to fix them manually (e.g. don't run the `autoreconf --force --install` command in Succinct's `build-thrift` target).
 
 To disable assertions, pass in `SGFLAGS=-DNDEBUG` (supported by g++).
 
