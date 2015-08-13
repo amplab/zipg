@@ -105,6 +105,11 @@ public class BenchUtils {
         String file, List<Integer> indices1, List<Integer> indices2,
         List<String> queries1, List<String> queries2) {
 
+        initializeArrayListIfNull(indices1);
+        initializeArrayListIfNull(indices2);
+        initializeArrayListIfNull(queries1);
+        initializeArrayListIfNull(queries2);
+
         try {
             BufferedReader br = new BufferedReader(new FileReader(file));
             String line = br.readLine();
@@ -122,6 +127,8 @@ public class BenchUtils {
     }
 
     public static void getNeighborQueries(String file, List<Long> nhbrs) {
+        initializeArrayListIfNull(nhbrs);
+
         try {
             BufferedReader br = new BufferedReader(new FileReader(file));
             List<String> lines = new ArrayList<String>();
@@ -141,6 +148,9 @@ public class BenchUtils {
     public static void getNeighborAtypeQueries(
         String file, List<Long> nodeIds, List<Long> atypes) {
 
+        initializeArrayListIfNull(nodeIds);
+        initializeArrayListIfNull(atypes);
+
         try {
             BufferedReader br = new BufferedReader(new FileReader(file));
             String line = br.readLine();
@@ -159,6 +169,10 @@ public class BenchUtils {
         String file, List<Long> indices,
         List<Integer> attributes, List<String> queries) {
 
+        initializeArrayListIfNull(indices);
+        initializeArrayListIfNull(attributes);
+        initializeArrayListIfNull(queries);
+
         try {
             BufferedReader br = new BufferedReader(new FileReader(file));
             String line = br.readLine();
@@ -175,9 +189,20 @@ public class BenchUtils {
         }
     }
 
+    private static <T>  void initializeArrayListIfNull(List<T> xs) {
+        if (xs == null) {
+            xs = new ArrayList<>();
+        }
+    }
+
     public static void readAssocRangeQueries(
         String file, List<Long> nodes, List<Long> atypes,
         List<Integer> offsets, List<Integer> lengths) {
+
+        initializeArrayListIfNull(nodes);
+        initializeArrayListIfNull(atypes);
+        initializeArrayListIfNull(offsets);
+        initializeArrayListIfNull(lengths);
 
         try {
             BufferedReader br = new BufferedReader(new FileReader(file));
@@ -203,6 +228,12 @@ public class BenchUtils {
     public static void readAssocGetQueries(
         String file, List<Long> nodes, List<Long> atypes,
         List<Set<Long>> dstIdSets, List<Long> tLows, List<Long> tHighs) {
+
+        initializeArrayListIfNull(nodes);
+        initializeArrayListIfNull(atypes);
+        initializeArrayListIfNull(dstIdSets);
+        initializeArrayListIfNull(tLows);
+        initializeArrayListIfNull(tHighs);
 
         try {
             BufferedReader br = new BufferedReader(new FileReader(file));
@@ -243,6 +274,12 @@ public class BenchUtils {
     public static void readAssocTimeRangeQueries(
         String file, List<Long> nodes, List<Long> atypes,
         List<Long> tLows, List<Long> tHighs, List<Integer> limits) {
+
+        initializeArrayListIfNull(nodes);
+        initializeArrayListIfNull(atypes);
+        initializeArrayListIfNull(tLows);
+        initializeArrayListIfNull(tHighs);
+        initializeArrayListIfNull(limits);
 
         try {
             BufferedReader br = new BufferedReader(new FileReader(file));
