@@ -51,6 +51,7 @@ benchAssocRange=T
 #benchAssocGet=T
 #benchAssocCount=T
 #benchAssocTimeRange=T
+benchTAOMix=T
 
 pageCacheForNodes=8543m # works, has tradeoff
 pageCacheForNodes=""
@@ -291,7 +292,34 @@ for JVM_HEAP in 6900; do
            ${warmup_assocTimeRange} \
            ${measure_assocTimeRange} \
            ${pageCacheIgnoreIndexes}
-      fi
+    fi
+      
+    if [[ -n "$benchMix" ]]; then
+      sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+
+      java -verbose:gc -server -XX:+UseConcMarkSweepGC -Xmx${JVM_HEAP}m -cp ${classpath} \
+         edu.berkeley.cs.succinctgraph.neo4jbench.tao.BenchTAOAssocMixed \
+         latency \
+         ${NEO4J_DIR}/${DATASET} \
+         ${QUERY_DIR}/assocRange_warmup.txt \
+         ${QUERY_DIR}/assocRange_query.txt \
+         ${QUERY_DIR}/assocCount_warmup.txt \
+         ${QUERY_DIR}/assocCount_query.txt \
+         ${QUERY_DIR}/objGet_warmup.txt \
+         ${QUERY_DIR}/objGet_query.txt \
+         ${QUERY_DIR}/assocGet_warmup.txt \
+         ${QUERY_DIR}/assocGet_query.txt \
+         ${QUERY_DIR}/assocTimeRange_warmup.txt \
+         ${QUERY_DIR}/assocTimeRange_query.txt \
+         ${HOME_DIR}/neo4j_${DATASET}_mix_assocRange_latency_jvm${JVM_HEAP}m_pagecache${pageCacheIgnoreIndexes}.txt \
+         ${HOME_DIR}/neo4j_${DATASET}_mix_assocCount_latency_jvm${JVM_HEAP}m_pagecache${pageCacheIgnoreIndexes}.txt \
+         ${HOME_DIR}/neo4j_${DATASET}_mix_objGet_latency_jvm${JVM_HEAP}m_pagecache${pageCacheIgnoreIndexes}.txt \
+         ${HOME_DIR}/neo4j_${DATASET}_mix_assocGet_latency_jvm${JVM_HEAP}m_pagecache${pageCacheIgnoreIndexes}.txt \
+         ${HOME_DIR}/neo4j_${DATASET}_mix_assocTimeRange_latency_jvm${JVM_HEAP}m_pagecache${pageCacheIgnoreIndexes}.txt \
+         ${warmup_taoMix} \
+         ${measure_taoMix} \
+         ${pageCacheIgnoreIndexes}
+    fi
 
     done
   done

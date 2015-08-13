@@ -120,3 +120,6 @@ measure_assocCount=200000
 
 warmup_assocTimeRange=100000
 measure_assocTimeRange=200000
+
+warmup_taoMix=200000
+measure_taoMix=400000
