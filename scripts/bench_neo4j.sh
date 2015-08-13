@@ -297,8 +297,9 @@ for JVM_HEAP in 6900; do
     if [[ -n "$benchTAOMix" ]]; then
       sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
 
+      find /mnt2T/data/neo4j/${DATASET}/ -name "*store.db*" -type f -exec dd if={} of=/dev/null bs=1M 2>/dev/null \;
       java -verbose:gc -server -XX:+UseConcMarkSweepGC -Xmx${JVM_HEAP}m -cp ${classpath} \
-         edu.berkeley.cs.succinctgraph.neo4jbench.tao.BenchTAOAssocMixed \
+         edu.berkeley.cs.succinctgraph.neo4jbench.tao.BenchTAOMixed \
          latency \
          ${NEO4J_DIR}/${DATASET} \
          ${QUERY_DIR}/assocRange_warmup.txt \
