@@ -43,6 +43,7 @@ benchAssocCount=T
 #benchObjGet=T
 #benchAssocGet=T
 #benchAssocTimeRange=T
+benchTaoMix=T
 
 function bench() {
   if [[ "$dataset" == "-liveJournal"* ]]; then
@@ -194,6 +195,29 @@ function bench() {
         -x ${warmup_assocTimeRange} -y ${measure_assocTimeRange} \
         -w ${QUERY_DIR}/assocTimeRange_warmup.txt -q ${QUERY_DIR}/assocTimeRange_query.txt \
         -o ${HOME_DIR}/assocTimeRange_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+        ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
+    fi
+
+    if [[ -n "$benchTaoMix" ]]; then
+      sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+
+      ${BIN_DIR}/bench -t tao-mix-latency \
+        -x ${warmup_taoMix} -y ${measure_taoMix} \
+        -w ${QUERY_DIR}/assocCount_warmup.txt \
+        -q ${QUERY_DIR}/assocCount_query.txt \
+        -a ${QUERY_DIR}/assocRange_warmup.txt \
+        -b ${QUERY_DIR}/assocRange_query.txt \
+        -c ${QUERY_DIR}/objGet_warmup.txt \
+        -d ${QUERY_DIR}/objGet_query.txt \
+        -e ${QUERY_DIR}/assocGet_warmup.txt \
+        -f ${QUERY_DIR}/assocGet_query.txt \
+        -g ${QUERY_DIR}/assocTimeRange_warmup.txt \
+        -l ${QUERY_DIR}/assocTimeRange_query.txt \
+        -o ${HOME_DIR}/mix_assocRange_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+        -h ${HOME_DIR}/mix_assocCount_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+        -i ${HOME_DIR}/mix_objGet_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+        -j ${HOME_DIR}/mix_assocGet_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+        -k ${HOME_DIR}/mix_assocTimeRange_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
         ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
     fi
 

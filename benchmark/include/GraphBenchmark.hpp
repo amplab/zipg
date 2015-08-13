@@ -546,6 +546,165 @@ public:
         LOG_E("Measure complete.\n");
     }
 
+    void benchmark_tao_mix_latency(
+        const std::string& assoc_range_res_file,
+        const std::string& assoc_count_res_file,
+        const std::string& obj_get_res_file,
+        const std::string& assoc_get_res_file,
+        const std::string& assoc_time_range_res_file,
+        int warmup_n, int measure_n,
+        const std::string& warmup_assoc_range_file,
+        const std::string& assoc_range_file,
+        const std::string& warmup_assoc_count_file,
+        const std::string& assoc_count_file,
+        const std::string& warmup_obj_get_file,
+        const std::string& obj_get_file,
+        const std::string& warmup_assoc_get_file,
+        const std::string& assoc_get_file,
+        const std::string& warmup_assoc_time_range_file,
+        const std::string& assoc_time_range_file)
+    {
+        std::ofstream assoc_range_res(assoc_range_res_file);
+        std::ofstream assoc_count_res(assoc_count_res_file);
+        std::ofstream obj_get_res(obj_get_res_file);
+        std::ofstream assoc_get_res(assoc_get_res_file);
+        std::ofstream assoc_time_range_res(assoc_time_range_res_file);
+
+        // assoc_range
+        read_assoc_range_queries(warmup_assoc_range_file, assoc_range_file);
+        // assoc_count
+        read_neighbor_atype_queries(warmup_assoc_count_file, assoc_count_file,
+            warmup_assoc_count_nodes, assoc_count_nodes,
+            warmup_assoc_count_atypes, assoc_count_atypes);
+        // obj_get
+        read_neighbor_queries(warmup_obj_get_file, obj_get_file,
+            warmup_obj_get_nodes, obj_get_nodes);
+        // assoc_get
+        read_assoc_get_queries(warmup_assoc_get_file, assoc_get_file);
+        // assoc_time_range
+        read_assoc_time_range_queries(
+            warmup_assoc_time_range_file, assoc_time_range_file);
+
+        std::mt19937 rng(1618);
+        std::uniform_int_distribution<int> uni(0, 4);
+
+        std::vector<ThriftAssoc> result;
+        int64_t cnt;
+        std::vector<std::string> attrs;
+
+        LOG_E("Benchmarking TAO mixed query latency\n");
+        try {
+            LOG_E("Warming up for %d queries...\n", warmup_n);
+            for (int i = 0; i < warmup_n; ++i) {
+                int rand_query = uni(rng);
+                switch (rand_query) {
+                case 0:
+                    assoc_range_f_(result,
+                        mod_get(warmup_assoc_range_nodes, i),
+                        mod_get(warmup_assoc_range_atypes, i),
+                        mod_get(warmup_assoc_range_offs, i),
+                        mod_get(warmup_assoc_range_lens, i));
+                    break;
+                case 1:
+                    assoc_count_f_(
+                        mod_get(warmup_assoc_count_nodes, i),
+                        mod_get(warmup_assoc_count_atypes, i));
+                    break;
+                case 2:
+                    obj_get_f_(attrs, mod_get(warmup_obj_get_nodes, i));
+                    break;
+                case 3:
+                    assoc_get_f_(result,
+                        mod_get(warmup_assoc_get_nodes, i),
+                        mod_get(warmup_assoc_get_atypes, i),
+                        mod_get(warmup_assoc_get_dst_id_sets, i),
+                        mod_get(warmup_assoc_get_lows, i),
+                        mod_get(warmup_assoc_get_highs, i));
+                    break;
+                case 4:
+                    assoc_time_range_f_(result,
+                        mod_get(warmup_assoc_time_range_nodes, i),
+                        mod_get(warmup_assoc_time_range_atypes, i),
+                        mod_get(warmup_assoc_time_range_lows, i),
+                        mod_get(warmup_assoc_time_range_highs, i),
+                        mod_get(warmup_assoc_time_range_limits, i));
+                    break;
+                default:
+                    assert(false);
+                }
+            }
+            LOG_E("Warmup complete.\n");
+
+            rng.seed(1618);
+
+            // Measure phase
+            LOG_E("Measuring for %" PRIu64 " queries...\n", MEASURE_N);
+            int64_t latency = 0;
+            for (int i = 0; i < MEASURE_N; ++i) {
+                int rand_query = uni(rng);
+                switch (rand_query) {
+                case 0:
+                {
+                    scoped_timer t(&latency);
+                    assoc_range_f_(result,
+                        mod_get(assoc_range_nodes, i),
+                        mod_get(assoc_range_atypes, i),
+                        mod_get(assoc_range_offs, i),
+                        mod_get(assoc_range_lens, i));
+                }
+                    assoc_range_res << result.size() << "," << latency << '\n';
+                    break;
+                case 1:
+                {
+                    scoped_timer t(&latency);
+                    cnt = assoc_count_f_(
+                        mod_get(assoc_count_nodes, i),
+                        mod_get(assoc_count_atypes, i));
+                }
+                    assoc_count_res << cnt << "," << latency << "\n";
+                    break;
+                case 2:
+                {
+                    scoped_timer t(&latency);
+                    obj_get_f_(attrs, mod_get(obj_get_nodes, i));
+                }
+                    obj_get_res << attrs.size() << "," << latency << "\n";
+                    break;
+                case 3:
+                {
+                    scoped_timer t(&latency);
+                    assoc_get_f_(result,
+                        mod_get(assoc_get_nodes, i),
+                        mod_get(assoc_get_atypes, i),
+                        mod_get(assoc_get_dst_id_sets, i),
+                        mod_get(assoc_get_lows, i),
+                        mod_get(assoc_get_highs, i));
+                }
+                    assoc_get_res << result.size() << "," << latency << "\n";
+                    break;
+                case 4:
+                {
+                    scoped_timer t(&latency);
+                    assoc_time_range_f_(result,
+                        mod_get(warmup_assoc_time_range_nodes, i),
+                        mod_get(warmup_assoc_time_range_atypes, i),
+                        mod_get(warmup_assoc_time_range_lows, i),
+                        mod_get(warmup_assoc_time_range_highs, i),
+                        mod_get(warmup_assoc_time_range_limits, i));
+                }
+                    assoc_time_range_res << result.size() << "," << latency
+                        << "\n";
+                    break;
+                default:
+                    assert(false);
+                }
+            }
+            LOG_E("Measure complete.\n");
+        } catch (std::exception &e) {
+            LOG_E("Exception: %s\n", e.what());
+        }
+    }
+
     // BENCHMARKING MIX QUERIES
     void benchmark_mix_latency(
         const std::string& nhbr_res_file,
