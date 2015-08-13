@@ -14,5 +14,6 @@ export SUCCINCT_PREFIX="`dirname "$this"`"/..
 export SUCCINCT_HOME="${SUCCINCT_PREFIX}"
 export SUCCINCT_CONF_DIR="${SUCCINCT_CONF_DIR:-"$SUCCINCT_HOME/conf"}"
 
-export NODE_FILE="${SUCCINCT_HOME}/data/nodes/10.node"
-export EDGE_FILE="${SUCCINCT_HOME}/data/assocs/test.assoc"
+# Always just pass in .node and .assoc files!
+export NODE_FILE="${SUCCINCT_HOME}/data/higgs-2attr350each.node"
+export EDGE_FILE="${SUCCINCT_HOME}/data/higgs-social_network.assoc"

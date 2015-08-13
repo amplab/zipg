@@ -6,5 +6,5 @@ k=8
 export SHARDS_PER_SERVER=$k
 export TOTAL_NUM_SHARDS=$k
 
-export SHARDS_BATCH_SLEEP=120 # seconds
-export NUM_SHARDS_BATCH=16
+#export SHARDS_BATCH_SLEEP=69000 # seconds
+#export NUM_SHARDS_BATCH=4

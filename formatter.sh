@@ -6,7 +6,7 @@ dataset=higgs-40attr16each
 dataset=liveJournal-40attr16each
 
 if [[ "$dataset" == "liveJournal-40attr16each" ]]; then
-  edgelist=/mnt/soc-LiveJournal1.txt
+  edgelist=/mnt2/soc-LiveJournal1.txt
   num_nodes=4847571
   num_node_attr=40
   node_attr_freq=1000
@@ -29,15 +29,22 @@ else
   exit 1
 fi
 
-./bin/create \
-  format-input \
-  $edgelist \
-  data/data_0 \
-  data/${assoc_out_file} \
-  data/${node_out_file} \
-  $num_nodes \
-  $num_node_attr \
-  $node_attr_freq \
-  $node_attr_size_each \
-  "${inner_delim}" \
-  "${end_delim}"
+suffix=WithTsAttr
+for avgDeg in 30 60; do
+  assoc_out_file=liveJournal-minDeg${avgDeg}${suffix}.assoc
+  ./bin/create \
+    format-input \
+    $edgelist \
+    data/data_0 \
+    /mnt2T/data/${assoc_out_file} \
+    data/${node_out_file} \
+    $num_nodes \
+    $num_node_attr \
+    $node_attr_freq \
+    $node_attr_size_each \
+    "${inner_delim}" \
+    "${end_delim}" \
+    ${avgDeg} \
+    PLACEHOLDER_FOR_ADD_RAND_TS_AND_ATTR &
+done
+wait
