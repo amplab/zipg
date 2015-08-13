@@ -294,7 +294,7 @@ for JVM_HEAP in 6900; do
            ${pageCacheIgnoreIndexes}
     fi
       
-    if [[ -n "$benchMix" ]]; then
+    if [[ -n "$benchTAOMix" ]]; then
       sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
 
       java -verbose:gc -server -XX:+UseConcMarkSweepGC -Xmx${JVM_HEAP}m -cp ${classpath} \
