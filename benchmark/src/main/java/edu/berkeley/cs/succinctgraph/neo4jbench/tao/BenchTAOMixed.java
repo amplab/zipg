@@ -9,6 +9,7 @@ import org.neo4j.graphdb.factory.GraphDatabaseSettings;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -23,31 +24,48 @@ public class BenchTAOMixed {
     private static int MEASURE_N;
 
     // assoc_range()
-    static List<Long> warmupAssocRangeNodes, assocRangeNodes;
-    static List<Long> warmupAssocRangeAtypes, assocRangeAtypes;
-    static List<Integer> warmupAssocRangeOffsets, assocRangeOffsets;
-    static List<Integer> warmupAssocRangeLengths, assocRangeLengths;
+    static List<Long> warmupAssocRangeNodes = new ArrayList<>();
+    static List<Long> assocRangeNodes = new ArrayList<>();
+    static List<Long> warmupAssocRangeAtypes = new ArrayList<>();
+    static List<Long> assocRangeAtypes = new ArrayList<>();
+    static List<Integer> warmupAssocRangeOffsets = new ArrayList<>();
+    static List<Integer> assocRangeOffsets = new ArrayList<>();
+    static List<Integer> warmupAssocRangeLengths = new ArrayList<>();
+    static List<Integer> assocRangeLengths = new ArrayList<>();
 
     // assoc_count()
-    static List<Long> warmupAssocCountNodes, assocCountNodes;
-    static List<Long> warmupAssocCountAtypes, assocCountAtypes;
+    static List<Long> warmupAssocCountNodes = new ArrayList<>();
+    static List<Long> assocCountNodes = new ArrayList<>();
+    static List<Long> warmupAssocCountAtypes = new ArrayList<>();
+    static List<Long> assocCountAtypes = new ArrayList<>();
 
     // obj_get()
-    static List<Long> warmupObjGetIds, objGetIds;
+    static List<Long> warmupObjGetIds = new ArrayList<>();
+    static List<Long> objGetIds = new ArrayList<>();
 
     // assoc_get()
-    static List<Long> warmupAssocGetNodes, assocGetNodes;
-    static List<Long> warmupAssocGetAtypes, assocGetAtypes;
-    static List<Set<Long>> warmupAssocGetDstIdSets, assocGetDstIdSets;
-    static List<Long> warmupAssocGetTimeLows, assocGetTimeLows;
-    static List<Long> warmupAssocGetTimeHighs, assocGetTimeHighs;
+    static List<Long> warmupAssocGetNodes = new ArrayList<>();
+    static List<Long> assocGetNodes = new ArrayList<>();
+    static List<Long> warmupAssocGetAtypes = new ArrayList<>();
+    static List<Long> assocGetAtypes = new ArrayList<>();
+    static List<Set<Long>> warmupAssocGetDstIdSets = new ArrayList<>();
+    static List<Set<Long>> assocGetDstIdSets = new ArrayList<>();
+    static List<Long> warmupAssocGetTimeLows = new ArrayList<>();
+    static List<Long> assocGetTimeLows = new ArrayList<>();
+    static List<Long> warmupAssocGetTimeHighs = new ArrayList<>();
+    static List<Long> assocGetTimeHighs = new ArrayList<>();
 
     // assoc_time_range()
-    static List<Long> warmupAssocTimeRangeNodes, assocTimeRangeNodes;
-    static List<Long> warmupAssocTimeRangeAtypes, assocTimeRangeAtypes;
-    static List<Long> warmupAssocTimeRangeTimeLows, assocTimeRangeTimeLows;
-    static List<Long> warmupAssocTimeRangeTimeHighs, assocTimeRangeTimeHighs;
-    static List<Integer> warmupAssocTimeRangeLimits, assocTimeRangeLimits;
+    static List<Long> warmupAssocTimeRangeNodes = new ArrayList<>();
+    static List<Long> assocTimeRangeNodes = new ArrayList<>();
+    static List<Long> warmupAssocTimeRangeAtypes = new ArrayList<>();
+    static List<Long> assocTimeRangeAtypes = new ArrayList<>();
+    static List<Long> warmupAssocTimeRangeTimeLows = new ArrayList<>();
+    static List<Long> assocTimeRangeTimeLows = new ArrayList<>();
+    static List<Long> warmupAssocTimeRangeTimeHighs = new ArrayList<>();
+    static List<Long> assocTimeRangeTimeHighs = new ArrayList<>();
+    static List<Integer> warmupAssocTimeRangeLimits = new ArrayList<>();
+    static List<Integer> assocTimeRangeLimits = new ArrayList<>();
 
     public static void main(String[] args) throws Exception {
         String type = args[0];
