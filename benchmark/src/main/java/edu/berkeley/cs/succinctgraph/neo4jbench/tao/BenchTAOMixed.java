@@ -181,14 +181,13 @@ public class BenchTAOMixed {
                 new FileWriter(assocTimeRangeOut)));
 
             BenchUtils.fullWarmup(db);
-            BenchUtils.awaitIndexes(db);
 
             long seed = 1618L;
             Random rand = new Random(seed);
             int randQuery;
 
             // warmup
-            System.out.println("Warming up queries");
+            System.out.printf("Warming up %d queries\n", WARMUP_N);
             for (int i = 0; i < WARMUP_N; i++) {
                 if (i % 10000 == 0) {
                     tx.success();
@@ -234,7 +233,7 @@ public class BenchTAOMixed {
             rand.setSeed(1618L); // re-seed
 
             // measure
-            System.out.println("Measure queries");
+            System.out.printf("Measure %d queries\n", MEASURE_N);
             long start, end, cnt;
             List<String> attrs;
             List<Assoc> assocs;
