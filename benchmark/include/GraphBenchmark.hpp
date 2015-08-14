@@ -638,9 +638,9 @@ public:
             rng.seed(1618);
 
             // Measure phase
-            LOG_E("Measuring for %" PRIu64 " queries...\n", MEASURE_N);
+            LOG_E("Measuring for %d queries...\n", measure_n);
             int64_t latency = 0;
-            for (int i = 0; i < MEASURE_N; ++i) {
+            for (int i = 0; i < measure_n; ++i) {
                 int rand_query = uni(rng);
                 switch (rand_query) {
                 case 0:
@@ -686,11 +686,11 @@ public:
                 {
                     scoped_timer t(&latency);
                     assoc_time_range_f_(result,
-                        mod_get(warmup_assoc_time_range_nodes, i),
-                        mod_get(warmup_assoc_time_range_atypes, i),
-                        mod_get(warmup_assoc_time_range_lows, i),
-                        mod_get(warmup_assoc_time_range_highs, i),
-                        mod_get(warmup_assoc_time_range_limits, i));
+                        mod_get(assoc_time_range_nodes, i),
+                        mod_get(assoc_time_range_atypes, i),
+                        mod_get(assoc_time_range_lows, i),
+                        mod_get(assoc_time_range_highs, i),
+                        mod_get(assoc_time_range_limits, i));
                 }
                     assoc_time_range_res << result.size() << "," << latency
                         << "\n";
