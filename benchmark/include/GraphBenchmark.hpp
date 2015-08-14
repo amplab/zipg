@@ -591,6 +591,7 @@ public:
         std::vector<ThriftAssoc> result;
         int64_t cnt;
         std::vector<std::string> attrs;
+        time_t t0, t1;
 
         LOG_E("Benchmarking TAO mixed query latency\n");
         try {
@@ -644,55 +645,50 @@ public:
                 int rand_query = uni(rng);
                 switch (rand_query) {
                 case 0:
-                {
-                    scoped_timer t(&latency);
+                    t0 = get_timestamp();
                     assoc_range_f_(result,
                         mod_get(assoc_range_nodes, i),
                         mod_get(assoc_range_atypes, i),
                         mod_get(assoc_range_offs, i),
                         mod_get(assoc_range_lens, i));
-                }
-                    assoc_range_res << result.size() << "," << latency << '\n';
+                    t1 = get_timestamp();
+                    assoc_range_res << result.size() << "," << t1 - t0 << '\n';
                     break;
                 case 1:
-                {
-                    scoped_timer t(&latency);
+                    t0 = get_timestamp();
                     cnt = assoc_count_f_(
                         mod_get(assoc_count_nodes, i),
                         mod_get(assoc_count_atypes, i));
-                }
-                    assoc_count_res << cnt << "," << latency << "\n";
+                    t1 = get_timestamp();
+                    assoc_count_res << cnt << "," << t1 - t0 << "\n";
                     break;
                 case 2:
-                {
-                    scoped_timer t(&latency);
+                    t0 = get_timestamp();
                     obj_get_f_(attrs, mod_get(obj_get_nodes, i));
-                }
-                    obj_get_res << attrs.size() << "," << latency << "\n";
+                    t1 = get_timestamp();
+                    obj_get_res << attrs.size() << "," << t1 - t0 << "\n";
                     break;
                 case 3:
-                {
-                    scoped_timer t(&latency);
+                    t0 = get_timestamp();
                     assoc_get_f_(result,
                         mod_get(assoc_get_nodes, i),
                         mod_get(assoc_get_atypes, i),
                         mod_get(assoc_get_dst_id_sets, i),
                         mod_get(assoc_get_lows, i),
                         mod_get(assoc_get_highs, i));
-                }
-                    assoc_get_res << result.size() << "," << latency << "\n";
+                    t1 = get_timestamp();
+                    assoc_get_res << result.size() << "," << t1 - t0 << "\n";
                     break;
                 case 4:
-                {
-                    scoped_timer t(&latency);
+                    t0 = get_timestamp();
                     assoc_time_range_f_(result,
                         mod_get(assoc_time_range_nodes, i),
                         mod_get(assoc_time_range_atypes, i),
                         mod_get(assoc_time_range_lows, i),
                         mod_get(assoc_time_range_highs, i),
                         mod_get(assoc_time_range_limits, i));
-                }
-                    assoc_time_range_res << result.size() << "," << latency
+                    t1 = get_timestamp();
+                    assoc_time_range_res << result.size() << "," << t1 - t0
                         << "\n";
                     break;
                 default:
