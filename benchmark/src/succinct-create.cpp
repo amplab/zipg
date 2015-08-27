@@ -899,12 +899,18 @@ int main(int argc, char **argv) {
         int64_t data_width_scheme_total = 0;
         int64_t cnt_scheme_total = 0;
         int64_t savings = 0;
+        int64_t max_dst_id = -1;
 
         for (auto it = assoc_map.begin(); it != assoc_map.end(); ++it) {
             auto& assocs = it->second;
 
+            max_dst_id = -1;
+            for (const auto& assoc : assocs) {
+                max_dst_id = std::max(max_dst_id, assoc.dst_id);
+            }
+
             int64_t cnt = assocs.size();
-            int64_t dst_id_width = num_digits(assocs.at(0).dst_id);
+            int64_t dst_id_width = num_digits(max_dst_id);
             int64_t edge_width = assocs.at(0).attr.length();
             int64_t data_width = assocs.size() *
                 (SuccinctGraphSerde::WIDTH_TIMESTAMP +
