@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 
+#include "succinct-graph/SuccinctGraph.hpp"
+
 // Formats input files into Succinct Graph-ready files.
 class GraphFormatter {
 public:
@@ -89,6 +91,16 @@ public:
     read_assoc_list(
         const std::string& file,
         bool read_dst_ids, // true if read dst ids, else read timestamps
+        char edge_inner_delim_between_ids = ' ',
+        char edge_inner_delim_after_ids = ' ',
+        char edge_delim_after_atype = ' ',
+        char edge_delim_after_time = ' ');
+
+    // Variant that reads all assoc data in entirety.
+    static std::map<SuccinctGraph::AssocListKey,
+                    std::vector<SuccinctGraph::Assoc>>
+    read_assoc_list(
+        const std::string& file,
         char edge_inner_delim_between_ids = ' ',
         char edge_inner_delim_after_ids = ' ',
         char edge_delim_after_atype = ' ',

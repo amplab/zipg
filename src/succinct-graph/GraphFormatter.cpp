@@ -432,3 +432,37 @@ void GraphFormatter::format_neo4j_edge_from_edge_file(
     in_stream.close();
     out_stream.close();
 }
+
+std::map<SuccinctGraph::AssocListKey, std::vector<SuccinctGraph::Assoc>>
+GraphFormatter::read_assoc_list(
+    const std::string& edge_file,
+    char edge_inner_delim_between_ids,
+    char edge_inner_delim_after_ids,
+    char edge_delim_after_atype,
+    char edge_delim_after_time)
+{
+    std::map<SuccinctGraph::AssocListKey, std::vector<SuccinctGraph::Assoc>>
+        assoc_map;
+    std::ifstream edge_file_stream(edge_file);
+    std::string line, token;
+    int64_t src_id, dst_id, atype, time;
+
+    while (std::getline(edge_file_stream, line)) {
+        std::stringstream ss(line);
+        int token_idx = 0;
+        while (std::getline(ss, token, ' ')) {
+            ++token_idx;
+            if (token_idx == 1) src_id = std::stoll(token);
+            else if (token_idx == 2) dst_id = std::stoll(token);
+            else if (token_idx == 3) atype = std::stoll(token);
+            else if (token_idx == 4) time = std::stoll(token);
+            token.clear();
+            if (token_idx == 4) break;
+        }
+        std::getline(ss, token); // rest of the data is attr
+        SuccinctGraph::Assoc assoc = { src_id, dst_id, atype, time, token };
+        assoc_map[std::make_pair(src_id, atype)].push_back(std::move(assoc));
+    }
+
+    return assoc_map;
+}

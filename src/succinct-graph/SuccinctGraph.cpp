@@ -6,6 +6,7 @@
 
 #include "succinct-graph/SuccinctGraphSerde.hpp"
 #include "succinct-graph/utils.h"
+#include "succinct-graph/GraphFormatter.hpp"
 
 #ifdef LOG_DEBUG
     #define LOG(fmt, ...) printf(fmt, ##__VA_ARGS__)
@@ -156,30 +157,9 @@ void SuccinctGraph::construct_node_table(std::string node_file) {
 
 void SuccinctGraph::construct_edge_table(std::string edge_file) {
     LOG_E("Initializing edge table (SuccinctFile)\n");
-    std::map<AssocListKey, std::vector<Assoc>> assoc_map;
-    std::string line, token;
-    std::ifstream edge_file_stream(edge_file);
-    AType atype = -1LL;
-    Timestamp time = -1LL;
-    NodeId src_id = -1LL, dst_id = -1LL;
 
-    while (std::getline(edge_file_stream, line)) {
-        std::stringstream ss(line);
-        int token_idx = 0;
-        while (std::getline(ss, token, ' ')) {
-            ++token_idx;
-            if (token_idx == 1) src_id = std::stol(token);
-            else if (token_idx == 2) dst_id = std::stol(token);
-            else if (token_idx == 3) atype = std::stol(token);
-            else if (token_idx == 4) time = std::stol(token);
-            token.clear();
-            if (token_idx == 4) break;
-        }
-        std::getline(ss, token); // rest of the data is attr
-        Assoc assoc = { src_id, dst_id, atype, time, token };
-        assoc_map[std::make_pair(src_id, atype)].push_back(assoc);
-    }
-    edge_file_stream.close();
+    std::map<AssocListKey, std::vector<Assoc>> assoc_map(
+        GraphFormatter::read_assoc_list(edge_file));
 
     for (auto it = assoc_map.begin(); it != assoc_map.end(); ++it) {
         std::sort(it->second.begin(),
@@ -630,7 +610,6 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_get(
         curr_off += cnt * dst_id_width;
         std::vector<int64_t> decoded_timestamps =
             SuccinctGraphSerde::decode_multi_timestamps(timestamps);
-        int64_t idx;
         for (int64_t idx : in_set_indexes) {
             result.emplace_back();
             // decoded dst ids and timestamps start w/ absolute idx range_left

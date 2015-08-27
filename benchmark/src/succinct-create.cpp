@@ -551,6 +551,17 @@ void generate_tao_assoc_time_range_queries(
 }
 
 int main(int argc, char **argv) {
+    auto num_digits = [](int64_t number) {
+        if (number == 0) return 1;
+        if (number < 0) number = -number;
+        int32_t digits = 0;
+        while (number != 0) {
+            number /= 10;
+            ++digits;
+        }
+        return digits;
+    };
+
     std::string type = argv[1];
     if (type == "nodes") {
 
@@ -829,17 +840,6 @@ int main(int argc, char **argv) {
         std::map<std::pair<int64_t, int64_t>, std::vector<int64_t>> assoc_map(
             GraphFormatter::read_assoc_list(edge_file, true, ' ', ' ', ' '));
 
-        auto num_digits = [](int64_t number) {
-            if (number == 0) return 1;
-            if (number < 0) number = -number;
-            int32_t digits = 0;
-            while (number != 0) {
-                number /= 10;
-                ++digits;
-            }
-            return digits;
-        };
-
         int64_t total_bytes = 0, total_bytes_with_diff = 0, savings = 0;
         for (auto it = assoc_map.begin(); it != assoc_map.end(); ++it) {
             int64_t src_id = (it->first).first;
@@ -890,20 +890,43 @@ int main(int argc, char **argv) {
         LOG_E("average savings per assoc list: %.2f\n",
             savings * 1. / assoc_map.size());
 
+    } else if (type == "cnt-vs-dwidth-exp") {
+        // Experiment: store cnt or data width?
+
+        std::string edge_file = argv[2];
+        auto assoc_map = GraphFormatter::read_assoc_list(edge_file);
+
+        int64_t data_width_scheme_total = 0;
+        int64_t cnt_scheme_total = 0;
+        int64_t savings = 0;
+
+        for (auto it = assoc_map.begin(); it != assoc_map.end(); ++it) {
+            auto& assocs = it->second;
+
+            int64_t cnt = assocs.size();
+            int64_t dst_id_width = num_digits(assocs.at(0).dst_id);
+            int64_t edge_width = assocs.at(0).attr.length();
+            int64_t data_width = assocs.size() *
+                (SuccinctGraphSerde::WIDTH_TIMESTAMP +
+                 dst_id_width +
+                 edge_width);
+
+            data_width_scheme_total += num_digits(data_width);
+            cnt_scheme_total += num_digits(cnt);
+            savings = data_width_scheme_total - cnt_scheme_total;
+        }
+
+        LOG_E("Result for assoc list '%s':\n", edge_file.c_str());
+        LOG_E("total bytes: curr (data width) %lld, new scheme (cnt) %lld\n",
+            data_width_scheme_total, cnt_scheme_total);
+        LOG_E("average savings per assoc list: %.2f\n",
+            savings * 1. / assoc_map.size());
+        LOG_E("average bytes per assoc list, curr scheme: %.2f\n",
+            data_width_scheme_total * 1. / assoc_map.size());
+
     } else if (type == "timestamp-diff-exp") {
 
         int scheme = std::stoi(argv[3]); // 0 for diff-with-largest, 1 for diffs
-
-        auto num_digits = [](int64_t number) {
-            if (number == 0) return 1;
-            if (number < 0) number = -number;
-            int32_t digits = 0;
-            while (number != 0) {
-                number /= 10;
-                ++digits;
-            }
-            return digits;
-        };
 
         std::string edge_file = argv[2];
         auto assoc_map(GraphFormatter::read_assoc_list(
