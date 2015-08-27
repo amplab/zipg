@@ -19,7 +19,6 @@ public:
     static std::string pad_node_id(int64_t x);
     static std::string pad_atype(int64_t x);
     static std::string pad_edge_width(int32_t x);
-    static std::string pad_data_width(int64_t x);
     static std::string pad_dst_id_width(int32_t x);
 
     /********** encoding: encode into alphabet & left-pad with 0 **********/
@@ -48,7 +47,8 @@ public:
     const static int WIDTH_NODE_ID_PADDED = 20;
     const static int WIDTH_ATYPE_PADDED = 20;
     const static int WIDTH_EDGE_WIDTH_PADDED = 10;
-    const static int WIDTH_DATA_WIDTH_PADDED = 20;
+
+    // 2 decimal digits upper-bounds the width of any int64
     const static int WIDTH_DST_ID_WIDTH_PADDED = 2;
 
     // Widths of encoded fields.

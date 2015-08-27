@@ -19,10 +19,6 @@ std::string SuccinctGraphSerde::pad_edge_width(int32_t x) {
     return pad_int32(x);
 }
 
-std::string SuccinctGraphSerde::pad_data_width(int64_t x) {
-    return pad_int64(x);
-}
-
 // Uses exactly 2 chars to represent dst id width.
 std::string SuccinctGraphSerde::pad_dst_id_width(int32_t x) {
     assert(x <= WIDTH_NODE_ID_PADDED);
