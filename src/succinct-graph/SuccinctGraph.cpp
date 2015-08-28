@@ -13,15 +13,13 @@
     #define LOG(fmt, ...)
 #endif
 
-#define WIDTH_TIMESTAMP SuccinctGraphSerde::WIDTH_TIMESTAMP
-
 // Hacky: represents not-specified query arguments
 #define NONE -1
 
 // Used in edge table layout only.
 constexpr char NODE_ID_DELIM = '\x02';
 constexpr char ATYPE_DELIM = '\x03';
-constexpr char DST_ID_WIDTH_DELIM = '\x04'; // delim right before dst id width
+constexpr char TIMESTAMP_WIDTH_DELIM = '\x04'; // delim right before timestamp width
 constexpr char EDGE_WIDTH_DELIM = '\x05'; // delim right before edge width
 constexpr char METADATA_DELIM = '\x06'; // delim after all these header metadata
 
@@ -203,6 +201,8 @@ void SuccinctGraph::construct_edge_table(std::string edge_file) {
         }
         std::ofstream edge_file_out(edge_file_name);
 
+        NodeId max_dst_id = -1, max_timestamp = -1;
+
         for (auto it = assoc_map.begin(); it != assoc_map.end(); ++it) {
             auto src_id_and_atype = it->first;
 
@@ -214,29 +214,38 @@ void SuccinctGraph::construct_edge_table(std::string edge_file) {
 
             std::vector<Assoc> assoc_list = it->second;
 
-            NodeId maxDstId = -1;
+            max_dst_id = max_timestamp = -1;
             for (auto it2 = assoc_list.begin(); it2 != assoc_list.end(); ++it2)
             {
-                maxDstId = std::max(maxDstId, it2->dst_id);
+                max_dst_id = std::max(max_dst_id, it2->dst_id);
+                max_timestamp = std::max(max_timestamp, it2->time);
             }
 
-            int32_t dst_id_width = num_digits(maxDstId);
+            int32_t dst_id_width = num_digits(max_dst_id);
             int32_t edge_width = assoc_list.begin()->attr.length();
+            int32_t timestamp_width = num_digits(max_timestamp);
 
-            // output the metadata
+            // output the metadata block:
+            // [padded timestamp width; padded dst id width; cnt; edge width]
             edge_file_out
-                << DST_ID_WIDTH_DELIM
+                << TIMESTAMP_WIDTH_DELIM
+                << SuccinctGraphSerde::pad_timestamp_width(
+                    timestamp_width) // padded
                 << SuccinctGraphSerde::pad_dst_id_width(dst_id_width) // padded
                 << assoc_list.size() // not padded: so width unbounded
                 << EDGE_WIDTH_DELIM
                 << std::to_string(edge_width) // not padded: so width unbounded
                 << METADATA_DELIM;
 
+            LOG("timestamp width = %d, max timestamp = %lld\n",
+                timestamp_width, max_timestamp);
+
             // timestamps
             for (auto it2 = assoc_list.begin(); it2 != assoc_list.end(); ++it2)
             {
-                std::string encoded = SuccinctGraphSerde::encode_timestamp(
-                    it2->time);
+                std::string encoded(SuccinctGraphSerde::encode_timestamp(
+                    it2->time, timestamp_width));
+                LOG("encoded = '%s'\n", encoded.c_str());
 
                 if (SuccinctGraphSerde::decode_timestamp(encoded) != it2->time)
                 {
@@ -356,7 +365,7 @@ SuccinctGraph::get_edge_table_offsets(NodeId id, AType atype) {
                 suf_arr_idx, *it, ATYPE_DELIM);
             // TODO: extract_compare() similar to SuccinctShard can be nice here
             this->edge_table->extract_until(
-                atype_str, suf_arr_idx, curr_off, DST_ID_WIDTH_DELIM);
+                atype_str, suf_arr_idx, curr_off, TIMESTAMP_WIDTH_DELIM);
             if (std::stol(atype_str) != atype) {
                 it = res.erase(it);
             } else {
@@ -368,7 +377,7 @@ SuccinctGraph::get_edge_table_offsets(NodeId id, AType atype) {
         key += std::to_string(id) +
             ATYPE_DELIM +
             std::to_string(atype) +
-            DST_ID_WIDTH_DELIM;
+            TIMESTAMP_WIDTH_DELIM;
         this->edge_table->search(res, key);
         assert(res.size() <= 1);
     }
@@ -390,7 +399,7 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_range(
 
     std::string timestamps, dst_ids, attrs, str;
 
-    int32_t len_saved = len, edge_width, dst_id_width;
+    int32_t len_saved = len, edge_width, dst_id_width, timestamp_width;
     int64_t cnt;
     uint64_t suf_arr_idx;
 
@@ -409,7 +418,7 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_range(
             src, suf_arr_idx);
 
         curr_off = this->edge_table->extract_until(
-            str, suf_arr_idx, curr_off, DST_ID_WIDTH_DELIM);
+            str, suf_arr_idx, curr_off, TIMESTAMP_WIDTH_DELIM);
         atype = std::stoll(str);
         COND_LOG_E("extracted atype = %lld, suf_arr_idx = %llu\n",
             atype, suf_arr_idx);
@@ -418,14 +427,26 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_range(
             str,
             suf_arr_idx,
             curr_off, // unused
+            SuccinctGraphSerde::WIDTH_TIMESTAMP_WIDTH_PADDED);
+        LOG("extracted timestamp width = '%s', suf_arr_idx = %llu\n",
+            str.c_str(), suf_arr_idx);
+        timestamp_width = std::stoi(str);
+
+        this->edge_table->extract(
+            str,
+            suf_arr_idx,
+            curr_off, // unused
             SuccinctGraphSerde::WIDTH_DST_ID_WIDTH_PADDED);
-        LOG("extracted dst id width = '%s'\n", str.c_str());
+        LOG("extracted dst id width = '%s', suf_arr_idx = %llu\n",
+            str.c_str(), suf_arr_idx);
         dst_id_width = std::stoi(str);
 
         curr_off = this->edge_table->extract_until(
             str, suf_arr_idx,
             // since the last extract() doesn't return the "next" curr_off
-            curr_off + SuccinctGraphSerde::WIDTH_DST_ID_WIDTH_PADDED,
+            curr_off +
+                SuccinctGraphSerde::WIDTH_TIMESTAMP_WIDTH_PADDED +
+                SuccinctGraphSerde::WIDTH_DST_ID_WIDTH_PADDED,
             EDGE_WIDTH_DELIM);
         cnt = std::stoll(str);
         LOG("extracted cnt = %llu\n", cnt);
@@ -447,11 +468,11 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_range(
 
         this->edge_table->extract(
             timestamps,
-            curr_off + off * WIDTH_TIMESTAMP,
-            len * WIDTH_TIMESTAMP);
+            curr_off + off * timestamp_width,
+            len * timestamp_width);
         LOG("extracted timestamps = '%s'\n", timestamps.c_str());
 
-        curr_off += cnt * WIDTH_TIMESTAMP;
+        curr_off += cnt * timestamp_width;
         this->edge_table->extract(
             dst_ids,
             curr_off + off * dst_id_width,
@@ -466,7 +487,8 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_range(
         LOG("extracted attrs = '%s'\n", attrs.c_str());
 
         std::vector<int64_t> decoded_timestamps =
-            SuccinctGraphSerde::decode_multi_timestamps(timestamps);
+            SuccinctGraphSerde::decode_multi_timestamps(
+                timestamps, timestamp_width);
 
         std::vector<int64_t> decoded_dst_ids =
             SuccinctGraphSerde::decode_multi_node_ids(dst_ids, dst_id_width);
@@ -493,14 +515,14 @@ int SuccinctGraph::time_range_binary_search_lower_bound(
     Timestamp t_low,
     int64_t cnt,
     int64_t curr_off,
-    std::string& tmp_token)
+    std::string& tmp_token,
+    const int32_t timestamp_width)
 {
     int l = 0, r = cnt, m;
     Timestamp ts;
 
     // check t_l >= t_low
-    this->edge_table->extract(
-        tmp_token, curr_off, SuccinctGraphSerde::WIDTH_TIMESTAMP);
+    this->edge_table->extract(tmp_token, curr_off, timestamp_width);
     ts = SuccinctGraphSerde::decode_timestamp(tmp_token);
     if (ts < t_low) {
         return -1;
@@ -512,8 +534,8 @@ int SuccinctGraph::time_range_binary_search_lower_bound(
         m = (l + r) / 2;
         this->edge_table->extract(
             tmp_token,
-            curr_off + m * SuccinctGraphSerde::WIDTH_TIMESTAMP,
-            SuccinctGraphSerde::WIDTH_TIMESTAMP);
+            curr_off + m * timestamp_width,
+            timestamp_width);
         ts = SuccinctGraphSerde::decode_timestamp(tmp_token);
         if (ts >= t_low) {
             l = m; // note timestamps are decreasing
@@ -530,14 +552,15 @@ int SuccinctGraph::time_range_binary_search_upper_bound(
     Timestamp t_high,
     int64_t cnt,
     int64_t curr_off,
-    std::string& tmp_token)
+    std::string& tmp_token,
+    const int32_t timestamp_width)
 {
     int l = -1, r = cnt - 1, m;
     Timestamp ts;
 
     // check t_r <= t_high
     this->edge_table->extract(
-        tmp_token, curr_off + r * WIDTH_TIMESTAMP, WIDTH_TIMESTAMP);
+        tmp_token, curr_off + r * timestamp_width, timestamp_width);
     ts = SuccinctGraphSerde::decode_timestamp(tmp_token);
     if (ts > t_high) {
         return -1;
@@ -546,7 +569,7 @@ int SuccinctGraph::time_range_binary_search_upper_bound(
     while (l + 1 < r) {
         m = (l + r) / 2;
         this->edge_table->extract(
-            tmp_token, curr_off + m * WIDTH_TIMESTAMP, WIDTH_TIMESTAMP);
+            tmp_token, curr_off + m * timestamp_width, timestamp_width);
         ts = SuccinctGraphSerde::decode_timestamp(tmp_token);
         if (ts > t_high) {
             l = m;
@@ -574,7 +597,7 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_get(
     std::vector<Assoc> result;
     std::string timestamps, dst_ids, attrs, str;
 
-    int32_t edge_width, dst_id_width;
+    int32_t edge_width, dst_id_width, timestamp_width;
     int64_t cnt;
     uint64_t suf_arr_idx;
 
@@ -589,8 +612,17 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_get(
         src = std::stoll(str);
 
         curr_off = this->edge_table->extract_until(
-            str, suf_arr_idx, curr_off, DST_ID_WIDTH_DELIM);
+            str, suf_arr_idx, curr_off, TIMESTAMP_WIDTH_DELIM);
         atype = std::stoll(str);
+
+        this->edge_table->extract(
+            str,
+            suf_arr_idx,
+            curr_off, // unused
+            SuccinctGraphSerde::WIDTH_TIMESTAMP_WIDTH_PADDED);
+        LOG("extracted timestamp width = '%s', suf_arr_idx = %llu\n",
+            str.c_str(), suf_arr_idx);
+        timestamp_width = std::stoi(str);
 
         this->edge_table->extract(
             str,
@@ -603,7 +635,9 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_get(
         curr_off = this->edge_table->extract_until(
             str,
             suf_arr_idx,
-            curr_off + SuccinctGraphSerde::WIDTH_DST_ID_WIDTH_PADDED,
+            curr_off +
+                SuccinctGraphSerde::WIDTH_TIMESTAMP_WIDTH_PADDED +
+                SuccinctGraphSerde::WIDTH_DST_ID_WIDTH_PADDED,
             EDGE_WIDTH_DELIM);
         LOG("extracted cnt = '%s'\n", str.c_str());
         cnt = std::stoll(str);
@@ -617,7 +651,7 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_get(
 
         if (t_low != NONE) {
             range_right = time_range_binary_search_lower_bound(
-                t_low, cnt, curr_off, str);
+                t_low, cnt, curr_off, str, timestamp_width);
             if (range_right == -1) {
                 continue;
             }
@@ -630,7 +664,7 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_get(
         // invariant: target in (l, r]
         if (t_high != NONE) {
             range_left = time_range_binary_search_upper_bound(
-                t_high, cnt, curr_off, str);
+                t_high, cnt, curr_off, str, timestamp_width);
             if (range_left == -1) {
                 continue;
             }
@@ -648,12 +682,12 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_get(
         // extract in-range timestamps
         this->edge_table->extract(
             timestamps,
-            curr_off + range_left * WIDTH_TIMESTAMP,
-            (range_right - range_left + 1) * WIDTH_TIMESTAMP);
+            curr_off + range_left * timestamp_width,
+            (range_right - range_left + 1) * timestamp_width);
         LOG("extracted timestamps = '%s'\n", timestamps.c_str());
 
         // extract in-range dst ids: i.e. whose idx in [range_left, range_right]
-        curr_off += cnt * WIDTH_TIMESTAMP;
+        curr_off += cnt * timestamp_width;
         this->edge_table->extract(
             dst_ids,
             curr_off + range_left * dst_id_width,
@@ -679,7 +713,8 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_get(
         // Now extract only the in-set (and in-range) attrs
         curr_off += cnt * dst_id_width;
         std::vector<int64_t> decoded_timestamps =
-            SuccinctGraphSerde::decode_multi_timestamps(timestamps);
+            SuccinctGraphSerde::decode_multi_timestamps(
+                timestamps, timestamp_width);
         for (int64_t idx : in_set_indexes) {
             result.emplace_back();
             // decoded dst ids and timestamps start w/ absolute idx range_left
@@ -703,13 +738,14 @@ int64_t SuccinctGraph::assoc_count(int64_t src, int64_t atype) {
     for (int64_t curr_off : eoffs) {
         suf_arr_idx = -1ULL;
         curr_off = this->edge_table->skipping_extract_until(
-            suf_arr_idx, curr_off, DST_ID_WIDTH_DELIM);
+            suf_arr_idx, curr_off, TIMESTAMP_WIDTH_DELIM);
 
         this->edge_table->extract(
             str,
             suf_arr_idx,
             curr_off, // unused
-            SuccinctGraphSerde::WIDTH_DST_ID_WIDTH_PADDED);
+            SuccinctGraphSerde::WIDTH_TIMESTAMP_WIDTH_PADDED +
+                SuccinctGraphSerde::WIDTH_DST_ID_WIDTH_PADDED);
 
         curr_off = this->edge_table->extract_until(
             str,
@@ -738,7 +774,7 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_time_range(
     std::vector<Assoc> result;
     std::string timestamps, dst_ids, attrs, str;
 
-    int32_t edge_width, dst_id_width;
+    int32_t edge_width, dst_id_width, timestamp_width;
     int64_t cnt;
     uint64_t suf_arr_idx;
 
@@ -755,8 +791,17 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_time_range(
         src = std::stoll(str);
 
         curr_off = this->edge_table->extract_until(
-            str, suf_arr_idx, curr_off, DST_ID_WIDTH_DELIM);
+            str, suf_arr_idx, curr_off, TIMESTAMP_WIDTH_DELIM);
         atype = std::stoll(str);
+
+        this->edge_table->extract(
+            str,
+            suf_arr_idx,
+            curr_off, // unused
+            SuccinctGraphSerde::WIDTH_TIMESTAMP_WIDTH_PADDED);
+        LOG("extracted timestamp width = '%s', suf_arr_idx = %llu\n",
+            str.c_str(), suf_arr_idx);
+        timestamp_width = std::stoi(str);
 
         this->edge_table->extract(
             str,
@@ -769,7 +814,9 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_time_range(
         curr_off = this->edge_table->extract_until(
             str,
             suf_arr_idx,
-            curr_off + SuccinctGraphSerde::WIDTH_DST_ID_WIDTH_PADDED,
+            curr_off +
+                SuccinctGraphSerde::WIDTH_TIMESTAMP_WIDTH_PADDED +
+                SuccinctGraphSerde::WIDTH_DST_ID_WIDTH_PADDED,
             EDGE_WIDTH_DELIM);
         LOG("extracted cnt = '%s'\n", str.c_str());
         cnt = std::stoll(str);
@@ -783,7 +830,7 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_time_range(
 
         if (t_low != NONE) {
             range_right = time_range_binary_search_lower_bound(
-                t_low, cnt, curr_off, str);
+                t_low, cnt, curr_off, str, timestamp_width);
             if (range_right == -1) {
                 continue;
             }
@@ -796,7 +843,7 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_time_range(
         // invariant: target in (l, r]
         if (t_high != NONE) {
             range_left = time_range_binary_search_upper_bound(
-                t_high, cnt, curr_off, str);
+                t_high, cnt, curr_off, str, timestamp_width);
             if (range_left == -1) {
                 continue;
             }
@@ -821,12 +868,12 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_time_range(
         // extract in-range timestamps
         this->edge_table->extract(
             timestamps,
-            curr_off + range_left * WIDTH_TIMESTAMP,
-            (range_right - range_left + 1) * WIDTH_TIMESTAMP);
+            curr_off + range_left * timestamp_width,
+            (range_right - range_left + 1) * timestamp_width);
         LOG("extracted timestamps = '%s'\n", timestamps.c_str());
 
         // extract in-range dst ids: i.e. whose idx in [range_left, range_right]
-        curr_off += cnt * WIDTH_TIMESTAMP;
+        curr_off += cnt * timestamp_width;
         this->edge_table->extract(
             dst_ids,
             curr_off + range_left * dst_id_width,
@@ -834,7 +881,8 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_time_range(
         LOG("extracted dst ids: '%s'\n", dst_ids.c_str());
 
         std::vector<int64_t> decoded_timestamps =
-            SuccinctGraphSerde::decode_multi_timestamps(timestamps);
+            SuccinctGraphSerde::decode_multi_timestamps(
+                timestamps, timestamp_width);
 
         std::vector<int64_t> decoded_dst_ids =
             SuccinctGraphSerde::decode_multi_node_ids(dst_ids, dst_id_width);
@@ -901,26 +949,26 @@ void SuccinctGraph::get_attribute(
 inline void SuccinctGraph::extract_neighbors(
     std::vector<int64_t>& result,
     const std::vector<int64_t>& offsets,
-    int32_t skip_length) {
-
-#ifdef BYTES_EXTRACTED
-    int64_t bytes_extracted = 0;
-    bytes_extracted += offsets.size() *
-        (SuccinctGraphSerde::WIDTH_EDGE_WIDTH_PADDED +
-         SuccinctGraphSerde::WIDTH_DATA_WIDTH_PADDED);
-#endif
-
+    int32_t skip_length)
+{
     result.clear();
     std::string str;
     uint64_t suf_arr_idx;
-    int32_t dst_id_width;
+    int32_t dst_id_width, timestamp_width;
     int64_t cnt;
 
     for (auto it = offsets.begin(); it != offsets.end(); ++it) {
         suf_arr_idx = -1ULL;
 
         int64_t curr_off = this->edge_table->skipping_extract_until(
-            suf_arr_idx, (*it) + skip_length, DST_ID_WIDTH_DELIM);
+            suf_arr_idx, (*it) + skip_length, TIMESTAMP_WIDTH_DELIM);
+
+        this->edge_table->extract(
+            str,
+            suf_arr_idx,
+            curr_off,
+            SuccinctGraphSerde::WIDTH_TIMESTAMP_WIDTH_PADDED);
+        timestamp_width = std::stoi(str);
 
         this->edge_table->extract(
             str,
@@ -933,7 +981,9 @@ inline void SuccinctGraph::extract_neighbors(
         curr_off = this->edge_table->extract_until(
             str,
             suf_arr_idx,
-            curr_off + SuccinctGraphSerde::WIDTH_DST_ID_WIDTH_PADDED,
+            curr_off +
+                SuccinctGraphSerde::WIDTH_TIMESTAMP_WIDTH_PADDED +
+                SuccinctGraphSerde::WIDTH_DST_ID_WIDTH_PADDED,
             EDGE_WIDTH_DELIM);
         LOG("cnt = '%s'\n", str.c_str());
         cnt = std::stoll(str);
@@ -944,7 +994,7 @@ inline void SuccinctGraph::extract_neighbors(
             METADATA_DELIM);
 
         this->edge_table->extract(
-            str, curr_off + cnt * WIDTH_TIMESTAMP, cnt * dst_id_width);
+            str, curr_off + cnt * timestamp_width, cnt * dst_id_width);
         LOG("dst ids = '%s'\n", str.c_str());
 
 #ifdef BYTES_EXTRACTED
@@ -1104,7 +1154,7 @@ void SuccinctGraph::get_neighbors(
         offsets,
         NODE_ID_DELIM + std::to_string(node) +
         ATYPE_DELIM + std::to_string(atype) +
-        DST_ID_WIDTH_DELIM);
+        TIMESTAMP_WIDTH_DELIM);
 
 #ifdef DEBUG_TIME_NHBR3
     auto t2 = get_timestamp();
