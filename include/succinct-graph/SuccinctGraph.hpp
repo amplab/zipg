@@ -227,14 +227,16 @@ private:
         Timestamp t_low,
         int64_t cnt,
         int64_t curr_off,
-        std::string& tmp_token);
+        std::string& tmp_token,
+        const int32_t timestamp_width);
 
     // Binary search: locates largest timestamp t, such that t <= t_high.
     int time_range_binary_search_upper_bound(
         Timestamp t_high,
         int64_t cnt,
         int64_t curr_off,
-        std::string& tmp_token);
+        std::string& tmp_token,
+        const int32_t timestamp_width);
 
     inline static time_t get_timestamp() {
         struct timeval now;

@@ -2,6 +2,7 @@
 #define SUCCINCT_GRAPH_SERDE_H
 
 #include <cstdint>
+#include <cassert>
 #include <map>
 #include <string>
 #include <vector>
@@ -19,17 +20,29 @@ public:
     static std::string pad_node_id(int64_t x);
     static std::string pad_atype(int64_t x);
     static std::string pad_edge_width(int32_t x);
-    static std::string pad_data_width(int64_t x);
-    static std::string pad_dst_id_width(int32_t x);
 
-    /********** encoding: encode into alphabet & left-pad with 0 **********/
+    // Uses exactly 2 chars to represent dst id width & timestamp width.
+    inline static std::string pad_dst_id_width(int32_t x) {
+        assert(x <= WIDTH_NODE_ID_PADDED);
+        if (x < 10) return '0' + std::to_string(x);
+        return std::to_string(x);
+    }
+    inline static std::string pad_timestamp_width(int32_t x) {
+        assert(x <= WIDTH_NODE_ID_PADDED);
+        if (x < 10) return '0' + std::to_string(x);
+        return std::to_string(x);
+    }
 
-    static std::string encode_timestamp(int64_t timestamp);
+    /********** encoding: left-pad with 0 **********/
+
+    static std::string encode_timestamp(
+        int64_t timestamp, int32_t padded_width);
 
     static int64_t decode_timestamp(const std::string& encoded);
 
     static std::vector<int64_t> decode_multi_timestamps(
-        const std::string& encoded);
+        const std::string& encoded,
+        int32_t padded_width);
 
     static std::string encode_node_id(int64_t node_id);
 
@@ -38,28 +51,15 @@ public:
     static int64_t decode_node_id(const std::string& encoded);
 
     static std::vector<int64_t> decode_multi_node_ids(
-        const std::string& encoded);
-
-    static std::vector<int64_t> decode_multi_node_ids(
         const std::string& encoded,
         int32_t padded_width);
 
-    // Widths of padded fields.
-    const static int WIDTH_NODE_ID_PADDED = 20;
-    const static int WIDTH_ATYPE_PADDED = 20;
-    const static int WIDTH_EDGE_WIDTH_PADDED = 10;
-    const static int WIDTH_DATA_WIDTH_PADDED = 20;
-    const static int WIDTH_DST_ID_WIDTH_PADDED = 2;
+    // Maximum width (# of decimal digits) of node IDs.
+    constexpr static int WIDTH_NODE_ID_PADDED = 20;
 
-    // Widths of encoded fields.
-#if ALPHABET_ENCODE
-    // Rule: (alphabetSize)^width > 2^32 (or 2^64, respectively)
-    static const int WIDTH_TIMESTAMP = 11; // encoded in str alphabet of size 64
-    static const int WIDTH_NODE_ID = 11; // encoded in str alphabet of size 64
-#else
-    static const int WIDTH_TIMESTAMP = 20; // padded
-    static const int WIDTH_NODE_ID = 20; // padded
-#endif
+    // 2 decimal digits upper-bounds the width of any int64
+    constexpr static int WIDTH_DST_ID_WIDTH_PADDED = 2;
+    constexpr static int WIDTH_TIMESTAMP_WIDTH_PADDED = 2;
 
 private:
 

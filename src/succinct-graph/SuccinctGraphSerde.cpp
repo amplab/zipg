@@ -19,17 +19,6 @@ std::string SuccinctGraphSerde::pad_edge_width(int32_t x) {
     return pad_int32(x);
 }
 
-std::string SuccinctGraphSerde::pad_data_width(int64_t x) {
-    return pad_int64(x);
-}
-
-// Uses exactly 2 chars to represent dst id width.
-std::string SuccinctGraphSerde::pad_dst_id_width(int32_t x) {
-    assert(x <= WIDTH_NODE_ID_PADDED);
-    if (x < 10) return '0' + std::to_string(x);
-    return std::to_string(x);
-}
-
 inline void SuccinctGraphSerde::parse_multi_int64(
     std::vector<int64_t>& result,
     const std::string& encoded,
@@ -48,12 +37,12 @@ inline void SuccinctGraphSerde::parse_multi_int64(
     return;
 }
 
-std::string SuccinctGraphSerde::encode_timestamp(int64_t timestamp) {
-#if ALPHABET_ENCODE
-    return encode_int64(timestamp, WIDTH_TIMESTAMP);
-#else
-    return pad_int64(timestamp);
-#endif
+std::string SuccinctGraphSerde::encode_timestamp(
+    int64_t timestamp, int32_t padded_width)
+{
+    char* res = new char[padded_width + 1];
+    sprintf(res, "%0*lld", padded_width, timestamp);
+    return std::string(res);
 }
 
 int64_t SuccinctGraphSerde::decode_timestamp(const std::string& encoded)
@@ -66,27 +55,22 @@ int64_t SuccinctGraphSerde::decode_timestamp(const std::string& encoded)
 }
 
 std::vector<int64_t> SuccinctGraphSerde::decode_multi_timestamps(
-        const std::string& encoded) {
-#if ALPHABET_ENCODE
-    return decode_multi_int64(encoded, WIDTH_TIMESTAMP);
-#else
-    return unpad_multi_int64(encoded);
-#endif
+    const std::string& encoded, int32_t padded_width)
+{
+    std::vector<int64_t> result;
+    parse_multi_int64(result, encoded, padded_width);
+    return result;
 }
 
 std::string SuccinctGraphSerde::encode_node_id(int64_t node_id) {
-#if ALPHABET_ENCODE
-    return encode_int64(node_id, WIDTH_NODE_ID);
-#else
     return pad_int64(node_id);
-#endif
 }
 
 // TODO: code duplication.
 std::string SuccinctGraphSerde::encode_node_id(
     int64_t node_id,
-    int32_t padded_width) {
-
+    int32_t padded_width)
+{
     char res[padded_width + 1];
     sprintf(res, "%0*lld", padded_width, node_id);
     return std::string(res);
@@ -97,15 +81,6 @@ int64_t SuccinctGraphSerde::decode_node_id(const std::string& encoded) {
     return decode_int64(encoded);
 #else
     return std::stol(encoded);
-#endif
-}
-
-std::vector<int64_t> SuccinctGraphSerde::decode_multi_node_ids(
-    const std::string& encoded) {
-#if ALPHABET_ENCODE
-    return decode_multi_int64(encoded, WIDTH_NODE_ID);
-#else
-    return unpad_multi_int64(encoded);
 #endif
 }
 
@@ -135,7 +110,6 @@ std::string SuccinctGraphSerde::pad_int32(int32_t x) {
     sprintf(res, "%010d", x);
     return std::string(res);
 }
-
 
 std::string SuccinctGraphSerde::pad_int64(int64_t x) {
     char res[21];
