@@ -627,10 +627,12 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_get(
         curr_off = EDGE_TABLE->extract_until(
             str, suf_arr_idx,
             curr_off + 1, ATYPE_DELIM); // +1 for skip NODE_DELIM
+        LOG("extracted src '%s'\n", str.c_str());
         src = std::stoll(str);
 
         curr_off = EDGE_TABLE->extract_until(
             str, suf_arr_idx, curr_off, TIMESTAMP_WIDTH_DELIM);
+        LOG("extracted atype '%s'\n", str.c_str());
         atype = std::stoll(str);
 
         EDGE_TABLE->extract(
