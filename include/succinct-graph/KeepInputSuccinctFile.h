@@ -9,8 +9,6 @@
 
 #include "succinct/SuccinctFile.hpp"
 
-using std::unique_ptr;
-
 // A wrapper over SuccinctFile that does the following:
 //
 //   (1) Keeps Succinct's SA, NPA, and a very sparsely-sampled ISA
@@ -32,7 +30,42 @@ public:
         }
     }
 
-    size_t serialize();
+    inline size_t serialize() {
+        return succinct_file_->serialize();
+    }
+
+    void extract(std::string& result, uint64_t offset, uint64_t len);
+
+    /*********** SuccinctGraph-specific optimizations ***********/
+
+    // NOTE: to ensure compilable (...), these calls have the same signatures
+    // as those in SuccinctFile.  However, note that we never use `suf_arr_idx`
+    // here, because ISA is not used in answering queries.
+
+    // Clears `result` for caller.
+    void extract(
+        std::string& result,
+        uint64_t& suf_arr_idx,
+        uint64_t offset,
+        uint64_t len);
+
+    // Starts extraction at `offset` until hitting `end_char`.  Returns the
+    // next offset.  Upon success, returns next offset.
+    int64_t skipping_extract_until(
+        uint64_t& suf_arr_idx, uint64_t offset, char end_char);
+
+    // Clears `result` for caller, and puts everything up to (not including)
+    // `end_char`.  Returns the next offset.
+    int64_t extract_until(std::string& result, uint64_t offset, char end_char);
+
+    // On exit, returns the next offset.  Clears `result` for the caller.
+    int64_t extract_until(
+        std::string& result,
+        uint64_t& suf_arr_idx,
+        uint64_t offset,
+        char end_char);
+
+    //**************** END: SuccinctGraph-specific optimizations
 
     inline void search(std::vector<int64_t>& result, const std::string& str) {
         succinct_file_->search(result, str);
@@ -44,7 +77,7 @@ private:
     std::string raw_input_;
 
     // For input of 1TB, this results in a negligible ISA of size 16MB.
-    size_t sparse_isa_sampling_rate_ = 1 << 16;
+    const size_t SPARSE_ISA_SR = 1 << 16;
 
     // Clears `contents` for caller.
     inline size_t read_file(std::string& contents, const std::string& filename)
