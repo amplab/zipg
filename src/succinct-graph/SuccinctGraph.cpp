@@ -595,10 +595,6 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_range(
         LOG("\n");
     }
 
-#ifdef LATENCY_BREAKDOWN
-    LOG_E("\n");
-#endif
-
     return result;
 }
 

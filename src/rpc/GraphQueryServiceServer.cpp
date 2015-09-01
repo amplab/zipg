@@ -204,6 +204,12 @@ public:
 
         // TODO: any better way?
         // NB: the fields are Thrift-generated, so this may not be portable.
+
+#ifdef LATENCY_BREAKDOWN
+    time_t t0, t1;
+    t0 = get_timestamp();
+#endif
+
         _return.clear();
         _return.resize(vec.size());
         size_t i = 0;
@@ -216,6 +222,12 @@ public:
             _return[i].attr.assign(std::move(assoc.attr));
             ++i;
         }
+
+#ifdef LATENCY_BREAKDOWN
+    t1 = get_timestamp();
+    LOG_E("%lld\n", t1 - t0);
+#endif
+
     }
 
     int64_t assoc_count(int64_t src, int64_t atype) {
