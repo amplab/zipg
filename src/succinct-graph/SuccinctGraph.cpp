@@ -424,7 +424,7 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_range(
 
     std::vector<Assoc> result;
 
-    std::string timestamps, dst_ids, attrs, str;
+    std::string str;
 
     int32_t len_saved = len, edge_width, dst_id_width, timestamp_width;
     int64_t cnt;
@@ -512,16 +512,19 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_range(
 #endif
 
         EDGE_TABLE->extract(
-            timestamps,
+            str,
             curr_off + off * timestamp_width,
             len * timestamp_width);
+
+        std::vector<int64_t> decoded_timestamps =
+            SuccinctGraphSerde::decode_multi_timestamps(str, timestamp_width);
 
 #ifdef LATENCY_BREAKDOWN
     t1 = get_timestamp();
     LOG_E("%lld,", t1 - t0);
 #endif
 
-        LOG("extracted timestamps = '%s'\n", timestamps.c_str());
+        LOG("extracted timestamps = '%s'\n", str.c_str());
 
         curr_off += cnt * timestamp_width;
 
@@ -530,15 +533,18 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_range(
 #endif
 
         EDGE_TABLE->extract(
-            dst_ids,
+            str,
             curr_off + off * dst_id_width,
             len * dst_id_width);
+
+        std::vector<int64_t> decoded_dst_ids =
+            SuccinctGraphSerde::decode_multi_node_ids(str, dst_id_width);
 
 #ifdef LATENCY_BREAKDOWN
     t1 = get_timestamp();
     LOG_E("%lld,", t1 - t0);
 #endif
-        LOG("extracted dst ids: '%s'\n", dst_ids.c_str());
+        LOG("extracted dst ids: '%s'\n", str.c_str());
 
         curr_off += cnt * dst_id_width;
 
@@ -546,27 +552,11 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_range(
     t0 = get_timestamp();
 #endif
         EDGE_TABLE->extract(
-            attrs,
+            str,
             curr_off + off * edge_width,
             len * edge_width);
 
-#ifdef LATENCY_BREAKDOWN
-    t1 = get_timestamp();
-    LOG_E("%lld,", t1 - t0);
-#endif
-        LOG("extracted attrs = '%s'\n", attrs.c_str());
-
-#ifdef LATENCY_BREAKDOWN
-    t0 = get_timestamp();
-#endif
-
-        std::vector<int64_t> decoded_timestamps =
-            SuccinctGraphSerde::decode_multi_timestamps(
-                timestamps, timestamp_width);
-
-        std::vector<int64_t> decoded_dst_ids =
-            SuccinctGraphSerde::decode_multi_node_ids(dst_ids, dst_id_width);
-
+        LOG("extracted attrs = '%s'\n", str.c_str());
 
 #ifdef LATENCY_BREAKDOWN
     t1 = get_timestamp();
@@ -585,7 +575,7 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_range(
             result.back().atype = atype;
             result.back().time = decoded_timestamps[i];
             result.back().attr = std::move(
-                attrs.substr(i * edge_width, edge_width));
+                str.substr(i * edge_width, edge_width));
         }
 
 #ifdef LATENCY_BREAKDOWN
