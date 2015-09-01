@@ -225,7 +225,7 @@ public:
 
 #ifdef LATENCY_BREAKDOWN
     t1 = get_timestamp();
-    LOG_E("%lld;", t1 - t0);
+    LOG_E("%lld;\n", t1 - t0);
 #endif
 
     }
