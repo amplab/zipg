@@ -23,23 +23,6 @@ KeepInputSuccinctFile::KeepInputSuccinctFile(
         npa_sampling_rate);
 }
 
-void KeepInputSuccinctFile::extract(
-    std::string& result,
-    uint64_t offset,
-    uint64_t len)
-{
-    result.assign(raw_input_, offset, len);
-}
-
-void KeepInputSuccinctFile::extract(
-    std::string& result,
-    uint64_t& suf_arr_idx, // unused
-    uint64_t offset,
-    uint64_t len)
-{
-    result.assign(raw_input_, offset, len);
-}
-
 int64_t KeepInputSuccinctFile::skipping_extract_until(
     uint64_t& suf_arr_idx, // unused
     uint64_t offset, char end_char)
@@ -65,13 +48,4 @@ int64_t KeepInputSuccinctFile::extract_until(
         ++k;
     }
     return k;
-}
-
-int64_t KeepInputSuccinctFile::extract_until(
-    std::string& result,
-    uint64_t& suf_arr_idx, // unused
-    uint64_t offset,
-    char end_char)
-{
-    return extract_until(result, offset, end_char);
 }

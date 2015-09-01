@@ -34,7 +34,10 @@ public:
         return succinct_file_->serialize();
     }
 
-    void extract(std::string& result, uint64_t offset, uint64_t len);
+    inline void extract(std::string& result, uint64_t offset, uint64_t len)
+    {
+        result.assign(raw_input_, offset, len);
+    }
 
     /*********** SuccinctGraph-specific optimizations ***********/
 
@@ -43,11 +46,14 @@ public:
     // here, because ISA is not used in answering queries.
 
     // Clears `result` for caller.
-    void extract(
+    inline void extract(
         std::string& result,
         uint64_t& suf_arr_idx,
         uint64_t offset,
-        uint64_t len);
+        uint64_t len)
+    {
+        result.assign(raw_input_, offset, len);
+    }
 
     // Starts extraction at `offset` until hitting `end_char`.  Returns the
     // next offset.  Upon success, returns next offset.
@@ -59,11 +65,14 @@ public:
     int64_t extract_until(std::string& result, uint64_t offset, char end_char);
 
     // On exit, returns the next offset.  Clears `result` for the caller.
-    int64_t extract_until(
+    inline int64_t extract_until(
         std::string& result,
         uint64_t& suf_arr_idx,
         uint64_t offset,
-        char end_char);
+        char end_char)
+    {
+        return extract_until(result, offset, end_char);
+    }
 
     //**************** END: SuccinctGraph-specific optimizations
 
