@@ -4,6 +4,7 @@
 // FIXME: encouraged to include relative to project's include path
 #include "../succinct/SuccinctShard.hpp"
 #include "../succinct/SuccinctFile.hpp"
+#include "succinct-graph/KeepInputSuccinctFile.h"
 
 #include <sys/time.h>
 
@@ -18,14 +19,20 @@ public:
                   uint32_t isa_sampling_rate = 32,
                   uint32_t npa_sampling_rate = 128);
 
-
     // Loads the previously constructed node table & edge table.
     // The same as load().
     SuccinctGraph(std::string node_succinct_dir, std::string edge_succinct_dir);
 
     ~SuccinctGraph() {
-        if (this->node_table != nullptr) delete this->node_table;
-        if (this->edge_table != nullptr) delete this->edge_table;
+        if (this->node_table != nullptr) {
+            delete this->node_table;
+        }
+        if (this->edge_table != nullptr) {
+            delete this->edge_table;
+        }
+        if (this->edge_table_with_input_ != nullptr) {
+            delete this->edge_table_with_input_;
+        }
     }
 
     // Removes generated files during construction, if any: Succinct data
@@ -205,6 +212,7 @@ private:
 
     SuccinctShard* node_table = nullptr;
     SuccinctFile* edge_table = nullptr;
+    KeepInputSuccinctFile* edge_table_with_input_ = nullptr;
 
     std::string succinct_dir;
     int64_t edges;
