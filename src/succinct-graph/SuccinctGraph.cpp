@@ -442,7 +442,7 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_range(
         EDGE_TABLE->extract(
             str,
             suf_arr_idx,
-            curr_off, // unused
+            curr_off,
             SuccinctGraphSerde::WIDTH_TIMESTAMP_WIDTH_PADDED);
         LOG("extracted timestamp width = '%s', suf_arr_idx = %llu\n",
             str.c_str(), suf_arr_idx);
@@ -451,7 +451,7 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_range(
         EDGE_TABLE->extract(
             str,
             suf_arr_idx,
-            curr_off, // unused
+            curr_off + SuccinctGraphSerde::WIDTH_TIMESTAMP_WIDTH_PADDED,
             SuccinctGraphSerde::WIDTH_DST_ID_WIDTH_PADDED);
         LOG("extracted dst id width = '%s', suf_arr_idx = %llu\n",
             str.c_str(), suf_arr_idx);
@@ -634,7 +634,7 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_get(
         EDGE_TABLE->extract(
             str,
             suf_arr_idx,
-            curr_off, // unused
+            curr_off,
             SuccinctGraphSerde::WIDTH_TIMESTAMP_WIDTH_PADDED);
         LOG("extracted timestamp width = '%s', suf_arr_idx = %llu\n",
             str.c_str(), suf_arr_idx);
@@ -643,7 +643,7 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_get(
         EDGE_TABLE->extract(
             str,
             suf_arr_idx,
-            curr_off,
+            curr_off + SuccinctGraphSerde::WIDTH_TIMESTAMP_WIDTH_PADDED,
             SuccinctGraphSerde::WIDTH_DST_ID_WIDTH_PADDED);
         LOG("extracted dst id width = '%s'\n", str.c_str());
         dst_id_width = std::stoi(str);
@@ -756,18 +756,24 @@ int64_t SuccinctGraph::assoc_count(int64_t src, int64_t atype) {
         curr_off = EDGE_TABLE->skipping_extract_until(
             suf_arr_idx, curr_off, TIMESTAMP_WIDTH_DELIM);
 
+        // "Skip" over the padded timestamp width & padded dst id width anyway
+        // This is useful when SuccinctFile is used: saves a sampled ISA lookup
+        // by doing 4 extra NPA lookups (assuming the two widths sum to 4)
         EDGE_TABLE->extract(
             str,
             suf_arr_idx,
-            curr_off, // unused
+            curr_off,
             SuccinctGraphSerde::WIDTH_TIMESTAMP_WIDTH_PADDED +
                 SuccinctGraphSerde::WIDTH_DST_ID_WIDTH_PADDED);
 
-        curr_off = EDGE_TABLE->extract_until(
+        // Now extract the count
+        EDGE_TABLE->extract_until(
             str,
             suf_arr_idx,
             // + here since last extract() doesn't return an updated offset
-            curr_off + SuccinctGraphSerde::WIDTH_DST_ID_WIDTH_PADDED,
+            curr_off +
+                SuccinctGraphSerde::WIDTH_DST_ID_WIDTH_PADDED +
+                 SuccinctGraphSerde::WIDTH_DST_ID_WIDTH_PADDED,
             EDGE_WIDTH_DELIM);
 
         total_cnt += std::stoll(str);
@@ -813,7 +819,7 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_time_range(
         EDGE_TABLE->extract(
             str,
             suf_arr_idx,
-            curr_off, // unused
+            curr_off,
             SuccinctGraphSerde::WIDTH_TIMESTAMP_WIDTH_PADDED);
         LOG("extracted timestamp width = '%s', suf_arr_idx = %llu\n",
             str.c_str(), suf_arr_idx);
@@ -822,7 +828,7 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_time_range(
         EDGE_TABLE->extract(
             str,
             suf_arr_idx,
-            curr_off,
+            curr_off + SuccinctGraphSerde::WIDTH_TIMESTAMP_WIDTH_PADDED,
             SuccinctGraphSerde::WIDTH_DST_ID_WIDTH_PADDED);
         LOG("extracted dst id width = '%s'\n", str.c_str());
         dst_id_width = std::stoi(str);
@@ -971,12 +977,12 @@ inline void SuccinctGraph::extract_neighbors(
     std::string str;
     uint64_t suf_arr_idx;
     int32_t dst_id_width, timestamp_width;
-    int64_t cnt;
+    int64_t cnt, curr_off;
 
     for (auto it = offsets.begin(); it != offsets.end(); ++it) {
         suf_arr_idx = -1ULL;
 
-        int64_t curr_off = EDGE_TABLE->skipping_extract_until(
+        curr_off = EDGE_TABLE->skipping_extract_until(
             suf_arr_idx, (*it) + skip_length, TIMESTAMP_WIDTH_DELIM);
 
         EDGE_TABLE->extract(
@@ -989,7 +995,7 @@ inline void SuccinctGraph::extract_neighbors(
         EDGE_TABLE->extract(
             str,
             suf_arr_idx,
-            curr_off,
+            curr_off + SuccinctGraphSerde::WIDTH_TIMESTAMP_WIDTH_PADDED,
             SuccinctGraphSerde::WIDTH_DST_ID_WIDTH_PADDED);
         LOG("dst id width = '%s'\n", str.c_str());
         dst_id_width = std::stoi(str);
