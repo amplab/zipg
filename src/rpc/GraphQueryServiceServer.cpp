@@ -199,16 +199,16 @@ public:
         int32_t off,
         int32_t len)
     {
+#ifdef LATENCY_BREAKDOWN
+    time_t t0, t1;
+    t0 = get_timestamp();
+#endif
+
         std::vector<SuccinctGraph::Assoc> vec(
             std::move(graph_->assoc_range(src, atype, off, len)));
 
         // TODO: any better way?
         // NB: the fields are Thrift-generated, so this may not be portable.
-
-#ifdef LATENCY_BREAKDOWN
-    time_t t0, t1;
-    t0 = get_timestamp();
-#endif
 
         _return.clear();
         _return.resize(vec.size());
@@ -225,7 +225,7 @@ public:
 
 #ifdef LATENCY_BREAKDOWN
     t1 = get_timestamp();
-    LOG_E("%lld\n", t1 - t0);
+    LOG_E("%lld;", t1 - t0);
 #endif
 
     }

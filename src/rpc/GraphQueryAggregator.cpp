@@ -209,6 +209,10 @@ public:
         int32_t off,
         int32_t len)
     {
+#ifdef LATENCY_BREAKDOWN
+    time_t t0, t1;
+    t0 = get_timestamp();
+#endif
         int shard_id = src % total_num_shards_;
         int host_id = shard_id % total_num_hosts_;
         if (host_id == local_host_id_) {
@@ -217,6 +221,10 @@ public:
         } else {
             assert(false && "routing not implemented");
         }
+#ifdef LATENCY_BREAKDOWN
+    t1 = get_timestamp();
+    LOG_E("%lld;\n", t1 - t0);
+#endif
     }
 
     int64_t assoc_count(int64_t src, int64_t atype) {
