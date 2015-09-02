@@ -38,7 +38,10 @@ public:
 
     int32_t init() {
         connect_to_local_shards();
-        connect_to_aggregators();
+        if (connect_to_aggregators() != 0) {
+            LOG_E("Connection to remote aggregators not successful!\n");
+            exit(1);
+        }
 
         for (auto& shard : local_shards_) {
             shard.send_init();
