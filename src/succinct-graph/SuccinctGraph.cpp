@@ -613,7 +613,7 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_get(
 
     std::vector<int64_t> eoffs = get_edge_table_offsets(src, atype);
     std::vector<Assoc> result;
-    std::string timestamps, dst_ids, attrs, str;
+    std::string str;
 
     int32_t edge_width, dst_id_width, timestamp_width;
     int64_t cnt;
@@ -701,21 +701,23 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_get(
 
         // extract in-range timestamps
         EDGE_TABLE->extract(
-            timestamps,
+            str,
             curr_off + range_left * timestamp_width,
             (range_right - range_left + 1) * timestamp_width);
-        LOG("extracted timestamps = '%s'\n", timestamps.c_str());
+        LOG("extracted timestamps = '%s'\n", str.c_str());
+        std::vector<int64_t> decoded_timestamps =
+            SuccinctGraphSerde::decode_multi_timestamps(str, timestamp_width);
 
         // extract in-range dst ids: i.e. whose idx in [range_left, range_right]
         curr_off += cnt * timestamp_width;
         EDGE_TABLE->extract(
-            dst_ids,
+            str,
             curr_off + range_left * dst_id_width,
             (range_right - range_left + 1) * dst_id_width);
-        LOG("extracted dst ids: '%s'\n", dst_ids.c_str());
+        LOG("extracted dst ids: '%s'\n", str.c_str());
 
         std::vector<int64_t> decoded_dst_ids =
-            SuccinctGraphSerde::decode_multi_node_ids(dst_ids, dst_id_width);
+            SuccinctGraphSerde::decode_multi_node_ids(str, dst_id_width);
 
         // filter
         std::vector<int64_t> in_set_indexes;
@@ -732,9 +734,6 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_get(
         // TODO: another choice is to do a single extract then filter; evaluate?
         // Now extract only the in-set (and in-range) attrs
         curr_off += cnt * dst_id_width;
-        std::vector<int64_t> decoded_timestamps =
-            SuccinctGraphSerde::decode_multi_timestamps(
-                timestamps, timestamp_width);
         for (int64_t idx : in_set_indexes) {
             result.emplace_back();
             // decoded dst ids and timestamps start w/ absolute idx range_left
@@ -790,15 +789,15 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_time_range(
     int64_t atype,
     int64_t t_low,
     int64_t t_high,
-    int32_t len) {
-
+    int32_t len)
+{
     COND_LOG_E("assoc_time_range(src = %lld, atype = %lld, tLow = %lld, "
         "tHigh = %lld, len = %d)\n",
         src, atype, t_low, t_high, len);
 
     std::vector<int64_t> eoffs = get_edge_table_offsets(src, atype);
     std::vector<Assoc> result;
-    std::string timestamps, dst_ids, attrs, str;
+    std::string str;
 
     int32_t edge_width, dst_id_width, timestamp_width;
     int64_t cnt;
@@ -893,25 +892,22 @@ std::vector<SuccinctGraph::Assoc> SuccinctGraph::assoc_time_range(
 
         // extract in-range timestamps
         EDGE_TABLE->extract(
-            timestamps,
+            str,
             curr_off + range_left * timestamp_width,
             (range_right - range_left + 1) * timestamp_width);
-        LOG("extracted timestamps = '%s'\n", timestamps.c_str());
+        LOG("extracted timestamps = '%s'\n", str.c_str());
+        std::vector<int64_t> decoded_timestamps =
+            SuccinctGraphSerde::decode_multi_timestamps(str, timestamp_width);
 
         // extract in-range dst ids: i.e. whose idx in [range_left, range_right]
         curr_off += cnt * timestamp_width;
         EDGE_TABLE->extract(
-            dst_ids,
+            str,
             curr_off + range_left * dst_id_width,
             (range_right - range_left + 1) * dst_id_width);
-        LOG("extracted dst ids: '%s'\n", dst_ids.c_str());
-
-        std::vector<int64_t> decoded_timestamps =
-            SuccinctGraphSerde::decode_multi_timestamps(
-                timestamps, timestamp_width);
-
+        LOG("extracted dst ids: '%s'\n", str.c_str());
         std::vector<int64_t> decoded_dst_ids =
-            SuccinctGraphSerde::decode_multi_node_ids(dst_ids, dst_id_width);
+            SuccinctGraphSerde::decode_multi_node_ids(str, dst_id_width);
 
         // TODO: another choice is to do a single extract then filter; evaluate?
         // Now extract only the in-set (and in-range) attrs
