@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+remote_user_name="ec2-user"
+
 sbin="`dirname "$0"`"
 sbin="`cd "$sbin"; pwd`"
 
@@ -52,10 +54,12 @@ num_hosts=$(echo "$HOSTLIST"|sed  "s/#.*$//;/^$/d"|wc -l)
 for host in `echo "$HOSTLIST"|sed  "s/#.*$//;/^$/d"`; do
   # NOTE: $3 $4 $5 are supposed to be sampling rates
   if [ -n "${SUCCINCT_SSH_FOREGROUND}" ]; then
-    ssh $SUCCINCT_SSH_OPTS "$host" "$sbin/start-servers-local.sh" $SHARDS_PER_SERVER $num_hosts $i $node_file_raw $edge_file_raw $3 $4 $5 \
+    ssh $SUCCINCT_SSH_OPTS -l ${remote_user_name} "$host" \
+      "$sbin/start-servers-local.sh" $SHARDS_PER_SERVER $num_hosts $i $node_file_raw $edge_file_raw $3 $4 $5 \
       2>&1 | sed "s/^/$host: /"
   else
-    ssh $SUCCINCT_SSH_OPTS "$host" "$sbin/start-servers-local.sh" $SHARDS_PER_SERVER $num_hosts $i $node_file_raw $edge_file_raw $3 $4 $5 \
+    ssh $SUCCINCT_SSH_OPTS -l ${remote_user_name} "$host" \
+      "$sbin/start-servers-local.sh" $SHARDS_PER_SERVER $num_hosts $i $node_file_raw $edge_file_raw $3 $4 $5 \
       2>&1 | sed "s/^/$host: /" &
   fi
   i=$(( $i + 1 ))
