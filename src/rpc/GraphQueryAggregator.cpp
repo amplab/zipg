@@ -76,7 +76,11 @@ public:
     }
 
     int32_t init_local_shards() {
-        connect_to_local_shards();
+        LOG_E("About to connect to local shards and init them\n");
+        if (connect_to_local_shards() != 0) {
+            LOG_E("Connection to local shards failed\n");
+            exit(1);
+        }
         for (auto& shard : local_shards_) {
             shard.send_init();
         }
