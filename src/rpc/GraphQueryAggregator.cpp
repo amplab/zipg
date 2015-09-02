@@ -143,6 +143,11 @@ private:
                 return 1;
             }
         }
+        if (hostnames_.size() != total_num_hosts_) {
+            LOG_E("%zu total aggregators, but only %zu live\n",
+                total_num_hosts_, hostnames_.size());
+            return 1;
+        }
         LOG_E("Aggregators connected: cluster has %zu aggregators in total.\n",
             hostnames_.size());
         return 0;
