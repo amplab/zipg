@@ -202,11 +202,8 @@ public:
             transport->open();
             LOG_E("Connected to aggregator!\n");
 
-            int ret = aggregator_->connect_to_local_shards();
-            LOG_E("Aggregator connected to local shards, ret = %d\n", ret);
-
-            aggregator_->init();
-            LOG_E("Done init all shards\n");
+            int ret = aggregator_->init();
+            LOG_E("Aggregator has init()'d cluster, return code = %d\n", ret);
         } catch (std::exception& e) {
             LOG_E("Exception in benchmark client: %s\n", e.what());
         }
@@ -394,7 +391,6 @@ public:
                     new GraphQueryAggregatorServiceClient(protocol));
 
                 transport->open();
-                client->connect_to_local_shards();
                 client->init();
 
                 shared_ptr<benchmark_thread_data_t> thread_data(
@@ -640,7 +636,6 @@ public:
 
             // Measure phase
             LOG_E("Measuring for %d queries...\n", measure_n);
-            int64_t latency = 0;
             for (int i = 0; i < measure_n; ++i) {
                 int rand_query = uni(rng);
                 switch (rand_query) {

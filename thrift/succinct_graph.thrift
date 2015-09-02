@@ -11,7 +11,7 @@ struct ThriftAssoc {
 service GraphQueryService {
 
     // Loads or constructs graph shards.
-    void init(),
+    i32 init(),
 
     list<i64> get_neighbors(1: i64 nodeId),
 
@@ -55,10 +55,19 @@ service GraphQueryService {
 // One per physical node; handles local aggregation and query routing.
 service GraphQueryAggregatorService {
 
-    i32 connect_to_local_shards(),
+    // Entry point to prepare a cluster.  Performs the following in parallel:
+    //   (1) Have this aggregator connect to all machine-local shards, and call
+    //       init() on them.
+    //   (2) Have this aggregator connect to all other aggregators in the
+    //       cluster, if any.
+    //   (3) Have those connected aggregators connect to their own
+    //       local shards as well.
+    i32 init(),
 
-    // Initialize local shards.
-    void init(),
+    // Have this aggregator connect to machine-local shards (servers),
+    // and call init() on them (i.e. loads or constructs).  End users
+    // should just call init() once and not call this method.
+    i32 init_local_shards(),
 
     // Primitive queries
 

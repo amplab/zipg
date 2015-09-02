@@ -36,6 +36,59 @@ public:
       total_num_hosts_(hostnames.size())
     { }
 
+    int32_t init() {
+        connect_to_local_shards();
+        connect_to_aggregators();
+
+        for (auto& shard : local_shards_) {
+            shard.send_init();
+        }
+
+        for (int i = 0; i < total_num_hosts_; ++i) {
+            if (i == local_host_id_) {
+                continue;
+            }
+            aggregators_.at(i).send_init_local_shards();
+        }
+
+        for (auto& shard : local_shards_) {
+            if (shard.recv_init() != 0) {
+                LOG_E("Some shard doesn't init() successfully, exiting\n");
+                exit(1);
+            }
+        }
+
+        for (int i = 0; i < total_num_hosts_; ++i) {
+            if (i == local_host_id_) {
+                continue;
+            }
+            if (aggregators_.at(i).recv_init_local_shards() != 0) {
+                LOG_E("Some aggregator doesn't init_local_shards() successfully"
+                    ", exiting\n");
+                exit(1);
+            }
+        }
+        LOG_E("Cluster init() done\n");
+        return 0;
+    }
+
+    int32_t init_local_shards() {
+        connect_to_local_shards();
+        for (auto& shard : local_shards_) {
+            shard.send_init();
+        }
+        for (auto& shard : local_shards_) {
+            if (shard.recv_init() != 0) {
+                LOG_E("Some shard doesn't init() successfully, exiting\n");
+                exit(1);
+            }
+        }
+        LOG_E("init_local_shards() done\n");
+        return 0;
+    }
+
+private:
+
     int32_t connect_to_local_shards() {
         for (int i = 0; i < local_num_shards_; ++i) {
             // Desirable? Hacky way to facilitate benchmark client reconnecting
@@ -65,12 +118,37 @@ public:
         return 0;
     }
 
-    void init() {
-        for (auto shard : local_shards_)
-            shard.send_init();
-        for (auto shard : local_shards_)
-            shard.recv_init();
+    int32_t connect_to_aggregators() {
+        aggregators_.reserve(hostnames_.size());
+
+        for (int i = 0; i < hostnames_.size(); ++i) {
+            if (i == local_host_id_) {
+                continue;
+            }
+
+            LOG_E("Connecting to remote aggregator on host %d...\n", i);
+            try {
+                shared_ptr<TSocket> socket(new TSocket(
+                    hostnames_.at(i), QUERY_SERVER_PORT));
+                shared_ptr<TTransport> transport(
+                    new TBufferedTransport(socket));
+                shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
+                GraphQueryAggregatorServiceClient client(protocol);
+
+                transport->open();
+                LOG_E("Connected!\n");
+                aggregators_[i] = client;
+            } catch (std::exception& e) {
+                LOG_E("Could not connect to aggregator %d: %s\n", i, e.what());
+                return 1;
+            }
+        }
+        LOG_E("Aggregators connected: cluster has %zu aggregators in total.\n",
+            hostnames_.size());
+        return 0;
     }
+
+public:
 
     void get_neighbors(std::vector<int64_t> & _return, const int64_t nodeId) {
         int shard_id = nodeId % total_num_shards_;
@@ -297,6 +375,10 @@ private:
     const int total_num_hosts_;
 
     std::vector<GraphQueryServiceClient> local_shards_;
+
+    // Once init()'d, this should be of size #TotalAggregators including self.
+    // However, the slot occupied by local_host_id_ is unspecified / invalid.
+    std::vector<GraphQueryAggregatorServiceClient> aggregators_;
 };
 
 // Dummy factory that just delegates fields.

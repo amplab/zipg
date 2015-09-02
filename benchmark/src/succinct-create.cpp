@@ -383,11 +383,8 @@ shared_ptr<GraphQueryAggregatorServiceClient> init_sharded_graph() {
         transport->open();
         LOG_E("Connected to aggregator!\n");
 
-        int ret = aggregator->connect_to_local_shards();
-        LOG_E("Aggregator connected to local shards, return code = %d\n", ret);
-
-        aggregator->init();
-        LOG_E("Done init all shards\n");
+        int ret = aggregator->init();
+        LOG_E("Aggregator has init()'d cluster, return code = %d\n", ret);
     } catch (std::exception& e) {
         LOG_E("Exception in initializing sharded graph: %s\n", e.what());
         std::terminate();
