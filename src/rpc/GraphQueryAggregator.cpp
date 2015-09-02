@@ -140,7 +140,7 @@ private:
             LOG_E("Connecting to remote aggregator on host %d...\n", i);
             try {
                 shared_ptr<TSocket> socket(new TSocket(
-                    hostnames_.at(i), QUERY_SERVER_PORT));
+                    hostnames_.at(i), QUERY_HANDLER_PORT));
                 shared_ptr<TTransport> transport(
                     new TBufferedTransport(socket));
                 shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
