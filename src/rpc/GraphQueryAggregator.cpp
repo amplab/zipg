@@ -126,7 +126,7 @@ private:
     }
 
     int32_t connect_to_aggregators() {
-        aggregators_.reserve(hostnames_.size());
+        aggregators_.clear();
 
         for (int i = 0; i < hostnames_.size(); ++i) {
             if (i == local_host_id_) {
@@ -144,7 +144,9 @@ private:
 
                 transport->open();
                 LOG_E("Connected!\n");
-                aggregators_[i] = client;
+                aggregators_.insert(
+                    std::pair<int, GraphQueryAggregatorServiceClient>(
+                        i, client));
             } catch (std::exception& e) {
                 LOG_E("Could not connect to aggregator %d: %s\n", i, e.what());
                 return 1;
@@ -388,9 +390,8 @@ private:
 
     std::vector<GraphQueryServiceClient> local_shards_;
 
-    // Once init()'d, this should be of size #TotalAggregators including self.
-    // However, the slot occupied by local_host_id_ is unspecified / invalid.
-    std::vector<GraphQueryAggregatorServiceClient> aggregators_;
+    // Maps host id to aggregator handle.  Does not contain self.
+    std::unordered_map<int, GraphQueryAggregatorServiceClient> aggregators_;
 };
 
 // Dummy factory that just delegates fields.
