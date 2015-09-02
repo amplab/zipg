@@ -94,10 +94,6 @@ public:
         return 0;
     }
 
-    void ping() {
-        LOG_E("Received ping! I am host %d\n", local_host_id_);
-    }
-
 private:
 
     int32_t connect_to_local_shards() {

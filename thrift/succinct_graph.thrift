@@ -55,8 +55,6 @@ service GraphQueryService {
 // One per physical node; handles local aggregation and query routing.
 service GraphQueryAggregatorService {
 
-    void ping(),
-
     // Entry point to prepare a cluster.  Performs the following in parallel:
     //   (1) Have this aggregator connect to all machine-local shards, and call
     //       init() on them.
