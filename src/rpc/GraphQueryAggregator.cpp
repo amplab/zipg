@@ -175,6 +175,7 @@ public:
 #ifdef DEBUG_RPC_NHBR
             auto t1 = get_timestamp();
 #endif
+
             local_shards_[shard_id / total_num_hosts_]
                 .get_neighbors(_return, nodeId);
 
@@ -186,8 +187,18 @@ public:
 #endif
 
         } else {
-            aggregators_.at(host_id).get_neighbors(_return, nodeId);
+            aggregators_.at(host_id).get_neighbors_local(
+                _return, shard_id, nodeId);
         }
+    }
+
+    void get_neighbors_local(
+        std::vector<int64_t> & _return,
+        const int32_t shardId,
+        const int64_t nodeId)
+    {
+        local_shards_[shardId / total_num_hosts_]
+            .get_neighbors(_return, nodeId);
     }
 
     void get_neighbors_atype(
@@ -211,9 +222,19 @@ public:
             }
 #endif
         } else {
-            aggregators_.at(host_id).get_neighbors_atype(
-                _return, nodeId, atype);
+            aggregators_.at(host_id).get_neighbors_atype_local(
+                _return, shard_id, nodeId, atype);
         }
+    }
+
+    void get_neighbors_atype_local(
+        std::vector<int64_t> & _return,
+        const int32_t shardId,
+        const int64_t nodeId,
+        const int64_t atype)
+    {
+        local_shards_[shardId / total_num_hosts_]
+            .get_neighbors_atype(_return, nodeId, atype);
     }
 
     // FIXME: add distributed routing
@@ -261,15 +282,37 @@ public:
         const int32_t attrId,
         const std::string& attrKey)
     {
-        // TODO: aggregator-to-aggregator routing is not yet implemented
-        assert(local_num_shards_ == total_num_shards_);
+        for (int i = 0; i < total_num_hosts_; ++i) {
+            if (i == local_host_id_) {
+                continue;
+            }
+            aggregators_.at(i).send_get_nodes_local(attrId, attrKey);
+        }
 
+        get_nodes_local(_return, attrId, attrKey);
+
+        std::set<int64_t> shard_result;
+        for (int i = 0; i < total_num_hosts_; ++i) {
+            if (i == local_host_id_) {
+                continue;
+            }
+            aggregators_.at(i).recv_get_nodes_local(shard_result);
+            _return.insert(shard_result.begin(), shard_result.end());
+        }
+    }
+
+    void get_nodes_local(
+        std::set<int64_t> & _return,
+        const int32_t attrId,
+        const std::string& attrKey)
+    {
         for (auto& shard : local_shards_) {
             shard.send_get_nodes(attrId, attrKey);
         }
 
         std::set<int64_t> shard_result;
         _return.clear();
+
         for (auto& shard : local_shards_) {
             shard.recv_get_nodes(shard_result);
             _return.insert(shard_result.begin(), shard_result.end());
@@ -283,15 +326,40 @@ public:
         const int32_t attrId2,
         const std::string& attrKey2)
     {
-        // TODO: aggregator-to-aggregator routing is not yet implemented
-        assert(local_num_shards_ == total_num_shards_);
+        for (int i = 0; i < total_num_hosts_; ++i) {
+            if (i == local_host_id_) {
+                continue;
+            }
+            aggregators_.at(i).send_get_nodes2_local(
+                attrId1, attrKey1, attrId2, attrKey2);
+        }
 
+        get_nodes2_local(_return, attrId1, attrKey1, attrId2, attrKey2);
+
+        std::set<int64_t> shard_result;
+        for (int i = 0; i < total_num_hosts_; ++i) {
+            if (i == local_host_id_) {
+                continue;
+            }
+            aggregators_.at(i).recv_get_nodes2_local(shard_result);
+            _return.insert(shard_result.begin(), shard_result.end());
+        }
+    }
+
+    void get_nodes2_local(
+        std::set<int64_t> & _return,
+        const int32_t attrId1,
+        const std::string& attrKey1,
+        const int32_t attrId2,
+        const std::string& attrKey2)
+    {
         for (auto& shard : local_shards_) {
             shard.send_get_nodes2(attrId1, attrKey1, attrId2, attrKey2);
         }
 
         std::set<int64_t> shard_result;
         _return.clear();
+
         for (auto& shard : local_shards_) {
             shard.recv_get_nodes2(shard_result);
             _return.insert(shard_result.begin(), shard_result.end());
