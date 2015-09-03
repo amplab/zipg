@@ -977,13 +977,13 @@ inline void SuccinctGraph::extract_neighbors(
     std::string str;
     uint64_t suf_arr_idx;
     int32_t dst_id_width, timestamp_width;
-    int64_t cnt, curr_off;
+    int64_t cnt;
 
-    for (auto it = offsets.begin(); it != offsets.end(); ++it) {
+    for (int64_t curr_off : offsets) {
         suf_arr_idx = -1ULL;
 
         curr_off = EDGE_TABLE->skipping_extract_until(
-            suf_arr_idx, (*it) + skip_length, TIMESTAMP_WIDTH_DELIM);
+            suf_arr_idx, curr_off + skip_length, TIMESTAMP_WIDTH_DELIM);
 
         EDGE_TABLE->extract(
             str,
