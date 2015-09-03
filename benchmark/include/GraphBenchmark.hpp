@@ -860,9 +860,9 @@ public:
         std::vector<int64_t> result;
         for(uint64_t i = 0; i < WARMUP_N; ++i) {
             get_neighbors_attr_f_(result,
-                mod_get(warmup_neighbor_indices, i),
-                mod_get(warmup_node_attributes, i),
-                mod_get(warmup_node_queries, i));
+                mod_get(warmup_nhbrNode_indices, i),
+                mod_get(warmup_nhbrNode_attr_ids, i),
+                mod_get(warmup_nhbrNode_attrs, i));
         }
         LOG_E("Warmup complete.\n");
 
@@ -871,17 +871,17 @@ public:
         for (uint64_t i = 0; i < MEASURE_N; ++i) {
             t0 = get_timestamp();
             get_neighbors_attr_f_(result,
-                mod_get(neighbor_indices, i),
-                mod_get(node_attributes, i),
-                mod_get(node_queries, i));
+                mod_get(nhbrNode_indices, i),
+                mod_get(nhbrNode_attr_ids, i),
+                mod_get(nhbrNode_attrs, i));
             t1 = get_timestamp();
             res_stream << result.size() << "," << t1 - t0 << "\n";
 
 #ifdef BENCH_PRINT_RESULTS
             // correctness
-            query_res_stream << "id " << mod_get(neighbor_indices, i)
-                << " attr " << mod_get(node_attributes, i);
-            query_res_stream << " query " << mod_get(node_queries, i) << "\n";
+            query_res_stream << "id " << mod_get(nhbrNode_indices, i)
+                << " attr " << mod_get(nhbrNode_attr_ids, i);
+            query_res_stream << " query " << mod_get(nhbrNode_attrs, i) << "\n";
             std::sort(result.begin(), result.end());
             for (auto it = result.begin(); it != result.end(); ++it)
                 query_res_stream << *it << " ";
