@@ -88,7 +88,7 @@ private:
     // For input of 1TB, this results in a negligible ISA of size 16MB.
     const size_t SPARSE_ISA_SR = 1 << 16;
 
-    // Clears `contents` for caller.
+    // Clears `contents` for caller.  Returns -1 iff the read is unsuccessful.
     inline size_t read_file(std::string& contents, const std::string& filename)
     {
         std::ifstream in(filename, std::ios::in | std::ios::binary);
