@@ -282,7 +282,7 @@ public:
         for (uint64_t i = 0; i < WARMUP_N; ++i) {
             get_neighbors_atype_f_(
                 result,
-                mod_get(warmup_neighbor_indices, i),
+                mod_get(warmup_nhbrAtype_indices, i),
                 mod_get(warmup_atypes, i));
         }
         LOG_E("Warmup complete.\n");
@@ -293,7 +293,7 @@ public:
             t0 = get_timestamp();
             get_neighbors_atype_f_(
                 result,
-                mod_get(neighbor_indices, i),
+                mod_get(nhbrAtype_indices, i),
                 mod_get(atypes, i));
             t1 = get_timestamp();
             res_stream << result.size() << "," << t1 - t0 << "\n";
