@@ -243,18 +243,26 @@ public:
         const int32_t attrId,
         const std::string& attrKey)
     {
+        COND_LOG_E("Aggregator get_nhbr_node(nodeId %d, attrId %d)\n",
+            nodeId, attrId);
+
         int shard_id = nodeId % total_num_shards_;
         int host_id = shard_id % total_num_hosts_;
         // Delegate to the shard responsible for nodeId.
         if (host_id == local_host_id_) {
+            COND_LOG_E("Delegating to myself\n");
+
             get_neighbors_attr_local(
                 _return, shard_id, nodeId, attrId, attrKey);
         } else {
+            COND_LOG_E("Route to aggregator on host %d\n", host_id);
+
             aggregators_.at(host_id).get_neighbors_attr_local(
                 _return, shard_id, nodeId, attrId, attrKey);
         }
     }
 
+    // TODO: rid of shardId? Maybe more expensive to ship an int over network?
     void get_neighbors_attr_local(
         std::vector<int64_t> & _return,
         const int32_t shardId,
@@ -262,6 +270,9 @@ public:
         const int32_t attrId,
         const std::string& attrKey)
     {
+        COND_LOG_E("In get_nhbr_node_local(shardId %d, nodeId %d, attrId %d)\n",
+            shardId, nodeId, attrId);
+
         std::vector<int64_t> nhbrs;
         get_neighbors_local(nhbrs, shardId, nodeId);
 
@@ -280,6 +291,7 @@ public:
             if (host_id == local_host_id_) {
                 filter_nodes_local(_return, it->second, attrId, attrKey);
             } else {
+                COND_LOG_E("host id %d\n", host_id);
                 aggregators_.at(host_id).send_filter_nodes_local(
                     it->second, attrId, attrKey);
             }
