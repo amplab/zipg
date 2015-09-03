@@ -260,13 +260,13 @@ public:
         // TODO: aggregator-to-aggregator routing is not yet implemented
         assert(local_num_shards_ == total_num_shards_);
 
-        for (auto shard : local_shards_) {
+        for (auto& shard : local_shards_) {
             shard.send_get_nodes(attrId, attrKey);
         }
 
         std::set<int64_t> shard_result;
         _return.clear();
-        for (auto shard : local_shards_) {
+        for (auto& shard : local_shards_) {
             shard.recv_get_nodes(shard_result);
             _return.insert(shard_result.begin(), shard_result.end());
         }
@@ -282,13 +282,13 @@ public:
         // TODO: aggregator-to-aggregator routing is not yet implemented
         assert(local_num_shards_ == total_num_shards_);
 
-        for (auto shard : local_shards_) {
+        for (auto& shard : local_shards_) {
             shard.send_get_nodes2(attrId1, attrKey1, attrId2, attrKey2);
         }
 
         std::set<int64_t> shard_result;
         _return.clear();
-        for (auto shard : local_shards_) {
+        for (auto& shard : local_shards_) {
             shard.recv_get_nodes2(shard_result);
             _return.insert(shard_result.begin(), shard_result.end());
         }
