@@ -237,39 +237,97 @@ public:
             .get_neighbors_atype(_return, nodeId, atype);
     }
 
-    // FIXME: add distributed routing
     void get_neighbors_attr(
         std::vector<int64_t> & _return,
         const int64_t nodeId,
         const int32_t attrId,
         const std::string& attrKey)
     {
+        int shard_id = nodeId % total_num_shards_;
+        int host_id = shard_id % total_num_hosts_;
+        // Delegate to the shard responsible for nodeId.
+        if (host_id == local_host_id_) {
+            get_neighbors_attr_local(
+                _return, shard_id, nodeId, attrId, attrKey);
+        } else {
+            aggregators_.at(host_id).get_neighbors_attr_local(
+                _return, shard_id, nodeId, attrId, attrKey);
+        }
+    }
+
+    void get_neighbors_attr_local(
+        std::vector<int64_t> & _return,
+        const int32_t shardId,
+        const int64_t nodeId,
+        const int32_t attrId,
+        const std::string& attrKey)
+    {
         std::vector<int64_t> nhbrs;
-        get_neighbors(nhbrs, nodeId);
+        get_neighbors_local(nhbrs, shardId, nodeId);
 
+        // hostId -> [list of responsible nhbr IDs to check]
         std::unordered_map<int, std::vector<int64_t>> splits_by_keys;
-        int shard_id, host_id;
-        for (int64_t nhbr_id : nhbrs) {
-            shard_id = nhbr_id % total_num_shards_;
-            splits_by_keys[shard_id].push_back(
-                global_to_local_node_id(nhbr_id, shard_id));
+        int host_id;
 
-            host_id = shard_id % total_num_hosts_;
-            assert(host_id == local_host_id_);
+        for (int64_t nhbr_id : nhbrs) {
+            host_id = (nhbr_id % total_num_shards_) % total_num_hosts_;
+            splits_by_keys[host_id].push_back(nhbr_id); // global
         }
 
         for (auto it = splits_by_keys.begin(); it != splits_by_keys.end(); ++it)
         {
-            local_shards_[it->first].send_filter_nodes(
-                it->second, attrId, attrKey);
+            host_id = it->first;
+            if (host_id == local_host_id_) {
+                filter_nodes_local(_return, it->second, attrId, attrKey);
+            } else {
+                aggregators_.at(host_id).send_filter_nodes_local(
+                    it->second, attrId, attrKey);
+            }
+        }
+
+        std::vector<int64_t> shard_result;
+        for (auto it = splits_by_keys.begin(); it != splits_by_keys.end(); ++it)
+        {
+            host_id = it->first;
+            // The equal case has already been computed in loop above
+            if (host_id != local_host_id_) {
+                aggregators_.at(host_id).recv_filter_nodes_local(shard_result);
+            }
+            _return.insert(
+                _return.end(), shard_result.begin(), shard_result.end());
+        }
+    }
+
+    void filter_nodes_local(
+        std::vector<int64_t>& _return,
+        const std::vector<int64_t>& nodeIds,
+        const int32_t attrId,
+        const std::string& attrKey)
+    {
+        // shardId -> [list of responsible nhbr IDs to check]
+        std::unordered_map<int, std::vector<int64_t>> splits_by_keys;
+        int shard_id;
+
+        for (int64_t nhbr_id : nodeIds) {
+            shard_id = nhbr_id % total_num_shards_;
+            splits_by_keys[shard_id].push_back(
+                global_to_local_node_id(nhbr_id, shard_id)); // to local
+        }
+
+        for (auto it = splits_by_keys.begin(); it != splits_by_keys.end(); ++it)
+        {
+            local_shards_[it->first / total_num_hosts_]
+                .send_filter_nodes(it->second, attrId, attrKey);
         }
 
         _return.clear();
         std::vector<int64_t> shard_result;
         for (auto it = splits_by_keys.begin(); it != splits_by_keys.end(); ++it)
         {
-            local_shards_[it->first].recv_filter_nodes(shard_result);
-            for (int64_t local_key : shard_result) {
+            local_shards_[it->first / total_num_hosts_]
+                .recv_filter_nodes(shard_result);
+            // local back to global
+            for (const int64_t local_key : shard_result) {
                 // globalKey = localKey * numShards + shardId
                 // localKey = (globalKey - shardId) / numShards
                 _return.push_back(local_key * total_num_shards_ + it->first);
