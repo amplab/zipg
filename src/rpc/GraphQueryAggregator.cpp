@@ -379,8 +379,21 @@ public:
             local_shards_[shard_id / total_num_hosts_]
                 .assoc_range(_return, src, atype, off, len);
         } else {
-            aggregators_.at(host_id).assoc_range(_return, src, atype, off, len);
+            aggregators_.at(host_id).assoc_range_local(
+                _return, shard_id, src, atype, off, len);
         }
+    }
+
+    void assoc_range_local(
+        std::vector<ThriftAssoc>& _return,
+        int32_t shardId,
+        int64_t src,
+        int64_t atype,
+        int32_t off,
+        int32_t len)
+    {
+        local_shards_[shardId / total_num_hosts_]
+            .assoc_range(_return, src, atype, off, len);
     }
 
     int64_t assoc_count(int64_t src, int64_t atype) {
@@ -390,9 +403,14 @@ public:
             return local_shards_[shard_id / total_num_hosts_]
                 .assoc_count(src, atype);
         } else {
-            assert(false && "routing not implemented");
-            return aggregators_.at(host_id).assoc_count(src, atype);
+            return aggregators_.at(host_id).assoc_count_local(
+                shard_id, src, atype);
         }
+    }
+
+    int64_t assoc_count_local(int32_t shardId, int64_t src, int64_t atype) {
+        return local_shards_[shardId / total_num_hosts_]
+            .assoc_count(src, atype);
     }
 
     void assoc_get(
@@ -409,9 +427,22 @@ public:
             local_shards_[shard_id / total_num_hosts_]
                 .assoc_get(_return, src, atype, dstIdSet, tLow, tHigh);
         } else {
-            aggregators_.at(host_id).assoc_get(
-                _return, src, atype, dstIdSet, tLow, tHigh);
+            aggregators_.at(host_id).assoc_get_local(
+                _return, shard_id, src, atype, dstIdSet, tLow, tHigh);
         }
+    }
+
+    void assoc_get_local(
+        std::vector<ThriftAssoc>& _return,
+        const int32_t shardId,
+        const int64_t src,
+        const int64_t atype,
+        const std::set<int64_t>& dstIdSet,
+        const int64_t tLow,
+        const int64_t tHigh)
+    {
+        local_shards_[shardId / total_num_hosts_]
+            .assoc_get(_return, src, atype, dstIdSet, tLow, tHigh);
     }
 
     void obj_get(std::vector<std::string>& _return, const int64_t nodeId) {
@@ -421,8 +452,17 @@ public:
             local_shards_[shard_id / total_num_hosts_]
                 .obj_get(_return, global_to_local_node_id(nodeId, shard_id));
         } else {
-            aggregators_.at(host_id).obj_get(_return, nodeId);
+            aggregators_.at(host_id).obj_get_local(_return, shard_id, nodeId);
         }
+    }
+
+    void obj_get_local(
+        std::vector<std::string>& _return,
+        const int32_t shardId,
+        const int64_t nodeId)
+    {
+        local_shards_[shardId / total_num_hosts_]
+            .obj_get(_return, global_to_local_node_id(nodeId, shardId));
     }
 
     void assoc_time_range(
@@ -439,9 +479,22 @@ public:
             local_shards_[shard_id / total_num_hosts_]
                 .assoc_time_range(_return, src, atype, tLow, tHigh, limit);
         } else {
-            aggregators_.at(host_id).assoc_time_range(
-                _return, src, atype, tLow, tHigh, limit);
+            aggregators_.at(host_id).assoc_time_range_local(
+                _return, shard_id, src, atype, tLow, tHigh, limit);
         }
+    }
+
+    void assoc_time_range_local(
+        std::vector<ThriftAssoc>& _return,
+        const int32_t shardId,
+        const int64_t src,
+        const int64_t atype,
+        const int64_t tLow,
+        const int64_t tHigh,
+        const int32_t limit)
+    {
+        local_shards_[shardId / total_num_hosts_]
+            .assoc_time_range(_return, src, atype, tLow, tHigh, limit);
     }
 
 private:

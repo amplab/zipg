@@ -57,6 +57,7 @@ service GraphQueryService {
 // For each user-facing API myAPI(), the myAPI() call will potentially route
 // to remote aggregator(s), if appropriate, whereas the myAPI_local() version
 // should be used to contact machine-local shards only.
+// TODO: the RPC implementation does not handle wildcard queries for now.
 service GraphQueryAggregatorService {
 
     // Entry point to prepare a cluster.  Performs the following in parallel:
@@ -76,9 +77,11 @@ service GraphQueryAggregatorService {
     // Primitive queries
 
     list<i64> get_neighbors(1: i64 nodeId),
+
     list<i64> get_neighbors_local(1: i32 shardId, 2: i64 nodeId),
 
     list<i64> get_neighbors_atype(1: i64 nodeId, 2: i64 atype),
+
     list<i64> get_neighbors_atype_local(
         1: i32 shardId, 2: i64 nodeId, 3: i64 atype),
 
@@ -87,6 +90,7 @@ service GraphQueryAggregatorService {
     // TODO: _local()?
 
     set<i64> get_nodes(1: i32 attrId, 2: string attrKey),
+
     set<i64> get_nodes_local(1: i32 attrId, 2: string attrKey),
 
     set<i64> get_nodes2(
@@ -94,6 +98,7 @@ service GraphQueryAggregatorService {
         2: string attrKey1,
         3: i32 attrId2,
         4: string attrKey2),
+
     set<i64> get_nodes2_local(
         1: i32 attrId1,
         2: string attrKey1,
@@ -101,21 +106,35 @@ service GraphQueryAggregatorService {
         4: string attrKey2),
 
     // TAO queries
-    // TODO: _local version
 
     list<ThriftAssoc> assoc_range(
         1: i64 src, 2: i64 atype, 3: i32 off, 4: i32 len),
 
+    list<ThriftAssoc> assoc_range_local(
+        1: i32 shardId, 2: i64 src, 3: i64 atype, 4: i32 off, 5: i32 len),
+
     i64 assoc_count(1: i64 src, 2: i64 atype),
+
+    i64 assoc_count_local(1: i32 shardId, 2: i64 src, 3: i64 atype),
 
     list<ThriftAssoc> assoc_get(
         1: i64 src, 2: i64 atype, 3: set<i64> dstIdSet,
         4: i64 tLow, 5: i64 tHigh),
 
+    list<ThriftAssoc> assoc_get_local(
+        1: i32 shardId, 2: i64 src, 3: i64 atype,
+        4: set<i64> dstIdSet, 5: i64 tLow, 6: i64 tHigh),
+
     list<string> obj_get(1: i64 nodeId),
+
+    list<string> obj_get_local(1: i32 shardId, 2: i64 nodeId),
 
     list<ThriftAssoc> assoc_time_range(
         1: i64 src, 2: i64 atype,
         3: i64 tLow, 4: i64 tHigh, 5: i32 limit),
+
+    list<ThriftAssoc> assoc_time_range_local(
+        1: i32 shardId, 2: i64 src, 3: i64 atype,
+        4: i64 tLow, 5: i64 tHigh, 6: i32 limit),
 
 }
