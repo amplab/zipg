@@ -55,10 +55,10 @@ public:
     }
 
     // Loads or constructs graph shards.
-    void init() {
+    int32_t init() {
         if (initialized_) {
             LOG_E("Already initialized\n");
-            return;
+            return 0;
         }
         LOG_E("In shard %d's init()\n", shard_id_);
         if (construct_) {
@@ -86,6 +86,7 @@ public:
         }
         initialized_ = true;
         LOG_E("Initialization at this shard: done\n");
+        return 0;
     }
 
     // In principle, nodeId should be in this shard's edge table.

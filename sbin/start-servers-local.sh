@@ -110,11 +110,10 @@ for i in `seq 0 $limit`; do
       echo "file ${node_split} exists"
     else
       echo "file ${node_split} doesn't exist"
-fi
+    fi
     if [[ ! -d "${nodeTbl}" ]]; then
       echo "dir ${nodeTbl} doesn't exist"
-fi
-      
+    fi
 
     nodeInput=${nodeTbl/.succinct/}
     edgeInput=${edgeTbl/.succinct/}

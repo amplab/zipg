@@ -36,6 +36,66 @@ public:
       total_num_hosts_(hostnames.size())
     { }
 
+    int32_t init() {
+        connect_to_local_shards();
+        if (connect_to_aggregators() != 0) {
+            LOG_E("Connection to remote aggregators not successful!\n");
+            exit(1);
+        }
+
+        for (auto& shard : local_shards_) {
+            shard.send_init();
+        }
+
+        for (int i = 0; i < total_num_hosts_; ++i) {
+            if (i == local_host_id_) {
+                continue;
+            }
+            aggregators_.at(i).send_init_local_shards();
+        }
+
+        for (auto& shard : local_shards_) {
+            if (shard.recv_init() != 0) {
+                LOG_E("Some shard doesn't init() successfully, exiting\n");
+                exit(1);
+            }
+        }
+
+        for (int i = 0; i < total_num_hosts_; ++i) {
+            if (i == local_host_id_) {
+                continue;
+            }
+            if (aggregators_.at(i).recv_init_local_shards() != 0) {
+                LOG_E("Some aggregator doesn't init_local_shards() successfully"
+                    ", exiting\n");
+                exit(1);
+            }
+        }
+        LOG_E("Cluster init() done\n");
+        return 0;
+    }
+
+    int32_t init_local_shards() {
+        LOG_E("About to connect to local shards and init them\n");
+        if (connect_to_local_shards() != 0) {
+            LOG_E("Connection to local shards failed\n");
+            exit(1);
+        }
+        for (auto& shard : local_shards_) {
+            shard.send_init();
+        }
+        for (auto& shard : local_shards_) {
+            if (shard.recv_init() != 0) {
+                LOG_E("Some shard doesn't init() successfully, exiting\n");
+                exit(1);
+            }
+        }
+        LOG_E("init_local_shards() done\n");
+        return 0;
+    }
+
+private:
+
     int32_t connect_to_local_shards() {
         for (int i = 0; i < local_num_shards_; ++i) {
             // Desirable? Hacky way to facilitate benchmark client reconnecting
@@ -65,12 +125,44 @@ public:
         return 0;
     }
 
-    void init() {
-        for (auto shard : local_shards_)
-            shard.send_init();
-        for (auto shard : local_shards_)
-            shard.recv_init();
+    int32_t connect_to_aggregators() {
+        aggregators_.clear();
+
+        for (int i = 0; i < hostnames_.size(); ++i) {
+            if (i == local_host_id_) {
+                continue;
+            }
+
+            LOG_E("Connecting to remote aggregator on host %d...\n", i);
+            try {
+                shared_ptr<TSocket> socket(new TSocket(
+                    hostnames_.at(i), QUERY_HANDLER_PORT));
+                shared_ptr<TTransport> transport(
+                    new TBufferedTransport(socket));
+                shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
+                GraphQueryAggregatorServiceClient client(protocol);
+
+                transport->open();
+                LOG_E("Connected!\n");
+                aggregators_.insert(
+                    std::pair<int, GraphQueryAggregatorServiceClient>(
+                        i, client));
+            } catch (std::exception& e) {
+                LOG_E("Could not connect to aggregator %d: %s\n", i, e.what());
+                return 1;
+            }
+        }
+        if (hostnames_.size() != total_num_hosts_) {
+            LOG_E("%zu total aggregators, but only %zu live\n",
+                total_num_hosts_, hostnames_.size());
+            return 1;
+        }
+        LOG_E("Aggregators connected: cluster has %zu aggregators in total.\n",
+            hostnames_.size());
+        return 0;
     }
+
+public:
 
     void get_neighbors(std::vector<int64_t> & _return, const int64_t nodeId) {
         int shard_id = nodeId % total_num_shards_;
@@ -79,9 +171,11 @@ public:
             "Received: get_neighbors(%lld), route to shard %d on host %d\n",
             nodeId, shard_id, host_id);
         if (host_id == local_host_id_) {
+
 #ifdef DEBUG_RPC_NHBR
             auto t1 = get_timestamp();
 #endif
+
             local_shards_[shard_id / total_num_hosts_]
                 .get_neighbors(_return, nodeId);
 
@@ -91,9 +185,20 @@ public:
                 LOG_E(".%lld\n", t2 - t1);
             }
 #endif
+
         } else {
-            assert(false && "routing not implemented");
+            aggregators_.at(host_id).get_neighbors_local(
+                _return, shard_id, nodeId);
         }
+    }
+
+    void get_neighbors_local(
+        std::vector<int64_t> & _return,
+        const int32_t shardId,
+        const int64_t nodeId)
+    {
+        local_shards_[shardId / total_num_hosts_]
+            .get_neighbors(_return, nodeId);
     }
 
     void get_neighbors_atype(
@@ -117,8 +222,19 @@ public:
             }
 #endif
         } else {
-            assert(false && "routing not implemented");
+            aggregators_.at(host_id).get_neighbors_atype_local(
+                _return, shard_id, nodeId, atype);
         }
+    }
+
+    void get_neighbors_atype_local(
+        std::vector<int64_t> & _return,
+        const int32_t shardId,
+        const int64_t nodeId,
+        const int64_t atype)
+    {
+        local_shards_[shardId / total_num_hosts_]
+            .get_neighbors_atype(_return, nodeId, atype);
     }
 
     void get_neighbors_attr(
@@ -127,32 +243,106 @@ public:
         const int32_t attrId,
         const std::string& attrKey)
     {
+        COND_LOG_E("Aggregator get_nhbr_node(nodeId %d, attrId %d)\n",
+            nodeId, attrId);
+
+        int shard_id = nodeId % total_num_shards_;
+        int host_id = shard_id % total_num_hosts_;
+        // Delegate to the shard responsible for nodeId.
+        if (host_id == local_host_id_) {
+            COND_LOG_E("Delegating to myself\n");
+
+            get_neighbors_attr_local(
+                _return, shard_id, nodeId, attrId, attrKey);
+        } else {
+            COND_LOG_E("Route to aggregator on host %d\n", host_id);
+
+            aggregators_.at(host_id).get_neighbors_attr_local(
+                _return, shard_id, nodeId, attrId, attrKey);
+        }
+    }
+
+    // TODO: rid of shardId? Maybe more expensive to ship an int over network?
+    void get_neighbors_attr_local(
+        std::vector<int64_t> & _return,
+        const int32_t shardId,
+        const int64_t nodeId,
+        const int32_t attrId,
+        const std::string& attrKey)
+    {
+        COND_LOG_E("In get_nhbr_node_local(shardId %d, nodeId %d, attrId %d)\n",
+            shardId, nodeId, attrId);
+
         std::vector<int64_t> nhbrs;
-        get_neighbors(nhbrs, nodeId);
+        get_neighbors_local(nhbrs, shardId, nodeId);
+        COND_LOG_E("nhbrs size: %d\n", nhbrs.size());
 
+        // hostId -> [list of responsible nhbr IDs to check]
         std::unordered_map<int, std::vector<int64_t>> splits_by_keys;
-        int shard_id, host_id;
-        for (int64_t nhbr_id : nhbrs) {
-            shard_id = nhbr_id % total_num_shards_;
-            splits_by_keys[shard_id].push_back(
-                global_to_local_node_id(nhbr_id, shard_id));
+        int host_id;
 
-            host_id = shard_id % total_num_hosts_;
-            assert(host_id == local_host_id_);
+        for (int64_t nhbr_id : nhbrs) {
+            host_id = (nhbr_id % total_num_shards_) % total_num_hosts_;
+            splits_by_keys[host_id].push_back(nhbr_id); // global
         }
 
         for (auto it = splits_by_keys.begin(); it != splits_by_keys.end(); ++it)
         {
-            local_shards_[it->first].send_filter_nodes(
-                it->second, attrId, attrKey);
+            host_id = it->first;
+            if (host_id == local_host_id_) {
+                filter_nodes_local(_return, it->second, attrId, attrKey);
+                COND_LOG_E("locally filtered result: %d\n", _return.size());
+            } else {
+                COND_LOG_E("host id %d\n", host_id);
+                aggregators_.at(host_id).send_filter_nodes_local(
+                    it->second, attrId, attrKey);
+            }
+        }
+
+        std::vector<int64_t> shard_result;
+        for (auto it = splits_by_keys.begin(); it != splits_by_keys.end(); ++it)
+        {
+            host_id = it->first;
+            // The equal case has already been computed in loop above
+            if (host_id != local_host_id_) {
+                aggregators_.at(host_id).recv_filter_nodes_local(shard_result);
+                COND_LOG_E("remotely filtered result: %d\n", shard_result.size());
+            }
+            _return.insert(
+                _return.end(), shard_result.begin(), shard_result.end());
+        }
+    }
+
+    void filter_nodes_local(
+        std::vector<int64_t>& _return,
+        const std::vector<int64_t>& nodeIds,
+        const int32_t attrId,
+        const std::string& attrKey)
+    {
+        // shardId -> [list of responsible nhbr IDs to check]
+        std::unordered_map<int, std::vector<int64_t>> splits_by_keys;
+        int shard_id;
+
+        for (int64_t nhbr_id : nodeIds) {
+            shard_id = nhbr_id % total_num_shards_;
+            splits_by_keys[shard_id].push_back(
+                global_to_local_node_id(nhbr_id, shard_id)); // to local
+        }
+
+        for (auto it = splits_by_keys.begin(); it != splits_by_keys.end(); ++it)
+        {
+            local_shards_[it->first / total_num_hosts_]
+                .send_filter_nodes(it->second, attrId, attrKey);
         }
 
         _return.clear();
         std::vector<int64_t> shard_result;
         for (auto it = splits_by_keys.begin(); it != splits_by_keys.end(); ++it)
         {
-            local_shards_[it->first].recv_filter_nodes(shard_result);
-            for (int64_t local_key : shard_result) {
+            local_shards_[it->first / total_num_hosts_]
+                .recv_filter_nodes(shard_result);
+            // local back to global
+            for (const int64_t local_key : shard_result) {
                 // globalKey = localKey * numShards + shardId
                 // localKey = (globalKey - shardId) / numShards
                 _return.push_back(local_key * total_num_shards_ + it->first);
@@ -165,16 +355,38 @@ public:
         const int32_t attrId,
         const std::string& attrKey)
     {
-        // TODO: aggregator-to-aggregator routing is not yet implemented
-        assert(local_num_shards_ == total_num_shards_);
+        for (int i = 0; i < total_num_hosts_; ++i) {
+            if (i == local_host_id_) {
+                continue;
+            }
+            aggregators_.at(i).send_get_nodes_local(attrId, attrKey);
+        }
 
-        for (auto shard : local_shards_) {
+        get_nodes_local(_return, attrId, attrKey);
+
+        std::set<int64_t> shard_result;
+        for (int i = 0; i < total_num_hosts_; ++i) {
+            if (i == local_host_id_) {
+                continue;
+            }
+            aggregators_.at(i).recv_get_nodes_local(shard_result);
+            _return.insert(shard_result.begin(), shard_result.end());
+        }
+    }
+
+    void get_nodes_local(
+        std::set<int64_t> & _return,
+        const int32_t attrId,
+        const std::string& attrKey)
+    {
+        for (auto& shard : local_shards_) {
             shard.send_get_nodes(attrId, attrKey);
         }
 
         std::set<int64_t> shard_result;
         _return.clear();
-        for (auto shard : local_shards_) {
+
+        for (auto& shard : local_shards_) {
             shard.recv_get_nodes(shard_result);
             _return.insert(shard_result.begin(), shard_result.end());
         }
@@ -187,16 +399,41 @@ public:
         const int32_t attrId2,
         const std::string& attrKey2)
     {
-        // TODO: aggregator-to-aggregator routing is not yet implemented
-        assert(local_num_shards_ == total_num_shards_);
+        for (int i = 0; i < total_num_hosts_; ++i) {
+            if (i == local_host_id_) {
+                continue;
+            }
+            aggregators_.at(i).send_get_nodes2_local(
+                attrId1, attrKey1, attrId2, attrKey2);
+        }
 
-        for (auto shard : local_shards_) {
+        get_nodes2_local(_return, attrId1, attrKey1, attrId2, attrKey2);
+
+        std::set<int64_t> shard_result;
+        for (int i = 0; i < total_num_hosts_; ++i) {
+            if (i == local_host_id_) {
+                continue;
+            }
+            aggregators_.at(i).recv_get_nodes2_local(shard_result);
+            _return.insert(shard_result.begin(), shard_result.end());
+        }
+    }
+
+    void get_nodes2_local(
+        std::set<int64_t> & _return,
+        const int32_t attrId1,
+        const std::string& attrKey1,
+        const int32_t attrId2,
+        const std::string& attrKey2)
+    {
+        for (auto& shard : local_shards_) {
             shard.send_get_nodes2(attrId1, attrKey1, attrId2, attrKey2);
         }
 
         std::set<int64_t> shard_result;
         _return.clear();
-        for (auto shard : local_shards_) {
+
+        for (auto& shard : local_shards_) {
             shard.recv_get_nodes2(shard_result);
             _return.insert(shard_result.begin(), shard_result.end());
         }
@@ -215,8 +452,21 @@ public:
             local_shards_[shard_id / total_num_hosts_]
                 .assoc_range(_return, src, atype, off, len);
         } else {
-            assert(false && "routing not implemented");
+            aggregators_.at(host_id).assoc_range_local(
+                _return, shard_id, src, atype, off, len);
         }
+    }
+
+    void assoc_range_local(
+        std::vector<ThriftAssoc>& _return,
+        int32_t shardId,
+        int64_t src,
+        int64_t atype,
+        int32_t off,
+        int32_t len)
+    {
+        local_shards_[shardId / total_num_hosts_]
+            .assoc_range(_return, src, atype, off, len);
     }
 
     int64_t assoc_count(int64_t src, int64_t atype) {
@@ -226,8 +476,14 @@ public:
             return local_shards_[shard_id / total_num_hosts_]
                 .assoc_count(src, atype);
         } else {
-            assert(false && "routing not implemented");
+            return aggregators_.at(host_id).assoc_count_local(
+                shard_id, src, atype);
         }
+    }
+
+    int64_t assoc_count_local(int32_t shardId, int64_t src, int64_t atype) {
+        return local_shards_[shardId / total_num_hosts_]
+            .assoc_count(src, atype);
     }
 
     void assoc_get(
@@ -244,8 +500,22 @@ public:
             local_shards_[shard_id / total_num_hosts_]
                 .assoc_get(_return, src, atype, dstIdSet, tLow, tHigh);
         } else {
-            assert(false && "routing not implemented");
+            aggregators_.at(host_id).assoc_get_local(
+                _return, shard_id, src, atype, dstIdSet, tLow, tHigh);
         }
+    }
+
+    void assoc_get_local(
+        std::vector<ThriftAssoc>& _return,
+        const int32_t shardId,
+        const int64_t src,
+        const int64_t atype,
+        const std::set<int64_t>& dstIdSet,
+        const int64_t tLow,
+        const int64_t tHigh)
+    {
+        local_shards_[shardId / total_num_hosts_]
+            .assoc_get(_return, src, atype, dstIdSet, tLow, tHigh);
     }
 
     void obj_get(std::vector<std::string>& _return, const int64_t nodeId) {
@@ -255,8 +525,17 @@ public:
             local_shards_[shard_id / total_num_hosts_]
                 .obj_get(_return, global_to_local_node_id(nodeId, shard_id));
         } else {
-            assert(false && "routing not implemented");
+            aggregators_.at(host_id).obj_get_local(_return, shard_id, nodeId);
         }
+    }
+
+    void obj_get_local(
+        std::vector<std::string>& _return,
+        const int32_t shardId,
+        const int64_t nodeId)
+    {
+        local_shards_[shardId / total_num_hosts_]
+            .obj_get(_return, global_to_local_node_id(nodeId, shardId));
     }
 
     void assoc_time_range(
@@ -273,8 +552,22 @@ public:
             local_shards_[shard_id / total_num_hosts_]
                 .assoc_time_range(_return, src, atype, tLow, tHigh, limit);
         } else {
-            assert(false && "routing not implemented");
+            aggregators_.at(host_id).assoc_time_range_local(
+                _return, shard_id, src, atype, tLow, tHigh, limit);
         }
+    }
+
+    void assoc_time_range_local(
+        std::vector<ThriftAssoc>& _return,
+        const int32_t shardId,
+        const int64_t src,
+        const int64_t atype,
+        const int64_t tLow,
+        const int64_t tHigh,
+        const int32_t limit)
+    {
+        local_shards_[shardId / total_num_hosts_]
+            .assoc_time_range(_return, src, atype, tLow, tHigh, limit);
     }
 
 private:
@@ -297,6 +590,9 @@ private:
     const int total_num_hosts_;
 
     std::vector<GraphQueryServiceClient> local_shards_;
+
+    // Maps host id to aggregator handle.  Does not contain self.
+    std::unordered_map<int, GraphQueryAggregatorServiceClient> aggregators_;
 };
 
 // Dummy factory that just delegates fields.

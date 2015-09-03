@@ -16,10 +16,11 @@ dataset="-liveJournal${minDeg}"
 #dataset="-40attr16each"
 #dataset="-2attr350each"
 
-minDegs=('-minDeg30')
-minDegs=('' '-minDeg30')
 minDegs=('-minDeg60')
+minDegs=('' '-minDeg30')
+minDegs=('-minDeg30')
 minDegs=('-minDeg30WithTsAttr')
+minDegs=('' '-minDeg30WithTsAttr')
 minDegs=('')
 
 # NOTE: comment this out for non-sharded bench
@@ -28,7 +29,7 @@ if [[ -z "$SHARDED" ]]; then
   TOTAL_NUM_SHARDS=no
 fi
 
-#benchNeighbor=T
+benchNeighbor=T
 #benchNeighborAtype=T
 #benchNeighborNode=T
 #benchNode=T
@@ -38,12 +39,14 @@ fi
 throughput_threads=4
 #benchNeighborThput=T
 
-benchAssocRange=T
-benchAssocCount=T
+#benchAssocRange=T
+#benchAssocCount=T
 #benchObjGet=T
 #benchAssocGet=T
 #benchAssocTimeRange=T
-benchTaoMix=T
+#benchTaoMix=T
+
+augOpt="-augOpts"
 
 function bench() {
   if [[ "$dataset" == "-liveJournal"* ]]; then
@@ -57,7 +60,7 @@ function bench() {
 
   #EDGE_FILE="data/higgs-social_network.opts-npa${npa}sa${sa}isa${isa}.edge_table"
   #NODE_FILE="data/higgs${dataset}-tpch-npa${npa}sa${sa}isa${isa}.nodeWithPtrs"
-  EDGE_FILE="/mnt2T/data/liveJournal${minDeg}-npa${npa}sa${sa}isa${isa}.assoc"
+  EDGE_FILE="/mnt2T/data/liveJournal${augOpt}${minDeg}-npa${npa}sa${sa}isa${isa}.assoc"
   NODE_FILE="/mnt2T/data/liveJournal-40attr16each-tpch-npa${npa}sa${sa}isa${isa}.node"
 
   if [[ -n "$SHARDED" ]]; then
@@ -199,7 +202,7 @@ function bench() {
     fi
 
     if [[ -n "$benchTaoMix" ]]; then
-      sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+      #sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
 
       ${BIN_DIR}/bench -t tao-mix-latency \
         -x ${warmup_taoMix} -y ${measure_taoMix} \
@@ -231,6 +234,6 @@ function bench() {
 for minDeg in "${minDegs[@]}"; do
   dataset="-liveJournal${minDeg}"
   sa=32; isa=64; npa=128; bench
-  sa=8; isa=64; npa=64; bench
-  sa=4; isa=16; npa=16; bench
+  #sa=8; isa=64; npa=64; bench
+  #sa=4; isa=16; npa=16; bench
 done

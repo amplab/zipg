@@ -9,6 +9,11 @@ KeepInputSuccinctFile::KeepInputSuccinctFile(
 {
     // Read and keep the input in `raw_input_`
     size_t raw_input_size = read_file(raw_input_, filename);
+    if (raw_input_size < 0) {
+        LOG_E("Failed reading file '%s', perhaps the file doesn't exist?\n",
+            filename.c_str());
+        exit(1);
+    }
 
     COND_LOG_E("raw input size %d, sa %d, isa %d, npa %d\n",
         raw_input_size,

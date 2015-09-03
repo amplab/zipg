@@ -1,10 +1,10 @@
-#export SUCCINCT_DATA_PATH="/mnt"
-#export ISA_SAMPLING_RATE="8"
-#export SA_SAMPLING_RATE="8"
+# NOTE: #shards should be a multiple of num_hosts for now.
+export TOTAL_NUM_SHARDS=8
 
-k=8
-export SHARDS_PER_SERVER=$k
-export TOTAL_NUM_SHARDS=$k
+# hacky
+export num_hosts="$(cat "$(dirname "${BASH_SOURCE:-$0}")"/../conf/hosts | sed "s/#.*$//;/^$/d" | wc -l)"
+
+export SHARDS_PER_SERVER=$(($TOTAL_NUM_SHARDS / $num_hosts))
 
 #export SHARDS_BATCH_SLEEP=69000 # seconds
 #export NUM_SHARDS_BATCH=4
