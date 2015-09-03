@@ -171,6 +171,7 @@ public:
             "Received: get_neighbors(%lld), route to shard %d on host %d\n",
             nodeId, shard_id, host_id);
         if (host_id == local_host_id_) {
+
 #ifdef DEBUG_RPC_NHBR
             auto t1 = get_timestamp();
 #endif
@@ -183,8 +184,9 @@ public:
                 LOG_E(".%lld\n", t2 - t1);
             }
 #endif
+
         } else {
-            assert(false && "routing not implemented");
+            aggregators_.at(host_id).get_neighbors(_return, nodeId);
         }
     }
 
@@ -209,10 +211,12 @@ public:
             }
 #endif
         } else {
-            assert(false && "routing not implemented");
+            aggregators_.at(host_id).get_neighbors_atype(
+                _return, nodeId, atype);
         }
     }
 
+    // FIXME: add distributed routing
     void get_neighbors_attr(
         std::vector<int64_t> & _return,
         const int64_t nodeId,
@@ -307,7 +311,7 @@ public:
             local_shards_[shard_id / total_num_hosts_]
                 .assoc_range(_return, src, atype, off, len);
         } else {
-            assert(false && "routing not implemented");
+            aggregators_.at(host_id).assoc_range(_return, src, atype, off, len);
         }
     }
 
@@ -319,6 +323,7 @@ public:
                 .assoc_count(src, atype);
         } else {
             assert(false && "routing not implemented");
+            return aggregators_.at(host_id).assoc_count(src, atype);
         }
     }
 
@@ -336,7 +341,8 @@ public:
             local_shards_[shard_id / total_num_hosts_]
                 .assoc_get(_return, src, atype, dstIdSet, tLow, tHigh);
         } else {
-            assert(false && "routing not implemented");
+            aggregators_.at(host_id).assoc_get(
+                _return, src, atype, dstIdSet, tLow, tHigh);
         }
     }
 
@@ -347,7 +353,7 @@ public:
             local_shards_[shard_id / total_num_hosts_]
                 .obj_get(_return, global_to_local_node_id(nodeId, shard_id));
         } else {
-            assert(false && "routing not implemented");
+            aggregators_.at(host_id).obj_get(_return, nodeId);
         }
     }
 
@@ -365,7 +371,8 @@ public:
             local_shards_[shard_id / total_num_hosts_]
                 .assoc_time_range(_return, src, atype, tLow, tHigh, limit);
         } else {
-            assert(false && "routing not implemented");
+            aggregators_.at(host_id).assoc_time_range(
+                _return, src, atype, tLow, tHigh, limit);
         }
     }
 
