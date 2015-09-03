@@ -275,6 +275,7 @@ public:
 
         std::vector<int64_t> nhbrs;
         get_neighbors_local(nhbrs, shardId, nodeId);
+        COND_LOG_E("nhbrs size: %d\n", nhbrs.size());
 
         // hostId -> [list of responsible nhbr IDs to check]
         std::unordered_map<int, std::vector<int64_t>> splits_by_keys;
@@ -290,6 +291,7 @@ public:
             host_id = it->first;
             if (host_id == local_host_id_) {
                 filter_nodes_local(_return, it->second, attrId, attrKey);
+                COND_LOG_E("locally filtered result: %d\n", _return.size());
             } else {
                 COND_LOG_E("host id %d\n", host_id);
                 aggregators_.at(host_id).send_filter_nodes_local(
@@ -304,6 +306,7 @@ public:
             // The equal case has already been computed in loop above
             if (host_id != local_host_id_) {
                 aggregators_.at(host_id).recv_filter_nodes_local(shard_result);
+                COND_LOG_E("remotely filtered result: %d\n", shard_result.size());
             }
             _return.insert(
                 _return.end(), shard_result.begin(), shard_result.end());
