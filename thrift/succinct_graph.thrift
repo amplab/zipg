@@ -25,6 +25,9 @@ service GraphQueryService {
         3: i32 attrId2,
         4: string attrKey2),
 
+    // The `nodeId` is guaranteed to belong to this current shard.
+    string get_attribute_local(1: i64 nodeId, 2: i32 attrId),
+
     // Filter the nodeIds by checking whether they contain the specified
     // attribute.  Contracts:
     // (1) This shard will only check its own local node table.
@@ -75,6 +78,8 @@ service GraphQueryAggregatorService {
     i32 init_local_shards(),
 
     // Primitive queries
+
+    string get_attribute_local(1: i64 nodeId, 2: i32 attrId),
 
     list<i64> get_neighbors(1: i64 nodeId),
 

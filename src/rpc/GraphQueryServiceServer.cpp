@@ -184,6 +184,14 @@ public:
         }
     }
 
+    void get_attribute_local(
+        std::string& _return,
+        const int64_t nodeId,
+        const int32_t attrId)
+    {
+        graph_->get_attribute(_return, nodeId, attrId);
+    }
+
     void filter_nodes(
         std::vector<int64_t> & _return,
         const std::vector<int64_t> & nodeIds,
