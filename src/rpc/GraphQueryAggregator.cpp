@@ -357,6 +357,7 @@ public:
         {
             COND_LOG_E("sending to shard %d, filter_nodes\n",
                 it->first / total_num_hosts_);
+            // FIXME?: try to sleep a while? get_nhbr(n, attr) bug here?
             local_shards_[it->first / total_num_hosts_]
                 .send_filter_nodes(it->second, attrId, attrKey);
         }
