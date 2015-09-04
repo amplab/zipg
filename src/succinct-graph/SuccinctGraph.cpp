@@ -1072,15 +1072,23 @@ void SuccinctGraph::filter_nodes(
     int attr,
     const std::string& search_key)
 {
+    COND_LOG_E("in graph filter_nodes(.., attr %d, key '%s')\n",
+        attr, search_key.c_str());
+
     assert(attr < SuccinctGraph::MAX_NUM_NODE_ATTRS);
     result.clear();
     const char next_attr_delim = static_cast<char>(DELIMITERS[attr + 1]);
     std::string tmp;
 
     for (int64_t node_id : node_ids) {
+        COND_LOG_E("node %lld\n", node_id);
+
         uint64_t suf_arr_idx = -1ULL;
         int64_t start_offset = this->node_table->extract_until(
             tmp, suf_arr_idx, node_id, NODE_TABLE_HEADER_DELIM);
+
+        COND_LOG_E("extracted node table header '%s'\n", tmp.c_str());
+
         if (start_offset == -1) continue; // key doesn't exist
         // +(attr + 1) to account for delims after each of the lengths
         int32_t dist = std::stoi(tmp) + (attr + 1);
@@ -1088,6 +1096,7 @@ void SuccinctGraph::filter_nodes(
         for (int i = 1; i <= attr; ++i) {
             this->node_table->extract_until(
                 tmp, suf_arr_idx, node_id, NODE_TABLE_HEADER_DELIM);
+            COND_LOG_E("extracted length '%s'\n", tmp.c_str());
             dist += std::stoi(tmp);
         }
 
@@ -1095,6 +1104,7 @@ void SuccinctGraph::filter_nodes(
         if (this->node_table->extract_compare_until(
                 start_offset + dist, next_attr_delim, search_key))
         {
+            COND_LOG_E("compared successfully, keeping id %lld\n", node_id);
             result.push_back(node_id);
         }
     }
