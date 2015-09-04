@@ -341,6 +341,8 @@ public:
         const int32_t attrId,
         const std::string& attrKey)
     {
+        COND_LOG_E("in agg. filter_nodes_local, %d ids to filter\n",
+            nodeIds.size());
         // shardId -> [list of responsible nhbr IDs to check]
         std::unordered_map<int, std::vector<int64_t>> splits_by_keys;
         int shard_id;
@@ -353,6 +355,8 @@ public:
 
         for (auto it = splits_by_keys.begin(); it != splits_by_keys.end(); ++it)
         {
+            COND_LOG_E("sending to shard %d, filter_nodes\n",
+                it->first / total_num_hosts_);
             local_shards_[it->first / total_num_hosts_]
                 .send_filter_nodes(it->second, attrId, attrKey);
         }
@@ -361,8 +365,11 @@ public:
         std::vector<int64_t> shard_result;
         for (auto it = splits_by_keys.begin(); it != splits_by_keys.end(); ++it)
         {
+            COND_LOG_E("receiving filter_nodes() result from shard %d, ",
+                it->first / total_num_hosts_);
             local_shards_[it->first / total_num_hosts_]
                 .recv_filter_nodes(shard_result);
+            COND_LOG_E("size: %d\n", shard_result.size());
             // local back to global
             for (const int64_t local_key : shard_result) {
                 // globalKey = localKey * numShards + shardId
