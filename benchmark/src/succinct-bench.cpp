@@ -198,6 +198,7 @@ int main(int argc, char **argv) {
 
         bench->benchmark_neighbor_throughput(
             throughput_threads,
+            master_hostname,
             warmup_microsecs,
             measure_microsecs,
             cooldown_microsecs,
