@@ -51,8 +51,14 @@ public:
             if (i == local_host_id_) {
                 continue;
             }
-            aggregators_.at(i).send_init_local_shards();
             aggregators_.at(i).connect_to_aggregators();
+        }
+
+        for (int i = 0; i < total_num_hosts_; ++i) {
+            if (i == local_host_id_) {
+                continue;
+            }
+            aggregators_.at(i).send_init_local_shards();
         }
 
         for (auto& shard : local_shards_) {
