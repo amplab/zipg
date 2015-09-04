@@ -67,8 +67,8 @@ service GraphQueryAggregatorService {
     // Entry point to prepare a cluster.  Performs the following in parallel:
     //   (1) Have this aggregator connect to all machine-local shards, and call
     //       init() on them.
-    //   (2) Have this aggregator connect to all other aggregators in the
-    //       cluster, if any.
+    //   (2) Have this aggregator connect both-ways to all other aggregators in
+    //       the cluster, so that everyone has a socket to everyone.
     //   (3) Have those connected aggregators connect to their own
     //       local shards as well.
     i32 init(),
@@ -77,6 +77,9 @@ service GraphQueryAggregatorService {
     // and call init() on them (i.e. loads or constructs).  End users
     // should just call init() once and not call this method.
     i32 init_local_shards(),
+
+    // Have this aggregator connect to all other aggregators.
+    i32 connect_to_aggregators(),
 
     // Primitive queries
 

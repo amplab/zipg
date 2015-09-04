@@ -52,6 +52,7 @@ public:
                 continue;
             }
             aggregators_.at(i).send_init_local_shards();
+            aggregators_.at(i).connect_to_aggregators();
         }
 
         for (auto& shard : local_shards_) {
@@ -94,37 +95,6 @@ public:
         return 0;
     }
 
-private:
-
-    int32_t connect_to_local_shards() {
-        for (int i = 0; i < local_num_shards_; ++i) {
-            // Desirable? Hacky way to facilitate benchmark client reconnecting
-            // to a healthy cluster of aggregators & shard servers.
-            if (i < local_shards_.size()) continue;
-
-            LOG_E("Connecting to local server %d...", i);
-            try {
-                shared_ptr<TSocket> socket(new TSocket(
-                    "localhost", QUERY_SERVER_PORT + i));
-                shared_ptr<TTransport> transport(
-                    new TBufferedTransport(socket));
-                shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
-                GraphQueryServiceClient client(protocol);
-
-                transport->open();
-                LOG_E("Connected!\n");
-                local_shards_.push_back(client);
-            } catch (std::exception& e) {
-                LOG_E("Could not connect to server: %s\n", e.what());
-                return 1;
-            }
-        }
-        LOG_E(
-            "Currently have %zu local server connections.\n",
-            local_shards_.size());
-        return 0;
-    }
-
     int32_t connect_to_aggregators() {
         aggregators_.clear();
 
@@ -159,6 +129,37 @@ private:
         }
         LOG_E("Aggregators connected: cluster has %zu aggregators in total.\n",
             hostnames_.size());
+        return 0;
+    }
+
+private:
+
+    int32_t connect_to_local_shards() {
+        for (int i = 0; i < local_num_shards_; ++i) {
+            // Desirable? Hacky way to facilitate benchmark client reconnecting
+            // to a healthy cluster of aggregators & shard servers.
+            if (i < local_shards_.size()) continue;
+
+            LOG_E("Connecting to local server %d...", i);
+            try {
+                shared_ptr<TSocket> socket(new TSocket(
+                    "localhost", QUERY_SERVER_PORT + i));
+                shared_ptr<TTransport> transport(
+                    new TBufferedTransport(socket));
+                shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
+                GraphQueryServiceClient client(protocol);
+
+                transport->open();
+                LOG_E("Connected!\n");
+                local_shards_.push_back(client);
+            } catch (std::exception& e) {
+                LOG_E("Could not connect to server: %s\n", e.what());
+                return 1;
+            }
+        }
+        LOG_E(
+            "Currently have %zu local server connections.\n",
+            local_shards_.size());
         return 0;
     }
 
