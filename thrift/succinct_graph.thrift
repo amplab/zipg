@@ -25,7 +25,8 @@ service GraphQueryService {
         3: i32 attrId2,
         4: string attrKey2),
 
-    // The `nodeId` is guaranteed to belong to this current shard.
+    // The `nodeId` is a local key, and is guaranteed to belong to this
+    // current shard.
     string get_attribute_local(1: i64 nodeId, 2: i32 attrId),
 
     // Filter the nodeIds by checking whether they contain the specified

@@ -176,7 +176,7 @@ public:
             exit(1);
         }
         local_shards_.at(shard_id / total_num_hosts_).get_attribute_local(
-            _return, nodeId, attrId);
+            _return, global_to_local_node_id(nodeId, shard_id), attrId);
     }
 
     void get_neighbors(std::vector<int64_t> & _return, const int64_t nodeId) {
