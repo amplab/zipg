@@ -33,6 +33,34 @@ void generate_name(std::string& name, int len) {
     }
 }
 
+// TODO: code duplicated with init_sharded_benchmark() in GraphBenchmark.
+// Assumes the shards and the aggregator processes are started externally, prior
+// to the entry into this function.  Processes are assumed to be local for now,
+// using sockets ports defined in ports.h.
+shared_ptr<GraphQueryAggregatorServiceClient> init_sharded_graph() {
+    shared_ptr<GraphQueryAggregatorServiceClient> aggregator(nullptr);
+    try {
+        LOG_E("Connecting to server...\n");
+        shared_ptr<TSocket> socket(
+            new TSocket("localhost", QUERY_HANDLER_PORT));
+        shared_ptr<TTransport> transport(
+                new TBufferedTransport(socket));
+        shared_ptr<TProtocol> protocol(
+                new TBinaryProtocol(transport));
+        aggregator = shared_ptr<GraphQueryAggregatorServiceClient>(
+            new GraphQueryAggregatorServiceClient(protocol));
+        transport->open();
+        LOG_E("Connected to aggregator!\n");
+
+        int ret = aggregator->init();
+        LOG_E("Aggregator has init()'d cluster, return code = %d\n", ret);
+    } catch (std::exception& e) {
+        LOG_E("Exception in initializing sharded graph: %s\n", e.what());
+        std::terminate();
+    }
+    return aggregator;
+}
+
 // Generates `num_names` random strings of length `len`, where each string
 // appears `freq` number of times, except possibly the last.
 std::vector<std::string> create_names(int num_names, int freq, int len) {
@@ -308,88 +336,44 @@ void generate_neighbor_node_queries_no_load(
     output(query_file, query_size);
 }
 
+// Loads the graph (so query results cannot be empty).
 // Format: randomNodeId,attrIdx,attrKey.
 void generate_neighbor_node_queries(
-    std::string node_succinct_dir,
-    std::string edge_succinct_dir,
+    int64_t num_nodes,
     int64_t node_num_attrs,
     int warmup_size,
     int query_size,
     std::string warmup_query_file,
     std::string query_file)
 {
-    SuccinctGraph* graph = new SuccinctGraph(
-        node_succinct_dir,
-        edge_succinct_dir);
+    auto aggregator = init_sharded_graph();
 
     std::random_device rd;
     std::mt19937 rng(rd());
-
-    std::uniform_int_distribution<int64_t> uni_node(0, graph->num_nodes() - 1);
+    std::uniform_int_distribution<int64_t> uni_node(0, num_nodes - 1);
     std::uniform_int_distribution<int> uni_attr(0, node_num_attrs - 1);
 
-    std::ofstream warmup_out(warmup_query_file);
-    std::ofstream query_out(query_file);
-    std::vector<int64_t> neighbors;
-    std::string search_key;
-
-    for (int64_t i = 0; i < warmup_size; i++) {
-        int node_id;
-        int attr = uni_attr(rng);
-        neighbors.clear();
-        while (neighbors.empty()) {
-            node_id = uni_node(rng);
-            graph->get_neighbors(neighbors, node_id);
+    auto output = [&](const std::string& out_file, int out_size) {
+        std::ofstream out(out_file);
+        std::vector<int64_t> neighbors;
+        std::string search_key;
+        for (int64_t i = 0; i < out_size; i++) {
+            int node_id;
+            int attr = uni_attr(rng);
+            neighbors.clear();
+            while (neighbors.empty()) {
+                node_id = uni_node(rng);
+                aggregator->get_neighbors(neighbors, node_id);
+            }
+            std::vector<int64_t>::const_iterator it(neighbors.begin());
+            int neighbor_idx = rand() % neighbors.size();
+            std::advance(it, neighbor_idx);
+            aggregator->get_attribute_local(search_key, *it, attr);      // TODO
+            out << node_id << "," << attr << "," << search_key << "\n";
         }
-        std::vector<int64_t>::const_iterator it(neighbors.begin());
-        int neighbor_idx = rand() % neighbors.size();
-        std::advance(it, neighbor_idx);
-        graph->get_attribute(search_key, *it, attr);
-        warmup_out << node_id << "," << attr << "," << search_key << "\n";
-    }
-
-    for (int64_t i = 0; i < query_size; i++) {
-        int node_id;
-        int attr = uni_attr(rng);
-        neighbors.clear();
-        while (neighbors.empty()) {
-            node_id = uni_node(rng);
-            graph->get_neighbors(neighbors, node_id);
-        }
-        std::vector<int64_t>::const_iterator it(neighbors.begin());
-        int neighbor_idx = rand() % neighbors.size();
-        std::advance(it, neighbor_idx);
-        graph->get_attribute(search_key, *it, attr);
-        query_out << node_id << "," << attr << "," << search_key << "\n";
-    }
-}
-
-// TODO: code duplicated with init_sharded_benchmark() in GraphBenchmark.
-// Assumes the shards and the aggregator processes are started externally, prior
-// to the entry into this function.  Processes are assumed to be local for now,
-// using sockets ports defined in ports.h.
-shared_ptr<GraphQueryAggregatorServiceClient> init_sharded_graph() {
-    shared_ptr<GraphQueryAggregatorServiceClient> aggregator(nullptr);
-    try {
-        LOG_E("Connecting to server...\n");
-        shared_ptr<TSocket> socket(
-            new TSocket("localhost", QUERY_HANDLER_PORT));
-        shared_ptr<TTransport> transport(
-                new TBufferedTransport(socket));
-        shared_ptr<TProtocol> protocol(
-                new TBinaryProtocol(transport));
-        aggregator = shared_ptr<GraphQueryAggregatorServiceClient>(
-            new GraphQueryAggregatorServiceClient(protocol));
-        transport->open();
-        LOG_E("Connected to aggregator!\n");
-
-        int ret = aggregator->init();
-        LOG_E("Aggregator has init()'d cluster, return code = %d\n", ret);
-    } catch (std::exception& e) {
-        LOG_E("Exception in initializing sharded graph: %s\n", e.what());
-        std::terminate();
-    }
-    return aggregator;
+    };
+    output(warmup_query_file, warmup_size);
+    output(query_file, query_size);
 }
 
 // Loads the graph first. Samples (nodeId, atype) uniformly at random.
@@ -615,14 +599,15 @@ int main(int argc, char **argv) {
 
         std::string node_succinct_dir = argv[2];
         std::string edge_succinct_dir = argv[3];
-        int64_t node_num_attrs = std::stol(argv[4]);
-        int warmup_size = atoi(argv[5]);
-        int query_size = atoi(argv[6]);
-        std::string warmup_file = argv[7];
-        std::string query_file = argv[8];
+        int64_t num_nodes = std::stoll(argv[4]);
+        int64_t node_num_attrs = std::stol(argv[5]);
+        int warmup_size = atoi(argv[6]);
+        int query_size = atoi(argv[7]);
+        std::string warmup_file = argv[8];
+        std::string query_file = argv[9];
+
         generate_neighbor_node_queries(
-            node_succinct_dir,
-            edge_succinct_dir,
+            num_nodes,
             node_num_attrs,
             warmup_size,
             query_size,

@@ -38,24 +38,26 @@ do
   if [[ -n "$neighborNode" ]]; then
     echo creating neighbor-node queries for ${num_nodes} nodes, warmup ${warmup_neighbor_node}, measure ${measure_neighbor_node}
 
- #   ${BIN_DIR}/create neighbor-node-queries \
- #     ${NODE_FILE} \
- #     ${EDGE_FILE} \
- #     ${attributes} \
- #     ${warmup_neighbor_node} \
- #     ${measure_neighbor_node} \
- #     ${QUERY_DIR}/neighbor_node_warmup_${num_nodes}.txt \
- #     ${QUERY_DIR}/neighbor_node_query_${num_nodes}.txt
+    # load sharded graph to generate queries
+   ${BIN_DIR}/create neighbor-node-queries \
+     ${NODE_FILE} \
+     ${EDGE_FILE} \
+     $(wc -l ${NODE_FILE} | cut -d' ' -f 1) \
+     ${attributes} \
+     ${warmup_neighbor_node} \
+     ${measure_neighbor_node} \
+     ${QUERY_DIR}/neighbor_node_warmup_${num_nodes}.txt \
+     ${QUERY_DIR}/neighbor_node_query_${num_nodes}.txt
 
     # if noLoad, queries can have empty results
-    ${BIN_DIR}/create neighbor-node-queries-noLoad \
-      ${NODE_FILE} \
-      ${warmup_neighbor_node} \
-      ${measure_neighbor_node} \
-      ${QUERY_DIR}/neighbor_node_warmup_${num_nodes}.txt \
-      ${QUERY_DIR}/neighbor_node_query_${num_nodes}.txt \
-      ${attributes} \
-      ${IS_NODE_FILE_CSV}
+    # ${BIN_DIR}/create neighbor-node-queries-noLoad \
+      # ${NODE_FILE} \
+      # ${warmup_neighbor_node} \
+      # ${measure_neighbor_node} \
+      # ${QUERY_DIR}/neighbor_node_warmup_${num_nodes}.txt \
+      # ${QUERY_DIR}/neighbor_node_query_${num_nodes}.txt \
+      # ${attributes} \
+      # ${IS_NODE_FILE_CSV}
 
  fi
 
