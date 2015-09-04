@@ -205,6 +205,29 @@ int main(int argc, char **argv) {
             warmup_query_file,
             measure_query_file);
 
+    } else if (type == "tao-mix-throughput") {
+
+        int64_t warmup_microsecs = 60 * 1000 * 1000; // 1 min
+        int64_t measure_microsecs = 120 * 1000 * 1000; // 2 min
+        int64_t cooldown_microsecs = 5 * 1000 * 1000; // 5 sec
+
+        bench->benchmark_tao_mix_throughput(
+            throughput_threads,
+            master_hostname,
+            warmup_microsecs,
+            measure_microsecs,
+            cooldown_microsecs,
+            warmup_neighbor_file, // assoc_range
+            measure_neighbor_file,
+            warmup_query_file, // assoc_count
+            measure_query_file,
+            warmup_nhbr_node_file, // obj_get
+            nhbr_node_file,
+            warmup_node_file, // assoc_get
+            query_node_file,
+            warmup_assoc_time_range_file, // assoc_time_range
+            query_assoc_time_range_file);
+
     } else if (type == "node-throughput") {
 
 //        double thput = bench->benchmark_node_throughput(

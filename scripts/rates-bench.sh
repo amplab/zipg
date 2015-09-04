@@ -38,6 +38,7 @@ benchNeighbor=T
 
 throughput_threads=4
 #benchNeighborThput=T
+#benchTaoMixThput=T
 
 #benchAssocRange=T
 #benchAssocCount=T
@@ -237,6 +238,24 @@ function bench() {
         -i ${HOME_DIR}/mix_objGet_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
         -j ${HOME_DIR}/mix_assocGet_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
         -k ${HOME_DIR}/mix_assocTimeRange_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+        -m ${masterHostName} \
+        ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
+    fi
+
+    if [[ -n "$benchTaoMixThput" ]]; then
+      #sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+
+      ${BIN_DIR}/bench -t tao-mix-throughput \
+        -w ${QUERY_DIR}/assocCount_warmup.txt \
+        -q ${QUERY_DIR}/assocCount_query.txt \
+        -a ${QUERY_DIR}/assocRange_warmup.txt \
+        -b ${QUERY_DIR}/assocRange_query.txt \
+        -c ${QUERY_DIR}/objGet_warmup.txt \
+        -d ${QUERY_DIR}/objGet_query.txt \
+        -e ${QUERY_DIR}/assocGet_warmup.txt \
+        -f ${QUERY_DIR}/assocGet_query.txt \
+        -g ${QUERY_DIR}/assocTimeRange_warmup.txt \
+        -l ${QUERY_DIR}/assocTimeRange_query.txt \
         -m ${masterHostName} \
         ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
     fi
