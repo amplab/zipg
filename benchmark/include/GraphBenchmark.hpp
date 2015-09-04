@@ -52,12 +52,12 @@ private:
 
 public:
 
-    GraphBenchmark(SuccinctGraph *graph) {
+    GraphBenchmark(SuccinctGraph *graph, const std::string& master_hostname) {
         graph_ = graph;
 
         if (graph_ == nullptr) {
             // sharded bench
-            init_sharded_benchmark();
+            init_sharded_benchmark(master_hostname);
 
             get_neighbors_f_ = [this](std::vector<int64_t>& nhbrs, int64_t id) {
                 aggregator_->get_neighbors(nhbrs, id);
@@ -188,11 +188,11 @@ public:
         }
     }
 
-    void init_sharded_benchmark() {
+    void init_sharded_benchmark(const std::string& master_hostname) {
         try {
-            LOG_E("Connecting to server...\n");
+            LOG_E("Connecting to server '%s'...\n", master_hostname.c_str());
             shared_ptr<TSocket> socket(
-                new TSocket("localhost", QUERY_HANDLER_PORT));
+                new TSocket(master_hostname, QUERY_HANDLER_PORT));
             shared_ptr<TTransport> transport(
                     new TBufferedTransport(socket));
             shared_ptr<TProtocol> protocol(

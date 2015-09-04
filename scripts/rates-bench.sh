@@ -48,6 +48,10 @@ throughput_threads=4
 
 augOpt="-augOpts"
 
+# hostname of the master aggregator that bench client connects to
+# if desirable to put client on 1 host, and agg. on the other, change this
+masterHostName="localhost"
+
 function bench() {
   if [[ "$dataset" == "-liveJournal"* ]]; then
     pushd ${QUERY_DIR} >/dev/null
@@ -80,6 +84,7 @@ function bench() {
       -y ${measure_node} -w ${QUERY_DIR}/node_warmup_${num_nodes}.txt \
       -q ${QUERY_DIR}/node_query_${num_nodes}.txt \
       -o ${HOME_DIR}/node_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+      -m ${masterHostName} \
       ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
     fi
 
@@ -89,6 +94,7 @@ function bench() {
       -y ${measure_node} -w ${QUERY_DIR}/node_warmup_${num_nodes}.txt \
       -q ${QUERY_DIR}/node_query_${num_nodes}.txt \
       -o ${HOME_DIR}/double_node_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+      -m ${masterHostName} \
       ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
     fi
     
@@ -98,6 +104,7 @@ function bench() {
       -y ${measure_neighbor_node} -w ${QUERY_DIR}/neighbor_node_warmup_${num_nodes}.txt \
       -q ${QUERY_DIR}/neighbor_node_query_${num_nodes}.txt \
       -o ${HOME_DIR}/neighbor_node_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+      -m ${masterHostName} \
       ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
     fi
 
@@ -107,6 +114,7 @@ function bench() {
         -y ${measure_neighbor_atype} -w ${QUERY_DIR}/neighborAtype_warmup_${num_nodes}.txt \
         -q ${QUERY_DIR}/neighborAtype_query_${num_nodes}.txt \
         -o ${HOME_DIR}/neighborAtype_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+        -m ${masterHostName} \
         ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
     fi
 
@@ -116,6 +124,7 @@ function bench() {
       -y ${measure_neighbor} -w ${QUERY_DIR}/neighbor_warmup_${num_nodes}.txt \
       -q ${QUERY_DIR}/neighbor_query_${num_nodes}.txt \
       -o ${HOME_DIR}/neighbor_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+      -m ${masterHostName} \
       ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
     fi
 
@@ -137,6 +146,7 @@ function bench() {
         -i ${HOME_DIR}/mix_neighbor_node_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
         -j ${HOME_DIR}/mix_node_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
         -k ${HOME_DIR}/mix_double_node_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+        -m ${masterHostName} \
         ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
     fi
 
@@ -149,6 +159,7 @@ function bench() {
         -w ${QUERY_DIR}/neighbor_warmup_${num_nodes}.txt \
         -q ${QUERY_DIR}/neighbor_query_${num_nodes}.txt \
         -o ${HOME_DIR}/neighbor_throughput-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards-${throughput_threads}clients.txt \
+        -m ${masterHostName} \
         ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
 
       x=$(cut -d' ' -f1 throughput_get_nhbrs.txt | awk '{sum += $1} END {print sum}')
@@ -162,6 +173,7 @@ function bench() {
         -x ${warmup_assocRange} -y ${measure_assocRange} \
         -w ${QUERY_DIR}/assocRange_warmup.txt -q ${QUERY_DIR}/assocRange_query.txt \
         -o ${HOME_DIR}/assocRange_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+        -m ${masterHostName} \
         ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
     fi
 
@@ -171,6 +183,7 @@ function bench() {
         -x ${warmup_assocCount} -y ${measure_assocCount} \
         -w ${QUERY_DIR}/assocCount_warmup.txt -q ${QUERY_DIR}/assocCount_query.txt \
         -o ${HOME_DIR}/assocCount_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+        -m ${masterHostName} \
         ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
     fi
 
@@ -180,6 +193,7 @@ function bench() {
         -x ${warmup_objGet} -y ${measure_objGet} \
         -w ${QUERY_DIR}/objGet_warmup.txt -q ${QUERY_DIR}/objGet_query.txt \
         -o ${HOME_DIR}/objGet_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+        -m ${masterHostName} \
         ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
     fi
 
@@ -189,6 +203,7 @@ function bench() {
         -x ${warmup_assocGet} -y ${measure_assocGet} \
         -w ${QUERY_DIR}/assocGet_warmup.txt -q ${QUERY_DIR}/assocGet_query.txt \
         -o ${HOME_DIR}/assocGet_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+        -m ${masterHostName} \
         ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
     fi
 
@@ -198,6 +213,7 @@ function bench() {
         -x ${warmup_assocTimeRange} -y ${measure_assocTimeRange} \
         -w ${QUERY_DIR}/assocTimeRange_warmup.txt -q ${QUERY_DIR}/assocTimeRange_query.txt \
         -o ${HOME_DIR}/assocTimeRange_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+        -m ${masterHostName} \
         ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
     fi
 
@@ -221,6 +237,7 @@ function bench() {
         -i ${HOME_DIR}/mix_objGet_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
         -j ${HOME_DIR}/mix_assocGet_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
         -k ${HOME_DIR}/mix_assocTimeRange_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+        -m ${masterHostName} \
         ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
     fi
 

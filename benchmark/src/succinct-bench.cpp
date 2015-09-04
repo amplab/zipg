@@ -84,11 +84,15 @@ int main(int argc, char **argv) {
     std::string nhbr_atype_res, nhbr_node_res, node_res, node_node_res;
     std::string warmup_assoc_time_range_file, query_assoc_time_range_file;
 
+    // By default, make the host executing the benchmark client an aggregator
+    // as well (needs to change conf/hosts).
+    std::string master_hostname("localhost");
+
     int throughput_threads = 1;
 
     // TODO: how the script uses these here is a mess.
     while ((c = getopt(
-        argc, argv, "t:x:y:z:w:q:a:b:c:d:e:f:o:h:i:j:k:p:g:l:")) != -1)
+        argc, argv, "t:x:y:z:w:q:a:b:c:d:e:f:o:h:i:j:k:p:g:l:m:")) != -1)
     {
         switch(c) {
         case 't':
@@ -148,6 +152,9 @@ int main(int argc, char **argv) {
         case 'l':
             query_assoc_time_range_file = std::string(optarg);
             break;
+        case 'm':
+            master_hostname = std::string(optarg);
+            break;
         }
     }
 
@@ -167,9 +174,10 @@ int main(int argc, char **argv) {
     bool is_sharded = (optind + 2 < argc); // if there exists a last dummy arg
     if (!is_sharded) {
         graph = new SuccinctGraph(node_file, edge_file); // loads
-        bench = new GraphBenchmark(graph);
+        bench = new GraphBenchmark(graph, "");
     } else {
-        bench = new GraphBenchmark(nullptr); // sharded; connects to aggregator
+        // sharded; connects to a master aggregator
+        bench = new GraphBenchmark(nullptr, master_hostname);
     }
 
     if (type == "neighbor-latency") {
