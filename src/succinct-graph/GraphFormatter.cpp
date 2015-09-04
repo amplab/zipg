@@ -201,7 +201,7 @@ void GraphFormatter::create_edge_table(
 
     std::random_device rd1, rd2;
     std::mt19937 rng1(rd1()), rng2(rd2());
-    std::uniform_int_distribution<int64_t> atype_dis(0, num_atype);
+    std::uniform_int_distribution<int64_t> atype_dis(0, num_atype - 1);
     std::uniform_int_distribution<int> time_dis(
         0, std::numeric_limits<int>::max());
 
