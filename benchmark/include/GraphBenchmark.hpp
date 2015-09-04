@@ -371,6 +371,7 @@ public:
 
     void benchmark_neighbor_throughput(
         int num_threads,
+        const std::string& master_hostname,
         int64_t warmup_microsecs,
         int64_t measure_microsecs,
         int64_t cooldown_microsecs,
@@ -383,7 +384,7 @@ public:
         for (int i = 0; i < num_threads; ++i) {
             try {
                 shared_ptr<TSocket> socket(
-                    new TSocket("localhost", QUERY_HANDLER_PORT));
+                    new TSocket(master_hostname, QUERY_HANDLER_PORT));
                 shared_ptr<TTransport> transport(
                     new TBufferedTransport(socket));
                 shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
