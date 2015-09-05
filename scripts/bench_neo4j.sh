@@ -183,7 +183,6 @@ for JVM_HEAP in 6900; do
 
       fi
 
-      for thputThreads in 30; do
       if [[ -n "$benchNhbrThput" ]]; then
         sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
         find /mnt2T/data/neo4j/${DATASET}/ -name "*store.db*" -type f -exec dd if={} of=/dev/null bs=1M 2>/dev/null \;
@@ -205,7 +204,6 @@ for JVM_HEAP in 6900; do
         echo ${thputThreads} clients, $x get_nhbr queries/sec
 
       fi
-    done
 
     if [[ -n "$benchAssocRange" ]]; then
         # sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
