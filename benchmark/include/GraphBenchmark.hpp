@@ -24,6 +24,28 @@ using namespace ::apache::thrift::transport;
 class GraphBenchmark {
 private:
 
+   // Read workload distribution; from ATC 13 Bronson et al.
+    constexpr static double ASSOC_RANGE_PERC = 0.409;
+    constexpr static double OBJ_GET_PERC = 0.289;
+    constexpr static double ASSOC_GET_PERC = 0.157;
+    constexpr static double ASSOC_COUNT_PERC = 0.117;
+    constexpr static double ASSOC_TIME_RANGE_PERC = 0.028;
+
+    inline int choose_query(double rand_r) {
+        if (rand_r < ASSOC_RANGE_PERC) {
+            return 0;
+        } else if (rand_r < ASSOC_RANGE_PERC + OBJ_GET_PERC) {
+            return 1;
+        } else if (rand_r < ASSOC_RANGE_PERC + OBJ_GET_PERC + ASSOC_GET_PERC) {
+            return 2;
+        } else if (rand_r < ASSOC_RANGE_PERC + OBJ_GET_PERC +
+            ASSOC_GET_PERC + ASSOC_COUNT_PERC)
+        {
+            return 3;
+        }
+        return 4;
+    }
+
     template<typename T>
     inline T mod_get(const std::vector<T>& xs, int64_t i) {
         return xs[i % xs.size()];
@@ -456,7 +478,7 @@ public:
             // Warmup phase
             time_t start = get_timestamp();
             while (get_timestamp() - start < warmup_microsecs) {
-                query = dist_query(rng);
+                query = choose_query((double) rand() / RAND_MAX);
                 switch (query) {
                 case 0:
                     query_idx = std::rand() % warmup_assoc_range_size;
@@ -467,17 +489,11 @@ public:
                         this->warmup_assoc_range_lens.at(query_idx));
                     break;
                 case 1:
-                    query_idx = std::rand() % warmup_assoc_count_size;
-                    thread_data->client->assoc_count(
-                        this->warmup_assoc_count_nodes.at(query_idx),
-                        this->warmup_assoc_count_atypes.at(query_idx));
-                    break;
-                case 2:
                     query_idx = std::rand() % warmup_obj_get_size;
                     thread_data->client->obj_get(attrs,
                         this->warmup_obj_get_nodes.at(query_idx));
                     break;
-                case 3:
+                case 2:
                     query_idx = std::rand() % warmup_assoc_get_size;
                     thread_data->client->assoc_get(result,
                         this->warmup_assoc_get_nodes.at(query_idx),
@@ -485,6 +501,12 @@ public:
                         this->warmup_assoc_get_dst_id_sets.at(query_idx),
                         this->warmup_assoc_get_lows.at(query_idx),
                         this->warmup_assoc_get_highs.at(query_idx));
+                    break;
+                case 3:
+                    query_idx = std::rand() % warmup_assoc_count_size;
+                    thread_data->client->assoc_count(
+                        this->warmup_assoc_count_nodes.at(query_idx),
+                        this->warmup_assoc_count_atypes.at(query_idx));
                     break;
                 case 4:
                     query_idx = std::rand() % warmup_assoc_time_range_size;
@@ -509,7 +531,7 @@ public:
             while (get_timestamp() - start < measure_microsecs) {
 #ifndef RUN_TAO_MIX_THPUT_BODY
 #define RUN_TAO_MIX_THPUT_BODY
-                query = dist_query(rng); \
+                query = choose_query((double) rand() / RAND_MAX); \
                 switch (query) { \
                 case 0: \
                   query_idx = std::rand() % assoc_range_size; \
@@ -520,17 +542,11 @@ public:
                       this->assoc_range_lens.at(query_idx)); \
                   break; \
                 case 1: \
-                  query_idx = std::rand() % assoc_count_size; \
-                  thread_data->client->assoc_count( \
-                      this->assoc_count_nodes.at(query_idx), \
-                      this->assoc_count_atypes.at(query_idx)); \
-                  break; \
-                case 2: \
                   query_idx = std::rand() % obj_get_size; \
                   thread_data->client->obj_get(attrs, \
                       this->obj_get_nodes.at(query_idx)); \
                   break; \
-                case 3: \
+                case 2: \
                   query_idx = std::rand() % assoc_get_size; \
                   thread_data->client->assoc_get(result, \
                       this->assoc_get_nodes.at(query_idx), \
@@ -538,6 +554,12 @@ public:
                       this->assoc_get_dst_id_sets.at(query_idx), \
                       this->assoc_get_lows.at(query_idx), \
                       this->assoc_get_highs.at(query_idx)); \
+                  break; \
+                case 3: \
+                  query_idx = std::rand() % assoc_count_size; \
+                  thread_data->client->assoc_count( \
+                      this->assoc_count_nodes.at(query_idx), \
+                      this->assoc_count_atypes.at(query_idx)); \
                   break; \
                 case 4: \
                   query_idx = std::rand() % assoc_time_range_size; \
