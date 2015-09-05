@@ -94,10 +94,12 @@ public class BenchTAOMixed {
         WARMUP_N = Integer.parseInt(args[17]);
         MEASURE_N = Integer.parseInt(args[18]);
         int numClients = Integer.parseInt(args[19]);
+        boolean tuned = Boolean.valueOf(args[20]);
+
         String neo4jPageCacheMemory = GraphDatabaseSettings.pagecache_memory
             .getDefaultValue();
-        if (args.length > 20) {
-            neo4jPageCacheMemory = args[20];
+        if (args.length > 21) {
+            neo4jPageCacheMemory = args[21];
         }
 
         // assoc_range()
@@ -145,11 +147,11 @@ public class BenchTAOMixed {
         // start!
 
         if (type.equals("latency")) {
-            mixLatency(dbPath, neo4jPageCacheMemory,
+            mixLatency(tuned, dbPath, neo4jPageCacheMemory,
                 assocRangeOut, assocCountOut, objGetOut,
                 assocGetOut, assocTimeRangeOut);
         } else if (type.equals("throughput")) {
-            throughput(dbPath, neo4jPageCacheMemory, numClients);
+            throughput(tuned, dbPath, neo4jPageCacheMemory, numClients);
         } else {
             System.out.println("No type " + type + " is supported!");
         }
@@ -158,18 +160,23 @@ public class BenchTAOMixed {
     /**
      * Note: the mixing order can affect query performance.
      */
-    private static void mixLatency(
+    private static void mixLatency(boolean tuned,
         String DB_PATH, String neo4jPageCacheMem,
         String assocRangeOut, String assocCountOut,
         String objGetOut, String assocGetOut, String assocTimeRangeOut) {
 
         // START SNIPPET: startDb
-        GraphDatabaseService db = new GraphDatabaseFactory()
-            .newEmbeddedDatabaseBuilder(DB_PATH)
-            .setConfig(GraphDatabaseSettings.cache_type, "none")
-            .setConfig(
-                GraphDatabaseSettings.pagecache_memory, neo4jPageCacheMem)
-            .newGraphDatabase();
+        GraphDatabaseService db;
+        if (tuned) {
+            db = new GraphDatabaseFactory()
+                .newEmbeddedDatabaseBuilder(DB_PATH)
+                .setConfig(GraphDatabaseSettings.cache_type, "none")
+                .setConfig(
+                    GraphDatabaseSettings.pagecache_memory, neo4jPageCacheMem)
+                .newGraphDatabase();
+        } else {
+            db = new GraphDatabaseFactory().newEmbeddedDatabase(DB_PATH);
+        }
 
         BenchUtils.registerShutdownHook(db);
         Transaction tx = db.beginTx();
@@ -517,15 +524,20 @@ public class BenchTAOMixed {
         }
     }
 
-    private static void throughput(String dbPath,
-        String neo4jPageCacheMemory, int numClients) {
+    private static void throughput(boolean tuned, String dbPath,
+        String neo4jPageCacheMem, int numClients) {
 
-        GraphDatabaseService graphDb = new GraphDatabaseFactory()
-            .newEmbeddedDatabaseBuilder(dbPath)
-            .setConfig(GraphDatabaseSettings.cache_type, "none")
-            .setConfig(
-                GraphDatabaseSettings.pagecache_memory, neo4jPageCacheMemory)
-            .newGraphDatabase();
+        GraphDatabaseService graphDb;
+        if (tuned) {
+            graphDb = new GraphDatabaseFactory()
+                .newEmbeddedDatabaseBuilder(dbPath)
+                .setConfig(GraphDatabaseSettings.cache_type, "none")
+                .setConfig(
+                    GraphDatabaseSettings.pagecache_memory, neo4jPageCacheMem)
+                .newGraphDatabase();
+        } else {
+            graphDb = new GraphDatabaseFactory().newEmbeddedDatabase(dbPath);
+        }
         BenchUtils.registerShutdownHook(graphDb);
         Transaction tx = null;
         try {

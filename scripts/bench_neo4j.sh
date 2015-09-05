@@ -35,6 +35,9 @@ else
 fi
 NEO4J_DIR=/mnt2T/data/neo4j
 
+tuned=false
+tuned=true
+
 #benchNeighbor=T
 #benchNeighborAtype=T
 #benchNeighborNode=T
@@ -319,6 +322,7 @@ for JVM_HEAP in 6900; do
          ${warmup_taoMix} \
          ${measure_taoMix} \
          0 \
+         ${tuned} \
          ${pageCacheIgnoreIndexes}
     fi
 
@@ -344,6 +348,7 @@ for JVM_HEAP in 6900; do
          ${warmup_taoMix} \
          ${measure_taoMix} \
          ${thputThreads} \
+         ${tuned} \
          ${pageCacheIgnoreIndexes}
 
         x=$(cut -d' ' -f1 neo4j_throughput_tao_mix.txt | awk '{ sum += $1 } END { print sum }')
