@@ -24,6 +24,28 @@ using namespace ::apache::thrift::transport;
 class GraphBenchmark {
 private:
 
+   // Read workload distribution; from ATC 13 Bronson et al.
+    constexpr static double ASSOC_RANGE_PERC = 0.409;
+    constexpr static double OBJ_GET_PERC = 0.289;
+    constexpr static double ASSOC_GET_PERC = 0.157;
+    constexpr static double ASSOC_COUNT_PERC = 0.117;
+    constexpr static double ASSOC_TIME_RANGE_PERC = 0.028;
+
+    inline int choose_query(double rand_r) {
+        if (rand_r < ASSOC_RANGE_PERC) {
+            return 0;
+        } else if (rand_r < ASSOC_RANGE_PERC + OBJ_GET_PERC) {
+            return 1;
+        } else if (rand_r < ASSOC_RANGE_PERC + OBJ_GET_PERC + ASSOC_GET_PERC) {
+            return 2;
+        } else if (rand_r < ASSOC_RANGE_PERC + OBJ_GET_PERC +
+            ASSOC_GET_PERC + ASSOC_COUNT_PERC)
+        {
+            return 3;
+        }
+        return 4;
+    }
+
     template<typename T>
     inline T mod_get(const std::vector<T>& xs, int64_t i) {
         return xs[i % xs.size()];
@@ -31,23 +53,12 @@ private:
 
     typedef struct {
         shared_ptr<GraphQueryAggregatorServiceClient> client;
+
+        // TODO: remove, just access via `this`
         // get_nhbrs(n)
         std::vector<int64_t> warmup_neighbor_indices, neighbor_indices;
 
-//        // get_nhbrs(n, atype)
-//        std::vector<int64_t> warmup_nhbrAtype_indices, nhbrAtype_indices;
-//        std::vector<int> warmup_atypes, atypes;
-//
-//        // get_nhbrs(n, attr)
-//        std::vector<int64_t> warmup_nhbrNode_indices, nhbrNode_indices;
-//        std::vector<int> warmup_nhbrNode_attr_ids, nhbrNode_attr_ids;
-//        std::vector<std::string> warmup_nhbrNode_attrs, nhbrNode_attrs;
-//
-//        // 2 get_nodes()
-//        std::vector<int> warmup_node_attributes, node_attributes;
-//        std::vector<std::string> warmup_node_queries, node_queries;
-//        std::vector<int> warmup_node_attributes2, node_attributes2;
-//        std::vector<std::string> warmup_node_queries2, node_queries2;
+        int client_id; // for seeding
     } benchmark_thread_data_t;
 
 public:
@@ -392,6 +403,7 @@ public:
                     new GraphQueryAggregatorServiceClient(protocol));
 
                 transport->open();
+                client->init();
 
                 shared_ptr<benchmark_thread_data_t> thread_data(
                     new benchmark_thread_data_t);
@@ -419,6 +431,236 @@ public:
         for (auto thread_data : thread_datas) {
             shared_ptr<std::thread> thread(new std::thread(
                 &GraphBenchmark::benchmark_neighbor_throughput_helper,
+                this,
+                thread_data,
+                warmup_microsecs,
+                measure_microsecs,
+                cooldown_microsecs));
+            threads.push_back(thread);
+        }
+
+        for (auto thread : threads) {
+            thread->join();
+        }
+    }
+
+    std::pair<double, double> benchmark_tao_mix_throughput_helper(
+        shared_ptr<benchmark_thread_data_t> thread_data,
+        int64_t warmup_microsecs,
+        int64_t measure_microsecs,
+        int64_t cooldown_microsecs)
+    {
+        double query_thput = 0;
+        double edges_thput = 0;
+        LOG_E("About to start querying on this thread...\n");
+
+        std::srand(1618 + thread_data->client_id);
+        std::mt19937 rng(1618 + thread_data->client_id);
+        std::uniform_int_distribution<int> dist_query(0, 4);
+        int query, query_idx;
+
+        size_t warmup_assoc_range_size = warmup_assoc_range_nodes.size();
+        size_t warmup_obj_get_size = warmup_obj_get_nodes.size();
+        size_t warmup_assoc_count_size = warmup_assoc_count_nodes.size();
+        size_t warmup_assoc_time_range_size = warmup_assoc_time_range_nodes.size();
+        size_t warmup_assoc_get_size = warmup_assoc_get_nodes.size();
+        size_t assoc_range_size = assoc_range_nodes.size();
+        size_t obj_get_size = obj_get_nodes.size();
+        size_t assoc_count_size = assoc_count_nodes.size();
+        size_t assoc_time_range_size = assoc_time_range_nodes.size();
+        size_t assoc_get_size = assoc_get_nodes.size();
+
+        std::vector<ThriftAssoc> result;
+        std::vector<std::string> attrs;
+        int64_t i = 0;
+
+        try {
+            // Warmup phase
+            time_t start = get_timestamp();
+            while (get_timestamp() - start < warmup_microsecs) {
+                query = choose_query((double) rand() / RAND_MAX);
+                switch (query) {
+                case 0:
+                    query_idx = std::rand() % warmup_assoc_range_size;
+                    thread_data->client->assoc_range(result,
+                        this->warmup_assoc_range_nodes.at(query_idx),
+                        this->warmup_assoc_range_atypes.at(query_idx),
+                        this->warmup_assoc_range_offs.at(query_idx),
+                        this->warmup_assoc_range_lens.at(query_idx));
+                    break;
+                case 1:
+                    query_idx = std::rand() % warmup_obj_get_size;
+                    thread_data->client->obj_get(attrs,
+                        this->warmup_obj_get_nodes.at(query_idx));
+                    break;
+                case 2:
+                    query_idx = std::rand() % warmup_assoc_get_size;
+                    thread_data->client->assoc_get(result,
+                        this->warmup_assoc_get_nodes.at(query_idx),
+                        this->warmup_assoc_get_atypes.at(query_idx),
+                        this->warmup_assoc_get_dst_id_sets.at(query_idx),
+                        this->warmup_assoc_get_lows.at(query_idx),
+                        this->warmup_assoc_get_highs.at(query_idx));
+                    break;
+                case 3:
+                    query_idx = std::rand() % warmup_assoc_count_size;
+                    thread_data->client->assoc_count(
+                        this->warmup_assoc_count_nodes.at(query_idx),
+                        this->warmup_assoc_count_atypes.at(query_idx));
+                    break;
+                case 4:
+                    query_idx = std::rand() % warmup_assoc_time_range_size;
+                    thread_data->client->assoc_time_range(result,
+                        this->warmup_assoc_time_range_nodes.at(query_idx),
+                        this->warmup_assoc_time_range_atypes.at(query_idx),
+                        this->warmup_assoc_time_range_lows.at(query_idx),
+                        this->warmup_assoc_time_range_highs.at(query_idx),
+                        this->warmup_assoc_time_range_limits.at(query_idx));
+                    break;
+                default:
+                    assert(false);
+                }
+                ++i;
+            }
+            LOG_E("Warmup done: served %" PRId64 " queries\n", i);
+
+            // Measure phase
+            i = 0;
+            int64_t edges = 0;
+            start = get_timestamp();
+            while (get_timestamp() - start < measure_microsecs) {
+#ifndef RUN_TAO_MIX_THPUT_BODY
+#define RUN_TAO_MIX_THPUT_BODY
+                query = choose_query((double) rand() / RAND_MAX); \
+                switch (query) { \
+                case 0: \
+                  query_idx = std::rand() % assoc_range_size; \
+                  thread_data->client->assoc_range(result, \
+                      this->assoc_range_nodes.at(query_idx), \
+                      this->assoc_range_atypes.at(query_idx), \
+                      this->assoc_range_offs.at(query_idx), \
+                      this->assoc_range_lens.at(query_idx)); \
+                  break; \
+                case 1: \
+                  query_idx = std::rand() % obj_get_size; \
+                  thread_data->client->obj_get(attrs, \
+                      this->obj_get_nodes.at(query_idx)); \
+                  break; \
+                case 2: \
+                  query_idx = std::rand() % assoc_get_size; \
+                  thread_data->client->assoc_get(result, \
+                      this->assoc_get_nodes.at(query_idx), \
+                      this->assoc_get_atypes.at(query_idx), \
+                      this->assoc_get_dst_id_sets.at(query_idx), \
+                      this->assoc_get_lows.at(query_idx), \
+                      this->assoc_get_highs.at(query_idx)); \
+                  break; \
+                case 3: \
+                  query_idx = std::rand() % assoc_count_size; \
+                  thread_data->client->assoc_count( \
+                      this->assoc_count_nodes.at(query_idx), \
+                      this->assoc_count_atypes.at(query_idx)); \
+                  break; \
+                case 4: \
+                  query_idx = std::rand() % assoc_time_range_size; \
+                  thread_data->client->assoc_time_range(result, \
+                      this->assoc_time_range_nodes.at(query_idx), \
+                      this->assoc_time_range_atypes.at(query_idx), \
+                      this->assoc_time_range_lows.at(query_idx), \
+                      this->assoc_time_range_highs.at(query_idx), \
+                      this->assoc_time_range_limits.at(query_idx)); \
+                  break; \
+                default: \
+                  assert(false); \
+                } \
+                edges += result.size(); \
+                ++i;
+#endif
+                RUN_TAO_MIX_THPUT_BODY // actually run
+            }
+            time_t end = get_timestamp();
+            double total_secs = (end - start) * 1. / 1e6;
+            query_thput = i * 1. / total_secs;
+            edges_thput = edges * 1. / total_secs;
+            LOG_E("Query done: served %" PRId64 " queries\n", i);
+
+            // Cooldown
+            time_t cooldown_start = get_timestamp();
+            while (get_timestamp() - cooldown_start < cooldown_microsecs) {
+                RUN_TAO_MIX_THPUT_BODY
+            }
+
+            std::ofstream ofs("throughput_tao_mix.txt",
+                std::ofstream::out | std::ofstream::app);
+            ofs << query_thput << " " << edges_thput << std::endl;
+
+        } catch (std::exception &e) {
+            LOG_E("Throughput test ends...: '%s'\n", e.what());
+        }
+        return std::make_pair(query_thput, edges_thput);
+    }
+
+    void benchmark_tao_mix_throughput(
+        const int num_threads,
+        const std::string& master_hostname,
+        int64_t warmup_microsecs,
+        int64_t measure_microsecs,
+        int64_t cooldown_microsecs,
+        const std::string& warmup_assoc_range_file,
+        const std::string& assoc_range_file,
+        const std::string& warmup_assoc_count_file,
+        const std::string& assoc_count_file,
+        const std::string& warmup_obj_get_file,
+        const std::string& obj_get_file,
+        const std::string& warmup_assoc_get_file,
+        const std::string& assoc_get_file,
+        const std::string& warmup_assoc_time_range_file,
+        const std::string& assoc_time_range_file)
+    {
+        // assoc_range
+        read_assoc_range_queries(warmup_assoc_range_file, assoc_range_file);
+        // assoc_count
+        read_neighbor_atype_queries(warmup_assoc_count_file, assoc_count_file,
+            warmup_assoc_count_nodes, assoc_count_nodes,
+            warmup_assoc_count_atypes, assoc_count_atypes);
+        // obj_get
+        read_neighbor_queries(warmup_obj_get_file, obj_get_file,
+            warmup_obj_get_nodes, obj_get_nodes);
+        // assoc_get
+        read_assoc_get_queries(warmup_assoc_get_file, assoc_get_file);
+        // assoc_time_range
+        read_assoc_time_range_queries(
+            warmup_assoc_time_range_file, assoc_time_range_file);
+
+        std::vector<shared_ptr<benchmark_thread_data_t>> thread_datas;
+        for (int i = 0; i < num_threads; ++i) {
+            try {
+                shared_ptr<TSocket> socket(
+                    new TSocket(master_hostname, QUERY_HANDLER_PORT));
+                shared_ptr<TTransport> transport(
+                    new TBufferedTransport(socket));
+                shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
+                shared_ptr<GraphQueryAggregatorServiceClient> client(
+                    new GraphQueryAggregatorServiceClient(protocol));
+                transport->open();
+                client->init();
+
+                shared_ptr<benchmark_thread_data_t> thread_data(
+                    new benchmark_thread_data_t);
+                thread_data->client = client;
+                thread_data->client_id = i;
+
+                thread_datas.push_back(thread_data);
+
+            } catch (std::exception& e) {
+                LOG_E("Exception opening clients: %s\n", e.what());
+            }
+        }
+
+        std::vector<shared_ptr<std::thread>> threads;
+        for (auto thread_data : thread_datas) {
+            shared_ptr<std::thread> thread(new std::thread(
+                &GraphBenchmark::benchmark_tao_mix_throughput_helper,
                 this,
                 thread_data,
                 warmup_microsecs,

@@ -12,6 +12,13 @@ import java.util.*;
 
 public class TAOImpls implements TAOIface {
 
+    // Read workload distribution; from ATC 13 Bronson et al.
+    final static double ASSOC_RANGE_PERC = 0.409;
+    final static double OBJ_GET_PERC = 0.289;
+    final static double ASSOC_GET_PERC = 0.157;
+    final static double ASSOC_COUNT_PERC = 0.117;
+    final static double ASSOC_TIME_RANGE_PERC = 0.028;
+
     private static int MAX_NUM_ATYPES = 1618;
     private static RelationshipType[] atypeMap;
     private static Comparator<Assoc> sortAssocByDescendingTime;
@@ -34,6 +41,22 @@ public class TAOImpls implements TAOIface {
                 return o1.timestamp < o2.timestamp ? 1 : -1;
             }
         };
+    }
+
+    public static int chooseQuery(Random rand) {
+        double d = rand.nextDouble();
+        if (d < ASSOC_RANGE_PERC) {
+            return 0;
+        } else if (d < ASSOC_RANGE_PERC + OBJ_GET_PERC) {
+            return 1;
+        } else if (d < ASSOC_RANGE_PERC + OBJ_GET_PERC + ASSOC_GET_PERC) {
+            return 2;
+        } else if (d < ASSOC_RANGE_PERC + OBJ_GET_PERC +
+            ASSOC_GET_PERC + ASSOC_COUNT_PERC) {
+
+            return 3;
+        }
+        return 4;
     }
 
     // TODO: note that using an index on *all edges* doesn't make sense.

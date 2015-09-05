@@ -357,6 +357,7 @@ public:
         {
             COND_LOG_E("sending to shard %d, filter_nodes\n",
                 it->first / total_num_hosts_);
+            // FIXME?: try to sleep a while? get_nhbr(n, attr) bug here?
             local_shards_[it->first / total_num_hosts_]
                 .send_filter_nodes(it->second, attrId, attrKey);
         }
@@ -523,11 +524,14 @@ public:
         const int64_t tLow,
         const int64_t tHigh)
     {
+        COND_LOG_E("in agg. assoc_get()\n");
         int shard_id = src % total_num_shards_;
         int host_id = shard_id % total_num_hosts_;
         if (host_id == local_host_id_) {
+            COND_LOG_E("sending to shard %d\n", shard_id);
             local_shards_[shard_id / total_num_hosts_]
                 .assoc_get(_return, src, atype, dstIdSet, tLow, tHigh);
+            COND_LOG_E("done\n");
         } else {
             aggregators_.at(host_id).assoc_get_local(
                 _return, shard_id, src, atype, dstIdSet, tLow, tHigh);
