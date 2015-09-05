@@ -159,7 +159,6 @@ function bench() {
         -x ${warmup_neighbor} -y ${measure_neighbor} \
         -w ${QUERY_DIR}/neighbor_warmup_${num_nodes}.txt \
         -q ${QUERY_DIR}/neighbor_query_${num_nodes}.txt \
-        -o ${HOME_DIR}/neighbor_throughput-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards-${throughput_threads}clients.txt \
         -m ${masterHostName} \
         ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
 
@@ -246,6 +245,7 @@ function bench() {
       #sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
 
       ${BIN_DIR}/bench -t tao-mix-throughput \
+        -p ${throughput_threads} \
         -w ${QUERY_DIR}/assocCount_warmup.txt \
         -q ${QUERY_DIR}/assocCount_query.txt \
         -a ${QUERY_DIR}/assocRange_warmup.txt \
@@ -258,6 +258,10 @@ function bench() {
         -l ${QUERY_DIR}/assocTimeRange_query.txt \
         -m ${masterHostName} \
         ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
+
+      x=$(cut -d' ' -f1 throughput_tao_mix.txt | awk '{sum += $1} END {print sum}')
+      mv throughput_tao_mix.txt throughput_tao_mix-${throughput_threads}clients.txt
+      echo $throughput_threads clients, $x aggregated queries/sec
     fi
 
     if [[ -n "$SHARDED" ]]; then
