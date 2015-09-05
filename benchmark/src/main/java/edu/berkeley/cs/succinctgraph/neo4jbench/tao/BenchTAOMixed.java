@@ -20,6 +20,10 @@ public class BenchTAOMixed {
 
     final static TAOImpls taoImpls = new TAOImpls();
 
+    private static final long WARMUP_TIME = (long) (60 * 1e9); // 1e9 = 1 sec
+    private static final long MEASURE_TIME = (long) (120 * 1e9);
+    private static final long COOLDOWN_TIME = (long) (5 * 1e9);
+
     private static int WARMUP_N;
     private static int MEASURE_N;
 
@@ -89,10 +93,11 @@ public class BenchTAOMixed {
 
         WARMUP_N = Integer.parseInt(args[17]);
         MEASURE_N = Integer.parseInt(args[18]);
+        int numClients = Integer.parseInt(args[19]);
         String neo4jPageCacheMemory = GraphDatabaseSettings.pagecache_memory
             .getDefaultValue();
-        if (args.length > 19) {
-            neo4jPageCacheMemory = args[19];
+        if (args.length > 20) {
+            neo4jPageCacheMemory = args[20];
         }
 
         // TODO: unif. random for now -- change to TAO paper distribution later
@@ -145,6 +150,8 @@ public class BenchTAOMixed {
             mixLatency(dbPath, neo4jPageCacheMemory,
                 assocRangeOut, assocCountOut, objGetOut,
                 assocGetOut, assocTimeRangeOut);
+        } else if (type.equals("throughput")) {
+            throughput(dbPath, neo4jPageCacheMemory, numClients);
         } else {
             System.out.println("No type " + type + " is supported!");
         }
@@ -317,6 +324,240 @@ public class BenchTAOMixed {
             tx.close();
             System.out.println("Shutting down database ...");
             db.shutdown();
+        }
+    }
+
+    static int dispatchMixQueryWarmup(GraphDatabaseService db,
+        int randQuery, Random rand, int warmupAssocRangeSize,
+        int warmupAssocCountSize, int objGetSize, int warmupAssocGetSize,
+        int warmupAssocTimeRangeSize) {
+
+        int i;
+        switch (randQuery) {
+            case 0:
+                // assoc_range
+                i = rand.nextInt(warmupAssocRangeSize);
+                return taoImpls.assocRange(db,
+                    modGet(warmupAssocRangeNodes, i),
+                    modGet(warmupAssocRangeAtypes, i),
+                    modGet(warmupAssocRangeOffsets, i),
+                    modGet(warmupAssocRangeLengths, i)).size();
+            case 1:
+                // assoc_count
+                i = rand.nextInt(warmupAssocCountSize);
+                taoImpls.assocCount(db,
+                    modGet(warmupAssocCountNodes, i),
+                    modGet(warmupAssocCountAtypes, i));
+                break;
+            case 2:
+                // obj_get
+                i = rand.nextInt(objGetSize);
+                taoImpls.objGet(db, modGet(objGetIds, i));
+                break;
+            case 3:
+                // assoc_get
+                i = rand.nextInt(warmupAssocGetSize);
+                return taoImpls.assocGet(db,
+                    modGet(warmupAssocGetNodes, i),
+                    modGet(warmupAssocGetAtypes, i),
+                    modGet(warmupAssocGetDstIdSets, i),
+                    modGet(warmupAssocGetTimeLows, i),
+                    modGet(warmupAssocGetTimeHighs, i)).size();
+            case 4:
+                // assoc_time_range
+                i = rand.nextInt(warmupAssocTimeRangeSize);
+                return taoImpls.assocTimeRange(db,
+                    modGet(warmupAssocTimeRangeNodes, i),
+                    modGet(warmupAssocTimeRangeAtypes, i),
+                    modGet(warmupAssocTimeRangeTimeLows, i),
+                    modGet(warmupAssocTimeRangeTimeHighs, i),
+                    modGet(warmupAssocTimeRangeLimits, i)).size();
+        }
+        return 0;
+    }
+
+    static int dispatchMixQuery(GraphDatabaseService db,
+        int randQuery, Random rand, int assocRangeSize, int assocCountSize,
+        int objGetSize, int assocGetSize, int assocTimeRangeSize) {
+
+        int i;
+        switch (randQuery) {
+            case 0:
+                // assoc_range
+                i = rand.nextInt(assocRangeSize);
+                return taoImpls.assocRange(db,
+                    modGet(assocRangeNodes, i),
+                    modGet(assocRangeAtypes, i),
+                    modGet(assocRangeOffsets, i),
+                    modGet(assocRangeLengths, i)).size();
+            case 1:
+                // assoc_count
+                i = rand.nextInt(assocCountSize);
+                taoImpls.assocCount(db,
+                    modGet(assocCountNodes, i),
+                    modGet(assocCountAtypes, i));
+                break;
+            case 2:
+                // obj_get
+                i = rand.nextInt(objGetSize);
+                taoImpls.objGet(db, modGet(objGetIds, i));
+                break;
+            case 3:
+                // assoc_get
+                i = rand.nextInt(assocGetSize);
+                return taoImpls.assocGet(db,
+                    modGet(assocGetNodes, i),
+                    modGet(assocGetAtypes, i),
+                    modGet(assocGetDstIdSets, i),
+                    modGet(assocGetTimeLows, i),
+                    modGet(assocGetTimeHighs, i)).size();
+            case 4:
+                // assoc_time_range
+                i = rand.nextInt(assocTimeRangeSize);
+                return taoImpls.assocTimeRange(db,
+                    modGet(assocTimeRangeNodes, i),
+                    modGet(assocTimeRangeAtypes, i),
+                    modGet(assocTimeRangeTimeLows, i),
+                    modGet(assocTimeRangeTimeHighs, i),
+                    modGet(assocTimeRangeLimits, i)).size();
+        }
+        return 0;
+    }
+
+    static class RunTAOMixThroughput implements Runnable {
+        private int clientId;
+        private GraphDatabaseService graphDb;
+
+        int warmupAssocRangeSize = warmupAssocRangeNodes.size();
+        int warmupAssocCountSize = warmupAssocCountNodes.size();
+        int warmupObjGetSize = warmupObjGetIds.size();
+        int warmupAssocGetSize = warmupAssocGetNodes.size();
+        int warmupAssocTimeRangeSize = warmupAssocTimeRangeNodes.size();
+
+        int assocRangeSize = assocRangeNodes.size();
+        int assocCountSize = assocCountNodes.size();
+        int objGetSize = objGetIds.size();
+        int assocGetSize = assocGetNodes.size();
+        int assocTimeRangeSize = assocTimeRangeNodes.size();
+
+        public RunTAOMixThroughput(int clientId, GraphDatabaseService graphDb) {
+            this.clientId = clientId;
+            this.graphDb = graphDb;
+        }
+
+        public void run() {
+            Transaction tx = graphDb.beginTx();
+            PrintWriter out = null;
+            Random rand = new Random(1618 + clientId);
+            try {
+                // true for append
+                out = new PrintWriter(new BufferedWriter(
+                    new FileWriter("neo4j_throughput_tao_mix.txt", true)));
+
+                // warmup
+                int i = 0, queryIdx = 0;
+                long warmupStart = System.nanoTime();
+                while (System.nanoTime() - warmupStart < WARMUP_TIME) {
+                    if (i % 10000 == 0) {
+                        tx.success();
+                        tx.close();
+                        tx = graphDb.beginTx();
+                    }
+                    queryIdx = rand.nextInt(5);
+                    dispatchMixQueryWarmup(graphDb, queryIdx, rand,
+                        warmupAssocRangeSize, warmupAssocCountSize,
+                        warmupObjGetSize, warmupAssocGetSize,
+                        warmupAssocTimeRangeSize);
+                    ++i;
+                }
+
+                rand.setSeed(1618 + clientId);
+
+                // measure
+                i = 0;
+                long edges = 0;
+                long start = System.nanoTime();
+                while (System.nanoTime() - start < MEASURE_TIME) {
+                    if (i % 10000 == 0) {
+                        tx.success();
+                        tx.close();
+                        tx = graphDb.beginTx();
+                    }
+                    queryIdx = rand.nextInt(5);
+                    edges += dispatchMixQuery(graphDb, queryIdx, rand,
+                        assocRangeSize, assocCountSize, objGetSize,
+                        assocGetSize, assocTimeRangeSize);
+
+                    ++i;
+                }
+                long end = System.nanoTime();
+                double totalSeconds = (end - start) * 1. / 1e9;
+                double queryThput = ((double) i) / totalSeconds;
+                double edgesThput = ((double) edges) / totalSeconds;
+
+                // cooldown
+                long cooldownStart = System.nanoTime();
+                while (System.nanoTime() - cooldownStart < COOLDOWN_TIME) {
+                    dispatchMixQuery(graphDb, queryIdx, rand,
+                        assocRangeSize, assocCountSize, objGetSize,
+                        assocGetSize, assocTimeRangeSize);
+                    ++i;
+                }
+                out.printf("%.1f %.1f\n", queryThput, edgesThput);
+
+            } catch (Exception e) {
+                System.err.printf("Client %d throughput bench exception: %s\n",
+                    clientId, e);
+                System.exit(1);
+            } finally {
+                if (out != null) {
+                    out.close();
+                }
+                tx.success();
+                tx.close();
+            }
+        }
+    }
+
+    private static void throughput(String dbPath,
+        String neo4jPageCacheMemory, int numClients) {
+
+        GraphDatabaseService graphDb = new GraphDatabaseFactory()
+            .newEmbeddedDatabaseBuilder(dbPath)
+            .setConfig(GraphDatabaseSettings.cache_type, "none")
+            .setConfig(
+                GraphDatabaseSettings.pagecache_memory, neo4jPageCacheMemory)
+            .newGraphDatabase();
+        BenchUtils.registerShutdownHook(graphDb);
+        Transaction tx = null;
+        try {
+            tx = graphDb.beginTx();
+            BenchUtils.fullWarmup(graphDb);
+        } finally {
+            if (tx != null) {
+                tx.success();
+                tx.close();
+            }
+        }
+
+        try {
+            List<Thread> clients = new ArrayList<>(numClients);
+            for (int i = 0; i < numClients; ++i) {
+                clients.add(new Thread(
+                    new RunTAOMixThroughput(i, graphDb)));
+            }
+            for (Thread thread : clients) {
+                thread.start();
+            }
+            for (Thread thread : clients) {
+                thread.join();
+            }
+        } catch (Exception e) {
+            System.err.printf("Benchmark throughput exception: %s\n", e);
+            System.exit(1);
+        } finally {
+            System.out.println("Shutting down database ...");
+            graphDb.shutdown();
         }
     }
 }

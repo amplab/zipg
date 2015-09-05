@@ -45,6 +45,7 @@ NEO4J_DIR=/mnt2T/data/neo4j
 
 thputThreads=1
 #benchNhbrThput=T
+#benchTaoMixThput=T
 
 benchAssocRange=T
 #benchObjGet=T
@@ -319,7 +320,37 @@ for JVM_HEAP in 6900; do
          ${HOME_DIR}/neo4j_${DATASET}_mix_assocTimeRange_latency_jvm${JVM_HEAP}m_pagecache${pageCacheIgnoreIndexes}.txt \
          ${warmup_taoMix} \
          ${measure_taoMix} \
+         0 \
          ${pageCacheIgnoreIndexes}
+    fi
+
+    if [[ -n "$benchTaoMixThput" ]]; then
+      # sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+
+      find /mnt2T/data/neo4j/${DATASET}/ -name "*store.db*" -type f -exec dd if={} of=/dev/null bs=1M 2>/dev/null \;
+      java -verbose:gc -server -XX:+UseConcMarkSweepGC -Xmx${JVM_HEAP}m -cp ${classpath} \
+         edu.berkeley.cs.succinctgraph.neo4jbench.tao.BenchTAOMixed \
+         throughput \
+         ${NEO4J_DIR}/${DATASET} \
+         ${QUERY_DIR}/assocRange_warmup.txt \
+         ${QUERY_DIR}/assocRange_query.txt \
+         ${QUERY_DIR}/assocCount_warmup.txt \
+         ${QUERY_DIR}/assocCount_query.txt \
+         ${QUERY_DIR}/objGet_warmup.txt \
+         ${QUERY_DIR}/objGet_query.txt \
+         ${QUERY_DIR}/assocGet_warmup.txt \
+         ${QUERY_DIR}/assocGet_query.txt \
+         ${QUERY_DIR}/assocTimeRange_warmup.txt \
+         ${QUERY_DIR}/assocTimeRange_query.txt \
+         DUMMY DUMMY DUMMY DUMMY DUMMY \
+         ${warmup_taoMix} \
+         ${measure_taoMix} \
+         ${thputThreads} \
+         ${pageCacheIgnoreIndexes}
+
+        x=$(cut -d' ' -f1 neo4j_throughput_tao_mix.txt | awk '{ sum += $1 } END { print sum }')
+        mv neo4j_throughput_tao_mix.txt neo4j_throughput_tao_mix-${thputThreads}clients.txt
+        echo ${thputThreads} clients, $x aggregated queries/sec
     fi
 
     done
