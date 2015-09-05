@@ -13,11 +13,11 @@ import java.util.*;
 public class TAOImpls implements TAOIface {
 
     // Read workload distribution; from ATC 13 Bronson et al.
-    static double ASSOC_RANGE_PERC = 0.409;
-    static double OBJ_GET_PERC = 0.289;
-    static double ASSOC_GET_PERC = 0.157;
-    static double ASSOC_COUNT_PERC = 0.117;
-    static double ASSOC_TIME_RANGE_PERC = 0.028;
+    final static double ASSOC_RANGE_PERC = 0.409;
+    final static double OBJ_GET_PERC = 0.289;
+    final static double ASSOC_GET_PERC = 0.157;
+    final static double ASSOC_COUNT_PERC = 0.117;
+    final static double ASSOC_TIME_RANGE_PERC = 0.028;
 
     private static int MAX_NUM_ATYPES = 1618;
     private static RelationshipType[] atypeMap;
