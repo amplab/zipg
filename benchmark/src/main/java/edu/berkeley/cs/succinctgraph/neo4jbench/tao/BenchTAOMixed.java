@@ -192,7 +192,9 @@ public class BenchTAOMixed {
             PrintWriter assocTimeRangePw = new PrintWriter(new BufferedWriter(
                 new FileWriter(assocTimeRangeOut)));
 
-            BenchUtils.fullWarmup(db);
+            if (tuned) {
+                BenchUtils.fullWarmup(db);
+            }
 
             long seed = 1618L;
             Random rand = new Random(seed);
@@ -542,7 +544,9 @@ public class BenchTAOMixed {
         Transaction tx = null;
         try {
             tx = graphDb.beginTx();
-            BenchUtils.fullWarmup(graphDb);
+            if (tuned) {
+                BenchUtils.fullWarmup(graphDb);
+            }
         } finally {
             if (tx != null) {
                 tx.success();
