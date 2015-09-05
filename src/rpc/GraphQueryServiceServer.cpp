@@ -239,8 +239,10 @@ public:
         const int64_t tLow,
         const int64_t tHigh)
     {
+        COND_LOG_E("in shard assoc_get, about to call graph\n");
         std::vector<SuccinctGraph::Assoc> vec(
             std::move(graph_->assoc_get(src, atype, dstIdSet, tLow, tHigh)));
+        COND_LOG_E("done: in shard assoc_get, about to call graph\n");
 
         // TODO: any better way?
         // NB: the fields are Thrift-generated, so this may not be portable.
