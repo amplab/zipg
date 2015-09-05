@@ -260,8 +260,9 @@ function bench() {
         ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
 
       x=$(cut -d' ' -f1 throughput_tao_mix.txt | awk '{sum += $1} END {print sum}')
-      mv throughput_tao_mix.txt throughput_tao_mix-${throughput_threads}clients.txt
-      echo $throughput_threads clients, $x aggregated queries/sec
+      echo $throughput_threads clients, $x aggregated queries/sec >> throughput_tao_mix.txt
+      mv throughput_tao_mix.txt \
+        throughput_tao_mix-npa${npa}sa${sa}isa${isa}-${throughput_threads}clients.txt
     fi
 
     if [[ -n "$SHARDED" ]]; then
