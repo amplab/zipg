@@ -381,6 +381,7 @@ public:
                     new GraphQueryAggregatorServiceClient(protocol));
 
                 transport->open();
+                client->init();
 
                 shared_ptr<benchmark_thread_data_t> thread_data(
                     new benchmark_thread_data_t);
