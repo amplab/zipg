@@ -100,8 +100,6 @@ public class BenchTAOMixed {
             neo4jPageCacheMemory = args[20];
         }
 
-        // TODO: unif. random for now -- change to TAO paper distribution later
-
         // assoc_range()
         BenchUtils.readAssocRangeQueries(
             warmupAssocRangeFile, warmupAssocRangeNodes, warmupAssocRangeAtypes,
@@ -343,18 +341,11 @@ public class BenchTAOMixed {
                     modGet(warmupAssocRangeOffsets, i),
                     modGet(warmupAssocRangeLengths, i)).size();
             case 1:
-                // assoc_count
-                i = rand.nextInt(warmupAssocCountSize);
-                taoImpls.assocCount(db,
-                    modGet(warmupAssocCountNodes, i),
-                    modGet(warmupAssocCountAtypes, i));
-                break;
-            case 2:
                 // obj_get
                 i = rand.nextInt(objGetSize);
                 taoImpls.objGet(db, modGet(objGetIds, i));
                 break;
-            case 3:
+            case 2:
                 // assoc_get
                 i = rand.nextInt(warmupAssocGetSize);
                 return taoImpls.assocGet(db,
@@ -363,6 +354,13 @@ public class BenchTAOMixed {
                     modGet(warmupAssocGetDstIdSets, i),
                     modGet(warmupAssocGetTimeLows, i),
                     modGet(warmupAssocGetTimeHighs, i)).size();
+            case 3:
+                // assoc_count
+                i = rand.nextInt(warmupAssocCountSize);
+                taoImpls.assocCount(db,
+                    modGet(warmupAssocCountNodes, i),
+                    modGet(warmupAssocCountAtypes, i));
+                break;
             case 4:
                 // assoc_time_range
                 i = rand.nextInt(warmupAssocTimeRangeSize);
@@ -391,18 +389,11 @@ public class BenchTAOMixed {
                     modGet(assocRangeOffsets, i),
                     modGet(assocRangeLengths, i)).size();
             case 1:
-                // assoc_count
-                i = rand.nextInt(assocCountSize);
-                taoImpls.assocCount(db,
-                    modGet(assocCountNodes, i),
-                    modGet(assocCountAtypes, i));
-                break;
-            case 2:
                 // obj_get
                 i = rand.nextInt(objGetSize);
                 taoImpls.objGet(db, modGet(objGetIds, i));
                 break;
-            case 3:
+            case 2:
                 // assoc_get
                 i = rand.nextInt(assocGetSize);
                 return taoImpls.assocGet(db,
@@ -411,6 +402,13 @@ public class BenchTAOMixed {
                     modGet(assocGetDstIdSets, i),
                     modGet(assocGetTimeLows, i),
                     modGet(assocGetTimeHighs, i)).size();
+            case 3:
+                // assoc_count
+                i = rand.nextInt(assocCountSize);
+                taoImpls.assocCount(db,
+                    modGet(assocCountNodes, i),
+                    modGet(assocCountAtypes, i));
+                break;
             case 4:
                 // assoc_time_range
                 i = rand.nextInt(assocTimeRangeSize);
@@ -455,7 +453,7 @@ public class BenchTAOMixed {
                     new FileWriter("neo4j_throughput_tao_mix.txt", true)));
 
                 // warmup
-                int i = 0, queryIdx = 0;
+                int i = 0;
                 long warmupStart = System.nanoTime();
                 while (System.nanoTime() - warmupStart < WARMUP_TIME) {
                     if (i % 10000 == 0) {
@@ -463,8 +461,8 @@ public class BenchTAOMixed {
                         tx.close();
                         tx = graphDb.beginTx();
                     }
-                    queryIdx = rand.nextInt(5);
-                    dispatchMixQueryWarmup(graphDb, queryIdx, rand,
+                    dispatchMixQueryWarmup(graphDb, TAOImpls.chooseQuery(rand),
+                        rand,
                         warmupAssocRangeSize, warmupAssocCountSize,
                         warmupObjGetSize, warmupAssocGetSize,
                         warmupAssocTimeRangeSize);
@@ -483,8 +481,8 @@ public class BenchTAOMixed {
                         tx.close();
                         tx = graphDb.beginTx();
                     }
-                    queryIdx = rand.nextInt(5);
-                    edges += dispatchMixQuery(graphDb, queryIdx, rand,
+                    edges += dispatchMixQuery(graphDb,
+                        TAOImpls.chooseQuery(rand), rand,
                         assocRangeSize, assocCountSize, objGetSize,
                         assocGetSize, assocTimeRangeSize);
 
@@ -498,7 +496,7 @@ public class BenchTAOMixed {
                 // cooldown
                 long cooldownStart = System.nanoTime();
                 while (System.nanoTime() - cooldownStart < COOLDOWN_TIME) {
-                    dispatchMixQuery(graphDb, queryIdx, rand,
+                    dispatchMixQuery(graphDb, TAOImpls.chooseQuery(rand), rand,
                         assocRangeSize, assocCountSize, objGetSize,
                         assocGetSize, assocTimeRangeSize);
                     ++i;
