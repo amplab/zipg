@@ -48,7 +48,7 @@ for tuned in true false; do
 #benchMixed=T
 
 benchNhbrThput=T
-benchNeighborAtypeThput=T
+#benchNeighborAtypeThput=T
 #benchNhbrNodeThput=T
 #benchNodeThput=T
 #benchNodeNodeThput=T
@@ -224,7 +224,7 @@ for JVM_HEAP in 6900; do
             ${pageCacheIgnoreIndexes}
 
         o=neo4j_throughput_get_nhbrs_atype.txt
-        x=$(cut -d' ' -f1 ${o} | awk '{ sum += $1 } END { print sprintf(".1f", sum) }')
+        x=$(cut -d' ' -f1 ${o} | awk '{ sum += $1 } END { print sprintf("%.1f", sum) }')
         echo ${thputThreads} clients, $x aggregated queries/sec >> ${o}
         mv ${o} neo4j_throughput_get_nhbrs_atype-tuned_${tuned}-${thputThreads}clients.txt
       fi
@@ -345,7 +345,7 @@ for JVM_HEAP in 6900; do
            ${pageCacheForNodes}
 
         o=neo4j_throughput_get_nhbrs.txt
-        x=$(cut -d' ' -f1 ${o} | awk '{ sum += $1 } END { print sprintf(".1f", sum) }')
+        x=$(cut -d' ' -f1 ${o} | awk '{ sum += $1 } END { print sprintf("%.1f", sum) }')
         echo ${thputThreads} clients, $x get_nhbr queries/sec >> ${o}
         mv ${o} neo4j_throughput_get_nhbrs-tuned_${tuned}-${thputThreads}clients.txt
       fi
