@@ -105,7 +105,12 @@ public class TAOImpls implements TAOIface {
             return Collections.emptyList();
         }
         Collections.sort(assocs, sortAssocByDescendingTime);
-        return assocs.subList(off, Math.min(assocs.size(), off + len));
+        List<Assoc> res =
+            assocs.subList(off, Math.min(assocs.size(), off + len));
+        for (Assoc a : res) {
+            a.loadAttr();
+        }
+        return res;
     }
 
     /** Scans (filters on the fly) the assoc list.  Sorts the filtered result.
@@ -133,6 +138,9 @@ public class TAOImpls implements TAOIface {
             }
         }
         Collections.sort(assocs, sortAssocByDescendingTime);
+        for (Assoc a : assocs) {
+            a.loadAttr();
+        }
         return assocs;
     }
 
@@ -170,7 +178,11 @@ public class TAOImpls implements TAOIface {
             }
         }
         Collections.sort(assocs, sortAssocByDescendingTime);
-        return assocs.subList(0, Math.min(limit, assocs.size()));
+        List<Assoc> res = assocs.subList(0, Math.min(limit, assocs.size()));
+        for (Assoc a : res) {
+            a.loadAttr();
+        }
+        return res;
     }
 
 }
