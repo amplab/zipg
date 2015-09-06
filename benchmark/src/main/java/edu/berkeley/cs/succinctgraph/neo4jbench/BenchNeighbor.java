@@ -158,7 +158,8 @@ public class BenchNeighbor {
                         tx = graphDb.beginTx();
                     }
                     queryIdx = rand.nextInt(warmupQueries.size());
-                    getNeighbors(graphDb, modGet(warmupQueries, queryIdx));
+                    getNeighborsSorted(
+                        graphDb, modGet(warmupQueries, queryIdx));
                     ++i;
                 }
 
@@ -175,7 +176,7 @@ public class BenchNeighbor {
                         tx = graphDb.beginTx();
                     }
                     queryIdx = rand.nextInt(querySize);
-                    neighbors = getNeighbors(
+                    neighbors = getNeighborsSorted(
                         graphDb, modGet(queries, queryIdx));
                     edges += neighbors.size();
                     ++i;
@@ -188,7 +189,7 @@ public class BenchNeighbor {
                 // cooldown
                 long cooldownStart = System.nanoTime();
                 while (System.nanoTime() - cooldownStart < COOLDOWN_TIME) {
-                    getNeighbors(graphDb, modGet(warmupQueries, i));
+                    getNeighborsSorted(graphDb, modGet(warmupQueries, i));
                     ++i;
                 }
                 out.printf("%.1f %.1f\n", queryThput, edgesThput);
@@ -258,16 +259,16 @@ public class BenchNeighbor {
         }
     }
 
-    public static List<Long> getNeighbors(GraphDatabaseService graphDb,
-                                          long id) {
-        List<Long> neighbors = new LinkedList<>();
-        Node n = graphDb.getNodeById(id);
-        Iterable<Relationship> rels = n.getRelationships(Direction.OUTGOING);
-        for (Relationship r : rels) {
-            neighbors.add(r.getOtherNode(n).getId());
-        }
-        return neighbors;
-    }
+//    public static List<Long> getNeighbors(GraphDatabaseService graphDb,
+//                                          long id) {
+//        List<Long> neighbors = new LinkedList<>();
+//        Node n = graphDb.getNodeById(id);
+//        Iterable<Relationship> rels = n.getRelationships(Direction.OUTGOING);
+//        for (Relationship r : rels) {
+//            neighbors.add(r.getOtherNode(n).getId());
+//        }
+//        return neighbors;
+//    }
 
     public static List<Long> getNeighborsSorted(GraphDatabaseService graphDb,
                                                 long id) {
