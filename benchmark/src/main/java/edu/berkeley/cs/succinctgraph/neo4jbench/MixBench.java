@@ -309,6 +309,7 @@ public class MixBench {
                                 modGet(nodeAttrs2, queryIdx));
                             break;
                     }
+                    ++i;
                 }
                 long end = System.nanoTime();
                 double totalSeconds = (end - start) * 1. / 1e9;
