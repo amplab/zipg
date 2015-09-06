@@ -32,9 +32,9 @@ private:
     constexpr static double ASSOC_TIME_RANGE_PERC = 0.028;
 
     // Timings for throughput benchmarks.
-    constexpr static int64_t warmup_microsecs = 60 * 1000 * 1000; // 1 min
-    constexpr static int64_t measure_microsecs = 120 * 1000 * 1000; // 2 min
-    constexpr static int64_t cooldown_microsecs = 5 * 1000 * 1000; // 5 sec
+    constexpr static int64_t WARMUP_MICROSECS = 60 * 1000 * 1000; // 1 min
+    constexpr static int64_t MEASURE_MICROSECS = 120 * 1000 * 1000; // 2 min
+    constexpr static int64_t COOLDOWN_MICROSECS = 5 * 1000 * 1000; // 5 sec
 
     typedef enum {
         NHBR = 0,
@@ -405,7 +405,7 @@ public:
             // Warmup phase
             int64_t i = 0;
             time_t start = get_timestamp();
-            while (get_timestamp() - start < warmup_microsecs) {
+            while (get_timestamp() - start < WARMUP_MICROSECS) {
                 thread_data->client->get_neighbors(
                     result,
                     mod_get(warmup_neighbor_indices, rand() % warmup_size));
@@ -416,7 +416,7 @@ public:
             i = 0;
             int64_t edges = 0;
             start = get_timestamp();
-            while (get_timestamp() - start < measure_microsecs) {
+            while (get_timestamp() - start < MEASURE_MICROSECS) {
                 thread_data->client->get_neighbors(
                     result, mod_get(neighbor_indices, rand() % measure_size));
                 edges += result.size();
@@ -430,7 +430,7 @@ public:
 
             // Cooldown
             time_t cooldown_start = get_timestamp();
-            while (get_timestamp() - cooldown_start < cooldown_microsecs) {
+            while (get_timestamp() - cooldown_start < COOLDOWN_MICROSECS) {
                 thread_data->client->get_neighbors(
                     result, mod_get(neighbor_indices, i));
                 ++i;
@@ -487,7 +487,7 @@ public:
         try {
             // Warmup phase
             time_t start = get_timestamp();
-            while (get_timestamp() - start < warmup_microsecs) {
+            while (get_timestamp() - start < WARMUP_MICROSECS) {
                 query = choose_query((double) rand() / RAND_MAX);
                 switch (query) {
                 case 0:
@@ -538,7 +538,7 @@ public:
             i = 0;
             int64_t edges = 0;
             start = get_timestamp();
-            while (get_timestamp() - start < measure_microsecs) {
+            while (get_timestamp() - start < MEASURE_MICROSECS) {
 #ifndef RUN_TAO_MIX_THPUT_BODY
 #define RUN_TAO_MIX_THPUT_BODY
                 query = choose_query((double) rand() / RAND_MAX); \
@@ -596,7 +596,7 @@ public:
 
             // Cooldown
             time_t cooldown_start = get_timestamp();
-            while (get_timestamp() - cooldown_start < cooldown_microsecs) {
+            while (get_timestamp() - cooldown_start < COOLDOWN_MICROSECS) {
                 RUN_TAO_MIX_THPUT_BODY
             }
 
