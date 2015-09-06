@@ -233,7 +233,7 @@ public class BenchNeighborAtype {
                         tx = graphDb.beginTx();
                     }
                     queryIdx = rand.nextInt(warmupSize);
-                    getNeighbors(graphDb, modGet(warmupIds, queryIdx),
+                    getNeighborsSorted(graphDb, modGet(warmupIds, queryIdx),
                         atypeMap[modGet(warmupAtypes, queryIdx).intValue()]);
                     ++i;
                 }
@@ -251,7 +251,7 @@ public class BenchNeighborAtype {
                         tx = graphDb.beginTx();
                     }
                     queryIdx = rand.nextInt(querySize);
-                    neighbors = getNeighbors(graphDb,
+                    neighbors = getNeighborsSorted(graphDb,
                         modGet(queryIds, queryIdx),
                         atypeMap[modGet(queryAtypes, queryIdx).intValue()]);
                     edges += neighbors.size();
@@ -265,7 +265,7 @@ public class BenchNeighborAtype {
                 // cooldown
                 long cooldownStart = System.nanoTime();
                 while (System.nanoTime() - cooldownStart < COOLDOWN_TIME) {
-                    getNeighbors(graphDb, modGet(warmupIds, i),
+                    getNeighborsSorted(graphDb, modGet(warmupIds, i),
                         atypeMap[modGet(warmupAtypes, i).intValue()]);
                     ++i;
                 }
@@ -285,18 +285,18 @@ public class BenchNeighborAtype {
         }
     }
 
-    public static List<Long> getNeighbors(
-        GraphDatabaseService graphDb, long id, RelationshipType relType) {
-
-        List<Long> neighbors = new ArrayList<>();
-        Node n = graphDb.getNodeById(id);
-        Iterable<Relationship> rels = n.getRelationships(
-            relType, Direction.OUTGOING);
-        for (Relationship r : rels) {
-            neighbors.add(r.getOtherNode(n).getId());
-        }
-        return neighbors;
-    }
+//    public static List<Long> getNeighbors(
+//        GraphDatabaseService graphDb, long id, RelationshipType relType) {
+//
+//        List<Long> neighbors = new ArrayList<>();
+//        Node n = graphDb.getNodeById(id);
+//        Iterable<Relationship> rels = n.getRelationships(
+//            relType, Direction.OUTGOING);
+//        for (Relationship r : rels) {
+//            neighbors.add(r.getOtherNode(n).getId());
+//        }
+//        return neighbors;
+//    }
 
     public static List<Long> getNeighborsSorted(
         GraphDatabaseService graphDb, long id, RelationshipType relType) {
