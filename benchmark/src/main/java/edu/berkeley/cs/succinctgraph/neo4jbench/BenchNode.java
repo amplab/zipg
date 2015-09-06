@@ -53,7 +53,9 @@ public class BenchNode {
             queries1, queries2);
 
         if (type.equals("node-throughput")) {
-            nodeThroughput(tuned, dbPath, neo4jPageCacheMem, numClients);
+            throughput(tuned, true, dbPath, neo4jPageCacheMem, numClients);
+        } else if (type.equals("node-node-throughput")) {
+            throughput(tuned, false, dbPath, neo4jPageCacheMem, numClients);
         } else if (type.equals("node-latency")) {
             nodeLatency(tuned, dbPath, neo4jPageCacheMem, outputFile);
         } else if (type.equals("node-node-latency")) {
@@ -332,8 +334,98 @@ public class BenchNode {
         }
     }
 
-    private static void nodeThroughput(boolean tuned,
-        String dbPath,String neo4jPageCacheMem, int numClients) {
+    static class RunNodeNodeThroughput implements Runnable {
+        private int clientId;
+        private GraphDatabaseService graphDb;
+
+        public RunNodeNodeThroughput(
+            int clientId, GraphDatabaseService graphDb) {
+
+            this.clientId = clientId;
+            this.graphDb = graphDb;
+        }
+
+        public void run() {
+            Transaction tx = graphDb.beginTx();
+            PrintWriter out = null;
+            Random rand = new Random(1618 + clientId);
+            try {
+                // true for append
+                out = new PrintWriter(new BufferedWriter(new FileWriter(
+                    "neo4j_throughput_get_nodes2.txt", true)));
+
+                // warmup
+                int i = 0, queryIdx, warmupSize = warmupAttributes1.size();
+                long warmupStart = System.nanoTime();
+                while (System.nanoTime() - warmupStart < WARMUP_TIME) {
+                    if (i % 10000 == 0) {
+                        tx.success();
+                        tx.close();
+                        tx = graphDb.beginTx();
+                    }
+                    queryIdx = rand.nextInt(warmupSize);
+                    getNodes(graphDb, label,
+                        modGet(warmupAttributes1, queryIdx),
+                        modGet(warmupQueries1, queryIdx),
+                        modGet(warmupAttributes2, queryIdx),
+                        modGet(warmupQueries2, queryIdx));
+                    ++i;
+                }
+
+                // measure
+                i = 0;
+                long totalNodes = 0;
+                int querySize = attributes1.size();
+                Set<Long> nodes;
+                long start = System.nanoTime();
+                while (System.nanoTime() - start < MEASURE_TIME) {
+                    if (i % 10000 == 0) {
+                        tx.success();
+                        tx.close();
+                        tx = graphDb.beginTx();
+                    }
+                    queryIdx = rand.nextInt(querySize);
+                    nodes = getNodes(graphDb, label,
+                        modGet(attributes1, queryIdx),
+                        modGet(queries1, queryIdx),
+                        modGet(attributes2, queryIdx),
+                        modGet(queries2, queryIdx));
+                    totalNodes += nodes.size();
+                    ++i;
+                }
+                long end = System.nanoTime();
+                double totalSeconds = (end - start) * 1. / 1e9;
+                double queryThput = ((double) i) / totalSeconds;
+                double nodeThput = ((double) totalNodes) / totalSeconds;
+
+                // cooldown
+                long cooldownStart = System.nanoTime();
+                while (System.nanoTime() - cooldownStart < COOLDOWN_TIME) {
+                    getNodes(graphDb, label,
+                        modGet(attributes1, i),
+                        modGet(queries1, i),
+                        modGet(attributes2, i),
+                        modGet(queries2, i));
+                    ++i;
+                }
+                out.printf("%d %d\n", (int) queryThput, (int) nodeThput);
+
+            } catch (Exception e) {
+                System.err.printf("Client %d throughput bench exception: %s\n",
+                    clientId, e);
+                System.exit(1);
+            } finally {
+                if (out != null) {
+                    out.close();
+                }
+                tx.success();
+                tx.close();
+            }
+        }
+    }
+
+    private static void throughput(boolean tuned, boolean runNode,
+        String dbPath, String neo4jPageCacheMem, int numClients) {
 
         GraphDatabaseService graphDb;
         if (tuned) {
@@ -365,8 +457,15 @@ public class BenchNode {
 
         try {
             List<Thread> clients = new ArrayList<>(numClients);
-            for (int i = 0; i < numClients; ++i) {
-                clients.add(new Thread(new RunNodeThroughput(i, graphDb)));
+            if (runNode) {
+                for (int i = 0; i < numClients; ++i) {
+                    clients.add(new Thread(new RunNodeThroughput(i, graphDb)));
+                }
+            } else {
+                for (int i = 0; i < numClients; ++i) {
+                    clients.add(new Thread(
+                        new RunNodeNodeThroughput(i, graphDb)));
+                }
             }
             for (Thread thread : clients) {
                 thread.start();
