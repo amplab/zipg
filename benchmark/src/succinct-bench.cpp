@@ -167,7 +167,6 @@ int main(int argc, char **argv) {
     std::string node_file = std::string(argv[optind]);
     std::string edge_file = std::string(argv[optind + 1]);
 
-    std::ofstream result_file(result_file_name, std::ios_base::app);
     SuccinctGraph* graph = nullptr;
     GraphBenchmark* bench = nullptr;
 
