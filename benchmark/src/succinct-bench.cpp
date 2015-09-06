@@ -190,6 +190,11 @@ int main(int argc, char **argv) {
         bench->benchmark_node_latency(result_file_name, warmup_n, measure_n,
                 warmup_query_file, measure_query_file);
 
+    } else if (type == "node-throughput") {
+
+        bench->benchmark_node_throughput(throughput_threads, master_hostname,
+                warmup_query_file, measure_query_file);
+
     } else if (type == "neighbor-throughput") {
 
         bench->benchmark_neighbor_throughput(
@@ -214,18 +219,14 @@ int main(int argc, char **argv) {
             warmup_assoc_time_range_file, // assoc_time_range
             query_assoc_time_range_file);
 
-    } else if (type == "node-throughput") {
-
-//        double thput = bench->benchmark_node_throughput(
-//            warmup_query_file, measure_query_file);
-//        result_file << "Get Name Throughput: " << thput << "\n\n";
-
     } else if (type == "mix-throughput") {
 
-//        double thput = bench->benchmark_mix_throughput(
-//                warmup_neighbor_file, measure_neighbor_file,
-//                warmup_query_file, measure_query_file);
-//        result_file << "Mix throughput: " << thput << "\n\n";
+        bench->benchmark_mix_throughput(
+            throughput_threads, master_hostname,
+            warmup_neighbor_file, measure_neighbor_file,
+            warmup_query_file, measure_query_file, // nhbr_atype
+            warmup_nhbr_node_file, nhbr_node_file,
+            warmup_node_file, query_node_file);
 
     } else if (type == "mix-latency") {
 
@@ -243,6 +244,12 @@ int main(int argc, char **argv) {
             result_file_name, warmup_n, measure_n,
             warmup_query_file, measure_query_file);
 
+    } else if (type == "node-node-throughput") {
+
+        bench->benchmark_node_node_throughput(
+            throughput_threads, master_hostname,
+            warmup_query_file, measure_query_file);
+
     } else if (type == "neighbor-node-latency") {
 
         bench->benchmark_neighbor_node_latency(
@@ -252,12 +259,28 @@ int main(int argc, char **argv) {
             warmup_query_file,
             measure_query_file);
 
+    } else if (type == "neighbor-node-throughput") {
+
+        bench->benchmark_neighbor_node_throughput(
+            throughput_threads,
+            master_hostname,
+            warmup_query_file,
+            measure_query_file);
+
     } else if (type == "neighbor-atype-latency") {
 
         bench->benchmark_neighbor_atype_latency(
             result_file_name,
             warmup_n,
             measure_n,
+            warmup_query_file,
+            measure_query_file);
+
+    } else if (type == "neighbor-atype-throughput") {
+
+        bench->benchmark_neighbor_atype_throughput(
+            throughput_threads,
+            master_hostname,
             warmup_query_file,
             measure_query_file);
 

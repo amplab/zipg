@@ -99,14 +99,38 @@ private:
                     &GraphBenchmark::benchmark_neighbor_throughput_helper,
                     this, thread_data)));
                 break;
+            case NHBR_ATYPE:
+                threads.push_back(shared_ptr<std::thread>(new std::thread(
+                    &GraphBenchmark::benchmark_neighbor_atype_throughput_helper,
+                    this, thread_data)));
+                break;
+            case NHBR_NODE:
+                threads.push_back(shared_ptr<std::thread>(new std::thread(
+                    &GraphBenchmark::benchmark_neighbor_node_throughput_helper,
+                    this, thread_data)));
+                break;
+            case NODE:
+                threads.push_back(shared_ptr<std::thread>(new std::thread(
+                    &GraphBenchmark::benchmark_node_throughput_helper,
+                    this, thread_data)));
+                break;
+            case NODE2:
+                threads.push_back(shared_ptr<std::thread>(new std::thread(
+                    &GraphBenchmark::benchmark_node_node_throughput_helper,
+                    this, thread_data)));
+                break;
+            case MIX:
+                threads.push_back(shared_ptr<std::thread>(new std::thread(
+                    &GraphBenchmark::benchmark_mix_throughput_helper,
+                    this, thread_data)));
+                break;
             case TAO_MIX:
                 threads.push_back(shared_ptr<std::thread>(new std::thread(
                     &GraphBenchmark::benchmark_tao_mix_throughput_helper,
                     this, thread_data)));
                 break;
-            // TODO: add more
             default:
-                break;
+                assert(false);
             }
         }
 
@@ -332,6 +356,18 @@ public:
         LOG_E("Measure complete.\n");
     }
 
+    void benchmark_neighbor_atype_throughput(
+        const int num_threads,
+        const std::string& master_hostname,
+        std::string warmup_query_file,
+        std::string query_file)
+    {
+        read_neighbor_atype_queries(warmup_query_file, query_file,
+            warmup_nhbrAtype_indices, nhbrAtype_indices,
+            warmup_atypes, atypes);
+        bench_throughput(num_threads, master_hostname, BenchType::NHBR_ATYPE);
+    }
+
     // get_neighbor(nodeId, atype)
     void benchmark_neighbor_atype_latency(
         std::string res_path,
@@ -437,6 +473,415 @@ public:
             }
 
             std::ofstream ofs("throughput_get_nhbrs.txt",
+                std::ofstream::out | std::ofstream::app);
+            ofs << query_thput << " " << edges_thput << std::endl;
+
+        } catch (std::exception &e) {
+            LOG_E("Throughput test ends...: '%s'\n", e.what());
+        }
+        return std::make_pair(query_thput, edges_thput);
+    }
+
+    std::pair<double, double> benchmark_neighbor_atype_throughput_helper(
+        shared_ptr<benchmark_thread_data_t> thread_data)
+    {
+        double query_thput = 0;
+        double edges_thput = 0;
+        LOG_E("About to start querying on this thread...\n");
+
+        size_t warmup_size = warmup_nhbrAtype_indices.size();
+        size_t measure_size = nhbrAtype_indices.size();
+        std::srand(1618 + thread_data->client_id);
+
+        try {
+            std::vector<int64_t> result;
+
+            // Warmup phase
+            int64_t i = 0;
+            int query_idx;
+            time_t start = get_timestamp();
+            while (get_timestamp() - start < WARMUP_MICROSECS) {
+                query_idx = rand() % warmup_size;
+                thread_data->client->get_neighbors_atype(
+                    result,
+                    mod_get(warmup_nhbrAtype_indices, query_idx),
+                    mod_get(warmup_atypes, query_idx));
+            }
+            LOG_E("Warmup done: served %" PRId64 " queries\n", i);
+
+            // Measure phase
+            i = 0;
+            int64_t edges = 0;
+            start = get_timestamp();
+            while (get_timestamp() - start < MEASURE_MICROSECS) {
+                query_idx = rand() % measure_size;
+                thread_data->client->get_neighbors_atype(
+                    result,
+                    mod_get(nhbrAtype_indices, query_idx),
+                    mod_get(atypes, query_idx));
+                edges += result.size();
+                ++i;
+            }
+            time_t end = get_timestamp();
+            double total_secs = (end - start) * 1. / 1e6;
+            query_thput = i * 1. / total_secs;
+            edges_thput = edges * 1. / total_secs;
+            LOG_E("Query done: served %" PRId64 " queries\n", i);
+
+            // Cooldown
+            time_t cooldown_start = get_timestamp();
+            while (get_timestamp() - cooldown_start < COOLDOWN_MICROSECS) {
+                thread_data->client->get_neighbors_atype(
+                    result,
+                    mod_get(nhbrAtype_indices, query_idx),
+                    mod_get(atypes, query_idx));
+                ++query_idx;
+            }
+
+            std::ofstream ofs("throughput_get_nhbrsAtype.txt",
+                std::ofstream::out | std::ofstream::app);
+            ofs << query_thput << " " << edges_thput << std::endl;
+
+        } catch (std::exception &e) {
+            LOG_E("Throughput test ends...: '%s'\n", e.what());
+        }
+        return std::make_pair(query_thput, edges_thput);
+    }
+
+    std::pair<double, double> benchmark_neighbor_node_throughput_helper(
+        shared_ptr<benchmark_thread_data_t> thread_data)
+    {
+        double query_thput = 0;
+        double edges_thput = 0;
+        LOG_E("About to start querying on this thread...\n");
+
+        size_t warmup_size = warmup_nhbrNode_indices.size();
+        size_t measure_size = nhbrNode_indices.size();
+        std::srand(1618 + thread_data->client_id);
+
+        try {
+            std::vector<int64_t> result;
+
+            // Warmup phase
+            int64_t i = 0;
+            int query_idx;
+            time_t start = get_timestamp();
+            while (get_timestamp() - start < WARMUP_MICROSECS) {
+                query_idx = rand() % warmup_size;
+                thread_data->client->get_neighbors_attr(
+                    result,
+                    mod_get(warmup_nhbrNode_indices, query_idx),
+                    mod_get(warmup_nhbrNode_attr_ids, query_idx),
+                    mod_get(warmup_nhbrNode_attrs, query_idx));
+            }
+            LOG_E("Warmup done: served %" PRId64 " queries\n", i);
+
+            // Measure phase
+            i = 0;
+            int64_t edges = 0;
+            start = get_timestamp();
+            while (get_timestamp() - start < MEASURE_MICROSECS) {
+                query_idx = rand() % measure_size;
+                thread_data->client->get_neighbors_attr(
+                    result,
+                    mod_get(nhbrNode_indices, query_idx),
+                    mod_get(nhbrNode_attr_ids, query_idx),
+                    mod_get(nhbrNode_attrs, query_idx));
+                edges += result.size();
+                ++i;
+            }
+            time_t end = get_timestamp();
+            double total_secs = (end - start) * 1. / 1e6;
+            query_thput = i * 1. / total_secs;
+            edges_thput = edges * 1. / total_secs;
+            LOG_E("Query done: served %" PRId64 " queries\n", i);
+
+            // Cooldown
+            time_t cooldown_start = get_timestamp();
+            while (get_timestamp() - cooldown_start < COOLDOWN_MICROSECS) {
+                thread_data->client->get_neighbors_attr(
+                    result,
+                    mod_get(nhbrNode_indices, query_idx),
+                    mod_get(nhbrNode_attr_ids, query_idx),
+                    mod_get(nhbrNode_attrs, query_idx));
+                ++query_idx;
+            }
+
+            std::ofstream ofs("throughput_get_nhbrsNode.txt",
+                std::ofstream::out | std::ofstream::app);
+            ofs << query_thput << " " << edges_thput << std::endl;
+
+        } catch (std::exception &e) {
+            LOG_E("Throughput test ends...: '%s'\n", e.what());
+        }
+        return std::make_pair(query_thput, edges_thput);
+    }
+
+    std::pair<double, double> benchmark_node_throughput_helper(
+        shared_ptr<benchmark_thread_data_t> thread_data)
+    {
+        double query_thput = 0;
+        double edges_thput = 0;
+        LOG_E("About to start querying on this thread...\n");
+
+        size_t warmup_size = warmup_node_attributes.size();
+        size_t measure_size = node_attributes.size();
+        std::srand(1618 + thread_data->client_id);
+
+        try {
+            std::set<int64_t> result;
+
+            // Warmup phase
+            int64_t i = 0;
+            int query_idx;
+            time_t start = get_timestamp();
+            while (get_timestamp() - start < WARMUP_MICROSECS) {
+                query_idx = rand() % warmup_size;
+                thread_data->client->get_nodes(
+                    result, mod_get(warmup_node_attributes, query_idx),
+                    mod_get(warmup_node_queries, query_idx));
+            }
+            LOG_E("Warmup done: served %" PRId64 " queries\n", i);
+
+            // Measure phase
+            i = 0;
+            int64_t edges = 0;
+            start = get_timestamp();
+            while (get_timestamp() - start < MEASURE_MICROSECS) {
+                query_idx = rand() % measure_size;
+                thread_data->client->get_nodes(
+                    result, mod_get(node_attributes, query_idx),
+                    mod_get(node_queries, query_idx));
+                edges += result.size();
+                ++i;
+            }
+            time_t end = get_timestamp();
+            double total_secs = (end - start) * 1. / 1e6;
+            query_thput = i * 1. / total_secs;
+            edges_thput = edges * 1. / total_secs;
+            LOG_E("Query done: served %" PRId64 " queries\n", i);
+
+            // Cooldown
+            time_t cooldown_start = get_timestamp();
+            while (get_timestamp() - cooldown_start < COOLDOWN_MICROSECS) {
+                thread_data->client->get_nodes(
+                    result, mod_get(node_attributes, query_idx),
+                    mod_get(node_queries, query_idx));
+                ++query_idx;
+            }
+
+            std::ofstream ofs("throughput_get_nodes.txt",
+                std::ofstream::out | std::ofstream::app);
+            ofs << query_thput << " " << edges_thput << std::endl;
+
+        } catch (std::exception &e) {
+            LOG_E("Throughput test ends...: '%s'\n", e.what());
+        }
+        return std::make_pair(query_thput, edges_thput);
+    }
+
+    std::pair<double, double> benchmark_node_node_throughput_helper(
+        shared_ptr<benchmark_thread_data_t> thread_data)
+    {
+        double query_thput = 0;
+        double edges_thput = 0;
+        LOG_E("About to start querying on this thread...\n");
+
+        size_t warmup_size = warmup_node_attributes.size();
+        size_t measure_size = node_attributes.size();
+        std::srand(1618 + thread_data->client_id);
+
+        try {
+            std::set<int64_t> result;
+
+            // Warmup phase
+            int64_t i = 0;
+            int query_idx;
+            time_t start = get_timestamp();
+            while (get_timestamp() - start < WARMUP_MICROSECS) {
+                query_idx = rand() % warmup_size;
+                thread_data->client->get_nodes2(
+                    result,
+                    mod_get(warmup_node_attributes, query_idx),
+                    mod_get(warmup_node_queries, query_idx),
+                    mod_get(warmup_node_attributes2, query_idx),
+                    mod_get(warmup_node_queries2, query_idx));
+            }
+            LOG_E("Warmup done: served %" PRId64 " queries\n", i);
+
+            // Measure phase
+            i = 0;
+            int64_t edges = 0;
+            start = get_timestamp();
+            while (get_timestamp() - start < MEASURE_MICROSECS) {
+                query_idx = rand() % measure_size;
+                thread_data->client->get_nodes2(
+                    result,
+                    mod_get(node_attributes, query_idx),
+                    mod_get(node_queries, query_idx),
+                    mod_get(node_attributes2, query_idx),
+                    mod_get(node_queries2, query_idx));
+                edges += result.size();
+                ++i;
+            }
+            time_t end = get_timestamp();
+            double total_secs = (end - start) * 1. / 1e6;
+            query_thput = i * 1. / total_secs;
+            edges_thput = edges * 1. / total_secs;
+            LOG_E("Query done: served %" PRId64 " queries\n", i);
+
+            // Cooldown
+            time_t cooldown_start = get_timestamp();
+            while (get_timestamp() - cooldown_start < COOLDOWN_MICROSECS) {
+                thread_data->client->get_nodes2(
+                    result,
+                    mod_get(node_attributes, query_idx),
+                    mod_get(node_queries, query_idx),
+                    mod_get(node_attributes2, query_idx),
+                    mod_get(node_queries2, query_idx));
+                ++query_idx;
+            }
+
+            std::ofstream ofs("throughput_get_nodes2.txt",
+                std::ofstream::out | std::ofstream::app);
+            ofs << query_thput << " " << edges_thput << std::endl;
+
+        } catch (std::exception &e) {
+            LOG_E("Throughput test ends...: '%s'\n", e.what());
+        }
+        return std::make_pair(query_thput, edges_thput);
+    }
+
+    std::pair<double, double> benchmark_mix_throughput_helper(
+        shared_ptr<benchmark_thread_data_t> thread_data)
+    {
+        double query_thput = 0;
+        double edges_thput = 0;
+        LOG_E("About to start querying on this thread...\n");
+
+        std::srand(1618 + thread_data->client_id);
+
+        size_t warmup_nhbr_size = warmup_neighbor_indices.size();
+        size_t warmup_nhbr_node_size = warmup_nhbrNode_indices.size();
+        size_t warmup_node_size = warmup_node_attributes.size();
+        size_t warmup_nhbr_atype_size = warmup_nhbrAtype_indices.size();
+        size_t nhbr_size = neighbor_indices.size();
+        size_t nhbr_node_size = nhbrNode_indices.size();
+        size_t node_size = node_attributes.size();
+        size_t nhbr_atype_size = nhbrAtype_indices.size();
+
+        try {
+            std::vector<int64_t> result;
+            std::set<int64_t> result_set;
+
+            // Warmup phase
+            int64_t i = 0;
+            int query_idx, rand_query;
+            time_t start = get_timestamp();
+            while (get_timestamp() - start < WARMUP_MICROSECS) {
+                rand_query = rand() % 5;
+                switch (rand_query) {
+                case 0:
+                    query_idx = rand() % warmup_nhbr_size;
+                    thread_data->client->get_neighbors(result,
+                        mod_get(warmup_neighbor_indices, query_idx));
+                    break;
+                case 1:
+                    query_idx = rand() % warmup_nhbr_node_size;
+                    thread_data->client->get_neighbors_attr(result,
+                        mod_get(warmup_nhbrNode_indices, query_idx),
+                        mod_get(warmup_nhbrNode_attr_ids, query_idx),
+                        mod_get(warmup_nhbrNode_attrs, query_idx));
+                    break;
+                case 2:
+                    query_idx = rand() % warmup_node_size;
+                    thread_data->client->get_nodes(result_set,
+                        mod_get(warmup_node_attributes, query_idx),
+                        mod_get(warmup_node_queries, query_idx));
+                    break;
+                case 3:
+                    query_idx = rand() % warmup_nhbr_atype_size;
+                    thread_data->client->get_neighbors_atype(result,
+                        mod_get(warmup_nhbrAtype_indices, query_idx),
+                        mod_get(warmup_atypes, query_idx));
+                    break;
+                case 4:
+                    query_idx = rand() % warmup_node_size;
+                    thread_data->client->get_nodes2(result_set,
+                        mod_get(warmup_node_attributes, query_idx),
+                        mod_get(warmup_node_queries, query_idx),
+                        mod_get(warmup_node_attributes2, query_idx),
+                        mod_get(warmup_node_queries2, query_idx));
+                    break;
+                default:
+                    assert(false);
+                }
+            }
+            LOG_E("Warmup done: served %" PRId64 " queries\n", i);
+
+            // Measure phase
+            i = 0;
+            int64_t edges = 0;
+            start = get_timestamp();
+            while (get_timestamp() - start < MEASURE_MICROSECS) {
+#ifndef RUN_MIX_THPUT_BODY
+#define RUN_MIX_THPUT_BODY
+                rand_query = rand() % 5; \
+                switch (rand_query) { \
+                case 0: \
+                    query_idx = rand() % nhbr_size; \
+                    thread_data->client->get_neighbors(result, \
+                        mod_get(neighbor_indices, query_idx)); \
+                    break; \
+                case 1:                                     \
+                    query_idx = rand() % nhbr_node_size; \
+                    thread_data->client->get_neighbors_attr(result, \
+                        mod_get(nhbrNode_indices, query_idx), \
+                        mod_get(nhbrNode_attr_ids, query_idx), \
+                        mod_get(nhbrNode_attrs, query_idx)); \
+                    break; \
+                case 2:                                             \
+                    query_idx = rand() % node_size; \
+                    thread_data->client->get_nodes(result_set, \
+                        mod_get(node_attributes, query_idx), \
+                        mod_get(node_queries, query_idx)); \
+                    break; \
+                case 3:                               \
+                    query_idx = rand() % nhbr_atype_size; \
+                    thread_data->client->get_neighbors_atype(result, \
+                        mod_get(nhbrAtype_indices, query_idx), \
+                        mod_get(atypes, query_idx)); \
+                    break; \
+                case 4:                                  \
+                    query_idx = rand() % node_size; \
+                    thread_data->client->get_nodes2(result_set, \
+                        mod_get(node_attributes, query_idx), \
+                        mod_get(node_queries, query_idx), \
+                        mod_get(node_attributes2, query_idx), \
+                        mod_get(node_queries2, query_idx)); \
+                    break; \
+                default: \
+                    assert(false); \
+                }
+#endif
+                RUN_MIX_THPUT_BODY
+                edges += result.size();
+                ++i;
+            }
+            time_t end = get_timestamp();
+            double total_secs = (end - start) * 1. / 1e6;
+            query_thput = i * 1. / total_secs;
+            edges_thput = edges * 1. / total_secs;
+            LOG_E("Query done: served %" PRId64 " queries\n", i);
+
+            // Cooldown
+            time_t cooldown_start = get_timestamp();
+            while (get_timestamp() - cooldown_start < COOLDOWN_MICROSECS) {
+                RUN_MIX_THPUT_BODY
+                ++query_idx;
+            }
+
+            std::ofstream ofs("throughput_mix.txt",
                 std::ofstream::out | std::ofstream::app);
             ofs << query_thput << " " << edges_thput << std::endl;
 
@@ -642,7 +1087,16 @@ public:
         bench_throughput(num_threads, master_hostname, BenchType::TAO_MIX);
     }
 
-    // NODE BENCHMARKING
+    void benchmark_node_throughput(
+        const int num_threads,
+        const std::string& master_hostname,
+        std::string warmup_query_file,
+        std::string query_file)
+    {
+        read_node_queries(warmup_query_file, query_file);
+        bench_throughput(num_threads, master_hostname, BenchType::NODE);
+    }
+
     void benchmark_node_latency(
         std::string res_path,
         uint64_t WARMUP_N,
@@ -695,12 +1149,22 @@ public:
         LOG_E("Measure complete.\n");
     }
 
+    void benchmark_node_node_throughput(
+        const int num_threads,
+        const std::string& master_hostname,
+        const std::string& warmup_query_file,
+        const std::string& query_file)
+    {
+        read_node_queries(warmup_query_file, query_file);
+        bench_throughput(num_threads, master_hostname, BenchType::NODE2);
+    }
+
     void benchmark_node_node_latency(
         std::string res_path,
         uint64_t WARMUP_N,
         uint64_t MEASURE_N,
-        std::string warmup_query_file,
-        std::string query_file)
+        const std::string& warmup_query_file,
+        const std::string& query_file)
     {
         read_node_queries(warmup_query_file, query_file);
         time_t t0, t1;
@@ -906,7 +1370,29 @@ public:
         }
     }
 
-    // BENCHMARKING MIX QUERIES
+    void benchmark_mix_throughput(
+        const int num_threads,
+        const std::string& master_hostname,
+        const std::string& warmup_neighbor_query_file,
+        const std::string& neighbor_query_file,
+        const std::string& warmup_nhbr_atype_file,
+        const std::string& nhbr_atype_file,
+        const std::string& warmup_nhbr_node_file,
+        const std::string& nhbr_node_file,
+        const std::string& warmup_node_query_file,
+        const std::string& node_query_file)
+    {
+        read_neighbor_queries(warmup_neighbor_query_file, neighbor_query_file,
+            warmup_neighbor_indices, neighbor_indices);
+        read_neighbor_atype_queries(warmup_nhbr_atype_file, nhbr_atype_file,
+            warmup_nhbrAtype_indices, nhbrAtype_indices,
+            warmup_atypes, atypes);
+        read_neighbor_node_queries(warmup_nhbr_node_file, nhbr_node_file);
+        read_node_queries(warmup_node_query_file, node_query_file);
+
+        bench_throughput(num_threads, master_hostname, BenchType::MIX);
+    }
+
     void benchmark_mix_latency(
         const std::string& nhbr_res_file,
         const std::string& nhbr_atype_res_file,
@@ -1046,6 +1532,16 @@ public:
         } catch (std::exception &e) {
             LOG_E("Exception: %s\n", e.what());
         }
+    }
+
+    void benchmark_neighbor_node_throughput(
+        const int num_threads,
+        const std::string& master_hostname,
+        std::string warmup_query_file,
+        std::string query_file)
+    {
+        read_neighbor_node_queries(warmup_query_file, query_file);
+        bench_throughput(num_threads, master_hostname, BenchType::NHBR_NODE);
     }
 
     void benchmark_neighbor_node_latency(

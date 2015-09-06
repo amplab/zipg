@@ -38,6 +38,11 @@ benchNeighbor=T
 
 throughput_threads=4
 #benchNeighborThput=T
+benchNhbrAtypeThput=T
+benchNhbrNodeThput=T
+benchNodeThput=T
+benchNodeNodeThput=T
+benchMixThput=T
 #benchTaoMixThput=T
 
 #benchAssocRange=T
@@ -89,6 +94,22 @@ function bench() {
       ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
     fi
 
+    if [[ -n "$benchNodeThput" ]]; then
+      # sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+      ${BIN_DIR}/bench -t node-throughput -x ${warmup_node} \
+        -p ${throughput_threads} \
+        -y ${measure_node} -w ${QUERY_DIR}/node_warmup_${num_nodes}.txt \
+        -q ${QUERY_DIR}/node_query_${num_nodes}.txt \
+        -o ${HOME_DIR}/node_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+        -m ${masterHostName} \
+        ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
+      o=throughput_get_nodes.txt
+      x=$(cut -d' ' -f1 ${o} | awk '{sum += $1} END {print sum}')
+      echo $throughput_threads clients, $x aggregated queries/sec >> ${o}
+      mv ${o} \
+        throughput_get_nodes-npa${npa}sa${sa}isa${isa}-${throughput_threads}clients.txt
+    fi
+
     if [[ -n "$benchNodeNode" ]]; then
       sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
       ${BIN_DIR}/bench -t node-node-latency -x ${warmup_node} \
@@ -98,7 +119,24 @@ function bench() {
       -m ${masterHostName} \
       ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
     fi
-    
+
+    if [[ -n "$benchNodeNodeThput" ]]; then
+      # sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+      ${BIN_DIR}/bench -t node-node-throughput -x ${warmup_node} \
+        -p ${throughput_threads} \
+        -y ${measure_node} -w ${QUERY_DIR}/node_warmup_${num_nodes}.txt \
+        -q ${QUERY_DIR}/node_query_${num_nodes}.txt \
+        -o ${HOME_DIR}/double_node_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+        -m ${masterHostName} \
+        ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
+
+      o=throughput_get_nodes2.txt
+      x=$(cut -d' ' -f1 ${o} | awk '{sum += $1} END {print sum}')
+      echo $throughput_threads clients, $x aggregated queries/sec >> ${o}
+      mv ${o} \
+        throughput_get_nodes2-npa${npa}sa${sa}isa${isa}-${throughput_threads}clients.txt
+    fi
+
     if [[ -n "$benchNeighborNode" ]]; then
       sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
       ${BIN_DIR}/bench -t neighbor-node-latency -x ${warmup_neighbor_node} \
@@ -109,6 +147,23 @@ function bench() {
       ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
     fi
 
+    if [[ -n "$benchNhbrNodeThput" ]]; then
+      # sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+      ${BIN_DIR}/bench -t neighbor-node-throughput -x ${warmup_neighbor_node} \
+        -p ${throughput_threads} \
+        -y ${measure_neighbor_node} -w ${QUERY_DIR}/neighbor_node_warmup_${num_nodes}.txt \
+        -q ${QUERY_DIR}/neighbor_node_query_${num_nodes}.txt \
+        -o ${HOME_DIR}/neighbor_node_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+        -m ${masterHostName} \
+        ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
+
+      o=throughput_get_nhbrsNode.txt
+      x=$(cut -d' ' -f1 ${o} | awk '{sum += $1} END {print sum}')
+      echo $throughput_threads clients, $x aggregated queries/sec >> ${o}
+      mv ${o} \
+        throughput_get_nhbrsNode-npa${npa}sa${sa}isa${isa}-${throughput_threads}clients.txt
+    fi
+
     if [[ -n "$benchNeighborAtype" ]]; then
         sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
         ${BIN_DIR}/bench -t neighbor-atype-latency -x ${warmup_neighbor_atype} \
@@ -117,6 +172,23 @@ function bench() {
         -o ${HOME_DIR}/neighborAtype_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
         -m ${masterHostName} \
         ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
+    fi
+
+    if [[ -n "$benchNhbrAtypeThput" ]]; then
+        # sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+        ${BIN_DIR}/bench -t neighbor-atype-throughput -x ${warmup_neighbor_atype} \
+        -p ${throughput_threads} \
+        -y ${measure_neighbor_atype} -w ${QUERY_DIR}/neighborAtype_warmup_${num_nodes}.txt \
+        -q ${QUERY_DIR}/neighborAtype_query_${num_nodes}.txt \
+        -o ${HOME_DIR}/neighborAtype_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+        -m ${masterHostName} \
+        ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
+
+      o=throughput_get_nhbrsAtype.txt
+      x=$(cut -d' ' -f1 ${o} | awk '{sum += $1} END {print sum}')
+      echo $throughput_threads clients, $x aggregated queries/sec >> ${o}
+      mv ${o} \
+        throughput_get_nhbrsAtype-npa${npa}sa${sa}isa${isa}-${throughput_threads}clients.txt
     fi
 
     if [[ -n "$benchNeighbor" ]]; then
@@ -150,6 +222,35 @@ function bench() {
         -m ${masterHostName} \
         ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
     fi
+
+    if [[ -n "$benchMixThput" ]]; then
+      #sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+
+      ${BIN_DIR}/bench -t mix-throughput \
+        -p ${throughput_threads} \
+        -x ${warmup_mix} -y ${measure_mix} \
+        -w ${QUERY_DIR}/neighborAtype_warmup_${num_nodes}.txt \
+        -q ${QUERY_DIR}/neighborAtype_query_${num_nodes}.txt \
+        -a ${QUERY_DIR}/neighbor_warmup_${num_nodes}.txt \
+        -b ${QUERY_DIR}/neighbor_query_${num_nodes}.txt \
+        -c ${QUERY_DIR}/neighbor_node_warmup_${num_nodes}.txt \
+        -d ${QUERY_DIR}/neighbor_node_query_${num_nodes}.txt \
+        -e ${QUERY_DIR}/node_warmup_${num_nodes}.txt \
+        -f ${QUERY_DIR}/node_query_${num_nodes}.txt \
+        -o ${HOME_DIR}/mix_neighbor_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+        -h ${HOME_DIR}/mix_neighborAtype_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+        -i ${HOME_DIR}/mix_neighbor_node_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+        -j ${HOME_DIR}/mix_node_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+        -k ${HOME_DIR}/mix_double_node_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+        -m ${masterHostName} \
+        ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
+
+      o=throughput_mix.txt
+      x=$(cut -d' ' -f1 ${o} | awk '{sum += $1} END {print sum}')
+      echo $throughput_threads clients, $x aggregated queries/sec >> ${o}
+      mv ${o} throughput_mix-npa${npa}sa${sa}isa${isa}-${throughput_threads}clients.txt
+    fi
+
 
     if [[ -n "$benchNeighborThput" ]]; then
       #sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
