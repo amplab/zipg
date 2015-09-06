@@ -76,6 +76,7 @@ public class NeighborNodeBench {
             System.out.println("No type " + type + " is supported!");
         }
     }
+
     static class RunNeighborNodeThroughput implements Runnable {
         private int clientId;
         private GraphDatabaseService graphDb;
