@@ -52,7 +52,7 @@ thputThreads=1
 #benchNhbrNodeThput=T
 #benchNodeThput=T
 #benchNodeNodeThput=T
-#benchmixThput=T
+#benchMixThput=T
 #benchTaoMixThput=T
 
 benchAssocRange=T
