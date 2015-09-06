@@ -28,11 +28,12 @@ public class BenchNeighbor {
         WARMUP_N = Integer.parseInt(args[5]);
         MEASURE_N = Integer.parseInt(args[6]);
         int numClients = Integer.parseInt(args[7]);
+        boolean tuned = Boolean.valueOf(args[8]);
 
         String neo4jPageCacheMemory = GraphDatabaseSettings.pagecache_memory
             .getDefaultValue();
-        if (args.length >= 9) {
-            neo4jPageCacheMemory = args[8];
+        if (args.length >= 10) {
+            neo4jPageCacheMemory = args[9];
         }
 
         List<Long> warmupQueries = new ArrayList<>();
@@ -41,26 +42,30 @@ public class BenchNeighbor {
         BenchUtils.getNeighborQueries(query_path, queries);
 
         if (type.equals("neighbor-latency")) {
-            benchNeighborLatency(db_path, neo4jPageCacheMemory, warmupQueries,
-                queries, output_file);
+            benchNeighborLatency(tuned, db_path, neo4jPageCacheMemory,
+                warmupQueries, queries, output_file);
         } else if (type.equals("neighbor-throughput")) {
-            benchNeighborThroughput(db_path, neo4jPageCacheMemory,
+            benchNeighborThroughput(tuned, db_path, neo4jPageCacheMemory,
                 warmupQueries, queries, numClients);
         }
     }
 
     private static void benchNeighborLatency(
-        String db_path, String neo4jPageCacheMem,
+        boolean tuned, String dbPath, String neo4jPageCacheMem,
         List<Long> warmupQueries, List<Long> queries, String output_file) {
 
         System.out.println("Benchmarking getNeighbor queries");
-        //System.out.println("Setting neo4j's dbms.pagecache.memory: " + neo4jPageCacheMem);
-        GraphDatabaseService graphDb = new GraphDatabaseFactory()
-            .newEmbeddedDatabaseBuilder(db_path)
-            .setConfig(GraphDatabaseSettings.cache_type, "none")
-            .setConfig(
-                GraphDatabaseSettings.pagecache_memory, neo4jPageCacheMem)
-            .newGraphDatabase();
+        GraphDatabaseService graphDb;
+        if (tuned) {
+            graphDb = new GraphDatabaseFactory()
+                .newEmbeddedDatabaseBuilder(dbPath)
+                .setConfig(GraphDatabaseSettings.cache_type, "none")
+                .setConfig(
+                    GraphDatabaseSettings.pagecache_memory, neo4jPageCacheMem)
+                .newGraphDatabase();
+        } else {
+            graphDb = new GraphDatabaseFactory().newEmbeddedDatabase(dbPath);
+        }
 
         BenchUtils.registerShutdownHook(graphDb);
         Transaction tx = graphDb.beginTx();
@@ -73,7 +78,10 @@ public class BenchNeighbor {
                     new FileWriter(output_file + ".neo4j_result")));
             }
 
-            fullWarmup(graphDb);
+            if (tuned) {
+                fullWarmup(graphDb);
+            }
+
             System.out.println("Warming up for " + WARMUP_N + " queries");
             for (int i = 0; i < WARMUP_N; i++) {
                 if (i % 10000 == 0) {
@@ -139,7 +147,7 @@ public class BenchNeighbor {
             Random rand = new Random(1618 + clientId);
             try {
                 // true for append
-                 out = new PrintWriter(new BufferedWriter(
+                out = new PrintWriter(new BufferedWriter(
                     new FileWriter("neo4j_throughput_get_nhbrs.txt", true)));
 
                 // warmup
@@ -201,26 +209,34 @@ public class BenchNeighbor {
         }
     }
 
-    private static void benchNeighborThroughput(String dbPath,
-        String neo4jPageCacheMemory, List<Long> warmupQueries,
+    private static void benchNeighborThroughput(boolean tuned, String dbPath,
+        String neo4jPageCacheMem, List<Long> warmupQueries,
         List<Long> queries, int numClients) {
 
-        GraphDatabaseService graphDb = new GraphDatabaseFactory()
-            .newEmbeddedDatabaseBuilder(dbPath)
-            .setConfig(GraphDatabaseSettings.cache_type, "none")
-            .setConfig(
-                GraphDatabaseSettings.pagecache_memory, neo4jPageCacheMemory)
-            .newGraphDatabase();
+        GraphDatabaseService graphDb;
+        if (tuned) {
+            graphDb = new GraphDatabaseFactory()
+                .newEmbeddedDatabaseBuilder(dbPath)
+                .setConfig(GraphDatabaseSettings.cache_type, "none")
+                .setConfig(
+                    GraphDatabaseSettings.pagecache_memory, neo4jPageCacheMem)
+                .newGraphDatabase();
+        } else {
+            graphDb = new GraphDatabaseFactory().newEmbeddedDatabase(dbPath);
+        }
+
         BenchUtils.registerShutdownHook(graphDb);
         Transaction tx = null;
         try {
-          tx = graphDb.beginTx();
-          BenchUtils.fullWarmup(graphDb);
+            tx = graphDb.beginTx();
+            if (tuned) {
+                BenchUtils.fullWarmup(graphDb);
+            }
         } finally {
-          if (tx != null) {
-            tx.success();
-            tx.close();
-          }
+            if (tx != null) {
+                tx.success();
+                tx.close();
+            }
         }
 
         try {

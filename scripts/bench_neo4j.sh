@@ -127,6 +127,7 @@ for JVM_HEAP in 6900; do
            ${HOME_DIR}/neo4j_${DATASET}_neighbor_latency_jvm${JVM_HEAP}m_pagecache${PC}m.txt \
            ${neo4j_warmup_neighbor} \
            ${neo4j_measure_neighbor} \
+           ${tuned} \
            ${pageCacheIgnoreIndexes}
       fi
 
@@ -142,6 +143,7 @@ for JVM_HEAP in 6900; do
             ${HOME_DIR}/neo4j_${DATASET}_neighborAtype_latency_jvm${JVM_HEAP}m_pagecache${PC}m.txt \
             ${neo4j_warmup_neighbor_atype} \
             ${neo4j_measure_neighbor_atype} \
+            ${tuned} \
             ${pageCacheIgnoreIndexes}
       fi
 
@@ -200,11 +202,12 @@ for JVM_HEAP in 6900; do
            0 \
            0 \
            ${thputThreads} \
+           ${tuned} \
            ${pageCacheForNodes}
 
         x=$(cut -d' ' -f1 neo4j_throughput_get_nhbrs.txt | awk '{ sum += $1 } END { print sum }')
+        echo ${thputThreads} clients, $x get_nhbr queries/sec >> neo4j_throughput_get_nhbrs.txt
         mv neo4j_throughput_get_nhbrs.txt neo4j_throughput_get_nhbrs-${thputThreads}clients.txt
-        echo ${thputThreads} clients, $x get_nhbr queries/sec
 
       fi
 
@@ -352,8 +355,8 @@ for JVM_HEAP in 6900; do
          ${pageCacheIgnoreIndexes}
 
         x=$(cut -d' ' -f1 neo4j_throughput_tao_mix.txt | awk '{ sum += $1 } END { print sum }')
+        echo ${thputThreads} clients, $x aggregated queries/sec >> neo4j_throughput_tao_mix.txt
         mv neo4j_throughput_tao_mix.txt neo4j_throughput_tao_mix-${thputThreads}clients.txt
-        echo ${thputThreads} clients, $x aggregated queries/sec
     fi
 
     done
