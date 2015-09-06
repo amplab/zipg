@@ -14,10 +14,9 @@ import java.util.List;
 import java.util.Set;
 
 import static edu.berkeley.cs.succinctgraph.neo4jbench.BenchUtils.*;
+import static edu.berkeley.cs.succinctgraph.neo4jbench.BenchConstants.*;
 
 public class BenchNode {
-    private static final long WARMUP_TIME = (long) (60 * 1E9); // 60 seconds
-    private static final long MEASURE_TIME = (long) (120 * 1E9); // 120 seconds
 
     private static int WARMUP_N = 100000;
     private static int MEASURE_N = 100000;

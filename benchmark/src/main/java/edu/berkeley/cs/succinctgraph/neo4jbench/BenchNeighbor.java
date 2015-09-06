@@ -10,11 +10,9 @@ import java.io.PrintWriter;
 import java.util.*;
 
 import static edu.berkeley.cs.succinctgraph.neo4jbench.BenchUtils.*;
+import static edu.berkeley.cs.succinctgraph.neo4jbench.BenchConstants.*;
 
 public class BenchNeighbor {
-    private static final long WARMUP_TIME = (long) (60 * 1e9); // 1e9 = 1 sec
-    private static final long MEASURE_TIME = (long) (120 * 1e9);
-    private static final long COOLDOWN_TIME = (long) (5 * 1e9);
 
     private static int WARMUP_N = 500000;
     private static int MEASURE_N = 500000;

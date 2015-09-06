@@ -48,6 +48,7 @@ tuned=true
 
 thputThreads=1
 #benchNhbrThput=T
+#benchNeighborAtypeThput=T
 #benchTaoMixThput=T
 
 benchAssocRange=T
@@ -143,8 +144,31 @@ for JVM_HEAP in 6900; do
             ${HOME_DIR}/neo4j_${DATASET}_neighborAtype_latency_jvm${JVM_HEAP}m_pagecache${PC}m.txt \
             ${neo4j_warmup_neighbor_atype} \
             ${neo4j_measure_neighbor_atype} \
+            ${thputThreads} \
             ${tuned} \
             ${pageCacheIgnoreIndexes}
+      fi
+
+    if [[ -n "$benchNeighborAtypeThput" ]]; then
+        sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+        find /mnt2T/data/neo4j/${DATASET}/ -name "*store.db*" -type f -exec dd if={} of=/dev/null bs=1M 2>/dev/null \;
+        java -verbose:gc -server -XX:+UseConcMarkSweepGC -Xmx${JVM_HEAP}m -cp ${classpath} \
+            edu.berkeley.cs.succinctgraph.neo4jbench.BenchNeighborAtype \
+            throughput \
+            ${NEO4J_DIR}/${DATASET} \
+            ${QUERY_DIR}/neighborAtype_warmup_${num_nodes}.txt \
+            ${QUERY_DIR}/neighborAtype_query_${num_nodes}.txt \
+            ${HOME_DIR}/neo4j_${DATASET}_neighborAtype_latency_jvm${JVM_HEAP}m_pagecache${PC}m.txt \
+            ${neo4j_warmup_neighbor_atype} \
+            ${neo4j_measure_neighbor_atype} \
+            ${thputThreads} \
+            ${tuned} \
+            ${pageCacheIgnoreIndexes}
+
+        o=neo4j_throughput_get_nhbrs_atype.txt
+        x=$(cut -d' ' -f1 ${o} | awk '{ sum += $1 } END { print sum }')
+        echo ${thputThreads} clients, $x aggregated queries/sec >> ${o}
+        mv ${o} neo4j_throughput_get_nhbrs_atype-${thputThreads}clients.txt
       fi
 
       if [[ -n "$benchNeighborNodeIndexed" ]]; then
