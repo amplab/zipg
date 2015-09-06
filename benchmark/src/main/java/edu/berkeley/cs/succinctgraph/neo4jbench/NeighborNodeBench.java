@@ -4,12 +4,13 @@ import org.neo4j.graphdb.*;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.graphdb.factory.GraphDatabaseSettings;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.util.*;
 
-import static edu.berkeley.cs.succinctgraph.neo4jbench.BenchUtils.fullWarmup;
-import static edu.berkeley.cs.succinctgraph.neo4jbench.BenchUtils.modGet;
-import static edu.berkeley.cs.succinctgraph.neo4jbench.BenchUtils.printMemoryFootprint;
+import static edu.berkeley.cs.succinctgraph.neo4jbench.BenchConstants.*;
+import static edu.berkeley.cs.succinctgraph.neo4jbench.BenchUtils.*;
 
 public class NeighborNodeBench {
 
@@ -28,7 +29,7 @@ public class NeighborNodeBench {
 
     public static void main(String[] args) throws Exception {
         String type = args[0];
-        String db_path = args[1];
+        String dbPath = args[1];
         String warmup_file = args[2];
         String query_file = args[3];
         String output_file = args[4];
@@ -59,15 +60,157 @@ public class NeighborNodeBench {
         if (type.equals("latency")) {
 
             neighborNodeLatency(
-                tuned, db_path, neo4jPageCacheMem, out, resOut, false);
+                tuned, dbPath, neo4jPageCacheMem, out, resOut, false);
 
         } else if (type.equals("latency-index")) {
 
             neighborNodeLatency(
-                tuned, db_path, neo4jPageCacheMem, out, resOut, true);
+                tuned, dbPath, neo4jPageCacheMem, out, resOut, true);
+
+        } else if (type.equals("throughput")) {
+
+            neighborNodeThroughput(
+                tuned, dbPath, neo4jPageCacheMem, numClients);
 
         } else {
             System.out.println("No type " + type + " is supported!");
+        }
+    }
+    static class RunNeighborNodeThroughput implements Runnable {
+        private int clientId;
+        private GraphDatabaseService graphDb;
+
+        public RunNeighborNodeThroughput(
+            int clientId, GraphDatabaseService graphDb) {
+
+            this.clientId = clientId;
+            this.graphDb = graphDb;
+        }
+
+        public void run() {
+            Transaction tx = graphDb.beginTx();
+            PrintWriter out = null;
+            Random rand = new Random(1618 + clientId);
+            try {
+                // true for append
+                out = new PrintWriter(new BufferedWriter(new FileWriter(
+                    "neo4j_throughput_get_nhbrs_attr.txt", true)));
+
+                // warmup
+                int i = 0, queryIdx, warmupSize = warmupNeighborIndices.size();
+                long warmupStart = System.nanoTime();
+                while (System.nanoTime() - warmupStart < WARMUP_TIME) {
+                    if (i % 10000 == 0) {
+                        tx.success();
+                        tx.close();
+                        tx = graphDb.beginTx();
+                    }
+                    queryIdx = rand.nextInt(warmupSize);
+                    getNeighborNode(graphDb,
+                        modGet(warmupNeighborIndices, queryIdx),
+                        modGet(warmupNodeAttributes, queryIdx),
+                        modGet(warmupNodeQueries, queryIdx));
+                    ++i;
+                }
+
+                // measure
+                i = 0;
+                long edges = 0;
+                int querySize = neighborIndices.size();
+                List<Long> neighbors;
+                long start = System.nanoTime();
+                while (System.nanoTime() - start < MEASURE_TIME) {
+                    if (i % 10000 == 0) {
+                        tx.success();
+                        tx.close();
+                        tx = graphDb.beginTx();
+                    }
+                    queryIdx = rand.nextInt(querySize);
+                    neighbors =
+                        getNeighborNode(graphDb,
+                            modGet(neighborIndices, queryIdx),
+                            modGet(nodeAttributes, queryIdx),
+                            modGet(nodeQueries, queryIdx));
+                    edges += neighbors.size();
+                    ++i;
+                }
+                long end = System.nanoTime();
+                double totalSeconds = (end - start) * 1. / 1e9;
+                double queryThput = ((double) i) / totalSeconds;
+                double edgesThput = ((double) edges) / totalSeconds;
+
+                // cooldown
+                long cooldownStart = System.nanoTime();
+                while (System.nanoTime() - cooldownStart < COOLDOWN_TIME) {
+                    getNeighborNode(graphDb,
+                        modGet(neighborIndices, i),
+                        modGet(nodeAttributes, i),
+                        modGet(nodeQueries, i));
+                    ++i;
+                }
+                out.printf("%d %d\n", (int) queryThput, (int) edgesThput);
+
+            } catch (Exception e) {
+                System.err.printf("Client %d throughput bench exception: %s\n",
+                    clientId, e);
+                System.exit(1);
+            } finally {
+                if (out != null) {
+                    out.close();
+                }
+                tx.success();
+                tx.close();
+            }
+        }
+    }
+
+    private static void neighborNodeThroughput(
+        boolean tuned, String dbPath, String neo4jPageCacheMem, int numClients) {
+
+        GraphDatabaseService graphDb;
+        if (tuned) {
+            graphDb = new GraphDatabaseFactory()
+                .newEmbeddedDatabaseBuilder(dbPath)
+                .setConfig(GraphDatabaseSettings.cache_type, "none")
+                .setConfig(
+                    GraphDatabaseSettings.pagecache_memory, neo4jPageCacheMem)
+                .newGraphDatabase();
+        } else {
+            graphDb = new GraphDatabaseFactory().newEmbeddedDatabase(dbPath);
+        }
+
+        BenchUtils.registerShutdownHook(graphDb);
+        Transaction tx = null;
+        try {
+            tx = graphDb.beginTx();
+            if (tuned) {
+                BenchUtils.fullWarmup(graphDb);
+            }
+        } finally {
+            if (tx != null) {
+                tx.success();
+                tx.close();
+            }
+        }
+
+        try {
+            List<Thread> clients = new ArrayList<>(numClients);
+            for (int i = 0; i < numClients; ++i) {
+                clients.add(new Thread(new RunNeighborNodeThroughput(
+                    i, graphDb)));
+            }
+            for (Thread thread : clients) {
+                thread.start();
+            }
+            for (Thread thread : clients) {
+                thread.join();
+            }
+        } catch (Exception e) {
+            System.err.printf("Benchmark throughput exception: %s\n", e);
+            System.exit(1);
+        } finally {
+            System.out.println("Shutting down database ...");
+            graphDb.shutdown();
         }
     }
 
