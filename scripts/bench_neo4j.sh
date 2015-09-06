@@ -224,7 +224,7 @@ for JVM_HEAP in 6900; do
         o=neo4j_throughput_get_nhbrs_atype.txt
         x=$(cut -d' ' -f1 ${o} | awk '{ sum += $1 } END { print sum }')
         echo ${thputThreads} clients, $x aggregated queries/sec >> ${o}
-        mv ${o} neo4j_throughput_get_nhbrs_atype-${thputThreads}clients.txt
+        mv ${o} neo4j_throughput_get_nhbrs_atype-tuned_${tuned}-${thputThreads}clients.txt
       fi
 
       if [[ -n "$benchNhbrNodeThput" ]]; then
@@ -243,10 +243,10 @@ for JVM_HEAP in 6900; do
             ${tuned} \
 	        ${pageCacheIgnoreIndexes}
 
-        o=neo4j_throughput_get_nhbrs_attr
+        o=neo4j_throughput_get_nhbrs_attr.txt
         x=$(cut -d' ' -f1 ${o} | awk '{ sum += $1 } END { print sum }')
         echo ${thputThreads} clients, $x aggregated queries/sec >> ${o}
-        mv ${o} neo4j_throughput_get_nhbrs_atype-tuned_${tuned}-${thputThreads}clients.txt
+        mv ${o} neo4j_throughput_get_nhbrs_attr-tuned_${tuned}-${thputThreads}clients.txt
       fi
 
       if [[ -n "$benchNeighborNodeIndexed" ]]; then
