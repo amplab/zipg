@@ -11,9 +11,9 @@ TOTAL_MEM=15043 # c4.2x, 15GB
 AVAIL_MEM=$(( $TOTAL_MEM - 512 )) # reserve 512m for OS
 
 minDegs=('' '-minDeg30')
-minDegs=('')
 minDegs=('-minDeg60')
 minDegs=('-minDeg30WithTsAttr')
+minDegs=('')
 
 for minDeg in "${minDegs[@]}"; do
 
@@ -35,8 +35,9 @@ else
 fi
 NEO4J_DIR=/mnt2T/data/neo4j
 
-tuned=false
 tuned=true
+tuned=false
+for tuned in true false; do
 
 #benchNeighbor=T
 #benchNeighborAtype=T
@@ -46,26 +47,26 @@ tuned=true
 #benchNeighborNodeIndexed=T
 #benchMixed=T
 
-thputThreads=1
-#benchNhbrThput=T
-#benchNeighborAtypeThput=T
+benchNhbrThput=T
+benchNeighborAtypeThput=T
 #benchNhbrNodeThput=T
 #benchNodeThput=T
 #benchNodeNodeThput=T
 #benchMixThput=T
 #benchTaoMixThput=T
 
-benchAssocRange=T
+#benchAssocRange=T
 #benchObjGet=T
 #benchAssocGet=T
 #benchAssocCount=T
 #benchAssocTimeRange=T
-benchTAOMix=T
+#benchTAOMix=T
 
 pageCacheForNodes=8543m # works, has tradeoff
-pageCacheForNodes=""
+pageCacheForNodes=72g
 pageCacheIgnoreIndexes=72g
 
+for thputThreads in 32 64 128; do
 #for pageCacheForNodes in 9574m 9370m; do
 for JVM_HEAP in 6900; do
   # "use more": #`echo "0.75 * ($TOTAL_MEM - $JVM_HEAP)" | bc | awk '{printf("%d", $1)}'` #`echo "$AVAIL_MEM - $JVM_HEAP" | bc | awk '{printf("%d", $1)}'`
@@ -77,7 +78,7 @@ for JVM_HEAP in 6900; do
     do
 
     if [[ -n "$benchNodeNode" ]]; then
-        sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+        # sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
         find /mnt2T/data/neo4j/${DATASET}/schema/index -type f -exec dd if={} of=/dev/null bs=1M 2>/dev/null \;
         find /mnt2T/data/neo4j/${DATASET}/ -name "*store.db*" -type f -exec dd if={} of=/dev/null bs=1M 2>/dev/null \;
         java -verbose:gc -server -XX:+UseConcMarkSweepGC -Xmx${JVM_HEAP}m -cp ${classpath} \
@@ -94,7 +95,7 @@ for JVM_HEAP in 6900; do
       fi
 
     if [[ -n "$benchNodeThput" ]]; then
-        sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+        #sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
         find /mnt2T/data/neo4j/${DATASET}/schema/index -type f -exec dd if={} of=/dev/null bs=1M 2>/dev/null \;
         find /mnt2T/data/neo4j/${DATASET}/ -name "*store.db*" -type f -exec dd if={} of=/dev/null bs=1M 2>/dev/null \;
         java -verbose:gc -server -XX:+UseConcMarkSweepGC -Xmx${JVM_HEAP}m -cp ${classpath} \
@@ -117,7 +118,7 @@ for JVM_HEAP in 6900; do
       fi
 
     if [[ -n "$benchNodeNodeThput" ]]; then
-        sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+         # sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
         find /mnt2T/data/neo4j/${DATASET}/schema/index -type f -exec dd if={} of=/dev/null bs=1M 2>/dev/null \;
         find /mnt2T/data/neo4j/${DATASET}/ -name "*store.db*" -type f -exec dd if={} of=/dev/null bs=1M 2>/dev/null \;
         java -verbose:gc -server -XX:+UseConcMarkSweepGC -Xmx${JVM_HEAP}m -cp ${classpath} \
@@ -140,7 +141,7 @@ for JVM_HEAP in 6900; do
       fi
 
     if [[ -n "$benchNode" ]]; then
-        sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+        # sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
         find /mnt2T/data/neo4j/${DATASET}/schema/index -type f -exec dd if={} of=/dev/null bs=1M 2>/dev/null \;
         find /mnt2T/data/neo4j/${DATASET}/ -name "*store.db*" -type f -exec dd if={} of=/dev/null bs=1M 2>/dev/null \;
 
@@ -158,7 +159,7 @@ for JVM_HEAP in 6900; do
       fi
 
     if [[ -n "$benchNeighborNode" ]]; then
-        sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+        # sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
         find /mnt2T/data/neo4j/${DATASET}/ -name "*store.db*" -type f -exec dd if={} of=/dev/null bs=1M 2>/dev/null \;
         java -verbose:gc -server -XX:+UseConcMarkSweepGC -Xmx${JVM_HEAP}m -cp ${classpath} \
             edu.berkeley.cs.succinctgraph.neo4jbench.NeighborNodeBench latency \
@@ -174,7 +175,7 @@ for JVM_HEAP in 6900; do
       fi
 
     if [[ -n "$benchNeighbor" ]]; then
-        sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+        # sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
         find /mnt2T/data/neo4j/${DATASET}/ -name "*store.db*" -type f -exec dd if={} of=/dev/null bs=1M 2>/dev/null \;
         java -verbose:gc -server -XX:+UseConcMarkSweepGC -Xmx${JVM_HEAP}m -cp ${classpath} \
            edu.berkeley.cs.succinctgraph.neo4jbench.BenchNeighbor neighbor-latency \
@@ -184,12 +185,13 @@ for JVM_HEAP in 6900; do
            ${HOME_DIR}/neo4j_${DATASET}_neighbor_latency_jvm${JVM_HEAP}m_pagecache${PC}m.txt \
            ${neo4j_warmup_neighbor} \
            ${neo4j_measure_neighbor} \
+           ${thputThreads} \
            ${tuned} \
            ${pageCacheIgnoreIndexes}
       fi
 
     if [[ -n "$benchNeighborAtype" ]]; then
-        sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+        # sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
         find /mnt2T/data/neo4j/${DATASET}/ -name "*store.db*" -type f -exec dd if={} of=/dev/null bs=1M 2>/dev/null \;
         java -verbose:gc -server -XX:+UseConcMarkSweepGC -Xmx${JVM_HEAP}m -cp ${classpath} \
             edu.berkeley.cs.succinctgraph.neo4jbench.BenchNeighborAtype \
@@ -206,7 +208,7 @@ for JVM_HEAP in 6900; do
       fi
 
     if [[ -n "$benchNeighborAtypeThput" ]]; then
-        sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+        # sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
         find /mnt2T/data/neo4j/${DATASET}/ -name "*store.db*" -type f -exec dd if={} of=/dev/null bs=1M 2>/dev/null \;
         java -verbose:gc -server -XX:+UseConcMarkSweepGC -Xmx${JVM_HEAP}m -cp ${classpath} \
             edu.berkeley.cs.succinctgraph.neo4jbench.BenchNeighborAtype \
@@ -222,13 +224,13 @@ for JVM_HEAP in 6900; do
             ${pageCacheIgnoreIndexes}
 
         o=neo4j_throughput_get_nhbrs_atype.txt
-        x=$(cut -d' ' -f1 ${o} | awk '{ sum += $1 } END { print sum }')
+        x=$(cut -d' ' -f1 ${o} | awk '{ sum += $1 } END { print sprintf(".1f", sum) }')
         echo ${thputThreads} clients, $x aggregated queries/sec >> ${o}
         mv ${o} neo4j_throughput_get_nhbrs_atype-tuned_${tuned}-${thputThreads}clients.txt
       fi
 
       if [[ -n "$benchNhbrNodeThput" ]]; then
-        sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+        # sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
         find /mnt2T/data/neo4j/${DATASET}/ -name "*store.db*" -type f -exec dd if={} of=/dev/null bs=1M 2>/dev/null \;
         java -verbose:gc -server -XX:+UseConcMarkSweepGC -Xmx${JVM_HEAP}m -cp ${classpath} \
             edu.berkeley.cs.succinctgraph.neo4jbench.NeighborNodeBench \
@@ -250,7 +252,7 @@ for JVM_HEAP in 6900; do
       fi
 
       if [[ -n "$benchNeighborNodeIndexed" ]]; then
-        sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+        # sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
         find /mnt2T/data/neo4j/${DATASET}/ -name "*store.db*" -type f -exec dd if={} of=/dev/null bs=1M 2>/dev/null \;
         java -verbose:gc -server -XX:+UseConcMarkSweepGC -Xmx${JVM_HEAP}m -cp ${classpath} \
             edu.berkeley.cs.succinctgraph.neo4jbench.NeighborNodeBench latency-index \
@@ -264,7 +266,7 @@ for JVM_HEAP in 6900; do
       fi
 
       if [[ -n "$benchMixThput" ]]; then
-        sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+         # sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
         find /mnt2T/data/neo4j/${DATASET}/ -name "*store.db*" -type f -exec dd if={} of=/dev/null bs=1M 2>/dev/null \;
         find /mnt2T/data/neo4j/${DATASET}/schema/index -type f -exec dd if={} of=/dev/null bs=1M 2>/dev/null \;
 
@@ -298,7 +300,7 @@ for JVM_HEAP in 6900; do
       fi
 
       if [[ -n "$benchMixed" ]]; then
-        sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+        # sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
         find /mnt2T/data/neo4j/${DATASET}/ -name "*store.db*" -type f -exec dd if={} of=/dev/null bs=1M 2>/dev/null \;
         find /mnt2T/data/neo4j/${DATASET}/schema/index -type f -exec dd if={} of=/dev/null bs=1M 2>/dev/null \;
 
@@ -326,7 +328,7 @@ for JVM_HEAP in 6900; do
       fi
 
       if [[ -n "$benchNhbrThput" ]]; then
-        sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+        # sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
         find /mnt2T/data/neo4j/${DATASET}/ -name "*store.db*" -type f -exec dd if={} of=/dev/null bs=1M 2>/dev/null \;
 
         java -verbose:gc -server -XX:+UseConcMarkSweepGC -Xmx${JVM_HEAP}m -cp ${classpath} \
@@ -342,14 +344,14 @@ for JVM_HEAP in 6900; do
            ${tuned} \
            ${pageCacheForNodes}
 
-        x=$(cut -d' ' -f1 neo4j_throughput_get_nhbrs.txt | awk '{ sum += $1 } END { print sum }')
-        echo ${thputThreads} clients, $x get_nhbr queries/sec >> neo4j_throughput_get_nhbrs.txt
-        mv neo4j_throughput_get_nhbrs.txt neo4j_throughput_get_nhbrs-${thputThreads}clients.txt
-
+        o=neo4j_throughput_get_nhbrs.txt
+        x=$(cut -d' ' -f1 ${o} | awk '{ sum += $1 } END { print sprintf(".1f", sum) }')
+        echo ${thputThreads} clients, $x get_nhbr queries/sec >> ${o}
+        mv ${o} neo4j_throughput_get_nhbrs-tuned_${tuned}-${thputThreads}clients.txt
       fi
 
     if [[ -n "$benchAssocRange" ]]; then
-        # sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+        # # sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
         find /mnt2T/data/neo4j/${DATASET}/ -name "*store.db*" -type f -exec dd if={} of=/dev/null bs=1M 2>/dev/null \;
         cmd="java -verbose:gc -server -XX:+UseConcMarkSweepGC -Xmx${JVM_HEAP}m -cp ${classpath} \
            edu.berkeley.cs.succinctgraph.neo4jbench.tao.BenchTAOAssocRange \
@@ -437,7 +439,7 @@ for JVM_HEAP in 6900; do
     fi
       
     if [[ -n "$benchTAOMix" ]]; then
-      sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+      #sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
 
       find /mnt2T/data/neo4j/${DATASET}/ -name "*store.db*" -type f -exec dd if={} of=/dev/null bs=1M 2>/dev/null \;
       java -verbose:gc -server -XX:+UseConcMarkSweepGC -Xmx${JVM_HEAP}m -cp ${classpath} \
@@ -467,7 +469,7 @@ for JVM_HEAP in 6900; do
     fi
 
     if [[ -n "$benchTaoMixThput" ]]; then
-      # sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+      # # sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
 
       find /mnt2T/data/neo4j/${DATASET}/ -name "*store.db*" -type f -exec dd if={} of=/dev/null bs=1M 2>/dev/null \;
       java -verbose:gc -server -XX:+UseConcMarkSweepGC -Xmx${JVM_HEAP}m -cp ${classpath} \
@@ -498,4 +500,6 @@ for JVM_HEAP in 6900; do
 
     done
   done
+done
+done
 done
