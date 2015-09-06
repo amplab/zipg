@@ -114,6 +114,8 @@ for JVM_HEAP in 6900; do
             ${HOME_DIR}/neo4j_${DATASET}_neighbor_node_latency_jvm${JVM_HEAP}m_pagecache${PC}m.txt \
             ${neo4j_warmup_neighbor_node} \
             ${neo4j_measure_neighbor_node} \
+            ${thputThreads} \
+            ${tuned} \
             ${pageCacheIgnoreIndexes}
       fi
 
