@@ -162,9 +162,10 @@ function bench() {
         -m ${masterHostName} \
         ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
 
-      x=$(cut -d' ' -f1 throughput_get_nhbrs.txt | awk '{sum += $1} END {print sum}')
-      mv throughput_get_nhbrs.txt throughput_get_nhbrs-${throughput_threads}clients.txt
-      echo $throughput_threads clients, $x aggregated queries/sec
+      o=throughput_get_nhbrs.txt
+      x=$(cut -d' ' -f1 ${o} | awk '{sum += $1} END {print sum}')
+      echo $throughput_threads clients, $x aggregated queries/sec >> ${o}
+      mv ${o} throughput_get_nhbrs-npa${npa}sa${sa}isa${isa}-${throughput_threads}clients.txt
     fi
 
     if [[ -n "$benchAssocRange" ]]; then
