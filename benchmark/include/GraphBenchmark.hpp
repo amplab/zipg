@@ -31,6 +31,21 @@ private:
     constexpr static double ASSOC_COUNT_PERC = 0.117;
     constexpr static double ASSOC_TIME_RANGE_PERC = 0.028;
 
+    // Timings for throughput benchmarks.
+    constexpr static int64_t warmup_microsecs = 60 * 1000 * 1000; // 1 min
+    constexpr static int64_t measure_microsecs = 120 * 1000 * 1000; // 2 min
+    constexpr static int64_t cooldown_microsecs = 5 * 1000 * 1000; // 5 sec
+
+    typedef enum {
+        NHBR = 0,
+        NHBR_ATYPE = 1,
+        NHBR_NODE = 2,
+        NODE = 3,
+        NODE2 = 4,
+        MIX = 5,
+        TAO_MIX = 6
+    } BenchType;
+
     inline int choose_query(double rand_r) {
         if (rand_r < ASSOC_RANGE_PERC) {
             return 0;
@@ -46,6 +61,60 @@ private:
         return 4;
     }
 
+    void bench_throughput(
+        const int num_threads,
+        const std::string& master_hostname,
+        const BenchType type)
+    {
+        std::vector<shared_ptr<benchmark_thread_data_t>> thread_datas;
+        for (int i = 0; i < num_threads; ++i) {
+            try {
+                shared_ptr<TSocket> socket(
+                    new TSocket(master_hostname, QUERY_HANDLER_PORT));
+                shared_ptr<TTransport> transport(
+                    new TBufferedTransport(socket));
+                shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
+                shared_ptr<GraphQueryAggregatorServiceClient> client(
+                    new GraphQueryAggregatorServiceClient(protocol));
+                transport->open();
+                client->init();
+
+                shared_ptr<benchmark_thread_data_t> thread_data(
+                    new benchmark_thread_data_t);
+                thread_data->client = client;
+                thread_data->client_id = i;
+
+                thread_datas.push_back(thread_data);
+
+            } catch (std::exception& e) {
+                LOG_E("Exception opening clients: %s\n", e.what());
+            }
+        }
+
+        std::vector<shared_ptr<std::thread>> threads;
+        for (auto thread_data : thread_datas) {
+            switch (type) {
+            case NHBR:
+                threads.push_back(shared_ptr<std::thread>(new std::thread(
+                    &GraphBenchmark::benchmark_neighbor_throughput_helper,
+                    this, thread_data)));
+                break;
+            case TAO_MIX:
+                threads.push_back(shared_ptr<std::thread>(new std::thread(
+                    &GraphBenchmark::benchmark_tao_mix_throughput_helper,
+                    this, thread_data)));
+                break;
+            // TODO: add more
+            default:
+                break;
+            }
+        }
+
+        for (auto thread : threads) {
+            thread->join();
+        }
+    }
+
     template<typename T>
     inline T mod_get(const std::vector<T>& xs, int64_t i) {
         return xs[i % xs.size()];
@@ -53,11 +122,6 @@ private:
 
     typedef struct {
         shared_ptr<GraphQueryAggregatorServiceClient> client;
-
-        // TODO: remove, just access via `this`
-        // get_nhbrs(n)
-        std::vector<int64_t> warmup_neighbor_indices, neighbor_indices;
-
         int client_id; // for seeding
     } benchmark_thread_data_t;
 
@@ -325,14 +389,15 @@ public:
     }
 
     std::pair<double, double> benchmark_neighbor_throughput_helper(
-        shared_ptr<benchmark_thread_data_t> thread_data,
-        int64_t warmup_microsecs,
-        int64_t measure_microsecs,
-        int64_t cooldown_microsecs)
+        shared_ptr<benchmark_thread_data_t> thread_data)
     {
         double query_thput = 0;
         double edges_thput = 0;
         LOG_E("About to start querying on this thread...\n");
+
+        size_t warmup_size = warmup_neighbor_indices.size();
+        size_t measure_size = neighbor_indices.size();
+        std::srand(1618 + thread_data->client_id);
 
         try {
             std::vector<int64_t> result;
@@ -342,8 +407,8 @@ public:
             time_t start = get_timestamp();
             while (get_timestamp() - start < warmup_microsecs) {
                 thread_data->client->get_neighbors(
-                    result, mod_get(thread_data->warmup_neighbor_indices, i));
-                ++i;
+                    result,
+                    mod_get(warmup_neighbor_indices, rand() % warmup_size));
             }
             LOG_E("Warmup done: served %" PRId64 " queries\n", i);
 
@@ -353,7 +418,7 @@ public:
             start = get_timestamp();
             while (get_timestamp() - start < measure_microsecs) {
                 thread_data->client->get_neighbors(
-                    result, mod_get(thread_data->neighbor_indices, i));
+                    result, mod_get(neighbor_indices, rand() % measure_size));
                 edges += result.size();
                 ++i;
             }
@@ -367,7 +432,8 @@ public:
             time_t cooldown_start = get_timestamp();
             while (get_timestamp() - cooldown_start < cooldown_microsecs) {
                 thread_data->client->get_neighbors(
-                    result, mod_get(thread_data->neighbor_indices, i));
+                    result, mod_get(neighbor_indices, i));
+                ++i;
             }
 
             std::ofstream ofs("throughput_get_nhbrs.txt",
@@ -383,72 +449,16 @@ public:
     void benchmark_neighbor_throughput(
         int num_threads,
         const std::string& master_hostname,
-        int64_t warmup_microsecs,
-        int64_t measure_microsecs,
-        int64_t cooldown_microsecs,
         const std::string& warmup_neighbor_query_file,
         const std::string& neighbor_query_file)
     {
-        std::vector<shared_ptr<benchmark_thread_data_t>> thread_datas;
         read_neighbor_queries(warmup_neighbor_query_file, neighbor_query_file,
             warmup_neighbor_indices, neighbor_indices);
-        for (int i = 0; i < num_threads; ++i) {
-            try {
-                shared_ptr<TSocket> socket(
-                    new TSocket(master_hostname, QUERY_HANDLER_PORT));
-                shared_ptr<TTransport> transport(
-                    new TBufferedTransport(socket));
-                shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
-                shared_ptr<GraphQueryAggregatorServiceClient> client(
-                    new GraphQueryAggregatorServiceClient(protocol));
-
-                transport->open();
-                client->init();
-
-                shared_ptr<benchmark_thread_data_t> thread_data(
-                    new benchmark_thread_data_t);
-                thread_data->client = client;
-
-                // shuffle & copy-assign the queries for each thread
-                std::srand(1618 + i);
-                std::random_shuffle(
-                    warmup_neighbor_indices.begin(),
-                    warmup_neighbor_indices.end());
-                std::random_shuffle(
-                    neighbor_indices.begin(),
-                    neighbor_indices.end());
-                thread_data->warmup_neighbor_indices = warmup_neighbor_indices;
-                thread_data->neighbor_indices = neighbor_indices;
-
-                thread_datas.push_back(thread_data);
-
-            } catch (std::exception& e) {
-                LOG_E("Exception opening clients: %s\n", e.what());
-            }
-        }
-
-        std::vector<shared_ptr<std::thread>> threads;
-        for (auto thread_data : thread_datas) {
-            shared_ptr<std::thread> thread(new std::thread(
-                &GraphBenchmark::benchmark_neighbor_throughput_helper,
-                this,
-                thread_data,
-                warmup_microsecs,
-                measure_microsecs,
-                cooldown_microsecs));
-            threads.push_back(thread);
-        }
-
-        for (auto thread : threads) {
-            thread->join();
-        }
+        bench_throughput(num_threads, master_hostname, BenchType::NHBR);
     }
 
     std::pair<double, double> benchmark_tao_mix_throughput_helper(
-        shared_ptr<benchmark_thread_data_t> thread_data,
-        int64_t warmup_microsecs,
-        int64_t measure_microsecs,
-        int64_t cooldown_microsecs)
+        shared_ptr<benchmark_thread_data_t> thread_data)
     {
         double query_thput = 0;
         double edges_thput = 0;
@@ -603,9 +613,6 @@ public:
     void benchmark_tao_mix_throughput(
         const int num_threads,
         const std::string& master_hostname,
-        int64_t warmup_microsecs,
-        int64_t measure_microsecs,
-        int64_t cooldown_microsecs,
         const std::string& warmup_assoc_range_file,
         const std::string& assoc_range_file,
         const std::string& warmup_assoc_count_file,
@@ -632,46 +639,7 @@ public:
         read_assoc_time_range_queries(
             warmup_assoc_time_range_file, assoc_time_range_file);
 
-        std::vector<shared_ptr<benchmark_thread_data_t>> thread_datas;
-        for (int i = 0; i < num_threads; ++i) {
-            try {
-                shared_ptr<TSocket> socket(
-                    new TSocket(master_hostname, QUERY_HANDLER_PORT));
-                shared_ptr<TTransport> transport(
-                    new TBufferedTransport(socket));
-                shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
-                shared_ptr<GraphQueryAggregatorServiceClient> client(
-                    new GraphQueryAggregatorServiceClient(protocol));
-                transport->open();
-                client->init();
-
-                shared_ptr<benchmark_thread_data_t> thread_data(
-                    new benchmark_thread_data_t);
-                thread_data->client = client;
-                thread_data->client_id = i;
-
-                thread_datas.push_back(thread_data);
-
-            } catch (std::exception& e) {
-                LOG_E("Exception opening clients: %s\n", e.what());
-            }
-        }
-
-        std::vector<shared_ptr<std::thread>> threads;
-        for (auto thread_data : thread_datas) {
-            shared_ptr<std::thread> thread(new std::thread(
-                &GraphBenchmark::benchmark_tao_mix_throughput_helper,
-                this,
-                thread_data,
-                warmup_microsecs,
-                measure_microsecs,
-                cooldown_microsecs));
-            threads.push_back(thread);
-        }
-
-        for (auto thread : threads) {
-            thread->join();
-        }
+        bench_throughput(num_threads, master_hostname, BenchType::TAO_MIX);
     }
 
     // NODE BENCHMARKING
