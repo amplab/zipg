@@ -445,6 +445,7 @@ public:
                 thread_data->client->get_neighbors(
                     result,
                     mod_get(warmup_neighbor_indices, rand() % warmup_size));
+                ++i;
             }
             LOG_E("Warmup done: served %" PRId64 " queries\n", i);
 
@@ -506,6 +507,7 @@ public:
                     result,
                     mod_get(warmup_nhbrAtype_indices, query_idx),
                     mod_get(warmup_atypes, query_idx));
+                ++i;
             }
             LOG_E("Warmup done: served %" PRId64 " queries\n", i);
 
@@ -573,6 +575,7 @@ public:
                     mod_get(warmup_nhbrNode_indices, query_idx),
                     mod_get(warmup_nhbrNode_attr_ids, query_idx),
                     mod_get(warmup_nhbrNode_attrs, query_idx));
+                ++i;
             }
             LOG_E("Warmup done: served %" PRId64 " queries\n", i);
 
@@ -640,6 +643,7 @@ public:
                 thread_data->client->get_nodes(
                     result, mod_get(warmup_node_attributes, query_idx),
                     mod_get(warmup_node_queries, query_idx));
+                ++i;
             }
             LOG_E("Warmup done: served %" PRId64 " queries\n", i);
 
@@ -706,6 +710,7 @@ public:
                     mod_get(warmup_node_queries, query_idx),
                     mod_get(warmup_node_attributes2, query_idx),
                     mod_get(warmup_node_queries2, query_idx));
+                ++i;
             }
             LOG_E("Warmup done: served %" PRId64 " queries\n", i);
 
@@ -816,6 +821,7 @@ public:
                 default:
                     assert(false);
                 }
+                ++i;
             }
             LOG_E("Warmup done: served %" PRId64 " queries\n", i);
 
