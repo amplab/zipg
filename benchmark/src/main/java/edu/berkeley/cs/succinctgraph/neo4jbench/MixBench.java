@@ -15,11 +15,14 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
+import static edu.berkeley.cs.succinctgraph.neo4jbench.BenchConstants.*;
 import static edu.berkeley.cs.succinctgraph.neo4jbench.BenchUtils.*;
 
 public class MixBench {
     private static int WARMUP_N;
     private static int MEASURE_N;
+
+    static final Label label = DynamicLabel.label("Node");
 
     // get_nhbrs(n)
     static List<Long> warmupNhbrs = new ArrayList<>();
@@ -69,10 +72,13 @@ public class MixBench {
 
         WARMUP_N = Integer.parseInt(args[15]);
         MEASURE_N = Integer.parseInt(args[16]);
+        int numClients = Integer.parseInt(args[17]);
+        boolean tuned = Boolean.valueOf(args[18]);
+
         String neo4jPageCacheMemory = GraphDatabaseSettings.pagecache_memory
-            .getDefaultValue();;
-        if (args.length > 17) {
-            neo4jPageCacheMemory = args[17];
+            .getDefaultValue();
+        if (args.length > 19) {
+            neo4jPageCacheMemory = args[19];
         }
 
         // get_nhbrs(n)
@@ -103,29 +109,252 @@ public class MixBench {
         // start!
 
         if (type.equals("latency")) {
-            mixLatency(dbPath, neo4jPageCacheMemory,
+            mixLatency(tuned, dbPath, neo4jPageCacheMemory,
                 nhbrOut, nhbrNodeOut, nhbrAtypeOut, nodeOut, doubleNodeOut);
+        } else if (type.equals("throughput")) {
+            mixThroughput(tuned, dbPath, neo4jPageCacheMemory, numClients);
         } else {
             System.out.println("No type " + type + " is supported!");
         }
     }
 
+    private static void mixThroughput(
+        boolean tuned, String dbPath, String neo4jPageCacheMem, int numClients) {
+
+        GraphDatabaseService graphDb;
+        if (tuned) {
+            graphDb = new GraphDatabaseFactory()
+                .newEmbeddedDatabaseBuilder(dbPath)
+                .setConfig(GraphDatabaseSettings.cache_type, "none")
+                .setConfig(
+                    GraphDatabaseSettings.pagecache_memory, neo4jPageCacheMem)
+                .newGraphDatabase();
+        } else {
+            graphDb = new GraphDatabaseFactory().newEmbeddedDatabase(dbPath);
+        }
+
+        BenchUtils.registerShutdownHook(graphDb);
+        Transaction tx = null;
+        try {
+            tx = graphDb.beginTx();
+            if (tuned) {
+                BenchUtils.fullWarmup(graphDb);
+            }
+            BenchUtils.awaitIndexes(graphDb);
+        } finally {
+            if (tx != null) {
+                tx.success();
+                tx.close();
+            }
+        }
+
+        try {
+            List<Thread> clients = new ArrayList<>(numClients);
+            for (int i = 0; i < numClients; ++i) {
+                clients.add(new Thread(new RunMixThroughput(i, graphDb)));
+            }
+            for (Thread thread : clients) {
+                thread.start();
+            }
+            for (Thread thread : clients) {
+                thread.join();
+            }
+        } catch (Exception e) {
+            System.err.printf("Benchmark throughput exception: %s\n", e);
+            System.exit(1);
+        } finally {
+            System.out.println("Shutting down database ...");
+            graphDb.shutdown();
+        }
+    }
+
+    static class RunMixThroughput implements Runnable {
+        private int clientId;
+        private GraphDatabaseService graphDb;
+
+        final int warmupNhbrSize = warmupNhbrs.size();
+        final int nhbrSize = nhbrs.size();
+        final int warmupNhbrNodeSize = warmupNhbrNodeIds.size();
+        final int nhbrNodeSize = nhbrNodeIds.size();
+        final int warmupNhbrAtypSize = warmupNhbrAtypeIds.size();
+        final int nhbrAtypeSize = nhbrAtypeIds.size();
+        final int warmupNodeSize = warmupNodeAttrIds1.size();
+        final int nodeSize = nodeAttrIds1.size();
+
+        public RunMixThroughput(
+            int clientId, GraphDatabaseService graphDb) {
+
+            this.clientId = clientId;
+            this.graphDb = graphDb;
+        }
+
+        private void runWarmup(Random rand) {
+            int randQuery = rand.nextInt(5), queryIdx;
+            switch (randQuery) {
+                case 0:
+                    queryIdx = rand.nextInt(warmupNhbrSize);
+                    BenchNeighbor.getNeighborsSorted(graphDb,
+                        modGet(warmupNhbrs, queryIdx));
+                    break;
+                case 1:
+                    queryIdx = rand.nextInt(warmupNhbrNodeSize);
+                    NeighborNodeBench.getNeighborNode(graphDb,
+                        modGet(warmupNhbrNodeIds, queryIdx),
+                        modGet(warmupNhbrNodeAttrIds, queryIdx),
+                        modGet(warmupNhbrNodeAttrs, queryIdx));
+                    break;
+                case 2:
+                    queryIdx = rand.nextInt(warmupNodeSize);
+                    BenchNode.getNodes(graphDb, label,
+                        modGet(warmupNodeAttrIds1, queryIdx),
+                        modGet(warmupNodeAttrs1, queryIdx));
+                    break;
+                case 3:
+                    queryIdx = rand.nextInt(warmupNhbrAtypSize);
+                    BenchNeighborAtype.getNeighborsSorted(graphDb,
+                        modGet(warmupNhbrAtypeIds, queryIdx),
+                        BenchNeighborAtype.atypeMap[modGet(
+                            warmupNhbrAtypeAtypes,
+                            queryIdx).intValue()]);
+                    break;
+                case 4:
+                    queryIdx = rand.nextInt(warmupNodeSize);
+                    BenchNode.getNodes(graphDb, label,
+                        modGet(warmupNodeAttrIds1, queryIdx),
+                        modGet(warmupNodeAttrs1, queryIdx),
+                        modGet(warmupNodeAttrIds2, queryIdx),
+                        modGet(warmupNodeAttrs2, queryIdx));
+                    break;
+            }
+        }
+
+        public void run() {
+            Transaction tx = graphDb.beginTx();
+            PrintWriter out = null;
+            Random rand = new Random(1618 + clientId);
+            int randQuery;
+
+            try {
+                // true for append
+                out = new PrintWriter(new BufferedWriter(new FileWriter(
+                    "neo4j_throughput_mix.txt", true)));
+
+                // warmup
+                int i = 0, queryIdx;
+                long warmupStart = System.nanoTime();
+                while (System.nanoTime() - warmupStart < WARMUP_TIME) {
+                    if (i % 10000 == 0) {
+                        tx.success();
+                        tx.close();
+                        tx = graphDb.beginTx();
+                    }
+                    runWarmup(rand);
+                }
+
+                // measure
+                i = 0;
+                long edges = 0;
+                List<Long> neighbors;
+                long start = System.nanoTime();
+                while (System.nanoTime() - start < MEASURE_TIME) {
+                    if (i % 10000 == 0) {
+                        tx.success();
+                        tx.close();
+                        tx = graphDb.beginTx();
+                    }
+                    randQuery = rand.nextInt(5);
+                    switch (randQuery) {
+                        case 0:
+                            // get_nhbrs(n)
+                            queryIdx = rand.nextInt(nhbrSize);
+                            neighbors = BenchNeighbor.getNeighborsSorted(
+                                graphDb, modGet(nhbrs, queryIdx));
+                            edges += neighbors.size();
+                            break;
+                        case 1:
+                            // get_nhbrs(n, attr)
+                            queryIdx = rand.nextInt(nhbrNodeSize);
+                            neighbors = NeighborNodeBench.getNeighborNode(
+                                graphDb,
+                                modGet(nhbrNodeIds, queryIdx),
+                                modGet(nhbrNodeAttrIds, queryIdx),
+                                modGet(nhbrNodeAttrs, queryIdx));
+                            edges += neighbors.size();
+                            break;
+                        case 2:
+                            // get_nodes(attr)
+                            queryIdx = rand.nextInt(nodeSize);
+                            BenchNode.getNodes(graphDb,
+                                label,
+                                modGet(nodeAttrIds1, queryIdx),
+                                modGet(nodeAttrs1, queryIdx));
+                            break;
+                        case 3:
+                            // get_nhbrs(n, atype)
+                            queryIdx = rand.nextInt(nhbrAtypeSize);
+                            neighbors = BenchNeighborAtype.getNeighborsSorted(
+                                graphDb,
+                                modGet(nhbrAtypeIds, queryIdx),
+                                BenchNeighborAtype.atypeMap[modGet(
+                                    nhbrAtypeAtypes, queryIdx).intValue()]);
+                            edges += neighbors.size();
+                            break;
+                        case 4:
+                            // get_nodes(attr1, attr2)
+                            queryIdx = rand.nextInt(nodeSize);
+                            BenchNode.getNodes(graphDb, label,
+                                modGet(nodeAttrIds1, queryIdx),
+                                modGet(nodeAttrs1, queryIdx),
+                                modGet(nodeAttrIds2, queryIdx),
+                                modGet(nodeAttrs2, queryIdx));
+                            break;
+                    }
+                }
+                long end = System.nanoTime();
+                double totalSeconds = (end - start) * 1. / 1e9;
+                double queryThput = ((double) i) / totalSeconds;
+                double edgesThput = ((double) edges) / totalSeconds;
+
+                // cooldown
+                long cooldownStart = System.nanoTime();
+                while (System.nanoTime() - cooldownStart < COOLDOWN_TIME) {
+                    runWarmup(rand);
+                }
+                out.printf("%d %d\n", (int) queryThput, (int) edgesThput);
+
+            } catch (Exception e) {
+                System.err.printf("Client %d throughput bench exception: %s\n",
+                    clientId, e);
+                System.exit(1);
+            } finally {
+                if (out != null) {
+                    out.close();
+                }
+                tx.success();
+                tx.close();
+            }
+        }
+    }
+
     /** Note: the mixing order can affect query performance. */
-    private static void mixLatency(
-        String DB_PATH, String neo4jPageCacheMem,
+    private static void mixLatency(boolean tuned,
+        String dbPath, String neo4jPageCacheMem,
         String nhbrOutFile, String nhbrNodeOutFile,
         String nhbrAtypeOutFile, String nodeOutFile, String doubleNodeOutFile) {
 
-        // START SNIPPET: startDb
-        GraphDatabaseService graphDb = new GraphDatabaseFactory()
-            .newEmbeddedDatabaseBuilder(DB_PATH)
-            .setConfig(GraphDatabaseSettings.cache_type, "none")
-            .setConfig(
-                GraphDatabaseSettings.pagecache_memory, neo4jPageCacheMem)
-            .newGraphDatabase();
+        GraphDatabaseService graphDb;
+        if (tuned) {
+            graphDb = new GraphDatabaseFactory()
+                .newEmbeddedDatabaseBuilder(dbPath)
+                .setConfig(GraphDatabaseSettings.cache_type, "none")
+                .setConfig(
+                    GraphDatabaseSettings.pagecache_memory, neo4jPageCacheMem)
+                .newGraphDatabase();
+        } else {
+            graphDb = new GraphDatabaseFactory().newEmbeddedDatabase(dbPath);
+        }
 
         BenchUtils.registerShutdownHook(graphDb);
-        Label label = DynamicLabel.label("Node");
         Transaction tx = graphDb.beginTx();
         try {
             PrintWriter nhbrOut = new PrintWriter(new BufferedWriter(
@@ -139,7 +368,9 @@ public class MixBench {
             PrintWriter doubleNodeOut = new PrintWriter(new BufferedWriter(
                 new FileWriter(doubleNodeOutFile)));
 
-            BenchUtils.fullWarmup(graphDb);
+            if (tuned) {
+                BenchUtils.fullWarmup(graphDb);
+            }
             BenchUtils.awaitIndexes(graphDb);
 
             long seed = 1618L;

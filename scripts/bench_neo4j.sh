@@ -52,6 +52,7 @@ thputThreads=1
 #benchNhbrNodeThput=T
 #benchNodeThput=T
 #benchNodeNodeThput=T
+#benchmixThput=T
 #benchTaoMixThput=T
 
 benchAssocRange=T
@@ -262,6 +263,40 @@ for JVM_HEAP in 6900; do
 	    ${pageCacheIgnoreIndexes}
       fi
 
+      if [[ -n "$benchMixThput" ]]; then
+        sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+        find /mnt2T/data/neo4j/${DATASET}/ -name "*store.db*" -type f -exec dd if={} of=/dev/null bs=1M 2>/dev/null \;
+        find /mnt2T/data/neo4j/${DATASET}/schema/index -type f -exec dd if={} of=/dev/null bs=1M 2>/dev/null \;
+
+        java -verbose:gc -server -XX:+UseConcMarkSweepGC -Xmx${JVM_HEAP}m -cp ${classpath} \
+           edu.berkeley.cs.succinctgraph.neo4jbench.MixBench \
+           throughput \
+           ${NEO4J_DIR}/${DATASET} \
+           ${QUERY_DIR}/neighbor_warmup_${num_nodes}.txt \
+           ${QUERY_DIR}/neighbor_query_${num_nodes}.txt \
+           ${QUERY_DIR}/neighbor_node_warmup_${num_nodes}.txt \
+           ${QUERY_DIR}/neighbor_node_query_${num_nodes}.txt \
+           ${QUERY_DIR}/neighborAtype_warmup_${num_nodes}.txt \
+           ${QUERY_DIR}/neighborAtype_query_${num_nodes}.txt \
+           ${QUERY_DIR}/node_warmup_${num_nodes}.txt \
+           ${QUERY_DIR}/node_query_${num_nodes}.txt \
+           ${HOME_DIR}/neo4j_${DATASET}_mix_neighbor_latency_jvm${JVM_HEAP}m_pagecache${pageCacheForNodes}.txt \
+           ${HOME_DIR}/neo4j_${DATASET}_mix_neighbor_node_latency_jvm${JVM_HEAP}m_pagecache${pageCacheForNodes}.txt \
+           ${HOME_DIR}/neo4j_${DATASET}_mix_neighborAtype_latency_jvm${JVM_HEAP}m_pagecache${pageCacheForNodes}.txt \
+           ${HOME_DIR}/neo4j_${DATASET}_mix_node_latency_jvm${JVM_HEAP}m_pagecache${pageCacheForNodes}.txt \
+           ${HOME_DIR}/neo4j_${DATASET}_mix_node_node_latency_jvm${JVM_HEAP}m_pagecache${pageCacheForNodes}.txt \
+           ${neo4j_warmup_mix} \
+           ${neo4j_measure_mix} \
+           ${thputThreads} \
+           ${tuned} \
+           ${pageCacheForNodes}
+
+        o=neo4j_throughput_mix.txt
+        x=$(cut -d' ' -f1 ${o} | awk '{ sum += $1 } END { print sum }')
+        echo ${thputThreads} clients, $x aggregated queries/sec >> ${o}
+        mv ${o} neo4j_throughput_mix-tuned_${tuned}-${thputThreads}clients.txt
+      fi
+
       if [[ -n "$benchMixed" ]]; then
         sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
         find /mnt2T/data/neo4j/${DATASET}/ -name "*store.db*" -type f -exec dd if={} of=/dev/null bs=1M 2>/dev/null \;
@@ -285,8 +320,9 @@ for JVM_HEAP in 6900; do
            ${HOME_DIR}/neo4j_${DATASET}_mix_node_node_latency_jvm${JVM_HEAP}m_pagecache${pageCacheForNodes}.txt \
            ${neo4j_warmup_mix} \
            ${neo4j_measure_mix} \
+           ${thputThreads} \
+           ${tuned} \
            ${pageCacheForNodes}
-
       fi
 
       if [[ -n "$benchNhbrThput" ]]; then
