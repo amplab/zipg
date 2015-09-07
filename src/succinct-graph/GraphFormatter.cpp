@@ -152,7 +152,7 @@ void GraphFormatter::create_node_table_zipf(
 
     if (report_freq_dist) {
         std::unordered_map<std::string, int> val_to_freq;
-        std::unordered_map<int, int> freq_to_freq;
+        std::map<int, int> freq_to_freq;
         auto column = attributes.at(0);
         for (auto& val : column) {
             ++val_to_freq[val];
