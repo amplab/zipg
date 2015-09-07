@@ -723,7 +723,7 @@ int main(int argc, char **argv) {
         std::string node_out_file(argv[5]);
         int64_t num_nodes = std::stol(argv[6]);
         int num_node_attr = std::stoi(argv[7]);
-        int node_attr_freq = std::stoi(argv[8]);
+        int node_attr_freq = std::stoi(argv[8]); // ignored if Zipf
         int node_attr_size_each = std::stoi(argv[9]);
         char edge_inner_delim = std::string(argv[10]).at(0);
         char edge_end_delim = std::string(argv[11]).at(0);
@@ -736,27 +736,26 @@ int main(int argc, char **argv) {
             assign_ts_attr = true;
         }
 
-        std::thread edge_table_thread(
-            &GraphFormatter::create_edge_table,
-            edge_list_in,
-            attr_file,
-            assoc_out_file,
-            128,
-            edge_inner_delim,
-            edge_end_delim,
-            5,
-            min_out_degree,
-            assign_ts_attr);
+//        std::thread edge_table_thread(
+//            &GraphFormatter::create_edge_table,
+//            edge_list_in,
+//            attr_file,
+//            assoc_out_file,
+//            128,
+//            edge_inner_delim,
+//            edge_end_delim,
+//            5,
+//            min_out_degree,
+//            assign_ts_attr);
 
-        GraphFormatter::create_node_table(
+        GraphFormatter::create_node_table_zipf(
             node_out_file,
             attr_file,
             num_nodes,
             num_node_attr,
-            node_attr_freq,
             node_attr_size_each);
 
-        edge_table_thread.join();
+//        edge_table_thread.join();
 
     } else if (type == "graph-construct") {
 
