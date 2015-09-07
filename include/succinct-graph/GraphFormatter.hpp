@@ -1,8 +1,11 @@
 #ifndef GRAPH_FORMATTER_H
 #define GRAPH_FORMATTER_H
 
+#include <fstream>
 #include <string>
 #include <vector>
+
+#include "succinct-graph/SuccinctGraph.hpp"
 
 // Formats input files into Succinct Graph-ready files.
 class GraphFormatter {
@@ -34,6 +37,13 @@ public:
         int num_nodes,
         int num_attr,
         int freq,
+        int len);
+
+    static void create_node_table_zipf(
+        const std::string& out_file,
+        const std::string& attr_file,
+        int num_nodes,
+        int num_attr,
         int len);
 
     // Each input line is of the form
@@ -104,6 +114,29 @@ public:
     // Used only when generating & parsing queries, not part of the internal
     // graph layout.  Assumes this is char uniquely identifiable (among attrs).
     static const char QUERY_FILED_DELIM = '\x02';
+
+private:
+
+    static void output_node_attributes(
+        const std::string& out_file,
+        const std::vector<std::vector<std::string>>& attributes,
+        int num_nodes,
+        int num_attr)
+    {
+        std::ofstream s_out(out_file);
+        std::vector<std::string> node_attrs;
+        for (int i = 0; i < num_nodes; i++) {
+            node_attrs.clear();
+            for (int attr = 0; attr < num_attr; attr++) {
+                // weak assert
+                assert(attributes[attr][i].find(static_cast<char>(
+                    SuccinctGraph::DELIMITERS[attr])) == std::string::npos);
+                node_attrs.push_back(attributes[attr][i]);
+            }
+            s_out << GraphFormatter::format_node_attrs_str({ node_attrs });
+        }
+        s_out.close();
+    }
 
 };
 

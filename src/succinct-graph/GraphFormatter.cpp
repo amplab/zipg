@@ -8,6 +8,7 @@
 #include <sys/time.h>
 
 #include "succinct-graph/SuccinctGraph.hpp"
+#include "succinct-graph/ZipfGenerator.hpp"
 #include "succinct-graph/utils.h"
 
 int64_t time_millis() {
@@ -100,6 +101,58 @@ void GraphFormatter::create_random_node_table(
     s_out.close();
 }
 
+void GraphFormatter::create_node_table_zipf(
+    const std::string& out_file,
+    const std::string& attr_file,
+    int num_nodes,
+    int num_attr,
+    int len)
+{
+    assert(num_attr <= SuccinctGraph::MAX_NUM_NODE_ATTRS);
+
+    std::ifstream attr_in_stream(attr_file);
+    std::vector<std::vector<std::string>> attributes;
+    std::string attr, tmp;
+    size_t length = static_cast<size_t>(len);
+
+    std::vector<std::string> corpus_vec, selected_attrs;
+    std::set<std::string> corpus;
+
+    int corpus_size = 2 * num_nodes;
+    ZipfGenerator zipf(0.99, corpus_size);
+
+    for (int j = 0; j < num_attr; ++j) {
+        // need attributes for column `attr`, length num_nodes
+        attr.clear();
+        corpus.clear();
+        corpus_vec.clear();
+        corpus_vec.reserve(corpus_size);
+
+        while (corpus.size() < corpus_size) {
+            // multiple records concatenated together
+            while (attr.length() < length) {
+                std::getline(attr_in_stream, tmp);
+                attr += tmp;
+            }
+            corpus.insert(attr.substr(0, length)); // possibly truncate
+            attr.erase(0, length); // can potentially reuse this row
+        }
+
+        std::copy(corpus.begin(), corpus.end(), corpus_vec.begin());
+        selected_attrs.resize(num_nodes);
+
+        // Sample from corpus using Zipf
+        for (size_t node = 0; node < num_nodes; ++node) {
+            selected_attrs[node] = corpus_vec[zipf.next()];
+        }
+
+        attributes.push_back(selected_attrs);
+    }
+    assert(attributes.size() == static_cast<size_t>(num_attr) &&
+        attributes.at(0).size() == static_cast<size_t>(num_nodes));
+
+    output_node_attributes(out_file, attributes, num_nodes, num_attr);
+}
 
 void GraphFormatter::create_node_table(
     const std::string& out_file,
@@ -107,8 +160,8 @@ void GraphFormatter::create_node_table(
     int num_nodes,
     int num_attr,
     int freq,
-    int len) {
-
+    int len)
+{
     assert(num_attr <= SuccinctGraph::MAX_NUM_NODE_ATTRS);
 
     std::ifstream attr_in_stream(attr_file);
@@ -141,21 +194,10 @@ void GraphFormatter::create_node_table(
         std::random_shuffle(attrs.begin(), attrs.end());
         attributes.push_back(attrs);
     }
-    attr_in_stream.close();
     assert(attributes.size() == static_cast<size_t>(num_attr) &&
         attributes.at(0).size() == static_cast<size_t>(num_nodes));
 
-    std::vector<std::string> node_attrs;
-    for (int i = 0; i < num_nodes; i++) {
-        node_attrs.clear();
-        for (int attr = 0; attr < num_attr; attr++) {
-            assert(attributes[attr][i].find(static_cast<char>(
-                SuccinctGraph::DELIMITERS[attr])) == std::string::npos); // weak
-            node_attrs.push_back(attributes[attr][i]);
-        }
-        s_out << GraphFormatter::format_node_attrs_str({ node_attrs });
-    }
-    s_out.close();
+    output_node_attributes(out_file, attributes, num_nodes, num_attr);
 }
 
 std::vector<std::vector<int64_t>> GraphFormatter::read_edge_list(
