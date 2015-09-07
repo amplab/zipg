@@ -493,9 +493,10 @@ for JVM_HEAP in 6900; do
          ${tuned} \
          ${pageCacheIgnoreIndexes}
 
-        x=$(cut -d' ' -f1 neo4j_throughput_tao_mix.txt | awk '{ sum += $1 } END { print sum }')
-        echo ${thputThreads} clients, $x aggregated queries/sec >> neo4j_throughput_tao_mix.txt
-        mv neo4j_throughput_tao_mix.txt neo4j_throughput_tao_mix-${thputThreads}clients.txt
+        o=neo4j_throughput_tao_mix.txt
+        x=$(cut -d' ' -f1 ${o} | awk '{ sum += $1 } END { print sum }')
+        echo ${thputThreads} clients, $x aggregated queries/sec >> ${o}
+        mv ${o} neo4j_throughput_tao_mix-tuned_${tuned}-${thputThreads}clients.txt
     fi
 
     done
