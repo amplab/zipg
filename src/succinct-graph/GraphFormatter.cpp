@@ -3,6 +3,7 @@
 #include <cassert>
 #include <fstream>
 #include <sstream>
+#include <unordered_map>
 #include <vector>
 #include <random>
 #include <sys/time.h>
@@ -106,7 +107,9 @@ void GraphFormatter::create_node_table_zipf(
     const std::string& attr_file,
     int num_nodes,
     int num_attr,
-    int len)
+    int len,
+    int corpus_size,
+    bool report_freq_dist)
 {
     assert(num_attr <= SuccinctGraph::MAX_NUM_NODE_ATTRS);
 
@@ -118,7 +121,6 @@ void GraphFormatter::create_node_table_zipf(
     std::vector<std::string> corpus_vec, selected_attrs;
     std::set<std::string> corpus;
 
-    int corpus_size = 2 * num_nodes;
     ZipfGenerator zipf(0.99, corpus_size);
 
     for (int j = 0; j < num_attr; ++j) {
@@ -126,7 +128,6 @@ void GraphFormatter::create_node_table_zipf(
         attr.clear();
         corpus.clear();
         corpus_vec.clear();
-        corpus_vec.reserve(corpus_size);
 
         while (corpus.size() < corpus_size) {
             // multiple records concatenated together
@@ -138,7 +139,7 @@ void GraphFormatter::create_node_table_zipf(
             attr.erase(0, length); // can potentially reuse this row
         }
 
-        std::copy(corpus.begin(), corpus.end(), corpus_vec.begin());
+        std::copy(corpus.begin(), corpus.end(), std::back_inserter(corpus_vec));
         selected_attrs.resize(num_nodes);
 
         // Sample from corpus using Zipf
@@ -148,6 +149,22 @@ void GraphFormatter::create_node_table_zipf(
 
         attributes.push_back(selected_attrs);
     }
+
+    if (report_freq_dist) {
+        std::unordered_map<std::string, int> val_to_freq;
+        std::unordered_map<int, int> freq_to_freq;
+        auto column = attributes.at(0);
+        for (auto& val : column) {
+            ++val_to_freq[val];
+        }
+        for (auto it = val_to_freq.begin(); it != val_to_freq.end(); ++it) {
+            ++freq_to_freq[it->second];
+        }
+        for (auto it = freq_to_freq.begin(); it != freq_to_freq.end(); ++it) {
+            LOG_E("%d %d\n", it->second, it->first);
+        }
+    }
+
     assert(attributes.size() == static_cast<size_t>(num_attr) &&
         attributes.at(0).size() == static_cast<size_t>(num_nodes));
 

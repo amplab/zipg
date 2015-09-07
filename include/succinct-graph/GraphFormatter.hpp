@@ -44,7 +44,9 @@ public:
         const std::string& attr_file,
         int num_nodes,
         int num_attr,
-        int len);
+        int len,
+        int corpus_size,
+        bool report_freq_dist = true);
 
     // Each input line is of the form
     //     "srcId<edge_inner_delim>dstId<edge_end_delim>",

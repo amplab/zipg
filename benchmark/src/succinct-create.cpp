@@ -723,10 +723,12 @@ int main(int argc, char **argv) {
         std::string node_out_file(argv[5]);
         int64_t num_nodes = std::stol(argv[6]);
         int num_node_attr = std::stoi(argv[7]);
-        int node_attr_freq = std::stoi(argv[8]); // ignored if Zipf
+        int zipf_corpus_size = std::stoi(argv[8]);
         int node_attr_size_each = std::stoi(argv[9]);
         char edge_inner_delim = std::string(argv[10]).at(0);
         char edge_end_delim = std::string(argv[11]).at(0);
+
+
         int min_out_degree = -1;
         if (argc >= 13) {
             min_out_degree = std::stoi(argv[12]);
@@ -753,7 +755,8 @@ int main(int argc, char **argv) {
             attr_file,
             num_nodes,
             num_node_attr,
-            node_attr_size_each);
+            node_attr_size_each,
+            zipf_corpus_size);
 
 //        edge_table_thread.join();
 
