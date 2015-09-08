@@ -54,7 +54,6 @@ external/neo4j*/data/
 data/
 
 # CMake
-**/*.cmake
 **/CMakeFiles
 **/CMakeCache.txt
 */bin/
