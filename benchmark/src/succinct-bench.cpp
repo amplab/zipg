@@ -3,10 +3,10 @@
 #include <iostream>
 #include <unistd.h>
 
-#include "succinct-graph/GraphFormatter.hpp"
-#include "succinct-graph/SuccinctGraph.hpp"
-#include "succinct-graph/utils.h"
-#include "../include/GraphBenchmark.hpp"
+#include "GraphFormatter.hpp"
+#include "SuccinctGraph.hpp"
+#include "utils.h"
+#include "GraphBenchmark.hpp"
 
 void print_usage(char *exec) {
     fprintf(stderr, "Usage: %s [-t type] [-x warmup_n] [-y measure_n] [-w warmup_file] [-q query_file] [-a neighbor_warmup ] [-b neighbor_query] [-o output_file] [succinct_dir]\n", exec);
@@ -172,7 +172,7 @@ int main(int argc, char **argv) {
 
     bool is_sharded = (optind + 2 < argc); // if there exists a last dummy arg
     if (!is_sharded) {
-        graph = new SuccinctGraph(node_file, edge_file); // loads
+        graph = new SuccinctGraph("");
         bench = new GraphBenchmark(graph, "");
     } else {
         // sharded; connects to a master aggregator

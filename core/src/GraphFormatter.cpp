@@ -1,4 +1,4 @@
-#include "succinct-graph/GraphFormatter.hpp"
+#include "GraphFormatter.hpp"
 
 #include <cassert>
 #include <fstream>
@@ -8,9 +8,9 @@
 #include <random>
 #include <sys/time.h>
 
-#include "succinct-graph/SuccinctGraph.hpp"
-#include "succinct-graph/ZipfGenerator.hpp"
-#include "succinct-graph/utils.h"
+#include "SuccinctGraph.hpp"
+#include "ZipfGenerator.hpp"
+#include "utils.h"
 
 int64_t time_millis() {
     struct timeval now;

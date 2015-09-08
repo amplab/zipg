@@ -1,8 +1,8 @@
-#include "succinct-graph/partitioners.hpp"
+#include "partitioners.hpp"
 
 #include <unistd.h>
 
-#include "succinct-graph/utils.h"
+#include "utils.h"
 
 void RangePartitioner::partition(
     const std::string& node_file_in,

@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-#include "succinct/SuccinctFile.hpp"
+#include "succinct_file.h"
 
 // A wrapper over SuccinctFile that does the following:
 //
@@ -31,10 +31,10 @@ public:
     }
 
     inline size_t serialize() {
-        return succinct_file_->serialize();
+        return succinct_file_->Serialize();
     }
 
-    inline void extract(std::string& result, uint64_t offset, uint64_t len)
+    inline void Extract(std::string& result, uint64_t offset, uint64_t len)
     {
         result.assign(raw_input_, offset, len);
     }
@@ -46,7 +46,7 @@ public:
     // here, because ISA is not used in answering queries.
 
     // Clears `result` for caller.
-    inline void extract(
+    inline void Extract(
         std::string& result,
         uint64_t& suf_arr_idx,
         uint64_t offset,
@@ -57,27 +57,27 @@ public:
 
     // Starts extraction at `offset` until hitting `end_char`.  Returns the
     // next offset.  Upon success, returns next offset.
-    int64_t skipping_extract_until(
+    int64_t SkippingExtractUntil(
         uint64_t& suf_arr_idx, uint64_t offset, char end_char);
 
     // Clears `result` for caller, and puts everything up to (not including)
     // `end_char`.  Returns the next offset.
-    int64_t extract_until(std::string& result, uint64_t offset, char end_char);
+    int64_t ExtractUntil(std::string& result, uint64_t offset, char end_char);
 
     // On exit, returns the next offset.  Clears `result` for the caller.
-    inline int64_t extract_until(
+    inline int64_t ExtractUntil(
         std::string& result,
         uint64_t& suf_arr_idx,
         uint64_t offset,
         char end_char)
     {
-        return extract_until(result, offset, end_char);
+        return ExtractUntil(result, offset, end_char);
     }
 
     //**************** END: SuccinctGraph-specific optimizations
 
-    inline void search(std::vector<int64_t>& result, const std::string& str) {
-        succinct_file_->search(result, str);
+    inline void Search(std::vector<int64_t>& result, const std::string& str) {
+        succinct_file_->Search(result, str);
     }
 
 private:

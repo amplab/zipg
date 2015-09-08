@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-#include "succinct-graph/SuccinctGraph.hpp"
+#include "SuccinctGraph.hpp"
 
 // Formats input files into Succinct Graph-ready files.
 class GraphFormatter {

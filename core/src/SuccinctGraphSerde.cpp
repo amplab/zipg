@@ -1,5 +1,5 @@
-#include "succinct-graph/SuccinctGraphSerde.hpp"
-#include "succinct-graph/utils.h"
+#include "SuccinctGraphSerde.hpp"
+#include "utils.h"
 
 #include <cassert>
 

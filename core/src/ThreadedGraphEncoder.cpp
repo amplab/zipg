@@ -1,7 +1,6 @@
-#include "succinct-graph/SuccinctGraph.hpp"
-#include "succinct-graph/ThreadedGraphEncoder.h"
-#include "succinct-graph/utils.h"
-
+#include "SuccinctGraph.hpp"
+#include "ThreadedGraphEncoder.h"
+#include "utils.h"
 
 void ThreadedGraphEncoder::construct_edge_file(
     const std::string edge_file,
@@ -91,7 +90,7 @@ int main(int argc, char **argv) {
 
                 // launch
                 std::thread(&ThreadedGraphEncoder::construct_edge_file,
-                    &encoder, s, std::move(promises.back()), 
+                    &encoder, s, std::move(promises.back()),
                     saSamplingRate, isaSamplingRate, npaSamplingRate).detach();
             }
         }

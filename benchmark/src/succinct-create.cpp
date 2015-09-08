@@ -11,11 +11,11 @@
 #include <thrift/transport/TBufferTransports.h>
 #include <thrift/transport/TSocket.h>
 
-#include "rpc/ports.h"
-#include "succinct-graph/GraphFormatter.hpp"
-#include "succinct-graph/SuccinctGraph.hpp"
-#include "succinct-graph/utils.h"
-#include "thrift/GraphQueryAggregatorService.h"
+#include "ports.h"
+#include "GraphFormatter.hpp"
+#include "SuccinctGraph.hpp"
+#include "utils.h"
+#include "GraphQueryAggregatorService.h"
 
 using boost::shared_ptr;
 using namespace ::apache::thrift;

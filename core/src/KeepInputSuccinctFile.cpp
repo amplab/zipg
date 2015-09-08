@@ -1,5 +1,5 @@
-#include "succinct-graph/KeepInputSuccinctFile.h"
-#include "succinct-graph/utils.h"
+#include "KeepInputSuccinctFile.h"
+#include "utils.h"
 
 KeepInputSuccinctFile::KeepInputSuccinctFile(
     const std::string& filename,
@@ -28,7 +28,7 @@ KeepInputSuccinctFile::KeepInputSuccinctFile(
         npa_sampling_rate);
 }
 
-int64_t KeepInputSuccinctFile::skipping_extract_until(
+int64_t KeepInputSuccinctFile::SkippingExtractUntil(
     uint64_t& suf_arr_idx, // unused
     uint64_t offset, char end_char)
 {
@@ -41,7 +41,7 @@ int64_t KeepInputSuccinctFile::skipping_extract_until(
     return k;
 }
 
-int64_t KeepInputSuccinctFile::extract_until(
+int64_t KeepInputSuccinctFile::ExtractUntil(
     std::string& result, uint64_t offset, char end_char)
 {
     result.clear();

@@ -1,12 +1,12 @@
-#include "thrift/GraphQueryService.h"
+#include "GraphQueryService.h"
 #include <thrift/protocol/TBinaryProtocol.h>
 #include <thrift/server/TThreadedServer.h>
 #include <thrift/transport/TServerSocket.h>
 #include <thrift/transport/TBufferTransports.h>
 
-#include "succinct-graph/SuccinctGraph.hpp"
-#include "succinct-graph/utils.h"
-#include "rpc/ports.h"
+#include "SuccinctGraph.hpp"
+#include "utils.h"
+#include "ports.h"
 
 using namespace ::apache::thrift;
 using namespace ::apache::thrift::protocol;

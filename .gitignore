@@ -52,3 +52,9 @@ external/neo4j*/data/
 *latency*txt*
 
 data/
+
+# CMake
+**/*.cmake
+**/CMakeFiles
+**/CMakeCache.txt
+*/bin/

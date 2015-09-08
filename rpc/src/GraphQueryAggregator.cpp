@@ -1,4 +1,4 @@
-#include "thrift/GraphQueryAggregatorService.h"
+#include "GraphQueryAggregatorService.h"
 
 #include <fstream>
 #include <unordered_map>
@@ -9,9 +9,9 @@
 #include <thrift/transport/TServerSocket.h>
 #include <thrift/transport/TSocket.h>
 
-#include "rpc/ports.h"
-#include "succinct-graph/utils.h"
-#include <thrift/GraphQueryService.h>
+#include "ports.h"
+#include "utils.h"
+#include "GraphQueryService.h"
 
 using namespace ::apache::thrift;
 using namespace ::apache::thrift::protocol;

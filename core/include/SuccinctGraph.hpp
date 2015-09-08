@@ -2,9 +2,9 @@
 #define SUCCINCT_GRAPH_H
 
 // FIXME: encouraged to include relative to project's include path
-#include "../succinct/SuccinctShard.hpp"
-#include "../succinct/SuccinctFile.hpp"
-#include "succinct-graph/KeepInputSuccinctFile.h"
+#include "succinct_shard.h"
+#include "succinct_file.h"
+#include "KeepInputSuccinctFile.h"
 
 #include <sys/time.h>
 
