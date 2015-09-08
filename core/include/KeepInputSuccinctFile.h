@@ -30,7 +30,7 @@ public:
         }
     }
 
-    inline size_t serialize() {
+    inline size_t Serialize() {
         return succinct_file_->Serialize();
     }
 
