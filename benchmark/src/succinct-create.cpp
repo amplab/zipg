@@ -728,7 +728,6 @@ int main(int argc, char **argv) {
         char edge_inner_delim = std::string(argv[10]).at(0);
         char edge_end_delim = std::string(argv[11]).at(0);
 
-
         int min_out_degree = -1;
         if (argc >= 13) {
             min_out_degree = std::stoi(argv[12]);
@@ -738,27 +737,28 @@ int main(int argc, char **argv) {
             assign_ts_attr = true;
         }
 
-//        std::thread edge_table_thread(
-//            &GraphFormatter::create_edge_table,
-//            edge_list_in,
-//            attr_file,
-//            assoc_out_file,
-//            128,
-//            edge_inner_delim,
-//            edge_end_delim,
-//            5,
-//            min_out_degree,
-//            assign_ts_attr);
-
-        GraphFormatter::create_node_table_zipf(
-            node_out_file,
+        std::thread edge_table_thread(
+            &GraphFormatter::create_edge_table,
+            edge_list_in,
             attr_file,
-            num_nodes,
-            num_node_attr,
-            node_attr_size_each,
-            zipf_corpus_size);
+            assoc_out_file,
+            128,
+            edge_inner_delim,
+            edge_end_delim,
+            5,
+            min_out_degree,
+            assign_ts_attr);
 
-//        edge_table_thread.join();
+//        GraphFormatter::create_node_table_zipf(
+//            node_out_file,
+//            attr_file,
+//            num_nodes,
+//            num_node_attr,
+//            node_attr_size_each,
+//            zipf_corpus_size);
+
+        edge_table_thread.join();
+        LOG_E("thread for file '%s' done\n", edge_list_in.c_str());
 
     } else if (type == "graph-construct") {
 
