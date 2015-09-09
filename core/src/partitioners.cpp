@@ -83,11 +83,11 @@ void HashPartitioner::partition(
 
     int num_shards_digits = num_digits(this->num_shards_);
     int num = this->num_shards_;
-    std::vector<std::ofstream> shard_edge_outs;
+    std::vector<std::shared_ptr<std::ofstream>> shard_edge_outs;
     for (int i = 0; i < num_shards_; ++i) {
         std::string out_name(
             format_out_name(edge_file_in, num_shards_digits, i, num));
-        shard_edge_outs.emplace_back(out_name);
+        shard_edge_outs.push_back(std::make_shared<std::ofstream>(out_name));
     }
 
 //    // reads node files
@@ -104,7 +104,7 @@ void HashPartitioner::partition(
     while (std::getline(edgefile_ifstream, line)) {
         std::stringstream ss(line);
         std::getline(ss, src_id_str, ' ');
-        shard_edge_outs[id_to_shard(std::stoll(src_id_str))] << line
+        *(shard_edge_outs[id_to_shard(std::stoll(src_id_str))]) << line
             << std::endl;
     }
     edgefile_ifstream.close();
