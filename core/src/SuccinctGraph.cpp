@@ -203,12 +203,8 @@ void SuccinctGraph::construct_edge_table(std::string edge_file) {
                 if (token_idx == 4) break;
             }
             std::getline(ss, token); // rest of the data is attr
-            auto back = assoc_map[std::make_pair(src_id, atype)].back();
-            back.src_id = src_id;
-            back.dst_id = dst_id;
-            back.atype = atype;
-            back.time = time;
-            back.attr = std::move(token);
+            Assoc assoc = { src_id, dst_id, atype, time, token };
+            assoc_map[std::make_pair(src_id, atype)].push_back(assoc);
         }
         edge_file_stream.close();
 
@@ -220,7 +216,7 @@ void SuccinctGraph::construct_edge_table(std::string edge_file) {
         std::ofstream edge_file_out(edge_file_name);
 
         NodeId max_dst_id = -1, max_timestamp = -1;
-        std::string encoded, attr;
+
         for (auto it = assoc_map.begin(); it != assoc_map.end(); ++it) {
             auto src_id_and_atype = it->first;
 
@@ -230,7 +226,7 @@ void SuccinctGraph::construct_edge_table(std::string edge_file) {
             edge_file_out << ATYPE_DELIM
                 << src_id_and_atype.second;
 
-            auto assoc_list = it->second;
+            std::vector<Assoc> assoc_list = it->second;
 
             max_dst_id = max_timestamp = -1;
             for (auto it2 = assoc_list.begin(); it2 != assoc_list.end(); ++it2)
@@ -261,8 +257,8 @@ void SuccinctGraph::construct_edge_table(std::string edge_file) {
             // timestamps
             for (auto it2 = assoc_list.begin(); it2 != assoc_list.end(); ++it2)
             {
-                encoded = SuccinctGraphSerde::encode_timestamp(
-                    it2->time, timestamp_width);
+                std::string encoded(SuccinctGraphSerde::encode_timestamp(
+                    it2->time, timestamp_width));
                 LOG("encoded = '%s'\n", encoded.c_str());
 
                 if (SuccinctGraphSerde::decode_timestamp(encoded) != it2->time)
@@ -280,7 +276,7 @@ void SuccinctGraph::construct_edge_table(std::string edge_file) {
             // dst node ids
             for (auto it2 = assoc_list.begin(); it2 != assoc_list.end(); ++it2)
             {
-                encoded = SuccinctGraphSerde::encode_node_id(
+                std::string encoded = SuccinctGraphSerde::encode_node_id(
                     it2->dst_id, dst_id_width);
 
                 if (SuccinctGraphSerde::decode_node_id(encoded) != it2->dst_id)
@@ -298,7 +294,7 @@ void SuccinctGraph::construct_edge_table(std::string edge_file) {
             // edge attributes
             for (auto it2 = assoc_list.begin(); it2 != assoc_list.end(); ++it2)
             {
-                attr = it2->attr; // note: no encoding
+                std::string attr = it2->attr; // note: no encoding
                 if (attr.length() != static_cast<size_t>(edge_width)) {
                     LOG_E(
                         "Failed: assumption that the edge attr width for each "
