@@ -77,26 +77,28 @@ void HashPartitioner::partition(
 {
     int32_t N = this->num_shards_;
     auto id_to_shard = [N](int64_t node_id) { return node_id % N; };
-    std::vector< std::vector<std::string> > node_splits_per_shard(num_shards_);
+//    std::vector< std::vector<std::string> > node_splits_per_shard(num_shards_);
     std::vector< std::vector<std::string> > edge_splits_per_shard(num_shards_);
-
-    // reads node files
-    std::ifstream file_ifstream(node_file_in);
     std::string line;
-    int64_t line_idx = 0;
-    while (std::getline(file_ifstream, line)) {
-        node_splits_per_shard[id_to_shard(line_idx)].push_back(line);
-        ++line_idx;
-    }
+
+//    // reads node files
+//    std::ifstream file_ifstream(node_file_in);
+//    int64_t line_idx = 0;
+//    while (std::getline(file_ifstream, line)) {
+//        node_splits_per_shard[id_to_shard(line_idx)].push_back(line);
+//        ++line_idx;
+//    }
     // reads edge files
     std::ifstream edgefile_ifstream(edge_file_in);
     std::string src_id_str;
     while (std::getline(edgefile_ifstream, line)) {
         std::stringstream ss(line);
         std::getline(ss, src_id_str, ' ');
-        edge_splits_per_shard[id_to_shard(std::stol(src_id_str))]
+        edge_splits_per_shard[id_to_shard(std::stoll(src_id_str))]
             .push_back(line);
     }
+    edgefile_ifstream.close();
+
     // output, selectively
     int num_shards_digits = num_digits(this->num_shards_);
     int num = this->num_shards_;
@@ -111,13 +113,13 @@ void HashPartitioner::partition(
                     format_out_name(file_prefix, num_shards_digits, i, num));
                 std::ofstream file_ofstream(out_name);
                 LOG_E("Writing split '%s' for shard %d\n", out_name.c_str(), i);
-                for (auto line : shard_lines) {
+                for (const auto& line : shard_lines) {
                     file_ofstream << line << std::endl;
                 }
             }
         }
     };
-    output_nonempty_shards(node_splits_per_shard, node_file_in);
+//    output_nonempty_shards(node_splits_per_shard, node_file_in);
     output_nonempty_shards(edge_splits_per_shard, edge_file_in);
 }
 

@@ -20,6 +20,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} $ENV{SGFLAGS} -O3 -Wall -g")
 
 set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 file(MAKE_DIRECTORY ${LIBRARY_OUTPUT_PATH})
+set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
+file(MAKE_DIRECTORY ${EXECUTABLE_OUTPUT_PATH})
 
 set(INCLUDE include)
 file(GLOB_RECURSE SOURCE_FILES src/*.cpp)
@@ -31,3 +33,5 @@ add_library(succinctgraph STATIC ${SOURCE_FILES})
 target_link_libraries(succinctgraph ${CMAKE_THREAD_LIBS_INIT})
 target_link_libraries(succinctgraph succinct)
 set_target_properties(succinctgraph PROPERTIES LINKER_LANGUAGE CXX)
+
+add_executable(graph-partitioner src/partitioners.cpp)
