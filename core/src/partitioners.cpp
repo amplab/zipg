@@ -81,6 +81,15 @@ void HashPartitioner::partition(
     std::vector< std::vector<std::string> > edge_splits_per_shard(num_shards_);
     std::string line;
 
+    int num_shards_digits = num_digits(this->num_shards_);
+    int num = this->num_shards_;
+    std::vector<std::ofstream> shard_edge_outs;
+    for (int i = 0; i < num_shards_; ++i) {
+        std::string out_name(
+            format_out_name(edge_file_in, num_shards_digits, i, num));
+        shard_edge_outs.emplace_back(out_name);
+    }
+
 //    // reads node files
 //    std::ifstream file_ifstream(node_file_in);
 //    int64_t line_idx = 0;
@@ -88,20 +97,19 @@ void HashPartitioner::partition(
 //        node_splits_per_shard[id_to_shard(line_idx)].push_back(line);
 //        ++line_idx;
 //    }
+
     // reads edge files
     std::ifstream edgefile_ifstream(edge_file_in);
     std::string src_id_str;
     while (std::getline(edgefile_ifstream, line)) {
         std::stringstream ss(line);
         std::getline(ss, src_id_str, ' ');
-        edge_splits_per_shard[id_to_shard(std::stoll(src_id_str))]
-            .push_back(line);
+        shard_edge_outs[id_to_shard(std::stoll(src_id_str))] << line
+            << std::endl;
     }
     edgefile_ifstream.close();
 
     // output, selectively
-    int num_shards_digits = num_digits(this->num_shards_);
-    int num = this->num_shards_;
     auto output_nonempty_shards = [num_shards_digits, num](
         const std::vector< std::vector<std::string> >& lines,
         const std::string& file_prefix)
@@ -120,7 +128,6 @@ void HashPartitioner::partition(
         }
     };
 //    output_nonempty_shards(node_splits_per_shard, node_file_in);
-    output_nonempty_shards(edge_splits_per_shard, edge_file_in);
 }
 
 int main(int argc, char **argv) {
