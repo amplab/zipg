@@ -167,8 +167,6 @@ void SuccinctGraph::construct_node_table(std::string node_file) {
 }
 
 void SuccinctGraph::construct_edge_table(std::string edge_file) {
-    LOG_E("edge_file = '%s'\n", edge_file.c_str());
-
     // Serialize to an .edge_table file (flat file layout)
     size_t postfix_pos = edge_file.rfind(".assoc");
     std::string edge_file_name = edge_file + ".edge_table";
@@ -176,7 +174,6 @@ void SuccinctGraph::construct_edge_table(std::string edge_file) {
         edge_file_name = std::string(edge_file).replace(
             postfix_pos, 6, ".edge_table");
     }
-    LOG_E("edge_file_name: '%s'\n", edge_file_name.c_str());
 
     if (file_or_dir_exists(edge_file_name + ".succinct")) {
         LOG_E("Dir '%s' already exists, exiting normally from construction\n",
@@ -325,14 +322,12 @@ void SuccinctGraph::construct_edge_table(std::string edge_file) {
     EDGE_TABLE = new KeepInputSuccinctFile(edge_file_name,
         SuccinctMode::CONSTRUCT_IN_MEMORY, sa_sampling_rate, npa_sampling_rate);
 #else
-    LOG_E("Using vanilla SuccinctFile; name '%s'\n", edge_file_name.c_str());
     EDGE_TABLE = new SuccinctFile(
         edge_file_name,
         SuccinctMode::CONSTRUCT_IN_MEMORY,
         sa_sampling_rate,
         isa_sampling_rate,
         npa_sampling_rate);
-    LOG_E("Done\n");
 #endif
     size_t num_bytes = EDGE_TABLE->Serialize();
     LOG_E("Succinct-encoded edge table, number of bytes written: %zu\n",
