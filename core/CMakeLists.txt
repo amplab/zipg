@@ -35,3 +35,6 @@ target_link_libraries(succinctgraph succinct)
 set_target_properties(succinctgraph PROPERTIES LINKER_LANGUAGE CXX)
 
 add_executable(graph-partitioner src/partitioners.cpp)
+
+add_executable(graph-encoder src/ThreadedGraphEncoder.cpp)
+target_link_libraries(graph-encoder succinctgraph)
