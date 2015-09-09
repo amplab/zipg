@@ -1,5 +1,6 @@
 #include "partitioners.hpp"
 
+#include <memory>
 #include <unistd.h>
 
 #include "utils.h"
