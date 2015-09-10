@@ -1,6 +1,7 @@
 #include "SuccinctGraph.hpp"
 #include "ThreadedGraphEncoder.h"
 #include "utils.h"
+#include "utils/thread_pool.h"
 
 void ThreadedGraphEncoder::construct_edge_file(
     const std::string edge_file,
@@ -48,9 +49,29 @@ int main(int argc, char **argv) {
     int saSamplingRate = std::stoi(argv[2]);
     int isaSamplingRate = std::stoi(argv[3]);
     int npaSamplingRate = std::stoi(argv[4]);
+    int encode_type = std::stoi(argv[5]);
     LOG_E("Launching at most %d threads concurrently\n", maxConcurrentThreads);
-    LOG_E("SA %d, ISA %d, NPA %d\n",
-        saSamplingRate, isaSamplingRate, npaSamplingRate);
+    LOG_E("SA %d, ISA %d, NPA %d; encode type %d\n",
+        saSamplingRate, isaSamplingRate, npaSamplingRate, encode_type);
+
+    if (encode_type == 1) {
+        // case: node table; use simple thread pool and don't catch exceptions
+        ThreadPool pool(maxConcurrentThreads);
+        for (int i = 6; i < argc; ++i) {
+            std::string node_file(argv[i]);
+            pool.Enqueue([=] {
+                SuccinctGraph graph(""); // no-op
+                graph.set_sa_sampling_rate(saSamplingRate);
+                graph.set_isa_sampling_rate(isaSamplingRate);
+                graph.set_npa_sampling_rate(npaSamplingRate);
+                graph.construct_node_table(node_file);
+                LOG_E("Node file '%s' Succinct-constructed!\n",
+                    node_file.c_str());
+            });
+        }
+        pool.ShutDown();
+        return 0;
+    }
 
     ThreadedGraphEncoder encoder(maxConcurrentThreads);
 
@@ -60,8 +81,8 @@ int main(int argc, char **argv) {
 
     std::map<int, bool> finished; // all false
     std::map<int, bool> to_be_submits; // init to all true
-    for (int i = 5; i < argc; ++i) {
-        to_be_submits[i - 5] = true;
+    for (int i = 6; i < argc; ++i) {
+        to_be_submits[i - 6] = true;
     }
 
     int badAllocSleep = 60;
@@ -70,8 +91,8 @@ int main(int argc, char **argv) {
     while (true) {
         // Check if every file is constructed
         bool all_finished = true;
-        for (int i = 5; i < argc; ++i) {
-            all_finished &= finished[i - 5];
+        for (int i = 6; i < argc; ++i) {
+            all_finished &= finished[i - 6];
         }
         if (all_finished) {
             LOG_E("All jobs done!\n");
@@ -79,14 +100,14 @@ int main(int argc, char **argv) {
         }
 
         // Find any job that can be submitted, and submit
-        for (int i = 5; i < argc; ++i) {
-            if (to_be_submits[i - 5]) {
-                to_be_submits[i - 5] = false;
+        for (int i = 6; i < argc; ++i) {
+            if (to_be_submits[i - 6]) {
+                to_be_submits[i - 6] = false;
                 std::string s(argv[i]);
 
                 promises.emplace_back();
                 futures.emplace_back(promises.back().get_future());
-                future_indices.push_back(i - 5);
+                future_indices.push_back(i - 6);
 
                 // launch
                 std::thread(&ThreadedGraphEncoder::construct_edge_file,
