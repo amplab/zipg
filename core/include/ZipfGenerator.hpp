@@ -6,6 +6,8 @@
 #include <cmath>
 #include <ctime>
 
+#include "utils.h"
+
 // NOTE: cargo-culted from Succinct.
 class ZipfGenerator {
 private:
@@ -59,7 +61,14 @@ public:
         this->theta = theta;
         this->N = N;
         this->zdist = new double[N];
-        this->gen_zipf();
+
+        LOG_E("About to generate Zipf distribution for corpus N = %lld\n", N);
+        int64_t latency = 0;
+        {
+            scoped_timer s(&latency);
+            this->gen_zipf();
+        }
+        LOG_E("Done, took %lld millis\n", static_cast<int64_t>(latency / 1e3));
     }
 
     ~ZipfGenerator() {
