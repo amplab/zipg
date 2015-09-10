@@ -287,7 +287,10 @@ void GraphFormatter::make_rand_assoc(
        attr_in_stream.open(attr_file);
     }
     std::string attr;
-    std::getline(attr_in_stream, attr);
+    // introduce some randomness so that threads don't gen. the same attributes
+    if (rand() % 2 == 0) {
+        std::getline(attr_in_stream, attr);
+    }
     if (attr.length() > static_cast<size_t>(bytes_per_attr)) {
        attr = attr.substr(0, bytes_per_attr);
     } else {
