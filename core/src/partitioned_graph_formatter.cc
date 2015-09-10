@@ -4,6 +4,7 @@
 #include "SuccinctGraph.hpp"
 #include "partitioners.hpp"
 #include "utils.h"
+#include "utils/thread_pool.h"
 
 using boost::shared_ptr;
 
@@ -34,26 +35,44 @@ void PartitionedGraphFormatter::coalescing_gen_assoc_shards(
             shared_ptr<std::mutex>(new std::mutex()));
     }
 
+    ThreadPool pool(32);
+
     std::vector<shared_ptr<std::thread>> threads;
     for (auto input_part : input_parts) {
-        threads.push_back(shared_ptr<std::thread>(new std::thread(
-            &PartitionedGraphFormatter::read_partition_gen_shard,
-            this,
-            edge_inner_delim,
-            edge_end_delim,
-            num_atype,
-            num_shards,
-            bytes_per_attr,
-            attr_file,
-            input_part,
-            mutexes_for_out_shards,
-            shard_edge_outs)));
+        pool.Enqueue([=] {
+            this->read_partition_gen_shard(
+                edge_inner_delim,
+                edge_end_delim,
+                num_atype,
+                num_shards,
+                bytes_per_attr,
+                attr_file,
+                input_part,
+                mutexes_for_out_shards,
+                shard_edge_outs
+            );
+            return;
+        });
+
+//        threads.push_back(shared_ptr<std::thread>(new std::thread(
+//            &PartitionedGraphFormatter::read_partition_gen_shard,
+//            this,
+//            edge_inner_delim,
+//            edge_end_delim,
+//            num_atype,
+//            num_shards,
+//            bytes_per_attr,
+//            attr_file,
+//            input_part,
+//            mutexes_for_out_shards,
+//            shard_edge_outs)));
     }
-    for (auto thread_ptr : threads) {
-        if (thread_ptr->joinable()) {
-            thread_ptr->join();
-        }
-    }
+//    for (auto thread_ptr : threads) {
+//        if (thread_ptr->joinable()) {
+//            thread_ptr->join();
+//        }
+//    }
+    pool.ShutDown();
 }
 
 void PartitionedGraphFormatter::read_partition_gen_shard(
