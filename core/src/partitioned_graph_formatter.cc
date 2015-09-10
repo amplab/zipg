@@ -35,7 +35,7 @@ void PartitionedGraphFormatter::coalescing_gen_assoc_shards(
             shared_ptr<std::mutex>(new std::mutex()));
     }
 
-    ThreadPool pool(32);
+    ThreadPool pool(200);
 
     std::vector<shared_ptr<std::thread>> threads;
     for (auto input_part : input_parts) {

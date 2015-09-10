@@ -288,6 +288,7 @@ void GraphFormatter::make_rand_assoc(
     }
     std::string attr;
     // introduce some randomness so that threads don't gen. the same attributes
+    std::getline(attr_in_stream, attr);
     if (rand() % 2 == 0) {
         std::getline(attr_in_stream, attr);
     }
