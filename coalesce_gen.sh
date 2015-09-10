@@ -5,13 +5,13 @@ make -j partitioned-graph-formatter
 dataset=twitter2010-40attr16each
 
 if [[ "$dataset" == "twitter2010-40attr16each" ]]; then
-  output_fie_prefix=/mnt/twitter2010-npa128sa32isa64.assoc
+  output_file_prefix=/mnt2T/twitter2010-npa128sa32isa64.assoc
   num_shards=16
-  attr_file=/mnt/data_0
+  attr_file=/mnt/succinct-graph/data/data_0
   edge_attr_size=128
   inner_delim='	' # tab
   end_delim='^M'
-  input_edgelists=/mnt/twitter/part-*
+  input_edgelists=(/mnt2/twitter/part-*)
 else
   exit 1
 fi
@@ -22,5 +22,5 @@ fi
   ${attr_file} \
   ${edge_attr_size} \
   "${inner_delim}" \
-  "${end_delim}"
-  "${input_edgelists}"
+  "${end_delim}" \
+  ${input_edgelists[*]}
