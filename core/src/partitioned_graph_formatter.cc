@@ -167,7 +167,7 @@ int main(int argc, char **argv) {
     char edge_end_delim = std::string(argv[6]).at(0);
 
     std::vector<std::string> input_parts;
-    for (int i = 8; i < argc; ++i) {
+    for (int i = 7; i < argc; ++i) {
         input_parts.emplace_back(argv[i]);
     }
 
