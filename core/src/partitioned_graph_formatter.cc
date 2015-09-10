@@ -3,6 +3,7 @@
 #include "GraphFormatter.hpp"
 #include "SuccinctGraph.hpp"
 #include "partitioners.hpp"
+#include "utils.h"
 
 void PartitionedGraphFormatter::coalescing_gen_assoc_shards(
     const std::vector<std::string>& input_parts,
@@ -59,4 +60,33 @@ void PartitionedGraphFormatter::coalescing_gen_assoc_shards(
                 << assoc.attr << std::endl;
         }
     }
+}
+
+int main(int argc, char **argv) {
+    std::string output_file_prefix(argv[1]);
+    int num_shards = std::stoi(argv[2]);
+    std::string attr_file(argv[3]); // TPC-H
+    int edge_attr_size = std::stoi(argv[4]);
+    char edge_inner_delim = std::string(argv[5]).at(0);
+    char edge_end_delim = std::string(argv[6]).at(0);
+
+    std::vector<std::string> input_parts;
+    for (int i = 8; i < argc; ++i) {
+        input_parts.emplace_back(argv[i]);
+    }
+
+    LOG_E("Calling coalescing gen on %d input partitions, for %d shards\n",
+        input_parts.size(), num_shards);
+
+    PartitionedGraphFormatter pgf;
+    pgf.coalescing_gen_assoc_shards(
+        input_parts,
+        edge_inner_delim,
+        edge_end_delim,
+        5,
+        num_shards,
+        edge_attr_size,
+        attr_file,
+        output_file_prefix);
+
 }
