@@ -115,9 +115,12 @@ void GraphFormatter::create_node_table_zipf(
     std::set<std::string> corpus;
 
     ZipfGenerator zipf(0.99, corpus_size);
+    std::map<size_t, int> idx_to_freq;
+    size_t item_idx;
 
     for (int j = 0; j < num_attr; ++j) {
         // need attributes for column `attr`, length num_nodes
+        idx_to_freq.clear();
         attr.clear();
         corpus.clear();
         corpus_vec.clear();
@@ -137,24 +140,32 @@ void GraphFormatter::create_node_table_zipf(
 
         // Sample from corpus using Zipf
         for (size_t node = 0; node < num_nodes; ++node) {
-            selected_attrs[node] = corpus_vec[zipf.next()];
+            item_idx = zipf.next();
+            selected_attrs[node] = corpus_vec[item_idx];
+            ++idx_to_freq[item_idx];
         }
 
         attributes.push_back(selected_attrs);
     }
 
     if (report_freq_dist) {
-        std::unordered_map<std::string, int> val_to_freq;
-        std::map<int, int> freq_to_freq;
-        auto column = attributes.at(0);
-        for (auto& val : column) {
-            ++val_to_freq[val];
-        }
-        for (auto it = val_to_freq.begin(); it != val_to_freq.end(); ++it) {
-            ++freq_to_freq[it->second];
-        }
-        for (auto it = freq_to_freq.begin(); it != freq_to_freq.end(); ++it) {
-            LOG_E("%d %d\n", it->second, it->first);
+        // Report: How many items appear X times
+//        std::unordered_map<std::string, int> val_to_freq;
+//        std::map<int, int> freq_to_freq;
+//        auto column = attributes.at(0);
+//        for (auto& val : column) {
+//            ++val_to_freq[val];
+//        }
+//        for (auto it = val_to_freq.begin(); it != val_to_freq.end(); ++it) {
+//            ++freq_to_freq[it->second];
+//        }
+//        for (auto it = freq_to_freq.begin(); it != freq_to_freq.end(); ++it) {
+//            LOG_E("%d %d\n", it->second, it->first);
+//        }
+
+        LOG_E("idx freq\n");
+        for (auto& entry : idx_to_freq) {
+            LOG_E("%lld %d\n", entry.first, entry.second);
         }
     }
 
