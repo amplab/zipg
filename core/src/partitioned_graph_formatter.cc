@@ -99,7 +99,7 @@ void PartitionedGraphFormatter::read_partition_gen_shard(
     SuccinctGraph::Assoc assoc;
     std::ifstream attr_in_stream(attr_file);
 
-    const int output_buf_size = 1000;
+    const int output_buf_size = 5000;
     std::map<int, std::vector<SuccinctGraph::Assoc>> shard_bufs;
 
     std::ifstream edge_list_part(partition_file);
@@ -121,7 +121,7 @@ void PartitionedGraphFormatter::read_partition_gen_shard(
             attr_file, attr_in_stream, bytes_per_attr,
             atype_dis, rng1, time_dis, rng2);
 
-        auto buf = shard_bufs[shard_id];
+        auto& buf = shard_bufs[shard_id];
         buf.push_back(assoc);
 
         if (buf.size() == output_buf_size) {
