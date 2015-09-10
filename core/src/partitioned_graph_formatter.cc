@@ -21,23 +21,20 @@ void PartitionedGraphFormatter::coalescing_gen_assoc_shards(
     // Prepare output .assoc ofstreams
     int num_shards_digits = GraphPartitioner::num_digits(num_shards);
     std::vector<shared_ptr<std::ofstream>> shard_edge_outs;
+    std::vector<shared_ptr<std::mutex>> mutexes_for_out_shards;
 
     for (int i = 0; i < num_shards; ++i) {
         std::string out_name(GraphPartitioner::format_out_name(
             output_file_prefix, num_shards_digits, i, num_shards));
         shard_edge_outs.push_back(
             shared_ptr<std::ofstream>(new std::ofstream(out_name)));
-    }
 
-    std::vector<shared_ptr<std::mutex>> mutexes_for_out_shards;
-    for (int i = 0; i < input_parts.size(); ++i) {
         mutexes_for_out_shards.emplace_back(
             shared_ptr<std::mutex>(new std::mutex()));
     }
 
     ThreadPool pool(200);
 
-    std::vector<shared_ptr<std::thread>> threads;
     for (auto input_part : input_parts) {
         pool.Enqueue([=] {
             this->read_partition_gen_shard(
@@ -54,6 +51,7 @@ void PartitionedGraphFormatter::coalescing_gen_assoc_shards(
             return;
         });
 
+//    std::vector<shared_ptr<std::thread>> threads;
 //        threads.push_back(shared_ptr<std::thread>(new std::thread(
 //            &PartitionedGraphFormatter::read_partition_gen_shard,
 //            this,
