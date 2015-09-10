@@ -111,40 +111,51 @@ void GraphFormatter::create_node_table_zipf(
     std::string attr, tmp;
     size_t length = static_cast<size_t>(len);
 
+    ZipfGenerator zipf(0.99, corpus_size);
+    std::unordered_map<size_t, int> idx_to_freq; // for fast inserts
+    size_t item_idx;
+
     std::vector<std::string> corpus_vec, selected_attrs;
     std::set<std::string> corpus;
 
-    ZipfGenerator zipf(0.99, corpus_size);
-    std::map<size_t, int> idx_to_freq;
-    size_t item_idx;
+    // Populate the corpus
+    while (corpus.size() < corpus_size) {
+        if (corpus.size() % 100000 == 0)  {
+            LOG_E("Corpus size: %d\n", corpus.size());
+        }
+        // multiple records concatenated together
+        while (attr.length() < length) {
+            if (attr_in_stream.eof()) {
+               // if attrs exhausted, recycle
+               attr_in_stream.close();
+               attr_in_stream.open(attr_file);
+            }
+            std::getline(attr_in_stream, tmp);
+            attr += tmp;
+        }
+        corpus.insert(attr.substr(0, length)); // possibly truncate
+        attr.erase(0, length); // can potentially reuse this row
+    }
+    std::copy(corpus.begin(), corpus.end(), std::back_inserter(corpus_vec));
 
     for (int j = 0; j < num_attr; ++j) {
+        LOG_E("Populating attribute column %d\n", j);
         // need attributes for column `attr`, length num_nodes
-        idx_to_freq.clear();
-        attr.clear();
-        corpus.clear();
-        corpus_vec.clear();
-
-        while (corpus.size() < corpus_size) {
-            // multiple records concatenated together
-            while (attr.length() < length) {
-                std::getline(attr_in_stream, tmp);
-                attr += tmp;
-            }
-            corpus.insert(attr.substr(0, length)); // possibly truncate
-            attr.erase(0, length); // can potentially reuse this row
-        }
-
-        std::copy(corpus.begin(), corpus.end(), std::back_inserter(corpus_vec));
         selected_attrs.resize(num_nodes);
 
         // Sample from corpus using Zipf
-        for (size_t node = 0; node < num_nodes; ++node) {
-            item_idx = zipf.next();
-            selected_attrs[node] = corpus_vec[item_idx];
-            ++idx_to_freq[item_idx];
+        if (j == 0) {
+            // record some stats
+            for (size_t node = 0; node < num_nodes; ++node) {
+                item_idx = zipf.next();
+                selected_attrs[node] = corpus_vec[item_idx];
+                ++idx_to_freq[item_idx];
+            }
+        } else {
+            for (size_t node = 0; node < num_nodes; ++node) {
+                selected_attrs[node] = corpus_vec[zipf.next()];
+            }
         }
-
         attributes.push_back(selected_attrs);
     }
 
@@ -162,9 +173,13 @@ void GraphFormatter::create_node_table_zipf(
 //        for (auto it = freq_to_freq.begin(); it != freq_to_freq.end(); ++it) {
 //            LOG_E("%d %d\n", it->second, it->first);
 //        }
+        std::map<size_t, int> ordered;
 
         LOG_E("idx freq\n");
         for (auto& entry : idx_to_freq) {
+            ordered[entry.first] = entry.second;
+        }
+        for (auto& entry : ordered) {
             LOG_E("%lld %d\n", entry.first, entry.second);
         }
     }
