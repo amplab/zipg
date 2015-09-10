@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 
+#include "utils.h"
+
 class GraphPartitioner {
 public:
     virtual ~GraphPartitioner() {};
@@ -28,7 +30,6 @@ public:
         const std::string& node_file_in,
         const std::string& edge_file_in) = 0;
 
-protected:
     static int32_t num_digits(int32_t number) {
        if (number == 0) return 1;
        int32_t digits = 0;

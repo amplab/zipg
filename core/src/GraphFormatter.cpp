@@ -5,18 +5,11 @@
 #include <sstream>
 #include <unordered_map>
 #include <vector>
-#include <random>
 #include <sys/time.h>
 
 #include "SuccinctGraph.hpp"
 #include "ZipfGenerator.hpp"
 #include "utils.h"
-
-int64_t time_millis() {
-    struct timeval now;
-    gettimeofday(&now, NULL);
-    return (int64_t) now.tv_sec * 1000 + now.tv_usec / 1000;
-}
 
 // Private helper func
 std::string gen_random_string(const int len) {
@@ -239,6 +232,57 @@ std::vector<std::vector<int64_t>> GraphFormatter::read_edge_list(
     return result;
 }
 
+void GraphFormatter::make_rand_assoc(
+    SuccinctGraph::Assoc& assoc,
+    int64_t src_id,
+    int64_t dst_id,
+    const std::string& attr_file,
+    std::ifstream& attr_in_stream,
+    int bytes_per_attr,
+    std::uniform_int_distribution<int64_t> atype_dis,
+    std::mt19937& atype_rng,
+    std::uniform_int_distribution<int> time_dis,
+    std::mt19937& time_rng,
+    bool augmented_assoc,
+    bool assign_ts_attr_to_dummy)
+{
+    // Generate atype and timestamp
+    SuccinctGraph::AType atype = atype_dis(atype_rng);
+    // C.f. LinkBench
+    // Choose something from now back to about 50 days
+    // return (System.currentTimeMillis() - Integer.MAX_VALUE - 1L)
+    //                                        + rng.nextInt();
+    SuccinctGraph::Timestamp time = time_millis() -
+       std::numeric_limits<int>::max() - 1 + time_dis(time_rng);
+
+    if (attr_in_stream.eof()) {
+       // if attrs exhausted, recycle
+       attr_in_stream.close();
+       attr_in_stream.open(attr_file);
+    }
+    std::string attr;
+    std::getline(attr_in_stream, attr);
+    if (attr.length() > static_cast<size_t>(bytes_per_attr)) {
+       attr = attr.substr(0, bytes_per_attr);
+    } else {
+       // just pad with '|'
+       attr += std::string(bytes_per_attr - attr.length(), '|');
+    }
+    if (!augmented_assoc || assign_ts_attr_to_dummy) {
+       // There are two cases where we assign a random timestamp and an
+       // extracted attribute:
+       // (1) Either the edge is a real, existing edge, or
+       // (2) the edge is an augmented dummy edge, and
+       // `assign_ts_attr_to_dummy` is set to true.
+       assoc = { src_id, dst_id, atype, time, attr };
+    } else {
+       // UNSAFE: Augmented edges are assigned empty attribute value,
+       // which is unsafe since the existing assoc lists likely already
+       // have a positive edge attr width.
+       assoc = { src_id, dst_id, atype, 0, "" };
+    }
+}
+
 void GraphFormatter::create_edge_table(
     const std::string& file,
     const std::string& attr_file,
@@ -267,50 +311,6 @@ void GraphFormatter::create_edge_table(
     std::vector<std::set<int64_t>> edge_list_set;
     int64_t max_node = -1;
 
-    auto make_rand_assoc = [&atype_dis, &time_dis, &rng1, &rng2, &attr_file,
-        bytes_per_attr]
-        (int64_t src_id, int64_t dst_id, std::ifstream& attr_in_stream,
-         bool augmented_assoc = false, bool assign_ts_attr_to_dummy = false)
-    {
-        // Generate atype and timestamp
-        SuccinctGraph::AType atype = atype_dis(rng1);
-        // C.f. LinkBench
-        // Choose something from now back to about 50 days
-        // return (System.currentTimeMillis() - Integer.MAX_VALUE - 1L)
-        //                                        + rng.nextInt();
-        SuccinctGraph::Timestamp time = time_millis() -
-            std::numeric_limits<int>::max() - 1 + time_dis(rng2);
-
-        if (attr_in_stream.eof()) {
-            // if attrs exhausted, recycle
-            attr_in_stream.close();
-            attr_in_stream.open(attr_file);
-        }
-        std::string attr;
-        std::getline(attr_in_stream, attr);
-        if (attr.length() > static_cast<size_t>(bytes_per_attr)) {
-            attr = attr.substr(0, bytes_per_attr);
-        } else {
-            // just pad with '|'
-            attr += std::string(bytes_per_attr - attr.length(), '|');
-        }
-        SuccinctGraph::Assoc assoc;
-        if (!augmented_assoc || assign_ts_attr_to_dummy) {
-            // There are two cases where we assign a random timestamp and an
-            // extracted attribute:
-            // (1) Either the edge is a real, existing edge, or
-            // (2) the edge is an augmented dummy edge, and
-            // `assign_ts_attr_to_dummy` is set to true.
-            assoc = { src_id, dst_id, atype, time, attr };
-        } else {
-            // UNSAFE: Augmented edges are assigned empty attribute value,
-            // which is unsafe since the existing assoc lists likely already
-            // have a positive edge attr width.
-            assoc = { src_id, dst_id, atype, 0, "" };
-        }
-        return assoc;
-    };
-
     while (std::getline(in_stream, line)) {
         if (line[0] == '#') {
             continue;
@@ -321,8 +321,11 @@ void GraphFormatter::create_edge_table(
         std::getline(ss, token, edge_end_delim);
         dst_id = std::stoll(token);
 
-        SuccinctGraph::Assoc assoc = make_rand_assoc(
-            src_id, dst_id, attr_in_stream);
+        SuccinctGraph::Assoc assoc;
+        GraphFormatter::make_rand_assoc(
+            assoc, src_id, dst_id,
+            attr_file, attr_in_stream, bytes_per_attr,
+            atype_dis, rng1, time_dis, rng2);
         assoc_map[std::make_pair(src_id, assoc.atype)].push_back(assoc);
 
         // maintain info for augmentation
@@ -351,9 +354,12 @@ void GraphFormatter::create_edge_table(
                     edge_list_set[node_id].insert(dst_id);
 
                     // also insert into assoc map
-                    SuccinctGraph::Assoc assoc(make_rand_assoc(
-                        node_id, dst_id, attr_in_stream,
-                        true, assign_ts_attr_to_dummy_edges));
+                    SuccinctGraph::Assoc assoc;
+                    GraphFormatter::make_rand_assoc(
+                        assoc, node_id, dst_id,
+                        attr_file, attr_in_stream, bytes_per_attr,
+                        atype_dis, rng1, time_dis, rng2,
+                        true, assign_ts_attr_to_dummy_edges);
                     assoc_map[std::make_pair(node_id, assoc.atype)].push_back(
                         assoc);
                 }

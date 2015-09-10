@@ -2,6 +2,7 @@
 #define GRAPH_FORMATTER_H
 
 #include <fstream>
+#include <random>
 #include <string>
 #include <vector>
 
@@ -113,11 +114,31 @@ public:
         const std::string& neo4j_edge_out,
         char neo4j_delim = '\x02');
 
+    static void make_rand_assoc(
+        SuccinctGraph::Assoc& assoc,
+        int64_t src_id,
+        int64_t dst_id,
+        const std::string& attr_file,
+        std::ifstream& attr_in_stream,
+        int bytes_per_attr,
+        std::uniform_int_distribution<int64_t> atype_dis,
+        std::mt19937& atype_rng,
+        std::uniform_int_distribution<int> time_dis,
+        std::mt19937& time_rng,
+        bool augmented_assoc = false,
+        bool assign_ts_attr_to_dummy = false);
+
     // Used only when generating & parsing queries, not part of the internal
     // graph layout.  Assumes this is char uniquely identifiable (among attrs).
     static const char QUERY_FILED_DELIM = '\x02';
 
 private:
+
+    static int64_t time_millis() {
+        struct timeval now;
+        gettimeofday(&now, NULL);
+        return (int64_t) now.tv_sec * 1000 + now.tv_usec / 1000;
+    }
 
     static void output_node_attributes(
         const std::string& out_file,

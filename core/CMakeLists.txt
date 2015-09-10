@@ -38,3 +38,6 @@ add_executable(graph-partitioner src/partitioners.cpp)
 
 add_executable(graph-encoder src/ThreadedGraphEncoder.cpp)
 target_link_libraries(graph-encoder succinctgraph)
+
+add_executable(partitioned-graph-formatter src/partitioned_graph_formatter.cc)
+target_link_libraries(partitioned-graph-formatter succinctgraph)
