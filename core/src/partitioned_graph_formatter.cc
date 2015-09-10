@@ -112,17 +112,17 @@ void PartitionedGraphFormatter::read_partition_gen_shard(
         dst = std::stoll(str);
         shard_id = src % num_shards;
 
-        auto buf = shard_bufs[shard_id];
-        buf.emplace_back();
-
         // No race on attr file, because have my own attr_in_stream
         // there may be compressibility issue since there's a risk that these
         // threads generate same/similar sequence of attributes
         GraphFormatter::make_rand_assoc(
-            buf.back(),
+            assoc,
             src, dst,
             attr_file, attr_in_stream, bytes_per_attr,
             atype_dis, rng1, time_dis, rng2);
+
+        auto buf = shard_bufs[shard_id];
+        buf.push_back(assoc);
 
         if (buf.size() == output_buf_size) {
             std::lock_guard<std::mutex> lk(*(mutexes_for_out_shards[shard_id]));
