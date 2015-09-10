@@ -99,7 +99,7 @@ void PartitionedGraphFormatter::read_partition_gen_shard(
     SuccinctGraph::Assoc assoc;
     std::ifstream attr_in_stream(attr_file);
 
-    const int output_buf_size = 10000;
+    const int output_buf_size = 1000;
     std::map<int, std::vector<SuccinctGraph::Assoc>> shard_bufs;
 
     std::ifstream edge_list_part(partition_file);
@@ -138,6 +138,23 @@ void PartitionedGraphFormatter::read_partition_gen_shard(
 
             buf.clear();
         }
+    }
+
+    for (auto& entry : shard_bufs) {
+        shard_id = entry.first;
+        auto buf = entry.second;
+        std::lock_guard<std::mutex> lk(*(mutexes_for_out_shards[shard_id]));
+
+        for (auto& assoc : buf) {
+            *(shard_edge_outs[shard_id])
+                << assoc.src_id << " "
+                << assoc.dst_id << " "
+                << assoc.atype << " "
+                << assoc.time << " "
+                << assoc.attr << std::endl;
+        }
+
+        buf.clear();
     }
 }
 
