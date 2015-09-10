@@ -68,11 +68,14 @@ public:
     HashPartitioner(int32_t num_shards) : num_shards_(num_shards) {};
     ~HashPartitioner() {};
 
+    // TODO: change this to edge table only
     // Node Id K's records (node attributes, assoc lists) are assigned to
     // shard K % N, where N is the total number of shards in the cluster.
     void partition(
         const std::string& node_file_in,
         const std::string& edge_file_in);
+
+    void partition_node_table(const std::string& node_file_in);
 
     int32_t num_shards_ = 1;
 };

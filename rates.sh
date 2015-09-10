@@ -3,6 +3,10 @@ source ./conf/succinct-env.sh
 
 suffix=""
 suffix="WithTsAttr"
+
+partitionType=0 # 0 for edge table
+partitionType=1 # 0 for node table
+
 function par_create() {
   pushd data >/dev/null
 
@@ -30,6 +34,7 @@ function par_create() {
 
   $prog \
     -n $TOTAL_NUM_SHARDS \
+    -t $partitionType \
     ${node_file} \
     ${assoc_file}
   echo "Partitioned '$node_file' and '$assoc_file' for $TOTAL_NUM_SHARDS shards."
