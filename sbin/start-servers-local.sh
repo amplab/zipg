@@ -129,7 +129,7 @@ for i in `seq 0 $limit`; do
 
     echo "Launching shard ${shard_id}"
 
-    nohup "$bin/graph_query_server" \
+    nohup "$bin/../rpc/bin/graph_query_server" \
       -m $mode \
       -p $port \
       -t ${TOTAL_NUM_SHARDS} \

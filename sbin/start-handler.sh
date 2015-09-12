@@ -32,7 +32,7 @@ fi
 
 mkdir -p $SUCCINCT_LOG_PATH
 
-nohup "${bin}/graph_query_aggregator" \
+nohup "${bin}/../rpc/bin/graph_query_aggregator" \
   -t $TOTAL_NUM_SHARDS \
   -s $1 \
   -i $2 \
