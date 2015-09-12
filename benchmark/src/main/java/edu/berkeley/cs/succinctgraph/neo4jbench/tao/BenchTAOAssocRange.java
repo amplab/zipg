@@ -25,14 +25,6 @@ public class BenchTAOAssocRange {
     static List<Integer> warmupAssocRangeLengths, assocRangeLengths;
 
     public static void main(String[] args) {
-        String type = args[0];
-        String dbPath = args[1];
-        String warmupQueryFile = args[2];
-        String queryFile = args[3];
-        String outputFile = args[4];
-        numWarmupQueries = Integer.parseInt(args[5]);
-        numMeasureQueries = Integer.parseInt(args[6]);
-
         warmupAssocRangeNodes = new ArrayList<>();
         assocRangeNodes = new ArrayList<>();
         warmupAssocRangeAtypes = new ArrayList<>();
@@ -42,10 +34,19 @@ public class BenchTAOAssocRange {
         warmupAssocRangeLengths = new ArrayList<>();
         assocRangeLengths = new ArrayList<>();
 
+        String type = args[0];
+        String dbPath = args[1];
+        String warmupQueryFile = args[2];
+        String queryFile = args[3];
+        String outputFile = args[4];
+        numWarmupQueries = Integer.parseInt(args[5]);
+        numMeasureQueries = Integer.parseInt(args[6]);
+        boolean tuned = Boolean.valueOf(args[7]);
+
         String neo4jPageCacheMemory = GraphDatabaseSettings.pagecache_memory
             .getDefaultValue();
-        if (args.length >= 8) {
-            neo4jPageCacheMemory = args[7];
+        if (args.length >= 9) {
+            neo4jPageCacheMemory = args[8];
         }
 
         BenchUtils.readAssocRangeQueries(
@@ -57,30 +58,36 @@ public class BenchTAOAssocRange {
             assocRangeOffsets, assocRangeLengths);
 
         if (type.equals("latency")) {
-            benchAssocRangeLatency(dbPath, neo4jPageCacheMemory, outputFile);
+            benchAssocRangeLatency(
+                tuned, dbPath, neo4jPageCacheMemory, outputFile);
         } else {
             System.err.println("Unknown type: " + type);
         }
     }
 
-    private static void benchAssocRangeLatency(
+    private static void benchAssocRangeLatency(boolean tuned,
         String dbPath, String neo4jPageCacheMem, String outputFile) {
 
         System.out.println("Benchmarking assoc_range() queries");
         System.out.println("Setting Neo4j's dbms.pagecache.memory: " +
             neo4jPageCacheMem);
 
-        GraphDatabaseService db = new GraphDatabaseFactory()
-            .newEmbeddedDatabaseBuilder(dbPath)
-            .setConfig(GraphDatabaseSettings.cache_type, "none")
-            .setConfig(
-                GraphDatabaseSettings.pagecache_memory, neo4jPageCacheMem)
-            .newGraphDatabase();
+        GraphDatabaseService db;
+        if (tuned) {
+            db = new GraphDatabaseFactory()
+                .newEmbeddedDatabaseBuilder(dbPath)
+                .setConfig(GraphDatabaseSettings.cache_type, "none")
+                .setConfig(
+                    GraphDatabaseSettings.pagecache_memory, neo4jPageCacheMem)
+                .newGraphDatabase();
+        } else {
+            db = new GraphDatabaseFactory().newEmbeddedDatabase(dbPath);
+        }
 
         BenchUtils.registerShutdownHook(db);
         Transaction tx = db.beginTx();
         try {
-            BenchUtils.fullWarmup(db);
+            // BenchUtils.fullWarmup(db);
 
             PrintWriter out = new PrintWriter(new BufferedWriter(
                 new FileWriter(outputFile)));
