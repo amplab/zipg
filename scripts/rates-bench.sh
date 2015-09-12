@@ -86,7 +86,7 @@ function bench() {
 
     if [[ -n "$benchNode" ]]; then
       sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
-      ${BIN_DIR}/bench -t node-latency -x ${warmup_node} \
+      ${BIN_DIR}/../benchmark/bin/bench -t node-latency -x ${warmup_node} \
       -y ${measure_node} -w ${QUERY_DIR}/node_warmup_${num_nodes}.txt \
       -q ${QUERY_DIR}/node_query_${num_nodes}.txt \
       -o ${HOME_DIR}/node_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
@@ -96,7 +96,7 @@ function bench() {
 
     if [[ -n "$benchNodeThput" ]]; then
       # sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
-      ${BIN_DIR}/bench -t node-throughput -x ${warmup_node} \
+      ${BIN_DIR}/../benchmark/bin/bench -t node-throughput -x ${warmup_node} \
         -p ${throughput_threads} \
         -y ${measure_node} -w ${QUERY_DIR}/node_warmup_${num_nodes}.txt \
         -q ${QUERY_DIR}/node_query_${num_nodes}.txt \
@@ -112,7 +112,7 @@ function bench() {
 
     if [[ -n "$benchNodeNode" ]]; then
       sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
-      ${BIN_DIR}/bench -t node-node-latency -x ${warmup_node} \
+      ${BIN_DIR}/../benchmark/bin/bench -t node-node-latency -x ${warmup_node} \
       -y ${measure_node} -w ${QUERY_DIR}/node_warmup_${num_nodes}.txt \
       -q ${QUERY_DIR}/node_query_${num_nodes}.txt \
       -o ${HOME_DIR}/double_node_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
@@ -122,7 +122,7 @@ function bench() {
 
     if [[ -n "$benchNodeNodeThput" ]]; then
       # sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
-      ${BIN_DIR}/bench -t node-node-throughput -x ${warmup_node} \
+      ${BIN_DIR}/../benchmark/bin/bench -t node-node-throughput -x ${warmup_node} \
         -p ${throughput_threads} \
         -y ${measure_node} -w ${QUERY_DIR}/node_warmup_${num_nodes}.txt \
         -q ${QUERY_DIR}/node_query_${num_nodes}.txt \
@@ -139,7 +139,7 @@ function bench() {
 
     if [[ -n "$benchNeighborNode" ]]; then
       sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
-      ${BIN_DIR}/bench -t neighbor-node-latency -x ${warmup_neighbor_node} \
+      ${BIN_DIR}/../benchmark/bin/bench -t neighbor-node-latency -x ${warmup_neighbor_node} \
       -y ${measure_neighbor_node} -w ${QUERY_DIR}/neighbor_node_warmup_${num_nodes}.txt \
       -q ${QUERY_DIR}/neighbor_node_query_${num_nodes}.txt \
       -o ${HOME_DIR}/neighbor_node_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
@@ -149,7 +149,7 @@ function bench() {
 
     if [[ -n "$benchNhbrNodeThput" ]]; then
       # sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
-      ${BIN_DIR}/bench -t neighbor-node-throughput -x ${warmup_neighbor_node} \
+      ${BIN_DIR}/../benchmark/bin/bench -t neighbor-node-throughput -x ${warmup_neighbor_node} \
         -p ${throughput_threads} \
         -y ${measure_neighbor_node} -w ${QUERY_DIR}/neighbor_node_warmup_${num_nodes}.txt \
         -q ${QUERY_DIR}/neighbor_node_query_${num_nodes}.txt \
@@ -166,7 +166,7 @@ function bench() {
 
     if [[ -n "$benchNeighborAtype" ]]; then
         sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
-        ${BIN_DIR}/bench -t neighbor-atype-latency -x ${warmup_neighbor_atype} \
+        ${BIN_DIR}/../benchmark/bin/bench -t neighbor-atype-latency -x ${warmup_neighbor_atype} \
         -y ${measure_neighbor_atype} -w ${QUERY_DIR}/neighborAtype_warmup_${num_nodes}.txt \
         -q ${QUERY_DIR}/neighborAtype_query_${num_nodes}.txt \
         -o ${HOME_DIR}/neighborAtype_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
@@ -176,7 +176,7 @@ function bench() {
 
     if [[ -n "$benchNhbrAtypeThput" ]]; then
         # sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
-        ${BIN_DIR}/bench -t neighbor-atype-throughput -x ${warmup_neighbor_atype} \
+        ${BIN_DIR}/../benchmark/bin/bench -t neighbor-atype-throughput -x ${warmup_neighbor_atype} \
         -p ${throughput_threads} \
         -y ${measure_neighbor_atype} -w ${QUERY_DIR}/neighborAtype_warmup_${num_nodes}.txt \
         -q ${QUERY_DIR}/neighborAtype_query_${num_nodes}.txt \
@@ -193,7 +193,7 @@ function bench() {
 
     if [[ -n "$benchNeighbor" ]]; then
       sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
-      ${BIN_DIR}/bench -t neighbor-latency -x ${warmup_neighbor} \
+      ${BIN_DIR}/../benchmark/bin/bench -t neighbor-latency -x ${warmup_neighbor} \
       -y ${measure_neighbor} -w ${QUERY_DIR}/neighbor_warmup_${num_nodes}.txt \
       -q ${QUERY_DIR}/neighbor_query_${num_nodes}.txt \
       -o ${HOME_DIR}/neighbor_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
@@ -204,7 +204,7 @@ function bench() {
     if [[ -n "$benchMix" ]]; then
       #sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
 
-      ${BIN_DIR}/bench -t mix-latency \
+      ${BIN_DIR}/../benchmark/bin/bench -t mix-latency \
         -x ${warmup_mix} -y ${measure_mix} \
         -w ${QUERY_DIR}/neighborAtype_warmup_${num_nodes}.txt \
         -q ${QUERY_DIR}/neighborAtype_query_${num_nodes}.txt \
@@ -226,7 +226,7 @@ function bench() {
     if [[ -n "$benchMixThput" ]]; then
       #sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
 
-      ${BIN_DIR}/bench -t mix-throughput \
+      ${BIN_DIR}/../benchmark/bin/bench -t mix-throughput \
         -p ${throughput_threads} \
         -x ${warmup_mix} -y ${measure_mix} \
         -w ${QUERY_DIR}/neighborAtype_warmup_${num_nodes}.txt \
@@ -255,7 +255,7 @@ function bench() {
     if [[ -n "$benchNeighborThput" ]]; then
       #sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
 
-      ${BIN_DIR}/bench -t neighbor-throughput \
+      ${BIN_DIR}/../benchmark/bin/bench -t neighbor-throughput \
         -p ${throughput_threads} \
         -x ${warmup_neighbor} -y ${measure_neighbor} \
         -w ${QUERY_DIR}/neighbor_warmup_${num_nodes}.txt \
@@ -271,7 +271,7 @@ function bench() {
 
     if [[ -n "$benchAssocRange" ]]; then
       #sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
-      ${BIN_DIR}/bench -t tao-assoc-range-latency \
+      ${BIN_DIR}/../benchmark/bin/bench -t tao-assoc-range-latency \
         -x ${warmup_assocRange} -y ${measure_assocRange} \
         -w ${QUERY_DIR}/assocRange_warmup.txt -q ${QUERY_DIR}/assocRange_query.txt \
         -o ${HOME_DIR}/assocRange_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
@@ -281,7 +281,7 @@ function bench() {
 
     if [[ -n "$benchAssocCount" ]]; then
       #sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
-      ${BIN_DIR}/bench -t tao-assoc-count-latency \
+      ${BIN_DIR}/../benchmark/bin/bench -t tao-assoc-count-latency \
         -x ${warmup_assocCount} -y ${measure_assocCount} \
         -w ${QUERY_DIR}/assocCount_warmup.txt -q ${QUERY_DIR}/assocCount_query.txt \
         -o ${HOME_DIR}/assocCount_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
@@ -291,7 +291,7 @@ function bench() {
 
     if [[ -n "$benchObjGet" ]]; then
       #sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
-      ${BIN_DIR}/bench -t tao-obj-get-latency \
+      ${BIN_DIR}/../benchmark/bin/bench -t tao-obj-get-latency \
         -x ${warmup_objGet} -y ${measure_objGet} \
         -w ${QUERY_DIR}/objGet_warmup.txt -q ${QUERY_DIR}/objGet_query.txt \
         -o ${HOME_DIR}/objGet_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
@@ -301,7 +301,7 @@ function bench() {
 
     if [[ -n "$benchAssocGet" ]]; then
       #sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
-      ${BIN_DIR}/bench -t tao-assoc-get-latency \
+      ${BIN_DIR}/../benchmark/bin/bench -t tao-assoc-get-latency \
         -x ${warmup_assocGet} -y ${measure_assocGet} \
         -w ${QUERY_DIR}/assocGet_warmup.txt -q ${QUERY_DIR}/assocGet_query.txt \
         -o ${HOME_DIR}/assocGet_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
@@ -311,7 +311,7 @@ function bench() {
 
     if [[ -n "$benchAssocTimeRange" ]]; then
       #sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
-      ${BIN_DIR}/bench -t tao-assoc-time-range-latency \
+      ${BIN_DIR}/../benchmark/bin/bench -t tao-assoc-time-range-latency \
         -x ${warmup_assocTimeRange} -y ${measure_assocTimeRange} \
         -w ${QUERY_DIR}/assocTimeRange_warmup.txt -q ${QUERY_DIR}/assocTimeRange_query.txt \
         -o ${HOME_DIR}/assocTimeRange_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
@@ -322,7 +322,7 @@ function bench() {
     if [[ -n "$benchTaoMix" ]]; then
       #sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
 
-      ${BIN_DIR}/bench -t tao-mix-latency \
+      ${BIN_DIR}/../benchmark/bin/bench -t tao-mix-latency \
         -x ${warmup_taoMix} -y ${measure_taoMix} \
         -w ${QUERY_DIR}/assocCount_warmup.txt \
         -q ${QUERY_DIR}/assocCount_query.txt \
@@ -346,7 +346,7 @@ function bench() {
     if [[ -n "$benchTaoMixThput" ]]; then
       #sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
 
-      ${BIN_DIR}/bench -t tao-mix-throughput \
+      ${BIN_DIR}/../benchmark/bin/bench -t tao-mix-throughput \
         -p ${throughput_threads} \
         -w ${QUERY_DIR}/assocCount_warmup.txt \
         -q ${QUERY_DIR}/assocCount_query.txt \
