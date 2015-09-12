@@ -373,6 +373,7 @@ for JVM_HEAP in 6900; do
            ${HOME_DIR}/neo4j_${DATASET}_assocRange_latency_jvm${JVM_HEAP}m_pagecache${pageCacheIgnoreIndexes}.txt \
            ${warmup_assocRange} \
            ${measure_assocRange} \
+           ${tuned} \
            ${pageCacheIgnoreIndexes}
 
       fi
