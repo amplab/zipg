@@ -401,9 +401,12 @@ SuccinctGraph::get_edge_table_offsets(NodeId id, AType atype) {
         COND_LOG_E("About to search for '%s' (size %d) in edge table\n",
             key.c_str(), key.size());
         EDGE_TABLE->Search(res, key);
-        LOG_E("search size for (id %lld, atype %lld): %d\n", id, atype, res.size());
+#ifdef LOG_DEBUG
+        COND_LOG_E("search size for (id %lld, atype %lld): %d\n",
+            id, atype, res.size());
         for (auto x : res) std::cerr << x << " ";
         std::cerr << std::endl;
+#endif
         assert(res.size() <= 1);
     }
     return res;
