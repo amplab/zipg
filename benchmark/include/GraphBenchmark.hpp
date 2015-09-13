@@ -319,9 +319,11 @@ public:
     void cleanup() {
         if (aggregator_ != nullptr) {
             aggregator_->shutdown();
+            aggregator_ = nullptr;
         }
         if (transport_ != nullptr && transport_->isOpen()) {
             transport_->close();
+            transport_ = nullptr;
         }
     }
 
