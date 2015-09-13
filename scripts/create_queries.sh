@@ -10,6 +10,20 @@ neighborNode=T
 
 numNode=$(wc -l ${NODE_FILE} | cut -d' ' -f 1) # calculate once
 
+
+function stop_all() {
+  bash ${SCRIPT_DIR}/../sbin/stop-all.sh
+}
+
+function start_all() {
+  stop_all
+  sleep 2
+  bash ${SCRIPT_DIR}/../sbin/start-servers.sh $NODE_FILE $EDGE_FILE &
+  sleep 2
+  bash ${SCRIPT_DIR}/../sbin/start-handlers.sh &
+  sleep 2
+}
+
 for num_nodes in ${nodes[@]}
 do
 
@@ -40,6 +54,8 @@ do
   if [[ -n "$neighborNode" ]]; then
     echo creating neighbor-node queries for ${num_nodes} nodes, warmup ${warmup_neighbor_node}, measure ${measure_neighbor_node}
 
+    start_all
+
     # load sharded graph to generate queries
    ${BIN_DIR}/../benchmark/bin/create neighbor-node-queries \
      ${NODE_FILE} \
@@ -50,6 +66,8 @@ do
      ${measure_neighbor_node} \
      ${QUERY_DIR}/neighbor_node_warmup_${num_nodes}.txt \
      ${QUERY_DIR}/neighbor_node_query_${num_nodes}.txt
+
+   stop_all
 
     # if noLoad, queries can have empty results
     # ${BIN_DIR}/../benchmark/bin/create neighbor-node-queries-noLoad \
