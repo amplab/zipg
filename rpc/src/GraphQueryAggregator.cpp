@@ -123,6 +123,7 @@ public:
                 aggregators_.insert(
                     std::pair<int, GraphQueryAggregatorServiceClient>(
                         i, client));
+                aggregator_transports_.push_back(transport);
             } catch (std::exception& e) {
                 LOG_E("Could not connect to aggregator %d: %s\n", i, e.what());
                 return 1;
@@ -136,6 +137,36 @@ public:
         LOG_E("Aggregators connected: cluster has %zu aggregators in total.\n",
             hostnames_.size());
         return 0;
+    }
+
+    void shutdown() {
+        for (int i = 0; i < total_num_hosts_; ++i) {
+            if (i == local_host_id_) {
+                continue;
+            }
+            aggregators_.at(i).disconnect_from_local_shards();
+            aggregators_.at(i).disconnect_from_aggregators();
+        }
+        disconnect_from_local_shards();
+        disconnect_from_aggregators();
+    }
+
+    void disconnect_from_local_shards() {
+        for (auto transport : shard_transports_) {
+            if (transport != nullptr && transport->isOpen()) {
+                transport->close();
+            }
+        }
+        shard_transports_.clear();
+    }
+
+    void disconnect_from_aggregators() {
+        for (auto transport : aggregator_transports_) {
+            if (transport != nullptr && transport->isOpen()) {
+                transport->close();
+            }
+        }
+        aggregator_transports_.clear();
     }
 
 private:
@@ -158,6 +189,7 @@ private:
                 transport->open();
                 LOG_E("Connected!\n");
                 local_shards_.push_back(client);
+                shard_transports_.push_back(transport);
             } catch (std::exception& e) {
                 LOG_E("Could not connect to server: %s\n", e.what());
                 return 1;
@@ -627,6 +659,9 @@ private:
 
     // Maps host id to aggregator handle.  Does not contain self.
     std::unordered_map<int, GraphQueryAggregatorServiceClient> aggregators_;
+
+    std::vector<shared_ptr<TTransport>> aggregator_transports_;
+    std::vector<shared_ptr<TTransport>> shard_transports_;
 };
 
 // Dummy factory that just delegates fields.

@@ -293,13 +293,11 @@ public:
             LOG_E("Connecting to server '%s'...\n", master_hostname.c_str());
             shared_ptr<TSocket> socket(
                 new TSocket(master_hostname, QUERY_HANDLER_PORT));
-            shared_ptr<TTransport> transport(
-                    new TBufferedTransport(socket));
-            shared_ptr<TProtocol> protocol(
-                    new TBinaryProtocol(transport));
+            transport_ = shared_ptr<TTransport>(new TBufferedTransport(socket));
+            shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport_));
             aggregator_ = shared_ptr<GraphQueryAggregatorServiceClient>(
                 new GraphQueryAggregatorServiceClient(protocol));
-            transport->open();
+            transport_->open();
             LOG_E("Connected to aggregator!\n");
 
             int ret = aggregator_->init();
@@ -307,6 +305,11 @@ public:
         } catch (std::exception& e) {
             LOG_E("Exception in benchmark client: %s\n", e.what());
         }
+    }
+
+    ~GraphBenchmark() {
+        aggregator_->shutdown();
+        transport_->close();
     }
 
     // BENCHMARKING NEIGHBOR QUERIES
@@ -1852,6 +1855,7 @@ protected:
 
     SuccinctGraph * graph_;
     shared_ptr<GraphQueryAggregatorServiceClient> aggregator_;
+    shared_ptr<TTransport> transport_;
 
     std::function<void(std::vector<int64_t>&, int64_t)> get_neighbors_f_;
 

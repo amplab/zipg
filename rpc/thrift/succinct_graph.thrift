@@ -81,6 +81,12 @@ service GraphQueryAggregatorService {
     // Have this aggregator connect to all other aggregators.
     i32 connect_to_aggregators(),
 
+    // Have all aggregators shutdown (1) connections to their own shards, (2)
+    // connections to other aggregators.
+    void shutdown(),
+    void disconnect_from_local_shards(),
+    void disconnect_from_aggregators(),
+
     // Primitive queries
 
     string get_attribute_local(1: i64 nodeId, 2: i32 attrId),

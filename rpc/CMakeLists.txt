@@ -24,6 +24,9 @@ set(SOURCES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 set(INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(CORE_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../core/include)
 
+set(THRIFT_SERVICE_FILE ${CMAKE_CURRENT_SOURCE_DIR}/thrift/succinct_graph.thrift)
+thrift_gen_cpp(${THRIFT_SERVICE_FILE} ${SOURCES_DIR} ${INCLUDE_DIR} HANDLER_SOURCES)
+
 set(GENERAL_SOURCES ${SOURCES_DIR}/succinct_graph_constants.cpp
     ${SOURCES_DIR}/succinct_graph_types.cpp)
 
