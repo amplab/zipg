@@ -20,6 +20,9 @@ bash ./coalesce_gen.sh
 echo "Coalescing generation done"
 
 #################### 
+masterHostName=$(curl http://169.254.169.254/latest/meta-data/public-hostname)
+echo "My own hostname: ${masterHostName}"
+
 for i in $(seq 0 1 $numShards); do
   if [ "$i" == "$numShards" ]; then
     continue
@@ -38,6 +41,8 @@ for i in $(seq 0 1 $numShards); do
 #!/bin/bash
 set -e
 bash /vol0/succinct-graph/encoder.sh ${encodeType} ${targetFile}
+encoded=$(echo -n "${targetFile}.succinct" | sed 's/\(.*\)assoc\(.*\)/\1edge_table\2/')
+rsync -avr --progress ${encoded} root@${masterHostName}:/vol0/
 EOL
 
   rsync /vol0/succinct-graph/etl_tmp.sh \
@@ -49,3 +54,6 @@ echo "Copied corresponding shard files from ${assocShardDir} to workers"
 #################### 
 ~/spark/sbin/slaves.sh \
   bash /vol0/succinct-graph/etl_tmp.sh
+~/spark/sbin/slaves.sh \
+  rm -rf /vol0/succinct-graph/etl_tmp.sh
+rm -rf /vol0/succinct-graph/etl_tmp.sh
