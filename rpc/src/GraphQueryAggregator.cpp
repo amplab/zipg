@@ -104,7 +104,7 @@ public:
     int32_t connect_to_aggregators() {
         aggregators_.clear();
 
-        for (int i = 0; i < hostnames_.size(); ++i) {
+        for (int i = 0; i < hostnames_.size(); ++i) { // FIXME: total_num_hosts_?
             if (i == local_host_id_) {
                 continue;
             }
