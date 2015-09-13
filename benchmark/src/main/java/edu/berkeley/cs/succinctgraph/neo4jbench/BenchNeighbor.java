@@ -158,7 +158,7 @@ public class BenchNeighbor {
                         tx = graphDb.beginTx();
                     }
                     queryIdx = rand.nextInt(warmupQueries.size());
-                    getNeighborsSorted(
+                    getNeighbors(
                         graphDb, modGet(warmupQueries, queryIdx));
                     ++i;
                 }
@@ -176,7 +176,7 @@ public class BenchNeighbor {
                         tx = graphDb.beginTx();
                     }
                     queryIdx = rand.nextInt(querySize);
-                    neighbors = getNeighborsSorted(
+                    neighbors = getNeighbors(
                         graphDb, modGet(queries, queryIdx));
                     edges += neighbors.size();
                     ++i;
@@ -189,7 +189,7 @@ public class BenchNeighbor {
                 // cooldown
                 long cooldownStart = System.nanoTime();
                 while (System.nanoTime() - cooldownStart < COOLDOWN_TIME) {
-                    getNeighborsSorted(graphDb, modGet(warmupQueries, i));
+                    getNeighbors(graphDb, modGet(warmupQueries, i));
                     ++i;
                 }
                 out.printf("%.1f %.1f\n", queryThput, edgesThput);
@@ -271,7 +271,7 @@ public class BenchNeighbor {
         return neighbors;
     }
 
-//    public static List<Long> getNeighborsSorted(GraphDatabaseService graphDb,
+//    public static List<Long> getNeighbors(GraphDatabaseService graphDb,
 //                                                long id) {
 //        Node n = graphDb.getNodeById(id);
 //        Iterable<Relationship> rels = n.getRelationships(Direction.OUTGOING);
