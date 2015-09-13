@@ -33,10 +33,15 @@ public:
       local_num_shards_(local_num_shards),
       local_host_id_(local_host_id),
       hostnames_(hostnames),
-      total_num_hosts_(hostnames.size())
+      total_num_hosts_(hostnames.size()),
+      initiated_(false)
     { }
 
     int32_t init() {
+        if (initiated_) {
+            LOG_E("Cluster already initiated\n");
+            return 0;
+        }
         connect_to_local_shards();
         if (connect_to_aggregators() != 0) {
             LOG_E("Connection to remote aggregators not successful!\n");
@@ -79,6 +84,7 @@ public:
             }
         }
         LOG_E("Cluster init() done\n");
+        initiated_ = true;
         return 0;
     }
 
@@ -654,6 +660,7 @@ private:
     // all aggregators in the cluster, hostnames used for opening sockets
     std::vector<std::string> hostnames_;
     const int total_num_hosts_;
+    bool initiated_;
 
     std::vector<GraphQueryServiceClient> local_shards_;
 
