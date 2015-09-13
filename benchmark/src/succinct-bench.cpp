@@ -8,6 +8,8 @@
 #include "utils.h"
 #include "GraphBenchmark.hpp"
 
+using boost::shared_ptr;
+
 void print_usage(char *exec) {
     fprintf(stderr, "Usage: %s [-t type] [-x warmup_n] [-y measure_n] [-w warmup_file] [-q query_file] [-a neighbor_warmup ] [-b neighbor_query] [-o output_file] [succinct_dir]\n", exec);
 }
@@ -168,15 +170,16 @@ int main(int argc, char **argv) {
     std::string edge_file = std::string(argv[optind + 1]);
 
     SuccinctGraph* graph = nullptr;
-    GraphBenchmark* bench = nullptr;
+    shared_ptr<GraphBenchmark> bench = nullptr;
 
     bool is_sharded = (optind + 2 < argc); // if there exists a last dummy arg
     if (!is_sharded) {
         graph = new SuccinctGraph("");
-        bench = new GraphBenchmark(graph, "");
+        bench = shared_ptr<GraphBenchmark>(new GraphBenchmark(graph, ""));
     } else {
         // sharded; connects to a master aggregator
-        bench = new GraphBenchmark(nullptr, master_hostname);
+        bench = shared_ptr<GraphBenchmark>(
+            new GraphBenchmark(nullptr, master_hostname));
     }
 
     if (type == "neighbor-latency") {
@@ -694,5 +697,11 @@ int main(int argc, char **argv) {
         LOG_E("-t bench type: '%s'\n", type.c_str());
         assert(false && "Unknown bench type (-t)");
     }
+
+    bench->cleanup();
+    if (!is_sharded && graph != nullptr) {
+        delete graph;
+    }
+
     return 0;
 }

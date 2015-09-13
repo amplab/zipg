@@ -308,8 +308,21 @@ public:
     }
 
     ~GraphBenchmark() {
-        aggregator_->shutdown();
-        transport_->close();
+        if (aggregator_ != nullptr) {
+            aggregator_->shutdown();
+        }
+        if (transport_ != nullptr && transport_->isOpen()) {
+            transport_->close();
+        }
+    }
+
+    void cleanup() {
+        if (aggregator_ != nullptr) {
+            aggregator_->shutdown();
+        }
+        if (transport_ != nullptr && transport_->isOpen()) {
+            transport_->close();
+        }
     }
 
     // BENCHMARKING NEIGHBOR QUERIES
