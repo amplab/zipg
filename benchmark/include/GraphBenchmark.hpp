@@ -211,6 +211,7 @@ public:
                 int32_t off,
                 int32_t len)
             {
+                COND_LOG_E("about to call aggregator's assoc_range()\n");
                 aggregator_->assoc_range(_return, src, atype, off, len);
             };
 
@@ -1634,6 +1635,7 @@ public:
 
         LOG_E("Measuring for %" PRIu64 " queries...\n", measure_n);
         for (uint64_t i = 0; i < measure_n; ++i) {
+            COND_LOG_E("query %lld\n", i);
             t0 = get_timestamp();
             assoc_range_f_(result,
                 mod_get(assoc_range_nodes, i),

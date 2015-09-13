@@ -476,6 +476,7 @@ public:
         int32_t off,
         int32_t len)
     {
+        COND_LOG_E("in aggregator assoc_range\n");
         int shard_id = src % total_num_shards_;
         int host_id = shard_id % total_num_hosts_;
         if (host_id == local_host_id_) {

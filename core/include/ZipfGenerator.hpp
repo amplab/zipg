@@ -23,6 +23,7 @@ private:
 
     // Generates the zipf probability distribution
     void gen_zipf() {
+        srand(static_cast<unsigned>(time(0)));
         double sum = 0.0;
         double c = 0.0;
         double expo = 1.0 - theta;
