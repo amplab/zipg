@@ -163,6 +163,7 @@ public class MixBench {
             System.err.printf("Benchmark throughput exception: %s\n", e);
             System.exit(1);
         } finally {
+            BenchUtils.printMemoryFootprint();
             System.out.println("Shutting down database ...");
             graphDb.shutdown();
         }
