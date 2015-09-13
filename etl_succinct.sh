@@ -35,13 +35,13 @@ for i in $(seq 0 1 $numShards); do
   
   # TODO: change
   targetFile="${assocShardDir}/orkut-40attr16each-npa128sa32isa64.assoc-part${p}of${numShards}"
+  encoded=$(echo -n "${targetFile}.succinct" | sed 's/\(.*\)assoc\(.*\)/\1edge_table\2/')
   rsync -avr --progress ${targetFile} root@${hostname}:${assocShardDir} &
 
   cat >/vol0/succinct-graph/etl_tmp.sh <<EOL
 #!/bin/bash
 set -e
 bash /vol0/succinct-graph/encoder.sh ${encodeType} ${targetFile}
-encoded=$(echo -n "${targetFile}.succinct" | sed 's/\(.*\)assoc\(.*\)/\1edge_table\2/')
 rsync -avr --progress ${encoded} root@${masterHostName}:/vol0/
 EOL
 
