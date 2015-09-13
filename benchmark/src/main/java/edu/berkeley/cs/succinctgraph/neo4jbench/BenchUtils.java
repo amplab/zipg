@@ -63,28 +63,29 @@ public class BenchUtils {
 
     /** Scans through all data including edge properties and node properties. */
     public static void fullWarmup(GraphDatabaseService graphDb) {
-        long start = System.nanoTime();
-        Iterable<Relationship> iter = GlobalGraphOperations.at(graphDb)
-            .getAllRelationships();
-        for (Relationship rel : iter) {
-            rel.getId();
-            rel.getType();
-            rel.getStartNode();
-            rel.getEndNode();
-            rel.getPropertyKeys();
-        }
-        ResourceIterable<Node> nodes = GlobalGraphOperations.at(graphDb)
-            .getAllNodes();
-        for (Node node : nodes) {
-            node.getId();
-            node.getRelationshipTypes();
-            node.getRelationships();
-            node.getPropertyKeys();
-        }
-        long end = System.nanoTime();
-        printMemoryFootprint();
-        System.out.println(
-            "Full warmup done in " + (end - start) / 1e6 + " millis");
+        System.out.println("fullWarmup() called but we decided to skip it!");
+//        long start = System.nanoTime();
+//        Iterable<Relationship> iter = GlobalGraphOperations.at(graphDb)
+//            .getAllRelationships();
+//        for (Relationship rel : iter) {
+//            rel.getId();
+//            rel.getType();
+//            rel.getStartNode();
+//            rel.getEndNode();
+//            rel.getPropertyKeys();
+//        }
+//        ResourceIterable<Node> nodes = GlobalGraphOperations.at(graphDb)
+//            .getAllNodes();
+//        for (Node node : nodes) {
+//            node.getId();
+//            node.getRelationshipTypes();
+//            node.getRelationships();
+//            node.getPropertyKeys();
+//        }
+//        long end = System.nanoTime();
+//        printMemoryFootprint();
+//        System.out.println(
+//            "Full warmup done in " + (end - start) / 1e6 + " millis");
     }
 
     static class TimestampedId implements Comparable<TimestampedId> {
