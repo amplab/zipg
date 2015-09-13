@@ -42,7 +42,8 @@ for i in $(seq 0 1 $numShards); do
 #!/bin/bash
 set -e
 bash /vol0/succinct-graph/encoder.sh ${encodeType} ${targetFile}
-rsync -avr --progress ${encoded} root@${masterHostName}:/vol0/
+rsync -e "ssh -o StrictHostKeyChecking=no" -avr --progress \
+  ${encoded} root@${masterHostName}:/vol0/
 EOL
 
   rsync /vol0/succinct-graph/etl_tmp.sh \
@@ -54,6 +55,4 @@ echo "Copied corresponding shard files from ${assocShardDir} to workers"
 #################### 
 ~/spark/sbin/slaves.sh \
   bash /vol0/succinct-graph/etl_tmp.sh
-~/spark/sbin/slaves.sh \
-  rm -rf /vol0/succinct-graph/etl_tmp.sh
 rm -rf /vol0/succinct-graph/etl_tmp.sh
