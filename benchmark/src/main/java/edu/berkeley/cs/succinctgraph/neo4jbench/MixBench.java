@@ -194,7 +194,7 @@ public class MixBench {
             switch (randQuery) {
                 case 0:
                     queryIdx = rand.nextInt(warmupNhbrSize);
-                    BenchNeighbor.getNeighborsSorted(graphDb,
+                    BenchNeighbor.getNeighbors(graphDb,
                         modGet(warmupNhbrs, queryIdx));
                     break;
                 case 1:
@@ -268,7 +268,7 @@ public class MixBench {
                         case 0:
                             // get_nhbrs(n)
                             queryIdx = rand.nextInt(nhbrSize);
-                            neighbors = BenchNeighbor.getNeighborsSorted(
+                            neighbors = BenchNeighbor.getNeighbors(
                                 graphDb, modGet(nhbrs, queryIdx));
                             edges += neighbors.size();
                             break;
@@ -390,7 +390,7 @@ public class MixBench {
                 randQuery = rand.nextInt(5);
                 switch (randQuery) {
                     case 0:
-                        BenchNeighbor.getNeighborsSorted(graphDb,
+                        BenchNeighbor.getNeighbors(graphDb,
                             modGet(warmupNhbrs, i));
                         break;
                     case 1:
@@ -436,7 +436,7 @@ public class MixBench {
                     case 0:
                         // get_nhbrs(n)
                         start = System.nanoTime();
-                        List<Long> nodes = BenchNeighbor.getNeighborsSorted(
+                        List<Long> nodes = BenchNeighbor.getNeighbors(
                             graphDb, modGet(nhbrs, i));
                         end = System.nanoTime();
                         nhbrOut.println(
