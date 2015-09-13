@@ -39,7 +39,7 @@ function start_all() {
 if [[ -n "$assocRange" ]]; then
   start_all
 
-  ${BIN_DIR}/create \
+  ${BIN_DIR}/../benchmark/bin/create \
     tao-assoc-range-queries \
     $(wc -l ${NODE_FILE} | cut -d' ' -f 1) \
     ${max_num_atype} \
@@ -53,7 +53,7 @@ fi
 
 if [[ -n "$objGet" ]]; then
 
-  ${BIN_DIR}/create \
+  ${BIN_DIR}/../benchmark/bin/create \
     tao-node-get-queries \
     $(wc -l ${NODE_FILE} | cut -d' ' -f 1) \
     ${warmup_objGet} \
@@ -66,7 +66,7 @@ fi
 if [[ -n "$assocGet" ]]; then
   start_all
 
-  ${BIN_DIR}/create \
+  ${BIN_DIR}/../benchmark/bin/create \
     tao-assoc-get-queries \
     $(wc -l ${NODE_FILE} | cut -d' ' -f 1) \
     ${max_num_atype} \
@@ -80,7 +80,7 @@ if [[ -n "$assocGet" ]]; then
 fi
 
 if [[ -n "$assocCount" ]]; then
-  ${BIN_DIR}/create \
+  ${BIN_DIR}/../benchmark/bin/create \
     tao-assoc-count-queries \
     $(wc -l ${NODE_FILE} | cut -d' ' -f 1) \
     ${max_num_atype} \
@@ -93,7 +93,7 @@ fi
 if [[ -n "$assocTimeRange" ]]; then
   start_all
 
-  ${BIN_DIR}/create \
+  ${BIN_DIR}/../benchmark/bin/create \
     tao-assoc-time-range-queries \
     $(wc -l ${NODE_FILE} | cut -d' ' -f 1) \
     ${max_num_atype} \
