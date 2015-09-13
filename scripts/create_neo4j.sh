@@ -12,11 +12,12 @@ source ${SCRIPT_DIR}/config.sh
 #DATASET="higgs-twitter-20attr35each"
 DATASET="higgs-twitter-40attr16each"
 
-NEO4J_DIR=/mnt2T/data/neo4j
+NEO4J_DIR=/mnt3/neo4j
 DATASET="liveJournal-40attr16each-minDeg30"
 DATASET="liveJournal-40attr16each-minDeg45"
 DATASET="liveJournal-40attr16each-minDeg60"
 DATASET="liveJournal-40attr16each-minDeg30WithTsAttr"
+DATASET="twitter2010-40attr16each"
 
 mkdir -p ${NEO4J_DIR}
 if [ -d ${NEO4J_DIR}/${DATASET} ]
@@ -42,8 +43,8 @@ echo \
     ":START_ID${NEO4J_DELIM}:END_ID${NEO4J_DELIM}:TYPE${NEO4J_DELIM}timestamp:LONG${NEO4J_DELIM}attr" \
     >${CSV_DIR}/edges-header.csv
 
-#${BIN_DIR}/create neo4j-node $NODE_FILE ${NODE_FILE}.neo4j &
-${BIN_DIR}/create neo4j-edge $ASSOC_FILE ${ASSOC_FILE}.neo4j &
+${BENCH_BIN_DIR}/create neo4j-node $NODE_FILE ${NODE_FILE}.neo4j &
+${BENCH_BIN_DIR}/create neo4j-edge $ASSOC_FILE ${ASSOC_FILE}.neo4j &
 wait
 
 #    EDGE_CSV=${CSV_DIR}/${num_nodes}_edge.csv
