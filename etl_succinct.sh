@@ -1,8 +1,8 @@
 #!/bin/bash
 set -e
 
-assocShardDir=... # absolute path
-numShards=...
+assocShardDir=/vol0/
+numShards=8
 encodeType=0 # 0 for edge table
 
 #### Steps
@@ -12,30 +12,40 @@ encodeType=0 # 0 for edge table
 #### 3. change the TODO below
 
 #################### 
-~/spark-ec2/copy-dir --delete ./
+~/spark/sbin/slaves.sh yum install -y make glibc-devel gcc
+~/spark-ec2/copy-dir ./
 
 #################### 
 bash ./coalesce_gen.sh
 echo "Coalescing generation done"
 
 #################### 
-for i in $(seq 1 1 $numShards); do
-  hostname=$(sed -n "${i}{p;q;}" ~/spark-ec2/slaves | tr '\n' ' ')
-  p=$(printf "%0*d" 2 $i) # TODO
+for i in $(seq 0 1 $numShards); do
+  if [ "$i" == "$numShards" ]; then
+    continue
+  fi
 
-  rsync -avr --progress \
-    ${assocShardDir}/dataset.assoc-part${p}of${numShards} \  # TODO: change
-    root@${hostname}:${assocShardDir} &
+  j=$((i + 1))
+  hostname=$(sed -n "${j}{p;q;}" ~/spark-ec2/slaves | sed 's/\n//g')
 
-  cat >/root/succinct-graph/etl_tmp.sh <<EOL
+  p=$(printf "%0*d" 1 $i) # TODO
+  
+  # TODO: change
+  targetFile="${assocShardDir}/orkut-40attr16each-npa128sa32isa64.assoc-part${p}of${numShards}"
+  rsync -avr --progress ${targetFile} root@${hostname}:${assocShardDir} &
+
+  cat >/vol0/succinct-graph/etl_tmp.sh <<EOL
 #!/bin/bash
 set -e
-bash /root/succinct-graph/encoder.sh ${encodeType} ${assocShardDir}/dataset.assoc-part${p}of${numShards}
+bash /vol0/succinct-graph/encoder.sh ${encodeType} ${targetFile}
 EOL
+
+  rsync /vol0/succinct-graph/etl_tmp.sh \
+    root@${hostname}:/vol0/succinct-graph/
 done
 wait
 echo "Copied corresponding shard files from ${assocShardDir} to workers"
 
 #################### 
 ~/spark/sbin/slaves.sh \
-  bash /root/succinct-graph/etl_tmp.sh
+  bash /vol0/succinct-graph/etl_tmp.sh

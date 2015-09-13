@@ -14,7 +14,7 @@ if [ "$shard" = "" ]; then
 fi
 
 function encode() {
-  ./core/bin/graph-encoder \
+  /vol0/succinct-graph/core/bin/graph-encoder \
     1 \
     $sa \
     $isa \
