@@ -8,6 +8,8 @@ mkdir -p ${QUERY_DIR}
 #neighbor=T
 neighborNode=T
 
+numNode=$(wc -l ${NODE_FILE} | cut -d' ' -f 1) # calculate once
+
 for num_nodes in ${nodes[@]}
 do
 
@@ -15,7 +17,7 @@ do
     echo creating neighbor queries for ${num_nodes} nodes, warmup ${warmup_neighbor}, measure ${measure_neighbor}
 
     ${BIN_DIR}/../benchmark/bin/create neighbor-queries \
-      $(wc -l ${NODE_FILE} | cut -d' ' -f 1) \
+      ${numNode} \
       ${warmup_neighbor} \
       ${measure_neighbor} \
       ${QUERY_DIR}/neighbor_warmup_${num_nodes}.txt \
@@ -42,7 +44,7 @@ do
    ${BIN_DIR}/../benchmark/bin/create neighbor-node-queries \
      ${NODE_FILE} \
      ${EDGE_FILE} \
-     $(wc -l ${NODE_FILE} | cut -d' ' -f 1) \
+     ${numNode} \
      ${attributes} \
      ${warmup_neighbor_node} \
      ${measure_neighbor_node} \
@@ -66,7 +68,7 @@ do
 
     # queries can have empty results
     ${BIN_DIR}/../benchmark/bin/create neighbor-atype-queries \
-      $(wc -l ${NODE_FILE} | cut -d' ' -f 1) \
+      ${numNode} \
       ${max_num_atype} \
       ${warmup_neighbor_atype} \
       ${measure_neighbor_atype} \

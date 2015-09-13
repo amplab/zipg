@@ -20,8 +20,9 @@ minDeg="-minDeg60"
 minDeg="-minDeg30WithTsAttr"
 EDGE_FILE="/mnt2T/data/liveJournal${minDeg}-npa${npa}sa${sa}isa${isa}.assoc"
 NODE_FILE="/mnt2T/data/liveJournal-40attr16each-tpch-npa${npa}sa${sa}isa${isa}.node"
-
 ASSOC_FILE=/mnt2T/data/liveJournal-minDeg30WithTsAttr.assoc
+
+numNode=$(wc -l ${NODE_FILE} | cut -d' ' -f 1) # calculate once
 
 function stop_all() {
   bash ${SCRIPT_DIR}/../sbin/stop-all.sh
@@ -41,7 +42,7 @@ if [[ -n "$assocRange" ]]; then
 
   ${BIN_DIR}/../benchmark/bin/create \
     tao-assoc-range-queries \
-    $(wc -l ${NODE_FILE} | cut -d' ' -f 1) \
+    ${numNode} \
     ${max_num_atype} \
     ${warmup_assocRange} \
     ${measure_assocRange} \
@@ -55,7 +56,7 @@ if [[ -n "$objGet" ]]; then
 
   ${BIN_DIR}/../benchmark/bin/create \
     tao-node-get-queries \
-    $(wc -l ${NODE_FILE} | cut -d' ' -f 1) \
+    ${numNode} \
     ${warmup_objGet} \
     ${measure_objGet} \
     ${QUERY_DIR}/objGet_warmup.txt \
@@ -68,7 +69,7 @@ if [[ -n "$assocGet" ]]; then
 
   ${BIN_DIR}/../benchmark/bin/create \
     tao-assoc-get-queries \
-    $(wc -l ${NODE_FILE} | cut -d' ' -f 1) \
+    ${numNode} \
     ${max_num_atype} \
     ${warmup_assocGet} \
     ${measure_assocGet} \
@@ -82,7 +83,7 @@ fi
 if [[ -n "$assocCount" ]]; then
   ${BIN_DIR}/../benchmark/bin/create \
     tao-assoc-count-queries \
-    $(wc -l ${NODE_FILE} | cut -d' ' -f 1) \
+    ${numNode} \
     ${max_num_atype} \
     ${warmup_assocCount} \
     ${measure_assocCount} \
@@ -95,7 +96,7 @@ if [[ -n "$assocTimeRange" ]]; then
 
   ${BIN_DIR}/../benchmark/bin/create \
     tao-assoc-time-range-queries \
-    $(wc -l ${NODE_FILE} | cut -d' ' -f 1) \
+    ${numNode} \
     ${max_num_atype} \
     ${warmup_assocTimeRange} \
     ${measure_assocTimeRange} \
