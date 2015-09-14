@@ -205,10 +205,12 @@ public class MixBench {
                         modGet(warmupNhbrNodeAttrs, queryIdx));
                     break;
                 case 2:
-                    queryIdx = rand.nextInt(warmupNodeSize);
-                    BenchNode.getNodes(graphDb, label,
-                        modGet(warmupNodeAttrIds1, queryIdx),
-                        modGet(warmupNodeAttrs1, queryIdx));
+                    queryIdx = rand.nextInt(warmupNhbrAtypSize);
+                    BenchNeighborAtype.getEdgeAttrs(graphDb,
+                        modGet(warmupNhbrAtypeIds, queryIdx),
+                        BenchNeighborAtype.atypeMap[modGet(
+                            warmupNhbrAtypeAtypes,
+                            queryIdx).intValue()]);
                     break;
                 case 3:
                     queryIdx = rand.nextInt(warmupNhbrAtypSize);
@@ -256,6 +258,7 @@ public class MixBench {
                 i = 0;
                 long edges = 0;
                 List<Long> neighbors;
+                List<String> edgeAttrs;
                 long start = System.nanoTime();
                 while (System.nanoTime() - start < MEASURE_TIME) {
                     if (i % 10000 == 0) {
@@ -284,11 +287,13 @@ public class MixBench {
                             break;
                         case 2:
                             // get_nodes(attr)
-                            queryIdx = rand.nextInt(nodeSize);
-                            BenchNode.getNodes(graphDb,
-                                label,
-                                modGet(nodeAttrIds1, queryIdx),
-                                modGet(nodeAttrs1, queryIdx));
+                            queryIdx = rand.nextInt(nhbrAtypeSize);
+                            edgeAttrs = BenchNeighborAtype.getEdgeAttrs(
+                                graphDb,
+                                modGet(nhbrAtypeIds, queryIdx),
+                                BenchNeighborAtype.atypeMap[modGet(
+                                    nhbrAtypeAtypes, queryIdx).intValue()]);
+                            edges += edgeAttrs.size();
                             break;
                         case 3:
                             // get_nhbrs(n, atype)
@@ -475,7 +480,7 @@ public class MixBench {
                             nodes.size() + "," + (end - start) / 1e3);
                         break;
                     case 4:
-                    // get_nodes(attr1, attr2)
+                        // get_nodes(attr1, attr2)
                         start = System.nanoTime();
                         nodeSet = BenchNode.getNodes(graphDb, label,
                             modGet(nodeAttrIds1, i),
