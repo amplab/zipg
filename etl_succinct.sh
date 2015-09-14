@@ -16,8 +16,8 @@ encodeType=0 # 0 for edge table
 ~/spark-ec2/copy-dir ./
 
 #################### 
-bash ./coalesce_gen.sh
-echo "Coalescing generation done"
+#bash ./coalesce_gen.sh
+#echo "Coalescing generation done"
 
 #################### 
 masterHostName=$(curl http://169.254.169.254/latest/meta-data/public-hostname)
@@ -34,6 +34,7 @@ for i in $(seq 0 1 $numShards); do
   p=$(printf "%0*d" 1 $i) # TODO
   
   # TODO: change
+  targetFile="${assocShardDir}/uk-2007-05-40attr16each-npa128sa32isa64.assoc-part${p}of${numShards}"
   targetFile="${assocShardDir}/orkut-40attr16each-npa128sa32isa64.assoc-part${p}of${numShards}"
   encoded=$(echo -n "${targetFile}.succinct" | sed 's/\(.*\)assoc\(.*\)/\1edge_table\2/')
   rsync -avr --progress ${targetFile} root@${hostname}:${assocShardDir} &
@@ -41,7 +42,7 @@ for i in $(seq 0 1 $numShards); do
   cat >/vol0/succinct-graph/etl_tmp.sh <<EOL
 #!/bin/bash
 set -e
-bash /vol0/succinct-graph/encoder.sh ${encodeType} ${targetFile}
+#bash /vol0/succinct-graph/encoder.sh ${encodeType} ${targetFile}
 rsync -e "ssh -o StrictHostKeyChecking=no" -avr --progress \
   ${encoded} root@${masterHostName}:/vol0/
 EOL
