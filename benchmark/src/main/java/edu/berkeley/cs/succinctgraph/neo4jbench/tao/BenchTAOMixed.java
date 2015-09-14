@@ -545,7 +545,11 @@ public class BenchTAOMixed {
                         tx.close();
                         tx = graphDb.beginTx();
                     }
-                    dispatchQuery(graphDb, TAOImpls.chooseQuery(rand), true);
+                    // dispatchQuery(graphDb, TAOImpls.chooseQuery(rand), true);
+                    dispatchMixQueryWarmup(graphDb, TAOImpls.chooseQuery(rand),
+                        rand, warmupAssocRangeSize, warmupAssocCountSize,
+                        warmupObjGetSize, warmupAssocGetSize,
+                        warmupAssocTimeRangeSize);
                     ++i;
                 }
 
@@ -559,8 +563,12 @@ public class BenchTAOMixed {
                         tx.close();
                         tx = graphDb.beginTx();
                     }
-                    edges += dispatchQuery(
-                        graphDb, TAOImpls.chooseQuery(rand), false);
+//                    edges += dispatchQuery(
+//                        graphDb, TAOImpls.chooseQuery(rand), false);
+                    edges += dispatchMixQuery(graphDb,
+                        TAOImpls.chooseQuery(rand), rand,
+                        assocRangeSize, assocCountSize, objGetSize,
+                        assocGetSize, assocTimeRangeSize);
                     ++i;
                 }
                 long end = System.nanoTime();
@@ -571,8 +579,12 @@ public class BenchTAOMixed {
                 // cooldown
                 long cooldownStart = System.nanoTime();
                 while (System.nanoTime() - cooldownStart < COOLDOWN_TIME) {
-                    dispatchQuery(
-                        graphDb, TAOImpls.chooseQuery(rand), false);
+                    dispatchMixQuery(graphDb,
+                        TAOImpls.chooseQuery(rand), rand,
+                        assocRangeSize, assocCountSize, objGetSize,
+                        assocGetSize, assocTimeRangeSize);
+//                    dispatchQuery(
+//                        graphDb, TAOImpls.chooseQuery(rand), false);
                     ++i;
                 }
                 out.printf("%.1f %.1f\n", queryThput, edgesThput);
