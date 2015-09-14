@@ -93,10 +93,15 @@ public class BenchTAOMixed {
         int numClients = Integer.parseInt(args[19]);
         boolean tuned = Boolean.valueOf(args[20]);
 
+        long numNodes = Long.parseLong(args[21]);
+        long numAtypes = Long.parseLong(args[22]);
+        long minTime = Long.parseLong(args[23]);
+        long maxTime = Long.parseLong((args[24]));
+
         String neo4jPageCacheMemory = GraphDatabaseSettings.pagecache_memory
             .getDefaultValue();
-        if (args.length > 21) {
-            neo4jPageCacheMemory = args[21];
+        if (args.length > 26) {
+            neo4jPageCacheMemory = args[25];
         }
 
         // assoc_range()
@@ -148,7 +153,8 @@ public class BenchTAOMixed {
                 assocRangeOut, assocCountOut, objGetOut,
                 assocGetOut, assocTimeRangeOut);
         } else if (type.equals("throughput")) {
-            throughput(tuned, dbPath, neo4jPageCacheMemory, numClients);
+            throughput(tuned, dbPath, neo4jPageCacheMemory, numClients,
+                numNodes, numAtypes, minTime, maxTime);
         } else {
             System.out.println("No type " + type + " is supported!");
         }
@@ -444,15 +450,79 @@ public class BenchTAOMixed {
         int assocGetSize = assocGetNodes.size();
         int assocTimeRangeSize = assocTimeRangeNodes.size();
 
-        public RunTAOMixThroughput(int clientId, GraphDatabaseService graphDb) {
+        final Random rand;
+        final long numNodes, numAtypes, minTime, maxTime;
+
+        public RunTAOMixThroughput(int clientId, GraphDatabaseService graphDb,
+            long numNodes, long numAtypes, long minTime, long maxTime) {
+
             this.clientId = clientId;
             this.graphDb = graphDb;
+            this.rand = new Random(1618 + clientId);
+            this.numNodes = numNodes;
+            this.numAtypes = numAtypes;
+            this.minTime = minTime;
+            this.maxTime = maxTime;
+        }
+
+        private int dispatchQuery(
+            GraphDatabaseService db, int randQuery, boolean warmup) {
+
+            int i;
+            switch (randQuery) {
+                case 0:
+                    // assoc_range
+                    return taoImpls.assocRange(db,
+                        rand.nextLong() % numNodes,
+                        rand.nextLong() % numAtypes,
+                        0,
+                        10000 // from LinkBench
+                    ).size();
+                case 1:
+                    // obj_get
+                    taoImpls.objGet(db, rand.nextLong() % numNodes);
+                    break;
+                case 2:
+                    // assoc_get
+                    // FIXME: not sure what to do with dstIdSet
+                    if (warmup) {
+                        i = rand.nextInt(warmupAssocGetSize);
+                        return taoImpls.assocGet(db,
+                            modGet(warmupAssocGetNodes, i),
+                            modGet(warmupAssocGetAtypes, i),
+                            modGet(warmupAssocGetDstIdSets, i),
+                            modGet(warmupAssocGetTimeLows, i),
+                            modGet(warmupAssocGetTimeHighs, i)).size();
+                    }
+                    i = rand.nextInt(assocGetSize);
+                    return taoImpls.assocGet(db,
+                        modGet(assocGetNodes, i),
+                        modGet(assocGetAtypes, i),
+                        modGet(assocGetDstIdSets, i),
+                        modGet(assocGetTimeLows, i),
+                        modGet(assocGetTimeHighs, i)).size();
+                case 3:
+                    // assoc_count
+                    taoImpls.assocCount(db,
+                        rand.nextLong() % numNodes,
+                        rand.nextLong() % numAtypes);
+                    break;
+                case 4:
+                    // assoc_time_range
+                    return taoImpls.assocTimeRange(db,
+                        rand.nextLong() % numNodes,
+                        rand.nextLong() % numAtypes,
+                        rand.nextLong() % minTime,
+                        rand.nextLong() % maxTime,
+                        10000 // from LinkBench
+                    ).size();
+            }
+            return 0;
         }
 
         public void run() {
             Transaction tx = graphDb.beginTx();
             PrintWriter out = null;
-            Random rand = new Random(1618 + clientId);
             try {
                 // true for append
                 out = new PrintWriter(new BufferedWriter(
@@ -467,15 +537,9 @@ public class BenchTAOMixed {
                         tx.close();
                         tx = graphDb.beginTx();
                     }
-                    dispatchMixQueryWarmup(graphDb, TAOImpls.chooseQuery(rand),
-                        rand,
-                        warmupAssocRangeSize, warmupAssocCountSize,
-                        warmupObjGetSize, warmupAssocGetSize,
-                        warmupAssocTimeRangeSize);
+                    dispatchQuery(graphDb, TAOImpls.chooseQuery(rand), true);
                     ++i;
                 }
-
-                rand.setSeed(1618 + clientId);
 
                 // measure
                 i = 0;
@@ -487,11 +551,8 @@ public class BenchTAOMixed {
                         tx.close();
                         tx = graphDb.beginTx();
                     }
-                    edges += dispatchMixQuery(graphDb,
-                        TAOImpls.chooseQuery(rand), rand,
-                        assocRangeSize, assocCountSize, objGetSize,
-                        assocGetSize, assocTimeRangeSize);
-
+                    edges += dispatchQuery(
+                        graphDb, TAOImpls.chooseQuery(rand), false);
                     ++i;
                 }
                 long end = System.nanoTime();
@@ -502,9 +563,8 @@ public class BenchTAOMixed {
                 // cooldown
                 long cooldownStart = System.nanoTime();
                 while (System.nanoTime() - cooldownStart < COOLDOWN_TIME) {
-                    dispatchMixQuery(graphDb, TAOImpls.chooseQuery(rand), rand,
-                        assocRangeSize, assocCountSize, objGetSize,
-                        assocGetSize, assocTimeRangeSize);
+                    dispatchQuery(
+                        graphDb, TAOImpls.chooseQuery(rand), false);
                     ++i;
                 }
                 out.printf("%.1f %.1f\n", queryThput, edgesThput);
@@ -524,7 +584,8 @@ public class BenchTAOMixed {
     }
 
     private static void throughput(boolean tuned, String dbPath,
-        String neo4jPageCacheMem, int numClients) {
+        String neo4jPageCacheMem, int numClients,
+        long numNodes, long numAtypes, long minTime, long maxTime) {
 
         GraphDatabaseService graphDb;
         if (tuned) {
@@ -555,7 +616,8 @@ public class BenchTAOMixed {
             List<Thread> clients = new ArrayList<>(numClients);
             for (int i = 0; i < numClients; ++i) {
                 clients.add(new Thread(
-                    new RunTAOMixThroughput(i, graphDb)));
+                    new RunTAOMixThroughput(i, graphDb,
+                        numNodes, numAtypes, minTime, maxTime)));
             }
             for (Thread thread : clients) {
                 thread.start();

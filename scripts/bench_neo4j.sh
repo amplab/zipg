@@ -23,21 +23,40 @@ DATASET=liveJournal-40attr16each${minDeg}
 DATASET=twitter2010-40attr16each
 
 NEO4J_DIR=/mnt2T/data/neo4j
+############# NOTE: beware of setting the parameters here
+numNodes=0
+numAtypes=0
+minTime=0
+maxTime=0
+
 if [[ "$DATASET" == "twitter2010-40attr16each"* ]]; then
   NEO4J_DIR=/mnt3/neo4j
   pushd ${QUERY_DIR} >/dev/null
   yes | cp -rf twitter2010-40attr16each-queries/*txt ./
   popd >/dev/null
+  numNodes=41652230
+  numAtypes=5
+  minTime=1439721981221
+  maxTime=1441905687237
 elif [[ "$DATASET" == "liveJournal-40attr16each"* ]]; then
   pushd ${QUERY_DIR} >/dev/null
   yes | cp -rf liveJournal-40attr16each${minDeg}-queries/*txt ./
   popd >/dev/null
+  numNodes=4847571
+  numAtypes=6 # due to off-by-one error
+  minTime=1439721981221 # from twitter-2010
+  maxTime=1441905687237
 elif [[ "$DATASET" == "higgs-twitter-20attr35each" ]]; then
   pushd ${QUERY_DIR} >/dev/null
   yes | cp -rf 20attr35each-queries/*txt ./
   popd >/dev/null
 else
   echo implement query copying for me!
+  exit 1
+fi
+
+if [ "$numNodes" == "0" ]; then
+  echo "Have you set the parameters for this dataset?"
   exit 1
 fi
 
@@ -486,6 +505,7 @@ for JVM_HEAP in 6900; do
          ${measure_taoMix} \
          ${thputThreads} \
          ${tuned} \
+         ${numNodes} ${numAtypes} ${minTime} ${maxTime} \
          ${pageCacheIgnoreIndexes}
 
         o=neo4j_throughput_tao_mix.txt
