@@ -452,7 +452,10 @@ public:
 
         size_t warmup_size = warmup_neighbor_indices.size();
         size_t measure_size = neighbor_indices.size();
-        std::srand(1618 + thread_data->client_id);
+
+        thread_local std::mt19937 gen(1618 + thread_data->client_id);
+        std::uniform_int_distribution<int> warmup_dis(0, warmup_size - 1);
+        std::uniform_int_distribution<int> measure_dis(0, measure_size - 1);
 
         try {
             std::vector<int64_t> result;
@@ -463,7 +466,7 @@ public:
             while (get_timestamp() - start < WARMUP_MICROSECS) {
                 thread_data->client->get_neighbors(
                     result,
-                    mod_get(warmup_neighbor_indices, rand() % warmup_size));
+                    mod_get(warmup_neighbor_indices, warmup_dis(gen)));
                 ++i;
             }
             LOG_E("Warmup done: served %" PRId64 " queries\n", i);
@@ -474,7 +477,7 @@ public:
             start = get_timestamp();
             while (get_timestamp() - start < MEASURE_MICROSECS) {
                 thread_data->client->get_neighbors(
-                    result, mod_get(neighbor_indices, rand() % measure_size));
+                    result, mod_get(neighbor_indices, measure_dis(gen)));
                 edges += result.size();
                 ++i;
             }
@@ -511,7 +514,10 @@ public:
 
         size_t warmup_size = warmup_nhbrAtype_indices.size();
         size_t measure_size = nhbrAtype_indices.size();
-        std::srand(1618 + thread_data->client_id);
+
+        thread_local std::mt19937 gen(1618 + thread_data->client_id);
+        std::uniform_int_distribution<int> warmup_dis(0, warmup_size - 1);
+        std::uniform_int_distribution<int> measure_dis(0, measure_size - 1);
 
         try {
             std::vector<int64_t> result;
@@ -521,7 +527,7 @@ public:
             int query_idx;
             time_t start = get_timestamp();
             while (get_timestamp() - start < WARMUP_MICROSECS) {
-                query_idx = rand() % warmup_size;
+                query_idx = warmup_dis(gen);
                 thread_data->client->get_neighbors_atype(
                     result,
                     mod_get(warmup_nhbrAtype_indices, query_idx),
@@ -535,7 +541,7 @@ public:
             int64_t edges = 0;
             start = get_timestamp();
             while (get_timestamp() - start < MEASURE_MICROSECS) {
-                query_idx = rand() % measure_size;
+                query_idx = measure_dis(gen);
                 thread_data->client->get_neighbors_atype(
                     result,
                     mod_get(nhbrAtype_indices, query_idx),
@@ -578,7 +584,10 @@ public:
 
         size_t warmup_size = warmup_nhbrNode_indices.size();
         size_t measure_size = nhbrNode_indices.size();
-        std::srand(1618 + thread_data->client_id);
+
+        thread_local std::mt19937 gen(1618 + thread_data->client_id);
+        std::uniform_int_distribution<int> warmup_dis(0, warmup_size - 1);
+        std::uniform_int_distribution<int> measure_dis(0, measure_size - 1);
 
         try {
             std::vector<int64_t> result;
@@ -588,7 +597,7 @@ public:
             int query_idx;
             time_t start = get_timestamp();
             while (get_timestamp() - start < WARMUP_MICROSECS) {
-                query_idx = rand() % warmup_size;
+                query_idx = warmup_dis(gen);
                 thread_data->client->get_neighbors_attr(
                     result,
                     mod_get(warmup_nhbrNode_indices, query_idx),
@@ -603,7 +612,7 @@ public:
             int64_t edges = 0;
             start = get_timestamp();
             while (get_timestamp() - start < MEASURE_MICROSECS) {
-                query_idx = rand() % measure_size;
+                query_idx = measure_dis(gen);
                 thread_data->client->get_neighbors_attr(
                     result,
                     mod_get(nhbrNode_indices, query_idx),
@@ -648,7 +657,10 @@ public:
 
         size_t warmup_size = warmup_node_attributes.size();
         size_t measure_size = node_attributes.size();
-        std::srand(1618 + thread_data->client_id);
+
+        thread_local std::mt19937 gen(1618 + thread_data->client_id);
+        std::uniform_int_distribution<int> warmup_dis(0, warmup_size - 1);
+        std::uniform_int_distribution<int> measure_dis(0, measure_size - 1);
 
         try {
             std::set<int64_t> result;
@@ -658,7 +670,7 @@ public:
             int query_idx;
             time_t start = get_timestamp();
             while (get_timestamp() - start < WARMUP_MICROSECS) {
-                query_idx = rand() % warmup_size;
+                query_idx = warmup_dis(gen);
                 thread_data->client->get_nodes(
                     result, mod_get(warmup_node_attributes, query_idx),
                     mod_get(warmup_node_queries, query_idx));
@@ -671,7 +683,7 @@ public:
             int64_t edges = 0;
             start = get_timestamp();
             while (get_timestamp() - start < MEASURE_MICROSECS) {
-                query_idx = rand() % measure_size;
+                query_idx = measure_dis(gen);
                 thread_data->client->get_nodes(
                     result, mod_get(node_attributes, query_idx),
                     mod_get(node_queries, query_idx));
@@ -712,7 +724,10 @@ public:
 
         size_t warmup_size = warmup_node_attributes.size();
         size_t measure_size = node_attributes.size();
-        std::srand(1618 + thread_data->client_id);
+
+        thread_local std::mt19937 gen(1618 + thread_data->client_id);
+        std::uniform_int_distribution<int> warmup_dis(0, warmup_size - 1);
+        std::uniform_int_distribution<int> measure_dis(0, measure_size - 1);
 
         try {
             std::set<int64_t> result;
@@ -722,7 +737,7 @@ public:
             int query_idx;
             time_t start = get_timestamp();
             while (get_timestamp() - start < WARMUP_MICROSECS) {
-                query_idx = rand() % warmup_size;
+                query_idx = warmup_dis(gen);
                 thread_data->client->get_nodes2(
                     result,
                     mod_get(warmup_node_attributes, query_idx),
@@ -738,7 +753,7 @@ public:
             int64_t edges = 0;
             start = get_timestamp();
             while (get_timestamp() - start < MEASURE_MICROSECS) {
-                query_idx = rand() % measure_size;
+                query_idx = measure_dis(gen);
                 thread_data->client->get_nodes2(
                     result,
                     mod_get(node_attributes, query_idx),
@@ -783,8 +798,6 @@ public:
         double edges_thput = 0;
         LOG_E("About to start querying on this thread...\n");
 
-        std::srand(1618 + thread_data->client_id);
-
         size_t warmup_nhbr_size = warmup_neighbor_indices.size();
         size_t warmup_nhbr_node_size = warmup_nhbrNode_indices.size();
         size_t warmup_node_size = warmup_node_attributes.size();
@@ -793,6 +806,21 @@ public:
         size_t nhbr_node_size = nhbrNode_indices.size();
         size_t node_size = node_attributes.size();
         size_t nhbr_atype_size = nhbrAtype_indices.size();
+
+        thread_local std::mt19937 gen(1618 + thread_data->client_id);
+        std::uniform_int_distribution<int> warmup_nhbr_dis(
+            0, warmup_nhbr_size - 1);
+        std::uniform_int_distribution<int> warmup_nhbr_node_dis(
+            0, warmup_nhbr_node_size);
+        std::uniform_int_distribution<int> warmup_node_dis(
+            0, warmup_node_size);
+        std::uniform_int_distribution<int> warmup_nhbr_atype_dis(
+            0, warmup_nhbr_atype_size);
+        std::uniform_int_distribution<int> nhbr_dis(0, nhbr_size - 1);
+        std::uniform_int_distribution<int> nhbr_node_dis(0, nhbr_node_size);
+        std::uniform_int_distribution<int> node_dis(0, node_size);
+        std::uniform_int_distribution<int> nhbr_atype_dis(0, nhbr_atype_size);
+        std::uniform_int_distribution<int> query_dis(0, 4);
 
         try {
             std::vector<int64_t> result;
@@ -803,34 +831,33 @@ public:
             int query_idx, rand_query;
             time_t start = get_timestamp();
             while (get_timestamp() - start < WARMUP_MICROSECS) {
-                rand_query = rand() % 5;
+                rand_query = query_dis(gen);
                 switch (rand_query) {
                 case 0:
-                    query_idx = rand() % warmup_nhbr_size;
                     thread_data->client->get_neighbors(result,
-                        mod_get(warmup_neighbor_indices, query_idx));
+                        mod_get(warmup_neighbor_indices, warmup_nhbr_dis(gen)));
                     break;
                 case 1:
-                    query_idx = rand() % warmup_nhbr_node_size;
+                    query_idx = warmup_nhbr_node_dis(gen);
                     thread_data->client->get_neighbors_attr(result,
                         mod_get(warmup_nhbrNode_indices, query_idx),
                         mod_get(warmup_nhbrNode_attr_ids, query_idx),
                         mod_get(warmup_nhbrNode_attrs, query_idx));
                     break;
                 case 2:
-                    query_idx = rand() % warmup_node_size;
+                    query_idx = warmup_node_dis(gen);
                     thread_data->client->get_nodes(result_set,
                         mod_get(warmup_node_attributes, query_idx),
                         mod_get(warmup_node_queries, query_idx));
                     break;
                 case 3:
-                    query_idx = rand() % warmup_nhbr_atype_size;
+                    query_idx = warmup_nhbr_atype_dis(gen);
                     thread_data->client->get_neighbors_atype(result,
                         mod_get(warmup_nhbrAtype_indices, query_idx),
                         mod_get(warmup_atypes, query_idx));
                     break;
                 case 4:
-                    query_idx = rand() % warmup_node_size;
+                    query_idx = warmup_node_dis(gen);
                     thread_data->client->get_nodes2(result_set,
                         mod_get(warmup_node_attributes, query_idx),
                         mod_get(warmup_node_queries, query_idx),
@@ -851,34 +878,34 @@ public:
             while (get_timestamp() - start < MEASURE_MICROSECS) {
 #ifndef RUN_MIX_THPUT_BODY
 #define RUN_MIX_THPUT_BODY
-                rand_query = rand() % 5; \
+                rand_query = query_dis(gen); \
                 switch (rand_query) { \
                 case 0: \
-                    query_idx = rand() % nhbr_size; \
+                    query_idx = nhbr_dis(gen); \
                     thread_data->client->get_neighbors(result, \
                         mod_get(neighbor_indices, query_idx)); \
                     break; \
                 case 1:                                     \
-                    query_idx = rand() % nhbr_node_size; \
+                    query_idx = nhbr_node_dis(gen); \
                     thread_data->client->get_neighbors_attr(result, \
                         mod_get(nhbrNode_indices, query_idx), \
                         mod_get(nhbrNode_attr_ids, query_idx), \
                         mod_get(nhbrNode_attrs, query_idx)); \
                     break; \
                 case 2:                                             \
-                    query_idx = rand() % node_size; \
+                    query_idx = node_dis(gen); \
                     thread_data->client->get_nodes(result_set, \
                         mod_get(node_attributes, query_idx), \
                         mod_get(node_queries, query_idx)); \
                     break; \
                 case 3:                               \
-                    query_idx = rand() % nhbr_atype_size; \
+                    query_idx = nhbr_atype_dis(gen); \
                     thread_data->client->get_neighbors_atype(result, \
                         mod_get(nhbrAtype_indices, query_idx), \
                         mod_get(atypes, query_idx)); \
                     break; \
                 case 4:                                  \
-                    query_idx = rand() % node_size; \
+                    query_idx = node_dis(gen); \
                     thread_data->client->get_nodes2(result_set, \
                         mod_get(node_attributes, query_idx), \
                         mod_get(node_queries, query_idx), \
@@ -934,21 +961,33 @@ public:
         double edges_thput = 0;
         LOG_E("About to start querying on this thread...\n");
 
-        std::srand(1618 + thread_data->client_id);
-        std::mt19937 rng(1618 + thread_data->client_id);
-        std::uniform_int_distribution<int> dist_query(0, 4);
         int query, query_idx;
 
-        size_t warmup_assoc_range_size = warmup_assoc_range_nodes.size();
-        size_t warmup_obj_get_size = warmup_obj_get_nodes.size();
-        size_t warmup_assoc_count_size = warmup_assoc_count_nodes.size();
-        size_t warmup_assoc_time_range_size = warmup_assoc_time_range_nodes.size();
-        size_t warmup_assoc_get_size = warmup_assoc_get_nodes.size();
-        size_t assoc_range_size = assoc_range_nodes.size();
-        size_t obj_get_size = obj_get_nodes.size();
-        size_t assoc_count_size = assoc_count_nodes.size();
-        size_t assoc_time_range_size = assoc_time_range_nodes.size();
-        size_t assoc_get_size = assoc_get_nodes.size();
+        thread_local std::mt19937 gen(1618 + thread_data->client_id);
+        std::uniform_int_distribution<int> dist_query(0, 4);
+
+        std::uniform_int_distribution<int> warmup_assoc_range_size(
+			0, warmup_assoc_range_nodes.size() - 1);
+        std::uniform_int_distribution<int> warmup_obj_get_size(
+			0, warmup_obj_get_nodes.size() - 1);
+        std::uniform_int_distribution<int> warmup_assoc_count_size(
+			0, warmup_assoc_count_nodes.size() - 1);
+        std::uniform_int_distribution<int> warmup_assoc_time_range_size(
+			0, warmup_assoc_time_range_nodes.size() - 1);
+        std::uniform_int_distribution<int> warmup_assoc_get_size(
+			0, warmup_assoc_get_nodes.size() - 1);
+        std::uniform_int_distribution<int> assoc_range_size(
+			0, assoc_range_nodes.size() - 1);
+        std::uniform_int_distribution<int> obj_get_size(
+			0, obj_get_nodes.size() - 1);
+        std::uniform_int_distribution<int> assoc_count_size(
+			0, assoc_count_nodes.size() - 1);
+        std::uniform_int_distribution<int> assoc_time_range_size(
+			0, assoc_time_range_nodes.size() - 1);
+        std::uniform_int_distribution<int> assoc_get_size(
+			0, assoc_get_nodes.size() - 1);
+
+        std::uniform_real_distribution<double> query_dis(0, 1);
 
         std::vector<ThriftAssoc> result;
         std::vector<std::string> attrs;
@@ -958,10 +997,10 @@ public:
             // Warmup phase
             time_t start = get_timestamp();
             while (get_timestamp() - start < WARMUP_MICROSECS) {
-                query = choose_query((double) rand() / RAND_MAX);
+                query = choose_query(query_dis(gen));
                 switch (query) {
                 case 0:
-                    query_idx = std::rand() % warmup_assoc_range_size;
+                    query_idx = warmup_assoc_range_size(gen);
                     thread_data->client->assoc_range(result,
                         this->warmup_assoc_range_nodes.at(query_idx),
                         this->warmup_assoc_range_atypes.at(query_idx),
@@ -969,12 +1008,12 @@ public:
                         this->warmup_assoc_range_lens.at(query_idx));
                     break;
                 case 1:
-                    query_idx = std::rand() % warmup_obj_get_size;
+                    query_idx = warmup_obj_get_size(gen);
                     thread_data->client->obj_get(attrs,
                         this->warmup_obj_get_nodes.at(query_idx));
                     break;
                 case 2:
-                    query_idx = std::rand() % warmup_assoc_get_size;
+                    query_idx = warmup_assoc_get_size(gen);
                     thread_data->client->assoc_get(result,
                         this->warmup_assoc_get_nodes.at(query_idx),
                         this->warmup_assoc_get_atypes.at(query_idx),
@@ -983,13 +1022,13 @@ public:
                         this->warmup_assoc_get_highs.at(query_idx));
                     break;
                 case 3:
-                    query_idx = std::rand() % warmup_assoc_count_size;
+                    query_idx = warmup_assoc_count_size(gen);
                     thread_data->client->assoc_count(
                         this->warmup_assoc_count_nodes.at(query_idx),
                         this->warmup_assoc_count_atypes.at(query_idx));
                     break;
                 case 4:
-                    query_idx = std::rand() % warmup_assoc_time_range_size;
+                    query_idx = warmup_assoc_time_range_size(gen);
                     thread_data->client->assoc_time_range(result,
                         this->warmup_assoc_time_range_nodes.at(query_idx),
                         this->warmup_assoc_time_range_atypes.at(query_idx),
@@ -1011,10 +1050,10 @@ public:
             while (get_timestamp() - start < MEASURE_MICROSECS) {
 #ifndef RUN_TAO_MIX_THPUT_BODY
 #define RUN_TAO_MIX_THPUT_BODY
-                query = choose_query((double) rand() / RAND_MAX); \
+                query = choose_query(query_dis(gen)); \
                 switch (query) { \
                 case 0: \
-                  query_idx = std::rand() % assoc_range_size; \
+                  query_idx = assoc_range_size(gen); \
                   thread_data->client->assoc_range(result, \
                       this->assoc_range_nodes.at(query_idx), \
                       this->assoc_range_atypes.at(query_idx), \
@@ -1022,12 +1061,12 @@ public:
                       this->assoc_range_lens.at(query_idx)); \
                   break; \
                 case 1: \
-                  query_idx = std::rand() % obj_get_size; \
+                  query_idx = obj_get_size(gen); \
                   thread_data->client->obj_get(attrs, \
                       this->obj_get_nodes.at(query_idx)); \
                   break; \
                 case 2: \
-                  query_idx = std::rand() % assoc_get_size; \
+                  query_idx = assoc_get_size(gen); \
                   thread_data->client->assoc_get(result, \
                       this->assoc_get_nodes.at(query_idx), \
                       this->assoc_get_atypes.at(query_idx), \
@@ -1036,13 +1075,13 @@ public:
                       this->assoc_get_highs.at(query_idx)); \
                   break; \
                 case 3: \
-                  query_idx = std::rand() % assoc_count_size; \
+                  query_idx = assoc_count_size(gen); \
                   thread_data->client->assoc_count( \
                       this->assoc_count_nodes.at(query_idx), \
                       this->assoc_count_atypes.at(query_idx)); \
                   break; \
                 case 4: \
-                  query_idx = std::rand() % assoc_time_range_size; \
+                  query_idx = assoc_time_range_size(gen); \
                   thread_data->client->assoc_time_range(result, \
                       this->assoc_time_range_nodes.at(query_idx), \
                       this->assoc_time_range_atypes.at(query_idx), \
@@ -1280,7 +1319,7 @@ public:
         read_assoc_time_range_queries(
             warmup_assoc_time_range_file, assoc_time_range_file);
 
-        std::mt19937 rng(1618);
+        thread_local std::mt19937 rng(1618);
         std::uniform_int_distribution<int> uni(0, 4);
 
         std::vector<ThriftAssoc> result;
@@ -1448,7 +1487,7 @@ public:
         read_neighbor_node_queries(warmup_nhbr_node_file, nhbr_node_file);
         read_node_queries(warmup_node_query_file, node_query_file);
 
-        std::mt19937 rng(1618);
+        thread_local std::mt19937 rng(1618);
         std::uniform_int_distribution<int> uni(0, 4);
 
         std::vector<int64_t> result;
