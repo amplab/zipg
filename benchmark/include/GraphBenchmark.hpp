@@ -32,9 +32,9 @@ private:
     constexpr static double ASSOC_TIME_RANGE_PERC = 0.028;
 
     // Timings for throughput benchmarks.
-    constexpr static int64_t WARMUP_MICROSECS = 60 * 1000 * 1000; // 1 min
-    constexpr static int64_t MEASURE_MICROSECS = 120 * 1000 * 1000; // 2 min
-    constexpr static int64_t COOLDOWN_MICROSECS = 5 * 1000 * 1000; // 5 sec
+    constexpr static int64_t WARMUP_MICROSECS = 180 * 1000 * 1000;
+    constexpr static int64_t MEASURE_MICROSECS = 900 * 1000 * 1000;
+    constexpr static int64_t COOLDOWN_MICROSECS = 30 * 1000 * 1000;
 
     typedef enum {
         NHBR = 0,
