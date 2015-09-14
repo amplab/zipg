@@ -36,6 +36,8 @@ elif [ "$encodeType" == "1" ]; then
   ./benchmark/bin/create create-nodeTable \
     ${attr_file} ${node_out_file} ${num_nodes} ${num_node_attr} \
     ${zipf_corpus_size} ${node_attr_size_each}
+  ./core/bin/graph-partitioner \
+    -n ${numShards} -t 1 ${node_out_file} DUMMY
   echo "Node table creation done"
 else
   echo "Unknown encodeType: ${encodeType}, skipping"
