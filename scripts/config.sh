@@ -81,60 +81,61 @@ npa_sampling_rate=256
 JVM_HEAP=16g
 
 warmup_neighbor=0
-warmup_neighbor=200000
+warmup_neighbor=1000000
 measure_neighbor=200
-measure_neighbor=400000
-neo4j_warmup_neighbor=100000 # 5k is not sufficient
-neo4j_measure_neighbor=200000
+measure_neighbor=6000000
+neo4j_warmup_neighbor=1000000
+neo4j_measure_neighbor=6000000
 
 warmup_node=0
-warmup_node=200000
+warmup_node=1000000
 measure_node=2000
-measure_node=400000
-neo4j_warmup_node=50000 # 5k is not sufficient
-neo4j_measure_node=100000
+measure_node=6000000
+neo4j_warmup_node=1000000
+neo4j_measure_node=6000000
 
 warmup_neighbor_node=100
-warmup_neighbor_node=200000
+warmup_neighbor_node=1000000
 measure_neighbor_node=2000
-measure_neighbor_node=400000
-neo4j_warmup_neighbor_node=100000
-neo4j_measure_neighbor_node=200000
+measure_neighbor_node=6000000
+neo4j_warmup_neighbor_node=1000000
+neo4j_measure_neighbor_node=6000000
 
+# * 2 normal isolated, due to reuse w/ getEdgeAttrs
 warmup_neighbor_atype=0
-warmup_neighbor_atype=200000
+warmup_neighbor_atype=2000000
 measure_neighbor_atype=2000
-measure_neighbor_atype=400000
-neo4j_warmup_neighbor_atype=100000
-neo4j_measure_neighbor_atype=200000
+measure_neighbor_atype=12000000
+neo4j_warmup_neighbor_atype=2000000
+neo4j_measure_neighbor_atype=12000000
 
 warmup_edgeAttrs=1000000
 measure_edgeAttrs=6000000
 
-warmup_mix=400000
-measure_mix=800000
-neo4j_warmup_mix=100000
-neo4j_measure_mix=400000
+warmup_mix=4000000
+measure_mix=20000000
+neo4j_warmup_mix=4000000
+neo4j_measure_mix=20000000
 
 ## TAO queries
 warmup_assocRange=0
-warmup_assocRange=200000
+warmup_assocRange=2000000
 measure_assocRange=5
-measure_assocRange=400000
+measure_assocRange=12000000
 
-warmup_objGet=200000
-measure_objGet=400000
+warmup_objGet=2000000
+measure_objGet=12000000
 
-warmup_assocGet=200000
-measure_assocGet=400000
+warmup_assocGet=2000000
+measure_assocGet=12000000
 
 warmup_assocCount=0
-warmup_assocCount=200000
+warmup_assocCount=2000000
 measure_assocCount=5
-measure_assocCount=400000
+measure_assocCount=12000000
 
-warmup_assocTimeRange=200000
-measure_assocTimeRange=400000
+warmup_assocTimeRange=2000000
+measure_assocTimeRange=12000000
 
-warmup_taoMix=400000
-measure_taoMix=800000
+warmup_taoMix=6000000
+measure_taoMix=30000000
