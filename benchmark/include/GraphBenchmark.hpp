@@ -912,6 +912,7 @@ public:
 
         try {
             std::vector<int64_t> result;
+            std::vector<std::string> attrs;
             std::set<int64_t> result_set;
 
             // Warmup phase
@@ -933,10 +934,10 @@ public:
                         mod_get(warmup_nhbrNode_attrs, query_idx));
                     break;
                 case 2:
-                    query_idx = warmup_node_dis(gen);
-                    thread_data->client->get_nodes(result_set,
-                        mod_get(warmup_node_attributes, query_idx),
-                        mod_get(warmup_node_queries, query_idx));
+                    query_idx = warmup_nhbr_atype_dis(gen);
+                    thread_data->client->get_edge_attrs(attrs,
+                        mod_get(warmup_nhbrAtype_indices, query_idx),
+                        mod_get(warmup_atypes, query_idx));
                     break;
                 case 3:
                     query_idx = warmup_nhbr_atype_dis(gen);
@@ -981,10 +982,10 @@ public:
                         mod_get(nhbrNode_attrs, query_idx)); \
                     break; \
                 case 2:                                             \
-                    query_idx = node_dis(gen); \
-                    thread_data->client->get_nodes(result_set, \
-                        mod_get(node_attributes, query_idx), \
-                        mod_get(node_queries, query_idx)); \
+                    query_idx = nhbr_atype_dis(gen); \
+                    thread_data->client->get_edge_attrs(attrs, \
+                        mod_get(nhbrAtype_indices, query_idx), \
+                        mod_get(atypes, query_idx)); \
                     break; \
                 case 3:                               \
                     query_idx = nhbr_atype_dis(gen); \
