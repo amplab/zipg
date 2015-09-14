@@ -93,8 +93,10 @@ public class BenchTAOMixed {
         int numClients = Integer.parseInt(args[19]);
         boolean tuned = Boolean.valueOf(args[20]);
 
-        long numNodes = Long.parseLong(args[21]);
-        long numAtypes = Long.parseLong(args[22]);
+        // Use ints for first two, to avoid expensive long nonnegative mod
+        // All practical graphs have less than 2^31 nodes, anyway
+        int numNodes = Integer.parseInt(args[21]);
+        int numAtypes = Integer.parseInt(args[22]);
         long minTime = Long.parseLong(args[23]);
         long maxTime = Long.parseLong((args[24]));
 
@@ -451,10 +453,11 @@ public class BenchTAOMixed {
         int assocTimeRangeSize = assocTimeRangeNodes.size();
 
         final Random rand;
-        final long numNodes, numAtypes, minTime, maxTime;
+        final int numNodes, numAtypes;
+        final long minTime, maxTime;
 
         public RunTAOMixThroughput(int clientId, GraphDatabaseService graphDb,
-            long numNodes, long numAtypes, long minTime, long maxTime) {
+            int numNodes, int numAtypes, long minTime, long maxTime) {
 
             this.clientId = clientId;
             this.graphDb = graphDb;
@@ -465,6 +468,11 @@ public class BenchTAOMixed {
             this.maxTime = maxTime;
         }
 
+        private long nonNegativeMod(long x, long mod) {
+            long res = x % mod;
+            return res + ((res < 0) ? mod : 0);
+        }
+
         private int dispatchQuery(
             GraphDatabaseService db, int randQuery, boolean warmup) {
 
@@ -473,14 +481,14 @@ public class BenchTAOMixed {
                 case 0:
                     // assoc_range
                     return taoImpls.assocRange(db,
-                        rand.nextLong() % numNodes,
-                        rand.nextLong() % numAtypes,
+                        rand.nextInt(numNodes),
+                        rand.nextInt(numAtypes),
                         0,
                         10000 // from LinkBench
                     ).size();
                 case 1:
                     // obj_get
-                    taoImpls.objGet(db, rand.nextLong() % numNodes);
+                    taoImpls.objGet(db, rand.nextInt(numNodes));
                     break;
                 case 2:
                     // assoc_get
@@ -504,16 +512,16 @@ public class BenchTAOMixed {
                 case 3:
                     // assoc_count
                     taoImpls.assocCount(db,
-                        rand.nextLong() % numNodes,
-                        rand.nextLong() % numAtypes);
+                        rand.nextInt(numNodes),
+                        rand.nextInt(numAtypes));
                     break;
                 case 4:
                     // assoc_time_range
                     return taoImpls.assocTimeRange(db,
-                        rand.nextLong() % numNodes,
-                        rand.nextLong() % numAtypes,
-                        rand.nextLong() % minTime,
-                        rand.nextLong() % maxTime,
+                        rand.nextInt(numNodes),
+                        rand.nextInt(numAtypes),
+                        nonNegativeMod(rand.nextLong(), minTime),
+                        nonNegativeMod(rand.nextLong(), maxTime),
                         10000 // from LinkBench
                     ).size();
             }
@@ -585,7 +593,7 @@ public class BenchTAOMixed {
 
     private static void throughput(boolean tuned, String dbPath,
         String neo4jPageCacheMem, int numClients,
-        long numNodes, long numAtypes, long minTime, long maxTime) {
+        int numNodes, int numAtypes, long minTime, long maxTime) {
 
         GraphDatabaseService graphDb;
         if (tuned) {
