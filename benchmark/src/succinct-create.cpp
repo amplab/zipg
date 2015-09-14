@@ -376,17 +376,12 @@ void generate_neighbor_node_queries(
     output(query_file, query_size);
 }
 
-// Loads the graph first. Samples (nodeId, atype) uniformly at random.
-// With this tuple generated, extracts this real assoc list in the graph, then
-// generates `off` unif. at random.  Once `off` is fixed, `len` is generated
-// unif. at random from [1, actualLengthOfAssocList - off].
+// Samples (nodeId, atype) uniformly at random.  Fix off=0, limit=1000.
 void generate_tao_assoc_range_queries(
     int64_t num_nodes, int max_num_atype,
     int warmup_size, int query_size,
     const std::string& warmup_file, const std::string& query_file)
 {
-    auto aggregator = init_sharded_graph();
-
     std::random_device rd;
     std::mt19937 rng(rd());
     std::uniform_int_distribution<int64_t> uni_node(0, num_nodes - 1);
@@ -395,21 +390,12 @@ void generate_tao_assoc_range_queries(
     auto output = [&](const std::string& out_file, int out_size) {
         std::ofstream out(out_file);
         int i = 0;
+        // constants
+        int off = 0;
+        int len = 1000;
         while (i < out_size) {
             int64_t node_id = uni_node(rng);
             int atype = uni_atype(rng);
-
-            std::vector<int64_t> vec;
-            aggregator->get_neighbors_atype(vec, node_id, atype);
-            if (vec.empty()) {
-                continue;
-            }
-
-            // unif. from [0, realLength)
-            int off = std::rand() % vec.size();
-            // unif. from [1, realLength - off]
-            int len = 1 + (std::rand() % (vec.size() - off));
-
             out << node_id << "," << atype << ",";
             out << off << "," << len << std::endl;
             ++i;
@@ -484,8 +470,8 @@ void generate_tao_time_related_queries_helper(
                      out << "," << dst_id;
                 }
             } else {
-                // assoc_time_range(): generates `limit` from [1, actualLength].
-                int limit = 1 + (std::rand() % vec.size());
+                // assoc_time_range(): fix limit = 1000, same as assoc_range.
+                int limit = 1000;
                 out << "," << limit;
             }
             out << std::endl;
@@ -515,8 +501,7 @@ void generate_tao_assoc_get_queries(
         true);
 }
 
-// Generates time ranges similar to assoc_get().  Samples `limit` uniformly at
-// random from the actual assoc list (hence, requires loading the actual graph).
+// Generates time ranges similar to assoc_get().  Sets `limit` to 1000.
 //
 // Format, each line: src,atype,low,high,limit
 void generate_tao_assoc_time_range_queries(
