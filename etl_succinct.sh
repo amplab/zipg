@@ -69,7 +69,7 @@ for i in $(seq 0 1 $numShards); do
   cat >/vol0/succinct-graph/etl_tmp.sh <<EOL
 #!/bin/bash
 set -e
-#bash /vol0/succinct-graph/encoder.sh ${encodeType} ${targetFile}
+bash /vol0/succinct-graph/encoder.sh ${encodeType} ${targetFile}
 rsync -e "ssh -o StrictHostKeyChecking=no" -avr --progress \
   ${encoded} root@${masterHostName}:/vol0/
 EOL
