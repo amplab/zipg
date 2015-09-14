@@ -117,7 +117,6 @@ public:
         const int64_t nodeId,
         const int64_t atype)
     {
-        // Your implementation goes here
         COND_LOG_E("get_neighbors_atype\n");
 
         assert(nodeId % total_num_shards_ == shard_id_);
@@ -136,6 +135,20 @@ public:
             LOG_E(",%lld\n", t2 - t1);
         }
 #endif
+    }
+
+    void get_edge_attrs(
+        std::vector<std::string> & _return,
+        const int64_t nodeId,
+        const int64_t atype)
+    {
+        COND_LOG_E("get_edge_attrs\n");
+        assert(nodeId % total_num_shards_ == shard_id_);
+        if (edge_table_empty_) {
+            _return.clear();
+            return;
+        }
+        graph_->get_edge_attrs(_return, nodeId, atype);
     }
 
     void get_nodes(

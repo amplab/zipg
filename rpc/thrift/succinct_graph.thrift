@@ -39,6 +39,8 @@ service GraphQueryService {
         2: i32 attrId,
         3: string attrKey),
 
+    list<string> get_edge_attrs(1: i64 nodeId, 2: i64 atype),
+
     list<ThriftAssoc> assoc_range(
         1: i64 src, 2: i64 atype, 3: i32 off, 4: i32 len),
 
@@ -128,6 +130,10 @@ service GraphQueryAggregatorService {
         1: list<i64> nodeIds,
         2: i32 attrId,
         3: string attrKey),
+
+    list<string> get_edge_attrs(1: i64 nodeId, 2: i64 atype),
+    list<string> get_edge_attrs_local(
+        1: i32 shardId, 2: i64 nodeId, 3: i64 atype),
 
     // TAO queries
 

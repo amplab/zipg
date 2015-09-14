@@ -297,6 +297,32 @@ public:
             .get_neighbors_atype(_return, nodeId, atype);
     }
 
+    void get_edge_attrs(
+        std::vector<std::string> & _return,
+        const int64_t nodeId,
+        const int64_t atype)
+    {
+        int shard_id = nodeId % total_num_shards_;
+        int host_id = shard_id % total_num_hosts_;
+        if (host_id == local_host_id_) {
+            local_shards_[shard_id / total_num_hosts_]
+                .get_edge_attrs(_return, nodeId, atype);
+        } else {
+            aggregators_.at(host_id).get_edge_attrs_local(
+                _return, shard_id, nodeId, atype);
+        }
+    }
+
+    void get_edge_attrs_local(
+        std::vector<std::string> & _return,
+        const int32_t shardId,
+        const int64_t nodeId,
+        const int64_t atype)
+    {
+        local_shards_[shardId / total_num_hosts_]
+            .get_edge_attrs(_return, nodeId, atype);
+    }
+
     void get_neighbors_attr(
         std::vector<int64_t> & _return,
         const int64_t nodeId,
