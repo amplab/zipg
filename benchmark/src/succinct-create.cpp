@@ -760,6 +760,23 @@ int main(int argc, char **argv) {
         edge_table_thread.join();
         LOG_E("thread for file '%s' done\n", edge_list_in.c_str());
 
+    } else if (type == "create-nodeTable") {
+
+        std::string attr_file(argv[2]); // TPC-H
+        std::string node_out_file(argv[3]);
+        int64_t num_nodes = std::stol(argv[4]);
+        int num_node_attr = std::stoi(argv[5]);
+        int zipf_corpus_size = std::stoi(argv[6]);
+        int node_attr_size_each = std::stoi(argv[7]);
+
+        GraphFormatter::create_node_table_zipf(
+            node_out_file,
+            attr_file,
+            num_nodes,
+            num_node_attr,
+            node_attr_size_each,
+            zipf_corpus_size);
+
     } else if (type == "graph-construct") {
 
         std::string node_file(argv[2]);
