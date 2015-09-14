@@ -446,19 +446,15 @@ void generate_tao_time_related_queries_helper(
     std::uniform_int_distribution<int64_t> uni_node(0, num_nodes - 1);
     std::uniform_int_distribution<int> uni_atype(0, max_num_atype - 1);
     std::uniform_int_distribution<int64_t> uni_time(min_time, max_time);
+    std::uniform_int_distribution<int> uni_put(0, 1);
 
     auto output = [&](const std::string& out_file, int out_size) {
         std::ofstream out(out_file);
+        std::vector<int64_t> vec;
         int i = 0;
         while (i < out_size) {
             int64_t node_id = uni_node(rng);
             int atype = uni_atype(rng);
-
-            std::vector<int64_t> vec;
-            aggregator->get_neighbors_atype(vec, node_id, atype);
-            if (vec.empty()) {
-                continue;
-            }
 
             int64_t t1 = uni_time(rng);
             int64_t t2 = uni_time(rng);
@@ -466,8 +462,11 @@ void generate_tao_time_related_queries_helper(
                 << std::min(t1, t2) << "," << std::max(t1, t2);
 
             if (for_assoc_get) {
+                aggregator->get_neighbors_atype(vec, node_id, atype);
                 for (int64_t dst_id : vec) {
-                     out << "," << dst_id;
+                    if (uni_put(rng) == 0) { // put w/ probability 1/2
+                        out << "," << dst_id;
+                    }
                 }
             } else {
                 // assoc_time_range(): fix limit = 1000, same as assoc_range.
@@ -486,8 +485,9 @@ void generate_tao_time_related_queries_helper(
 // similar to assoc_range()'s query gen, with the change that `low` and `high`
 // are uniformly sampled in [globalMinTime, globalMaxTime].
 //
-// For `dst_id_set`, we load the graph and put *all* of the actual dst ids in
-// an assoc list into the set.  The purpose is to increase # of nhbrs extracted.
+// For `dst_id_set`, we load the graph and put each of the actual dst ids in
+// an assoc list into the set, independently with probability 1/2.  The purpose
+// is to not make this query behave the same as assoc_time_range w/ limit infty.
 //
 // Query output format, each line: src,atype,low,high,[dstId,]+
 void generate_tao_assoc_get_queries(
