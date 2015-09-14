@@ -222,12 +222,12 @@ void read_node_attributes(
     bool is_comma_separated)
 {
     std::ifstream node_input(node_attr_file);
-    std::string line;
+    std::string line, token;
+    std::vector<std::string> attr;
     while (std::getline(node_input, line)) {
         ++nodes;
-        std::vector<std::string> attr;
+        attr.clear();
         std::istringstream iss(line);
-        std::string token;
 
         if (is_comma_separated) {
             while (std::getline(iss, token, ',')) {
@@ -241,10 +241,12 @@ void read_node_attributes(
                 iss, token, static_cast<char>(SuccinctGraph::DELIMITERS[0]));
 
             for (int i = 1; i <= num_actual_delims; ++i) {
+                attr.emplace_back();
                 std::getline(
-                    iss, token, static_cast<char>(SuccinctGraph::DELIMITERS[i]));
-                attr.push_back(token);
+                    iss, attr.back(),
+                    static_cast<char>(SuccinctGraph::DELIMITERS[i]));
             }
+            assert(attr.size() == num_actual_delims);
         }
         attributes.push_back(attr);
     }
