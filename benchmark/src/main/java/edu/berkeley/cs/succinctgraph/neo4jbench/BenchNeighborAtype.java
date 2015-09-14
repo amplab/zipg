@@ -13,8 +13,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
-import static edu.berkeley.cs.succinctgraph.neo4jbench.BenchUtils.TimestampedId;
-import static edu.berkeley.cs.succinctgraph.neo4jbench.BenchUtils.modGet;
+import static edu.berkeley.cs.succinctgraph.neo4jbench.BenchUtils.*;
 import static edu.berkeley.cs.succinctgraph.neo4jbench.BenchConstants.*;
 
 public class BenchNeighborAtype {
@@ -65,15 +64,19 @@ public class BenchNeighborAtype {
             benchNeighborAtypeLatency(tuned,
                 dbPath, neo4jPageCacheMemory, output_file);
         } else if (type.equals("throughput")) {
-            benchNeighborAtypeThroughput(
-                tuned, dbPath, neo4jPageCacheMemory, numClients);
+            benchThroughput(
+                tuned, dbPath, neo4jPageCacheMemory, numClients, true);
+        } else if (type.equals("edgeAttrs-throughput")) {
+            benchThroughput(
+                tuned, dbPath, neo4jPageCacheMemory, numClients, false);
         } else {
             throw new IllegalArgumentException("Unknown bench type: " + type);
         }
     }
 
-    private static void benchNeighborAtypeThroughput(
-        boolean tuned, String dbPath, String neo4jPageCacheMem, int numClients) {
+    private static void benchThroughput(
+        boolean tuned, String dbPath, String neo4jPageCacheMem, int numClients,
+        boolean isNhbrAtype) {
 
         GraphDatabaseService graphDb;
         if (tuned) {
@@ -104,8 +107,13 @@ public class BenchNeighborAtype {
         try {
             List<Thread> clients = new ArrayList<>(numClients);
             for (int i = 0; i < numClients; ++i) {
-                clients.add(new Thread(new RunNeighborAtypeThroughput(
-                    i, graphDb)));
+                if (isNhbrAtype) {
+                    clients.add(new Thread(new RunNeighborAtypeThroughput(
+                        i, graphDb)));
+                } else {
+                    clients.add(new Thread(new RunEdgeAttrsThroughput(
+                        i, graphDb)));
+                }
             }
             for (Thread thread : clients) {
                 thread.start();
@@ -286,6 +294,89 @@ public class BenchNeighborAtype {
         }
     }
 
+    static class RunEdgeAttrsThroughput implements Runnable {
+        private int clientId;
+        private GraphDatabaseService graphDb;
+
+        public RunEdgeAttrsThroughput(
+            int clientId, GraphDatabaseService graphDb) {
+
+            this.clientId = clientId;
+            this.graphDb = graphDb;
+        }
+
+        public void run() {
+            Transaction tx = graphDb.beginTx();
+            PrintWriter out = null;
+            Random rand = new Random(1618 + clientId);
+            try {
+                // true for append
+                out = new PrintWriter(new BufferedWriter(new FileWriter(
+                    "neo4j_throughput_getEdgeAttrs.txt", true)));
+
+                // warmup
+                int i = 0, queryIdx = 0, warmupSize = warmupIds.size();
+                long warmupStart = System.nanoTime();
+                while (System.nanoTime() - warmupStart < WARMUP_TIME) {
+                    if (i % 10000 == 0) {
+                        tx.success();
+                        tx.close();
+                        tx = graphDb.beginTx();
+                    }
+                    queryIdx = rand.nextInt(warmupSize);
+                    getEdgeAttrs(graphDb, modGet(warmupIds, queryIdx),
+                        atypeMap[modGet(warmupAtypes, queryIdx).intValue()]);
+                    ++i;
+                }
+
+                // measure
+                i = 0;
+                long edges = 0;
+                int querySize = queryIds.size();
+                List<String> edgeAttrs;
+                long start = System.nanoTime();
+                while (System.nanoTime() - start < MEASURE_TIME) {
+                    if (i % 10000 == 0) {
+                        tx.success();
+                        tx.close();
+                        tx = graphDb.beginTx();
+                    }
+                    queryIdx = rand.nextInt(querySize);
+                    edgeAttrs = getEdgeAttrs(graphDb,
+                        modGet(queryIds, queryIdx),
+                        atypeMap[modGet(queryAtypes, queryIdx).intValue()]);
+                    edges += edgeAttrs.size();
+                    ++i;
+                }
+                long end = System.nanoTime();
+                double totalSeconds = (end - start) * 1. / 1e9;
+                double queryThput = ((double) i) / totalSeconds;
+                double edgesThput = ((double) edges) / totalSeconds;
+
+                // cooldown
+                long cooldownStart = System.nanoTime();
+                while (System.nanoTime() - cooldownStart < COOLDOWN_TIME) {
+                    getEdgeAttrs(graphDb,
+                        modGet(queryIds, i),
+                        atypeMap[modGet(queryAtypes, i).intValue()]);
+                    ++i;
+                }
+                out.printf("%.1f %.1f\n", queryThput, edgesThput);
+
+            } catch (Exception e) {
+                System.err.printf("Client %d throughput bench exception: %s\n",
+                    clientId, e);
+                System.exit(1);
+            } finally {
+                if (out != null) {
+                    out.close();
+                }
+                tx.success();
+                tx.close();
+            }
+        }
+    }
+
 //    public static List<Long> getNeighbors(
 //        GraphDatabaseService graphDb, long id, RelationshipType relType) {
 //
@@ -320,6 +411,29 @@ public class BenchNeighborAtype {
             neighbors.add(timestampedId.id);
         }
         return neighbors;
+    }
+
+    public static List<String> getEdgeAttrs(GraphDatabaseService graphDb,
+                                          long id, RelationshipType relType) {
+        Node n = graphDb.getNodeById(id);
+        Iterable<Relationship> rels = n.getRelationships(
+            relType, Direction.OUTGOING);
+
+        List<TimestampedAttr> timestampedAttrs = new ArrayList<>();
+        long timestamp;
+        for (Relationship r : rels) {
+            timestamp = (long) (r.getProperty("timestamp"));
+            timestampedAttrs.add(new TimestampedAttr(
+                timestamp, (String) r.getProperty("attr", "")));
+        }
+
+        List<String> attrs = new ArrayList<>(timestampedAttrs.size());
+        Collections.sort(timestampedAttrs);
+
+        for (TimestampedAttr timestampedAttr : timestampedAttrs) {
+            attrs.add(timestampedAttr.attr);
+        }
+        return attrs;
     }
 
 }

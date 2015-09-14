@@ -108,6 +108,9 @@ measure_neighbor_atype=400000
 neo4j_warmup_neighbor_atype=100000
 neo4j_measure_neighbor_atype=200000
 
+warmup_edgeAttrs=1000000
+measure_edgeAttrs=6000000
+
 warmup_mix=400000
 measure_mix=800000
 neo4j_warmup_mix=100000

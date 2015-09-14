@@ -102,6 +102,21 @@ public class BenchUtils {
         }
     }
 
+    static class TimestampedAttr implements Comparable<TimestampedAttr> {
+        public long timestamp = -1;
+        public String attr;
+        public TimestampedAttr(long timestamp, String attr) {
+            this.timestamp = timestamp;
+            this.attr = attr;
+        }
+        // Larger timestamp comes first.
+        public int compareTo(TimestampedAttr that) {
+            long diff = that.timestamp - this.timestamp;
+            if (diff == 0) return 0;
+            return diff > 0 ? 1 : -1;
+        }
+    }
+
     public static void getNodeQueries(
         String file, List<Integer> indices1, List<Integer> indices2,
         List<String> queries1, List<String> queries2) {
