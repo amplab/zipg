@@ -40,10 +40,11 @@ private:
         NHBR = 0,
         NHBR_ATYPE = 1,
         NHBR_NODE = 2,
-        NODE = 3,
+        NODE = 3, // deprecated
         NODE2 = 4,
         MIX = 5,
-        TAO_MIX = 6
+        TAO_MIX = 6,
+        EDGE_ATTRS = 7
     } BenchType;
 
     inline int choose_query(double rand_r) {
@@ -127,6 +128,11 @@ private:
             case TAO_MIX:
                 threads.push_back(shared_ptr<std::thread>(new std::thread(
                     &GraphBenchmark::benchmark_tao_mix_throughput_helper,
+                    this, thread_data)));
+                break;
+            case EDGE_ATTRS:
+                threads.push_back(shared_ptr<std::thread>(new std::thread(
+                    &GraphBenchmark::benchmark_edge_attrs_throughput_helper,
                     this, thread_data)));
                 break;
             default:
@@ -387,6 +393,18 @@ public:
         bench_throughput(num_threads, master_hostname, BenchType::NHBR_ATYPE);
     }
 
+    void benchmark_edge_attrs_throughput(
+        const int num_threads,
+        const std::string& master_hostname,
+        std::string warmup_query_file,
+        std::string query_file)
+    {
+        read_neighbor_atype_queries(warmup_query_file, query_file,
+            warmup_nhbrAtype_indices, nhbrAtype_indices,
+            warmup_atypes, atypes);
+        bench_throughput(num_threads, master_hostname, BenchType::EDGE_ATTRS);
+    }
+
     // get_neighbor(nodeId, atype)
     void benchmark_neighbor_atype_latency(
         std::string res_path,
@@ -566,6 +584,76 @@ public:
             }
 
             std::ofstream ofs("throughput_get_nhbrsAtype.txt",
+                std::ofstream::out | std::ofstream::app);
+            ofs << query_thput << " " << edges_thput << std::endl;
+
+        } catch (std::exception &e) {
+            LOG_E("Throughput test ends...: '%s'\n", e.what());
+        }
+        return std::make_pair(query_thput, edges_thput);
+    }
+
+    std::pair<double, double> benchmark_edge_attrs_throughput_helper(
+        shared_ptr<benchmark_thread_data_t> thread_data)
+    {
+        double query_thput = 0;
+        double edges_thput = 0;
+        LOG_E("About to start querying on this thread...\n");
+
+        size_t warmup_size = warmup_nhbrAtype_indices.size();
+        size_t measure_size = nhbrAtype_indices.size();
+
+        thread_local std::mt19937 gen(1618 + thread_data->client_id);
+        std::uniform_int_distribution<int> warmup_dis(0, warmup_size - 1);
+        std::uniform_int_distribution<int> measure_dis(0, measure_size - 1);
+
+        try {
+            std::vector<std::string> result;
+
+            // Warmup phase
+            int64_t i = 0;
+            int query_idx;
+            time_t start = get_timestamp();
+            while (get_timestamp() - start < WARMUP_MICROSECS) {
+                query_idx = warmup_dis(gen);
+                thread_data->client->get_edge_attrs(
+                    result,
+                    mod_get(warmup_nhbrAtype_indices, query_idx),
+                    mod_get(warmup_atypes, query_idx));
+                ++i;
+            }
+            LOG_E("Warmup done: served %" PRId64 " queries\n", i);
+
+            // Measure phase
+            i = 0;
+            int64_t edges = 0;
+            start = get_timestamp();
+            while (get_timestamp() - start < MEASURE_MICROSECS) {
+                query_idx = measure_dis(gen);
+                thread_data->client->get_edge_attrs(
+                    result,
+                    mod_get(nhbrAtype_indices, query_idx),
+                    mod_get(atypes, query_idx));
+                edges += result.size();
+                ++i;
+            }
+            time_t end = get_timestamp();
+            double total_secs = (end - start) * 1. / 1e6;
+            query_thput = i * 1. / total_secs;
+            edges_thput = edges * 1. / total_secs;
+            LOG_E("Query done: served %" PRId64 " queries\n", i);
+
+            // Cooldown
+            time_t cooldown_start = get_timestamp();
+            while (get_timestamp() - cooldown_start < COOLDOWN_MICROSECS) {
+                thread_data->client->get_edge_attrs(
+                    result,
+                    mod_get(nhbrAtype_indices, query_idx),
+                    mod_get(atypes, query_idx));
+                ++query_idx;
+            }
+
+            std::ofstream ofs("throughput_getEdgeAttrs.txt",
                 std::ofstream::out | std::ofstream::app);
             ofs << query_thput << " " << edges_thput << std::endl;
 

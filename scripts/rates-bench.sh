@@ -40,11 +40,13 @@ fi
 # hostname of the master aggregator that bench client connects to
 # if desirable to put client on 1 host, and agg. on the other, change this
 masterHostName="localhost"
-throughput_threads=16
+
+#benchNodeThput=T # deprecated
+
 #benchNeighborThput=T
 #benchNhbrAtypeThput=T
+#benchEdgeAttrsThput=T
 #benchNhbrNodeThput=T
-#benchNodeThput=T
 #benchNodeNodeThput=T
 #benchMixThput=T
 benchTaoMixThput=T
@@ -197,6 +199,22 @@ function bench() {
       echo $throughput_threads clients, $x aggregated queries/sec >> ${o}
       mv ${o} \
         throughput_get_nhbrsAtype-npa${npa}sa${sa}isa${isa}-${throughput_threads}clients.txt
+    fi
+
+    if [[ -n "$benchEdgeAttrsThput" ]]; then
+        # sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+        ${BIN_DIR}/../benchmark/bin/bench -t edge-attrs-throughput -x ${warmup_edgeAttrs} \
+        -p ${throughput_threads} \
+        -y ${measure_edgeAttrs} -w ${QUERY_DIR}/neighborAtype_warmup_${num_nodes}.txt \
+        -q ${QUERY_DIR}/neighborAtype_query_${num_nodes}.txt \
+        -m ${masterHostName} \
+        ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
+
+      o=throughput_getEdgeAttrs.txt
+      x=$(cut -d' ' -f1 ${o} | awk '{sum += $1} END {print sum}')
+      echo $throughput_threads clients, $x aggregated queries/sec >> ${o}
+      mv ${o} \
+        throughput_getEdgeAttrs-npa${npa}sa${sa}isa${isa}-${throughput_threads}clients.txt
     fi
 
     if [[ -n "$benchNeighbor" ]]; then

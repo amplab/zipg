@@ -286,6 +286,14 @@ int main(int argc, char **argv) {
             warmup_query_file,
             measure_query_file);
 
+    } else if (type == "edge-attrs-throughput") {
+
+        bench->benchmark_edge_attrs_throughput(
+            throughput_threads,
+            master_hostname,
+            warmup_query_file,
+            measure_query_file);
+
     } else if (type == "tao-assoc-range-latency") {
 
         bench->benchmark_assoc_range_latency(
