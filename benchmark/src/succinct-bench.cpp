@@ -614,6 +614,24 @@ int main(int argc, char **argv) {
         std::set<int64_t> nodes;
         std::vector<std::string> attributes;
 
+        graph->get_edge_attrs(attributes, 0, 2);
+        assert_eq(attributes, { "a b", "sup", "suc" });
+
+        graph->get_edge_attrs(attributes, 8, 1);
+        assert_eq(attributes, { "" });
+
+        graph->get_edge_attrs(attributes, 7, 1);
+        assert_eq(attributes, { "" });
+
+        graph->get_edge_attrs(attributes, 6, 1);
+        assert_eq(attributes, { "abcd" });
+
+        graph->get_edge_attrs(attributes, 8, 10);
+        assert_eq(attributes, { });
+
+        graph->get_edge_attrs(attributes, 1618, 0);
+        assert_eq(attributes, { });
+
         assert_eq(graph->assoc_range(7, 0, -1, -1), { {7, 6, 0, 0, ""} });
         assert_eq(graph->assoc_range(7, 1, -1, -1), { {7, 6, 1, 0, ""} });
         assert_eq(graph->assoc_range(8, -1, -1, -1), { {8, 6, 1, 0, ""} });

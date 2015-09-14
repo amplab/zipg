@@ -138,6 +138,13 @@ public:
         int attr,
         const std::string& search_key);
 
+    // Clears `result` for caller.  Returns edge attributes in the order of
+    // their corresponding timestamp order.
+    void get_edge_attrs(
+        std::vector<std::string>& result,
+        int64_t node,
+        int64_t atype);
+
     /**************** TAO-like APIs ****************/
 
     static void
@@ -225,6 +232,11 @@ private:
     void extract_neighbors(
         std::vector<int64_t>& result,
         const std::vector<int64_t>& offsets,
+        int32_t skip_length);
+
+    void extract_edge_attrs(
+        std::vector<std::string>& result,
+        int64_t curr_off,
         int32_t skip_length);
 
     // Binary search: locates smallest timestamp t, such that t >= t_low.

@@ -1048,6 +1048,79 @@ inline void SuccinctGraph::extract_neighbors(
 #endif
 }
 
+void SuccinctGraph::extract_edge_attrs(
+    std::vector<std::string>& result,
+    int64_t curr_off,
+    int32_t skip_length)
+{
+    std::string str;
+    uint64_t suf_arr_idx = -1ULL;
+
+    curr_off = EDGE_TABLE->SkippingExtractUntil(
+        suf_arr_idx, curr_off + skip_length, TIMESTAMP_WIDTH_DELIM);
+
+    EDGE_TABLE->Extract(
+        str,
+        suf_arr_idx,
+        curr_off,
+        SuccinctGraphSerde::WIDTH_TIMESTAMP_WIDTH_PADDED);
+    const int32_t timestamp_width = std::stoi(str);
+
+    EDGE_TABLE->Extract(
+        str,
+        suf_arr_idx,
+        curr_off + SuccinctGraphSerde::WIDTH_TIMESTAMP_WIDTH_PADDED,
+        SuccinctGraphSerde::WIDTH_DST_ID_WIDTH_PADDED);
+    LOG("dst id width = '%s'\n", str.c_str());
+    const int32_t dst_id_width = std::stoi(str);
+
+    curr_off = EDGE_TABLE->ExtractUntil(
+        str,
+        suf_arr_idx,
+        curr_off +
+            SuccinctGraphSerde::WIDTH_TIMESTAMP_WIDTH_PADDED +
+            SuccinctGraphSerde::WIDTH_DST_ID_WIDTH_PADDED,
+        EDGE_WIDTH_DELIM);
+    LOG("cnt = '%s'\n", str.c_str());
+    const int64_t cnt = std::stoll(str);
+
+    curr_off = EDGE_TABLE->ExtractUntil(
+        str,
+        suf_arr_idx,
+        curr_off,
+        METADATA_DELIM);
+    const int32_t edge_attr_width = std::stoi(str);
+
+    EDGE_TABLE->Extract(
+        str,
+        curr_off + cnt * (timestamp_width + dst_id_width),
+        cnt * edge_attr_width);
+    LOG("attrs = '%s'\n", str.c_str());
+
+    result.resize(cnt);
+    for (size_t i = 0; i < cnt; ++i) {
+        result[i] = std::move(str.substr(i * edge_attr_width, edge_attr_width));
+    }
+}
+
+void SuccinctGraph::get_edge_attrs(
+    std::vector<std::string>& result,
+    int64_t node,
+    int64_t atype)
+{
+    result.clear();
+    std::vector<int64_t> offsets;
+    EDGE_TABLE->Search(
+        offsets,
+        NODE_ID_DELIM + std::to_string(node) +
+            ATYPE_DELIM + std::to_string(atype) + TIMESTAMP_WIDTH_DELIM);
+    assert(offsets.size() <= 1);
+    if (offsets.size() == 1) {
+        // skip node delim, node, atype delim
+        extract_edge_attrs(result, offsets[0], num_digits(node) + 2);
+    }
+}
+
 void SuccinctGraph::get_neighbors(std::vector<int64_t>& result, int64_t node) {
 
 #ifdef DEBUG_TIME_NHBR1
