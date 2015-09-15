@@ -166,7 +166,10 @@ void SuccinctGraph::construct_node_table(std::string node_file) {
     system(cmd);
 }
 
-void SuccinctGraph::construct_edge_table(std::string edge_file) {
+void SuccinctGraph::construct_edge_table(
+    std::string edge_file,
+    bool edge_table_only)
+{
     // Serialize to an .edge_table file (flat file layout)
     size_t postfix_pos = edge_file.rfind(".assoc");
     std::string edge_file_name = edge_file + ".edge_table";
@@ -312,8 +315,12 @@ void SuccinctGraph::construct_edge_table(std::string edge_file) {
         edge_file_out.close();
         LOG_E("Edge table written out to disk, now to Succinct-encode it\n");
     } else {
-        LOG_E("Edge table '%s' exists, directly starting Succinct-encoding\n",
+        LOG_E("Edge table '%s' exists, skipping\n",
             edge_file_name.c_str());
+    }
+
+    if (edge_table_only) {
+        return;
     }
 
     LOG_E("constructing edge table with npa %d, sa %d, isa %d\n",

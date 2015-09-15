@@ -56,7 +56,11 @@ public:
     // The two steps in construct().  Intended for greater flexibility: users
     // can construct one table without the other.
     void construct_node_table(std::string node_file);
-    void construct_edge_table(std::string edge_file);
+
+    // If `edge_table_only` is set, then just output the raw edge table without
+    // Succinct-encoding it.
+    void construct_edge_table(std::string edge_file,
+        bool edge_table_only = false);
 
     // Loads constructed & Succinct-encoded tables.
     void load(std::string node_succinct_dir, std::string edge_succinct_dir);
