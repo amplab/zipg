@@ -109,6 +109,8 @@ public class BenchNeighbor {
                 if (resOut != null) {
                     // correctness validation
                     Collections.sort(neighbors);
+                    String header = "node id: " + modGet(queries, i);
+                    BenchUtils.print(header, neighbors, resOut);
                 }
             }
 

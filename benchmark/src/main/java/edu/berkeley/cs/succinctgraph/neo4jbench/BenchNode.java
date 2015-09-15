@@ -159,6 +159,7 @@ public class BenchNode {
         System.out.println("Benchmarking getNodeNode queries");
 
         GraphDatabaseService graphDb;
+        System.out.printf("About to open database\n");
         if (tuned) {
             graphDb = new GraphDatabaseFactory()
                 .newEmbeddedDatabaseBuilder(dbPath)
@@ -169,6 +170,7 @@ public class BenchNode {
         } else {
             graphDb = new GraphDatabaseFactory().newEmbeddedDatabase(dbPath);
         }
+        System.out.println("Done opening");
 
         BenchUtils.registerShutdownHook(graphDb);
         Label label = DynamicLabel.label("Node");
@@ -228,13 +230,15 @@ public class BenchNode {
 
                 if (resOut != null) {
                     // correctness
-                    String header = String.format("attr1 %d: %s; attr2 %d: %s",
+                    String header = String.format(
+                        "attr1 %d: %s; attr2 %d: %s",
                         modGet(attributes1, i),
                         modGet(queries1, i),
                         modGet(attributes2, i),
                         modGet(queries2, i));
-//                    Collections.sort(nodes);
-//                    BenchUtils.print(header, nodes, resOut);
+                    List<Long> nodeList = new ArrayList<>(nodes);
+                    Collections.sort(nodeList);
+                    BenchUtils.print(header, nodeList, resOut);
                 }
             }
 

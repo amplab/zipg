@@ -1820,6 +1820,10 @@ public:
         std::ofstream res_stream(res_path);
         LOG_E("Benchmarking assoc_count() latency\n");
 
+#ifdef BENCH_PRINT_RESULTS
+        std::ofstream query_res_stream(res_path + ".succinct_result");
+#endif
+
         LOG_E("Warming up for %" PRIu64 " queries...\n", warmup_n);
         std::vector<ThriftAssoc> result;
         for (uint64_t i = 0; i < warmup_n; ++i) {
@@ -1838,6 +1842,13 @@ public:
                 mod_get(assoc_count_atypes, i));
             t1 = get_timestamp();
             res_stream << cnt << "," << t1 - t0 << "\n";
+
+#ifdef BENCH_PRINT_RESULTS
+            query_res_stream << mod_get(assoc_count_nodes, i) << " "
+                << mod_get(assoc_count_atypes, i) << " "
+                << cnt << std::endl;
+#endif
+
         }
         LOG_E("Measure complete.\n");
     }

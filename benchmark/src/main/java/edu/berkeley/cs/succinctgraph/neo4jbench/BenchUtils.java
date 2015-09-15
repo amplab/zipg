@@ -43,7 +43,9 @@ public class BenchUtils {
     }
 
     public static <T> void print(String header, List<T> xs, PrintWriter out) {
-        out.println(header);
+        if (header != null) {
+            out.println(header);
+        }
         for (T x : xs) {
             out.printf("%s ", x);
         }
