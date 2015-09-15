@@ -58,6 +58,7 @@ for i in $(seq 0 1 $numShards); do
   
   targetFile="${assocShardDir}/${dataset}-npa128sa32isa64.assoc-part${p}of${numShards}"
   encoded=$(echo -n "${targetFile}.succinct" | sed 's/\(.*\)assoc\(.*\)/\1edge_table\2/')
+  edgeTable=$(echo -n "${targetFile}" | sed 's/\(.*\)assoc\(.*\)/\1edge_table\2/')
 
   if [ "$encodeType" == "1" ]; then
     targetFile="${node_out_file}-part${p}of${numShards}"
@@ -73,6 +74,13 @@ bash /vol0/succinct-graph/encoder.sh ${encodeType} ${targetFile}
 rsync -e "ssh -o StrictHostKeyChecking=no" -avr --progress \
   ${encoded} root@${masterHostName}:/vol0/
 EOL
+
+  if [ "$encodeType" == "0" ]; then
+    cat >>/vol0/succinct-graph/etl_tmp.sh <<EOL
+rsync -e "ssh -o StrictHostKeyChecking=no" -avr --progress \
+  ${edgeTable} root@${masterHostName}:/vol0/
+EOL
+  fi
 
   rsync /vol0/succinct-graph/etl_tmp.sh \
     root@${hostname}:/vol0/succinct-graph/
