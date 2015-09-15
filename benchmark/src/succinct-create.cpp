@@ -458,13 +458,19 @@ void generate_tao_time_related_queries_helper(
             int64_t node_id = uni_node(rng);
             int atype = uni_atype(rng);
 
+            if (for_assoc_get) {
+                aggregator->get_neighbors_atype(vec, node_id, atype);
+                if (vec.empty()) {
+                    continue;
+                }
+            }
+
             int64_t t1 = uni_time(rng);
             int64_t t2 = uni_time(rng);
             out << node_id << "," << atype << ","
                 << std::min(t1, t2) << "," << std::max(t1, t2);
 
             if (for_assoc_get) {
-                aggregator->get_neighbors_atype(vec, node_id, atype);
                 for (int64_t dst_id : vec) {
                     if (uni_put(rng) == 0) { // put w/ probability 1/2
                         out << "," << dst_id;
