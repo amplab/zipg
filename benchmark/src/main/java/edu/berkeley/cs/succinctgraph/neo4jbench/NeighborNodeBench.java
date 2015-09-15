@@ -32,7 +32,7 @@ public class NeighborNodeBench {
         String dbPath = args[1];
         String warmup_file = args[2];
         String query_file = args[3];
-        String output_file = args[4];
+        String outputFile = args[4];
         WARMUP_N = Integer.parseInt(args[5]);
         MEASURE_N = Integer.parseInt(args[6]);
         int numClients = Integer.parseInt(args[7]);
@@ -41,14 +41,6 @@ public class NeighborNodeBench {
             .getDefaultValue();
         if (args.length >= 10) {
             neo4jPageCacheMem = args[9];
-        }
-
-        PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(
-            output_file)));
-        PrintWriter resOut = null;
-        if (System.getenv("BENCH_PRINT_RESULTS") != null) {
-            resOut = new PrintWriter(new BufferedWriter(
-                new FileWriter(output_file + ".neo4j_result")));
         }
 
         BenchUtils.getNeighborNodeQueries(
@@ -60,12 +52,12 @@ public class NeighborNodeBench {
         if (type.equals("latency")) {
 
             neighborNodeLatency(
-                tuned, dbPath, neo4jPageCacheMem, out, resOut, false);
+                tuned, dbPath, neo4jPageCacheMem, outputFile, false);
 
         } else if (type.equals("latency-index")) {
 
             neighborNodeLatency(
-                tuned, dbPath, neo4jPageCacheMem, out, resOut, true);
+                tuned, dbPath, neo4jPageCacheMem, outputFile, true);
 
         } else if (type.equals("throughput")) {
 
@@ -219,8 +211,8 @@ public class NeighborNodeBench {
     }
 
     private static void neighborNodeLatency(boolean tuned,
-        String dbPath, String neo4jPageCacheMem,
-        PrintWriter out, PrintWriter resOut, boolean useIndex) {
+        String dbPath, String neo4jPageCacheMem, String outputFile,
+        boolean useIndex) {
 
         System.out.println("Benchmarking getNeighborNode queries");
         GraphDatabaseService graphDb;
@@ -235,10 +227,19 @@ public class NeighborNodeBench {
             graphDb = new GraphDatabaseFactory().newEmbeddedDatabase(dbPath);
         }
 
+
         BenchUtils.registerShutdownHook(graphDb);
         Transaction tx = graphDb.beginTx();
         try {
             BenchUtils.awaitIndexes(graphDb);
+
+            PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(
+                outputFile)));
+            PrintWriter resOut = null;
+            if (System.getenv("BENCH_PRINT_RESULTS") != null) {
+                resOut = new PrintWriter(new BufferedWriter(
+                    new FileWriter(outputFile + ".neo4j_result")));
+            }
 
             // warmup
             if (tuned) {
@@ -312,9 +313,14 @@ public class NeighborNodeBench {
                 }
             }
             tx.success();
-        } finally {
             out.close();
-            if (resOut != null) resOut.close();
+            if (resOut != null) {
+                resOut.close();
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
             tx.close();
             printMemoryFootprint();
             System.out.println("Shutting down database ...");
