@@ -448,7 +448,7 @@ public:
 
 #ifdef BENCH_PRINT_RESULTS
             // correctness validation
-            query_res_stream << "node id: " << mod_get(neighbor_indices, i)
+            query_res_stream << "node id: " << mod_get(nhbrAtype_indices, i)
                 << "\n";
             query_res_stream << "atype:  " << mod_get(atypes, i) << "\n";
             std::sort(result.begin(), result.end());
