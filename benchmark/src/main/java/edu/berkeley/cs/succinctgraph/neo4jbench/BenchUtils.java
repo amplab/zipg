@@ -234,6 +234,13 @@ public class BenchUtils {
                 tLows.add(Long.parseLong(line.substring(idx2 + 1, idx3)));
 
                 int idx4 = line.indexOf(',', idx3 + 1);
+                if (idx4 == -1) {
+                    tHighs.add(Long.parseLong(line.substring(idx3 + 1)));
+                    dstIdSets.add(new HashSet<Long>());
+                    line = br.readLine();
+                    continue;
+                }
+
                 tHighs.add(Long.parseLong(line.substring(idx3 + 1, idx4)));
 
                 int idxLast = idx4, idxCurr;
