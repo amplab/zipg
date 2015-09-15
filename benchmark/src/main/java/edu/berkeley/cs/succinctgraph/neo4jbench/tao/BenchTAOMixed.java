@@ -608,6 +608,7 @@ public class BenchTAOMixed {
         int numNodes, int numAtypes, long minTime, long maxTime) {
 
         GraphDatabaseService graphDb;
+        System.out.println("About to open database");
         if (tuned) {
             graphDb = new GraphDatabaseFactory()
                 .newEmbeddedDatabaseBuilder(dbPath)
@@ -618,6 +619,7 @@ public class BenchTAOMixed {
         } else {
             graphDb = new GraphDatabaseFactory().newEmbeddedDatabase(dbPath);
         }
+        System.out.println("Done opening");
         BenchUtils.registerShutdownHook(graphDb);
         Transaction tx = null;
         try {
@@ -631,7 +633,6 @@ public class BenchTAOMixed {
                 tx.close();
             }
         }
-
         try {
             List<Thread> clients = new ArrayList<>(numClients);
             for (int i = 0; i < numClients; ++i) {

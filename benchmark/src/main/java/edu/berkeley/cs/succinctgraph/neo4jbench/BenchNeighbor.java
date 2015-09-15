@@ -213,6 +213,7 @@ public class BenchNeighbor {
         List<Long> queries, int numClients) {
 
         GraphDatabaseService graphDb;
+        System.out.println("About to open database");
         if (tuned) {
             graphDb = new GraphDatabaseFactory()
                 .newEmbeddedDatabaseBuilder(dbPath)
@@ -223,6 +224,7 @@ public class BenchNeighbor {
         } else {
             graphDb = new GraphDatabaseFactory().newEmbeddedDatabase(dbPath);
         }
+        System.out.println("Done opening");
 
         BenchUtils.registerShutdownHook(graphDb);
         Transaction tx = null;

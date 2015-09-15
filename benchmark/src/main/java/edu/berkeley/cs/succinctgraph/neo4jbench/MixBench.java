@@ -122,6 +122,7 @@ public class MixBench {
         boolean tuned, String dbPath, String neo4jPageCacheMem, int numClients) {
 
         GraphDatabaseService graphDb;
+        System.out.println("About to open database");
         if (tuned) {
             graphDb = new GraphDatabaseFactory()
                 .newEmbeddedDatabaseBuilder(dbPath)
@@ -132,6 +133,7 @@ public class MixBench {
         } else {
             graphDb = new GraphDatabaseFactory().newEmbeddedDatabase(dbPath);
         }
+        System.out.println("Done opening");
 
         BenchUtils.registerShutdownHook(graphDb);
         Transaction tx = null;
