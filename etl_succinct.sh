@@ -71,8 +71,6 @@ for i in $(seq 0 1 $numShards); do
 #!/bin/bash
 set -e
 bash /vol0/succinct-graph/encoder.sh ${encodeType} ${targetFile}
-rsync -e "ssh -o StrictHostKeyChecking=no" -avr --progress \
-  ${encoded} root@${masterHostName}:/vol0/
 EOL
 
   if [ "$encodeType" == "0" ]; then
@@ -81,6 +79,11 @@ rsync -e "ssh -o StrictHostKeyChecking=no" -avr --progress \
   ${edgeTable} root@${masterHostName}:/vol0/
 EOL
   fi
+
+  cat >>/vol0/succinct-graph/etl_tmp.sh <<EOL
+rsync -e "ssh -o StrictHostKeyChecking=no" -avr --progress \
+  ${encoded} root@${masterHostName}:/vol0/
+EOL
 
   rsync /vol0/succinct-graph/etl_tmp.sh \
     root@${hostname}:/vol0/succinct-graph/
