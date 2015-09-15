@@ -28,7 +28,8 @@ public:
         std::promise<void> promise,
         int saSamplingRate,
         int isaSamplingRate,
-        int npaSamplingRate);
+        int npaSamplingRate,
+        bool edge_table_only);
 
 private:
 

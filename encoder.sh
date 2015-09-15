@@ -3,6 +3,7 @@ set -e
 
 encodeType=$1
 shard=$2
+edgeTableOnly=$3 # (if we are encoding edge table) whether or not to just emit raw edge table
 
 if [ "$encodeType" = "" ]; then
   encodeType=0 # 0 for edge table
@@ -13,6 +14,10 @@ if [ "$shard" = "" ]; then
   shard=/mnt2T/twitter/twitter2010-npa${npa}sa${sa}isa${isa}.assoc-part*of8
 fi
 
+if [ "$edgeTableOnly" == "" ]; then
+  edgeTableOnly=0 # 0 for no, let's also Succinct-encode
+fi
+
 function encode() {
   /vol0/succinct-graph/core/bin/graph-encoder \
     1 \
@@ -20,6 +25,7 @@ function encode() {
     $isa \
     $npa \
     ${encodeType} \
+    ${edgeTableOnly} \
     ${shard}
     #/mnt2T/data/liveJournal-augOpts-minDeg${deg}-npa${npa}sa${sa}isa${isa}.assoc-part*of8
     #/mnt2T/data/*al-augOpts-npa${npa}*assoc*of8

@@ -8,7 +8,8 @@ void ThreadedGraphEncoder::construct_edge_file(
     std::promise<void> promise,
     int saSamplingRate,
     int isaSamplingRate,
-    int npaSamplingRate)
+    int npaSamplingRate,
+    bool edge_table_only)
 {
     try {
         std::unique_lock<std::mutex> lock(mutex_);
@@ -26,7 +27,7 @@ void ThreadedGraphEncoder::construct_edge_file(
         graph.set_npa_sampling_rate(npaSamplingRate);
         lock.unlock();
 
-        graph.construct_edge_table(edge_file);
+        graph.construct_edge_table(edge_file, edge_table_only);
 
         // critical again
         lock.lock();
@@ -50,6 +51,9 @@ int main(int argc, char **argv) {
     int isaSamplingRate = std::stoi(argv[3]);
     int npaSamplingRate = std::stoi(argv[4]);
     int encode_type = std::stoi(argv[5]);
+    bool edge_table_only = (std::stoi(argv[6]) == 1) ? true : false;
+    const int restArgsPtr = 7;
+
     LOG_E("Launching at most %d threads concurrently\n", maxConcurrentThreads);
     LOG_E("SA %d, ISA %d, NPA %d; encode type %d\n",
         saSamplingRate, isaSamplingRate, npaSamplingRate, encode_type);
@@ -81,8 +85,8 @@ int main(int argc, char **argv) {
 
     std::map<int, bool> finished; // all false
     std::map<int, bool> to_be_submits; // init to all true
-    for (int i = 6; i < argc; ++i) {
-        to_be_submits[i - 6] = true;
+    for (int i = restArgsPtr; i < argc; ++i) {
+        to_be_submits[i - restArgsPtr] = true;
     }
 
     int badAllocSleep = 60;
@@ -91,8 +95,8 @@ int main(int argc, char **argv) {
     while (true) {
         // Check if every file is constructed
         bool all_finished = true;
-        for (int i = 6; i < argc; ++i) {
-            all_finished &= finished[i - 6];
+        for (int i = restArgsPtr; i < argc; ++i) {
+            all_finished &= finished[i - restArgsPtr];
         }
         if (all_finished) {
             LOG_E("All jobs done!\n");
@@ -100,19 +104,20 @@ int main(int argc, char **argv) {
         }
 
         // Find any job that can be submitted, and submit
-        for (int i = 6; i < argc; ++i) {
-            if (to_be_submits[i - 6]) {
-                to_be_submits[i - 6] = false;
+        for (int i = restArgsPtr; i < argc; ++i) {
+            if (to_be_submits[i - restArgsPtr]) {
+                to_be_submits[i - restArgsPtr] = false;
                 std::string s(argv[i]);
 
                 promises.emplace_back();
                 futures.emplace_back(promises.back().get_future());
-                future_indices.push_back(i - 6);
+                future_indices.push_back(i - restArgsPtr);
 
                 // launch
                 std::thread(&ThreadedGraphEncoder::construct_edge_file,
                     &encoder, s, std::move(promises.back()),
-                    saSamplingRate, isaSamplingRate, npaSamplingRate).detach();
+                    saSamplingRate, isaSamplingRate, npaSamplingRate,
+                    edge_table_only).detach();
             }
         }
 
