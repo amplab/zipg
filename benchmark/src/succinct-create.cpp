@@ -208,7 +208,7 @@ void generate_neighbor_queries_limited(
     std::mt19937 rng1(rd1()), rng2(rd2());
     std::uniform_int_distribution<int64_t> uni1(0, num_nodes - 1);
 
-    auto output = [&uni1, &aggregator](
+    auto output = [&uni1, aggregator](
         const std::string& out_file, int out_size, std::mt19937 rng)
     {
         std::ofstream out(out_file);
@@ -272,7 +272,7 @@ void generate_neighbor_atype_queries_limited(
     std::uniform_int_distribution<int64_t> uni1(0, num_nodes - 1);
     std::uniform_int_distribution<int64_t> uni2(0, max_num_atype - 1);
 
-    auto output = [&uni1, &uni2, &aggregator](
+    auto output = [&uni1, &uni2, aggregator](
         const std::string& out_file, int out_size, std::mt19937 rng)
     {
         std::ofstream out(out_file);
@@ -432,7 +432,7 @@ void generate_neighbor_node_queries(
     std::uniform_int_distribution<int64_t> uni_node(0, num_nodes - 1);
     std::uniform_int_distribution<int> uni_attr(0, node_num_attrs - 1);
 
-    auto output = [&uni_node, &uni_attr, &aggregator](
+    auto output = [&uni_node, &uni_attr, aggregator](
         const std::string& out_file, int out_size, std::mt19937 my_rng)
     {
         std::ofstream out(out_file);
@@ -473,7 +473,7 @@ void generate_neighbor_node_queries_limited(
     std::uniform_int_distribution<int64_t> uni_node(0, num_nodes - 1);
     std::uniform_int_distribution<int> uni_attr(0, node_num_attrs - 1);
 
-    auto output = [&uni_node, &uni_attr, &aggregator](
+    auto output = [&uni_node, &uni_attr, aggregator](
         const std::string& out_file, int out_size, std::mt19937 my_rng)
     {
         std::ofstream out(out_file);
@@ -546,7 +546,7 @@ void generate_tao_assoc_range_queries_limited(
     std::uniform_int_distribution<int64_t> uni_node(0, num_nodes - 1);
     std::uniform_int_distribution<int> uni_atype(0, max_num_atype - 1);
 
-    auto output = [&uni_node, &uni_atype, &aggregator](
+    auto output = [&uni_node, &uni_atype, aggregator](
         const std::string& out_file, int out_size, std::mt19937 rng)
     {
         std::ofstream out(out_file);
