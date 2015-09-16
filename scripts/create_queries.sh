@@ -3,13 +3,16 @@ SCRIPT_DIR=$(dirname $0)
 source ${SCRIPT_DIR}/config.sh
 mkdir -p ${QUERY_DIR}
 
-#neighborAtype=T
+neighborAtype=T
 #node=T
-#neighbor=T
+neighbor=T
 neighborNode=T
 
-numNode=$(wc -l ${NODE_FILE} | cut -d' ' -f 1) # calculate once
+#numNode=$(wc -l ${NODE_FILE} | cut -d' ' -f 1) # calculate once
+numNode=41652230
 
+NODE_FILE=/mnt/twitter2010-40attr16each-tpch-npa128sa32isa64.node
+EDGE_FILE=/mnt2T/twitter2010-npa128sa32isa64.assoc
 
 function stop_all() {
   bash ${SCRIPT_DIR}/../sbin/stop-all.sh
@@ -29,6 +32,7 @@ do
 
   if [[ -n "$neighbor" ]]; then
     echo creating neighbor queries for ${num_nodes} nodes, warmup ${warmup_neighbor}, measure ${measure_neighbor}
+    start_all
 
     ${BIN_DIR}/../benchmark/bin/create neighbor-queries \
       ${numNode} \
@@ -36,10 +40,21 @@ do
       ${measure_neighbor} \
       ${QUERY_DIR}/neighbor_warmup_${num_nodes}.txt \
       ${QUERY_DIR}/neighbor_query_${num_nodes}.txt
+    stop_all
   fi
 
   if [[ -n "$node" ]]; then
    echo creating node queries for ${num_nodes} nodes, warmup ${warmup_node}, measure ${measure_node}
+
+    cmd="${BIN_DIR}/../benchmark/bin/create node-queries \
+      ${NODE_FILE} \
+      ${warmup_node} \
+      ${measure_node} \
+      ${QUERY_DIR}/node_warmup_${num_nodes}.txt \
+      ${QUERY_DIR}/node_query_${num_nodes}.txt \
+      ${attributes} \
+      ${IS_NODE_FILE_CSV}"
+    echo $cmd
 
     ${BIN_DIR}/../benchmark/bin/create node-queries \
       ${NODE_FILE} \
@@ -82,8 +97,9 @@ do
  fi
 
   if [[ -n "$neighborAtype" ]]; then
-    echo creating neighbor-atype queries, warmup ${warmup_neighbor_node}, measure ${measure_neighbor_node}
+    echo creating neighbor-atype queries, warmup ${warmup_neighbor_atype}, measure ${measure_neighbor_atype}
 
+    start_all
     # queries can have empty results
     ${BIN_DIR}/../benchmark/bin/create neighbor-atype-queries \
       ${numNode} \
@@ -92,6 +108,7 @@ do
       ${measure_neighbor_atype} \
       ${QUERY_DIR}/neighborAtype_warmup_${num_nodes}.txt \
       ${QUERY_DIR}/neighborAtype_query_${num_nodes}.txt
+    stop_all
   fi
 
 done

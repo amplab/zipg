@@ -4,9 +4,9 @@ SCRIPT_DIR=$(dirname $0)
 source ${SCRIPT_DIR}/config.sh
 mkdir -p ${QUERY_DIR}
 
-#assocRange=T
+assocRange=T
 assocGet=T
-#assocCount=T
+assocCount=T
 assocTimeRange=T
 #objGet=T
 
@@ -22,7 +22,11 @@ EDGE_FILE="/mnt2T/data/liveJournal${minDeg}-npa${npa}sa${sa}isa${isa}.assoc"
 NODE_FILE="/mnt2T/data/liveJournal-40attr16each-tpch-npa${npa}sa${sa}isa${isa}.node"
 ASSOC_FILE=/mnt2T/data/liveJournal-minDeg30WithTsAttr.assoc
 
-numNode=$(wc -l ${NODE_FILE} | cut -d' ' -f 1) # calculate once
+#numNode=$(wc -l ${NODE_FILE} | cut -d' ' -f 1) # calculate once, before the next line...
+numNode=41652230
+NODE_FILE=/mnt/twitter2010-40attr16each-tpch-npa128sa32isa64.node
+EDGE_FILE=/mnt2T/twitter2010-npa128sa32isa64.assoc
+ASSOC_FILE=/mnt2T/twitter2010.assoc
 
 function stop_all() {
   bash ${SCRIPT_DIR}/../sbin/stop-all.sh
@@ -37,8 +41,20 @@ function start_all() {
   sleep 2
 }
 
+stop_all
+
 if [[ -n "$assocRange" ]]; then
   start_all
+
+  cmd="${BIN_DIR}/../benchmark/bin/create \
+    tao-assoc-range-queries \
+    ${numNode} \
+    ${max_num_atype} \
+    ${warmup_assocRange} \
+    ${measure_assocRange} \
+    ${QUERY_DIR}/assocRange_warmup.txt \
+    ${QUERY_DIR}/assocRange_query.txt"
+  echo $cmd
 
   ${BIN_DIR}/../benchmark/bin/create \
     tao-assoc-range-queries \
@@ -48,6 +64,7 @@ if [[ -n "$assocRange" ]]; then
     ${measure_assocRange} \
     ${QUERY_DIR}/assocRange_warmup.txt \
     ${QUERY_DIR}/assocRange_query.txt
+
 
   stop_all
 fi
@@ -81,6 +98,8 @@ if [[ -n "$assocGet" ]]; then
 fi
 
 if [[ -n "$assocCount" ]]; then
+  start_all
+
   ${BIN_DIR}/../benchmark/bin/create \
     tao-assoc-count-queries \
     ${numNode} \
@@ -89,6 +108,8 @@ if [[ -n "$assocCount" ]]; then
     ${measure_assocCount} \
     ${QUERY_DIR}/assocCount_warmup.txt \
     ${QUERY_DIR}/assocCount_query.txt
+
+  stop_all
 fi
 
 if [[ -n "$assocTimeRange" ]]; then
