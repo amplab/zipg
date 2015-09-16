@@ -729,6 +729,17 @@ void generate_tao_assoc_get_queries(
         true);
 }
 
+void generate_tao_assoc_get_queries_limited(
+    int64_t num_nodes, int max_num_atype,
+    int warmup_size, int query_size,
+    const std::string& assoc_file,
+    const std::string& warmup_file, const std::string& query_file)
+{
+    generate_tao_time_related_queries_helper_limited(num_nodes, max_num_atype,
+        warmup_size, query_size, assoc_file, warmup_file, query_file,
+        true);
+}
+
 // Generates time ranges similar to assoc_get().  Sets `limit` to 1000.
 //
 // Format, each line: src,atype,low,high,limit
@@ -739,6 +750,17 @@ void generate_tao_assoc_time_range_queries(
     const std::string& warmup_file, const std::string& query_file)
 {
     generate_tao_time_related_queries_helper(num_nodes, max_num_atype,
+        warmup_size, query_size, assoc_file, warmup_file, query_file,
+        false);
+}
+
+void generate_tao_assoc_time_range_queries_limited(
+    int64_t num_nodes, int max_num_atype,
+    int warmup_size, int query_size,
+    const std::string& assoc_file,
+    const std::string& warmup_file, const std::string& query_file)
+{
+    generate_tao_time_related_queries_helper_limited(num_nodes, max_num_atype,
         warmup_size, query_size, assoc_file, warmup_file, query_file,
         false);
 }
