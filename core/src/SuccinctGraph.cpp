@@ -981,16 +981,35 @@ size_t SuccinctGraph::serialize() {
 void SuccinctGraph::get_attribute(
     std::string& result,
     int64_t node_id,
-    int attr) {
-
+    int attr)
+{
     assert(attr < MAX_NUM_NODE_ATTRS);
     uint64_t suf_arr_idx = -1ULL;
 
-    this->node_table->ExtractUntil(
-        result, suf_arr_idx, node_id, static_cast<char>(DELIMITERS[attr]));
+    const char next_attr_delim = static_cast<char>(DELIMITERS[attr + 1]);
+    std::string tmp;
+    int64_t start_offset = this->node_table->ExtractUntil(
+        tmp, suf_arr_idx, node_id, NODE_TABLE_HEADER_DELIM);
 
+    COND_LOG_E("extracted node table header '%s'\n", tmp.c_str());
+
+    if (start_offset == -1) {
+        result.clear();
+        return; // key doesn't exist
+    }
+    // +(attr + 1) to account for delims after each of the lengths
+    int32_t dist = std::stoi(tmp) + (attr + 1);
+
+    for (int i = 1; i <= attr; ++i) {
+        this->node_table->ExtractUntil(
+            tmp, suf_arr_idx, node_id, NODE_TABLE_HEADER_DELIM);
+        COND_LOG_E("extracted length '%s'\n", tmp.c_str());
+        dist += std::stoi(tmp);
+    }
+
+    // jump!
     this->node_table->ExtractUntil(
-        result, suf_arr_idx, node_id, static_cast<char>(DELIMITERS[attr + 1]));
+        result, start_offset + dist, next_attr_delim);
 }
 
 inline void SuccinctGraph::extract_neighbors(

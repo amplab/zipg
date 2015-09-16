@@ -621,6 +621,22 @@ int main(int argc, char **argv) {
         std::vector<int64_t> nbhrs;
         std::set<int64_t> nodes;
         std::vector<std::string> attributes;
+        std::string attr;
+
+        attr = "ack";
+        graph->get_attribute(attr, 10, 0);
+        assert(attr == "");
+
+        graph->get_attribute(attr, 0, 0);
+        assert(attr == "Winter");
+        graph->get_attribute(attr, 1, 1);
+        assert(attr == "Winter");
+        graph->get_attribute(attr, 1, 10);
+        assert(attr == "");
+        graph->get_attribute(attr, 2, 0);
+        assert(attr == "George");
+        graph->get_attribute(attr, 2, 7);
+        assert(attr == "slow");
 
         graph->get_edge_attrs(attributes, 0, 2);
         assert_eq(attributes, { "a b", "sup", "suc" });
