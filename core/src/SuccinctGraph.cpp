@@ -67,26 +67,30 @@ void SuccinctGraph::load(
 {
     LOG_E("In SuccinctGraph::load\n");
     this->load_node_table(node_succinct_dir);
-    LOG_E("Done SuccinctGraph::load_node_table\n");
     this->load_edge_table(edge_succinct_dir);
     LOG_E("Done SuccinctGraph::load\n");
 }
 
 void SuccinctGraph::load_node_table(std::string node_succinct_dir) {
+    LOG_E("In SuccinctGraph::load_node_table\n");
     this->node_table = new SuccinctShard(
         0,
         node_succinct_dir,
         SuccinctMode::LOAD_MEMORY_MAPPED);
+    LOG_E("Done SuccinctGraph::load_node_table\n");
 }
 
 void SuccinctGraph::load_edge_table(std::string edge_succinct_dir) {
+    LOG_E("In SuccinctGraph::load_edge_table\n");
 #ifdef ENOUGH_MEMORY
+    LOG_E("Keep-input is enabled");
     EDGE_TABLE = new KeepInputSuccinctFile(
         edge_succinct_dir, SuccinctMode::LOAD_MEMORY_MAPPED);
 #else
     EDGE_TABLE = new SuccinctFile(
         edge_succinct_dir, SuccinctMode::LOAD_MEMORY_MAPPED);
 #endif
+    LOG_E("Done SuccinctGraph::load_edge_table\n");
 }
 
 SuccinctGraph& SuccinctGraph::set_npa_sampling_rate(uint32_t sampling_rate) {
