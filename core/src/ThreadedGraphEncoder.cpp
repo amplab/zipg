@@ -61,7 +61,7 @@ int main(int argc, char **argv) {
     if (encode_type == 1) {
         // case: node table; use simple thread pool and don't catch exceptions
         ThreadPool pool(maxConcurrentThreads);
-        for (int i = 6; i < argc; ++i) {
+        for (int i = restArgsPtr; i < argc; ++i) {
             std::string node_file(argv[i]);
             pool.Enqueue([=] {
                 SuccinctGraph graph(""); // no-op
