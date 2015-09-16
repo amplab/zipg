@@ -50,6 +50,7 @@ public class BenchUtils {
             out.printf("%s ", x);
         }
         out.println();
+        out.flush();
     }
 
     public static void printMemoryFootprint() {

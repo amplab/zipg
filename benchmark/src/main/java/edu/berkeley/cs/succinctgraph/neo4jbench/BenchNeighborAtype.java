@@ -200,6 +200,14 @@ public class BenchNeighborAtype {
                 long queryEnd = System.nanoTime();
                 double microsecs = (queryEnd - queryStart) / ((double) 1000);
                 out.println(neighbors.size() + "," + microsecs);
+
+                if (resOut != null) {
+                    Collections.sort(neighbors);
+                    String header = String.format("node id: %d\natype: %d\n",
+                        queryIds.get(i % queryIds.size()),
+                        queryAtypes.get(i % queryAtypes.size()));
+                    BenchUtils.print(header, neighbors, resOut);
+                }
             }
 
             tx.success();
