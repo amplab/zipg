@@ -27,6 +27,8 @@ constexpr char alphanum[] =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     "abcdefghijklmnopqrstuvwxyz";
 
+constexpr int DEGREE_LIMIT = 1200; // per atype
+
 void generate_name(std::string& name, int len) {
     for(int i = 0; i < len; i++) {
         name[i] = alphanum[rand() % (sizeof(alphanum) - 1)];
@@ -188,6 +190,39 @@ void generate_neighbor_queries(
     }
 }
 
+void generate_neighbor_queries_limited(
+    int64_t num_nodes,
+    int warmup_size,
+    int query_size,
+    std::string warmup_query_file,
+    std::string query_file)
+{
+    std::random_device rd;
+    std::mt19937 rng(rd());
+    std::uniform_int_distribution<int64_t> uni(0, num_nodes - 1);
+
+    std::ofstream warmup_out(warmup_query_file);
+    std::ofstream query_out(query_file);
+
+    auto aggregator = init_sharded_graph();
+
+    int64_t node;
+    for (int64_t i = 0; i < warmup_size; i++) {
+        node = uni(rng);
+        if (aggregator->assoc_count(node, rand() % 5) > DEGREE_LIMIT) {
+            continue;
+        }
+        warmup_out << node << std::endl;
+    }
+    for (int64_t i = 0; i < query_size; i++) {
+        node = uni(rng);
+        if (aggregator->assoc_count(node, rand() % 5) > DEGREE_LIMIT) {
+            continue;
+        }
+        query_out << node << std::endl;
+    }
+}
+
 // Format: randomNodeId,atype.
 // Since queries are generated randomly, the query results can be empty.
 void generate_neighbor_atype_queries(
@@ -211,6 +246,47 @@ void generate_neighbor_atype_queries(
 
     for (int64_t i = 0; i < query_size; i++) {
         query_out << uni1(rng1) << "," << uni2(rng2) << std::endl;
+    }
+}
+
+void generate_neighbor_atype_queries_limited(
+    int64_t num_nodes,
+    int max_num_atype,
+    int warmup_size,
+    int query_size,
+    std::string warmup_query_file,
+    std::string query_file)
+{
+    auto aggregator = init_sharded_graph();
+
+    std::random_device rd1, rd2;
+    std::mt19937 rng1(rd1()), rng2(rd2());
+    std::uniform_int_distribution<int64_t> uni1(0, num_nodes - 1);
+    std::uniform_int_distribution<int64_t> uni2(0, max_num_atype - 1);
+
+    std::ofstream warmup_out(warmup_query_file);
+    std::ofstream query_out(query_file);
+    int64_t node, atype;
+
+    for (int64_t i = 0; i < warmup_size; i++) {
+        node = uni1(rng1);
+        atype = uni2(rng2);
+
+        if (aggregator->assoc_count(node, atype) > DEGREE_LIMIT) {
+            continue;
+        }
+
+        warmup_out << node << "," << atype << std::endl;
+    }
+
+    for (int64_t i = 0; i < query_size; i++) {
+        node = uni1(rng1);
+        atype = uni2(rng2);
+
+        if (aggregator->assoc_count(node, atype) > DEGREE_LIMIT) {
+            continue;
+        }
+        query_out << node << "," << atype << std::endl;
     }
 }
 
@@ -378,6 +454,48 @@ void generate_neighbor_node_queries(
     output(query_file, query_size);
 }
 
+void generate_neighbor_node_queries_limited(
+    int64_t num_nodes,
+    int64_t node_num_attrs,
+    int warmup_size,
+    int query_size,
+    std::string warmup_query_file,
+    std::string query_file)
+{
+    auto aggregator = init_sharded_graph();
+
+    std::random_device rd;
+    std::mt19937 rng(rd());
+    std::uniform_int_distribution<int64_t> uni_node(0, num_nodes - 1);
+    std::uniform_int_distribution<int> uni_attr(0, node_num_attrs - 1);
+
+    auto output = [&](const std::string& out_file, int out_size) {
+        std::ofstream out(out_file);
+        std::vector<int64_t> neighbors;
+        std::string search_key;
+        for (int64_t i = 0; i < out_size; i++) {
+            int node_id;
+            int attr = uni_attr(rng);
+            neighbors.clear();
+            while (neighbors.empty()) {
+                node_id = uni_node(rng);
+                aggregator->get_neighbors(neighbors, node_id);
+                if (neighbors.size() > DEGREE_LIMIT * 5) {
+                    neighbors.clear();
+                    continue;
+                }
+            }
+            std::vector<int64_t>::const_iterator it(neighbors.begin());
+            int neighbor_idx = rand() % neighbors.size();
+            std::advance(it, neighbor_idx);
+            aggregator->get_attribute_local(search_key, *it, attr);      // TODO
+            out << node_id << "," << attr << "," << search_key << "\n";
+        }
+    };
+    output(warmup_query_file, warmup_size);
+    output(query_file, query_size);
+}
+
 // Samples (nodeId, atype) uniformly at random.  Fix off=0, limit=1000.
 void generate_tao_assoc_range_queries(
     int64_t num_nodes, int max_num_atype,
@@ -398,6 +516,41 @@ void generate_tao_assoc_range_queries(
         while (i < out_size) {
             int64_t node_id = uni_node(rng);
             int atype = uni_atype(rng);
+            out << node_id << "," << atype << ",";
+            out << off << "," << len << std::endl;
+            ++i;
+        }
+    };
+    output(warmup_file, warmup_size);
+    output(query_file, query_size);
+}
+
+void generate_tao_assoc_range_queries_limited(
+    int64_t num_nodes, int max_num_atype,
+    int warmup_size, int query_size,
+    const std::string& warmup_file, const std::string& query_file)
+{
+    auto aggregator = init_sharded_graph();
+
+    std::random_device rd;
+    std::mt19937 rng(rd());
+    std::uniform_int_distribution<int64_t> uni_node(0, num_nodes - 1);
+    std::uniform_int_distribution<int> uni_atype(0, max_num_atype - 1);
+
+    auto output = [&](const std::string& out_file, int out_size) {
+        std::ofstream out(out_file);
+        int i = 0;
+        // constants
+        int off = 0;
+        int len = 1000;
+        while (i < out_size) {
+            int64_t node_id = uni_node(rng);
+            int atype = uni_atype(rng);
+
+            if (aggregator->assoc_count(node_id, atype) > DEGREE_LIMIT) {
+                continue;
+            }
+
             out << node_id << "," << atype << ",";
             out << off << "," << len << std::endl;
             ++i;
@@ -457,6 +610,73 @@ void generate_tao_time_related_queries_helper(
         while (i < out_size) {
             int64_t node_id = uni_node(rng);
             int atype = uni_atype(rng);
+
+            if (for_assoc_get) {
+                aggregator->get_neighbors_atype(vec, node_id, atype);
+                if (vec.empty()) {
+                    continue;
+                }
+            }
+
+            int64_t t1 = uni_time(rng);
+            int64_t t2 = uni_time(rng);
+            out << node_id << "," << atype << ","
+                << std::min(t1, t2) << "," << std::max(t1, t2);
+
+            if (for_assoc_get) {
+                for (int64_t dst_id : vec) {
+                    if (uni_put(rng) == 0) { // put w/ probability 1/2
+                        out << "," << dst_id;
+                    }
+                }
+            } else {
+                // assoc_time_range(): fix limit = 1000, same as assoc_range.
+                int limit = 1000;
+                out << "," << limit;
+            }
+            out << std::endl;
+            ++i;
+        }
+    };
+    output(warmup_file, warmup_size);
+    output(query_file, query_size);
+}
+
+void generate_tao_time_related_queries_helper_limited(
+    int64_t num_nodes, int max_num_atype,
+    int warmup_size, int query_size,
+    const std::string& assoc_file,
+    const std::string& warmup_file,
+    const std::string& query_file,
+    bool for_assoc_get)
+{
+    auto pair = get_min_max_timestamp(assoc_file);
+    int64_t min_time = pair.first, max_time = pair.second;
+    LOG_E("Assoc scan finishes: min timestamp %lld, max timestamp %lld\n",
+        min_time, max_time);
+
+    auto aggregator = init_sharded_graph();
+
+    std::random_device rd;
+    std::mt19937 rng(rd());
+    std::uniform_int_distribution<int64_t> uni_node(0, num_nodes - 1);
+    std::uniform_int_distribution<int> uni_atype(0, max_num_atype - 1);
+    std::uniform_int_distribution<int64_t> uni_time(min_time, max_time);
+    std::uniform_int_distribution<int> uni_put(0, 1);
+
+    auto output = [&](const std::string& out_file, int out_size) {
+        std::ofstream out(out_file);
+        std::vector<int64_t> vec;
+        int i = 0;
+        int64_t node_id;
+        int atype;
+        while (i < out_size) {
+            node_id = uni_node(rng);
+            atype = uni_atype(rng);
+
+            if (aggregator->assoc_count(node_id, atype) > DEGREE_LIMIT) {
+                continue;
+            }
 
             if (for_assoc_get) {
                 aggregator->get_neighbors_atype(vec, node_id, atype);
