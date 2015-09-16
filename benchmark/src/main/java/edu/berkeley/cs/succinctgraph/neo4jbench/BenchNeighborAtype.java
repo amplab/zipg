@@ -203,7 +203,8 @@ public class BenchNeighborAtype {
 
                 if (resOut != null) {
                     Collections.sort(neighbors);
-                    String header = String.format("node id: %d\natype: %d\n",
+                    // intentionally two spaces...
+                    String header = String.format("node id: %d\natype:  %d\n",
                         queryIds.get(i % queryIds.size()),
                         queryAtypes.get(i % queryAtypes.size()));
                     BenchUtils.print(header, neighbors, resOut);
