@@ -29,32 +29,21 @@ function start_all() {
 
 for num_nodes in ${nodes[@]}
 do
+    start_all
 
   if [[ -n "$neighbor" ]]; then
     echo creating neighbor queries for ${num_nodes} nodes, warmup ${warmup_neighbor}, measure ${measure_neighbor}
-    start_all
 
     ${BIN_DIR}/../benchmark/bin/create neighbor-queries \
       ${numNode} \
       ${warmup_neighbor} \
       ${measure_neighbor} \
       ${QUERY_DIR}/neighbor_warmup_${num_nodes}.txt \
-      ${QUERY_DIR}/neighbor_query_${num_nodes}.txt
-    stop_all
+      ${QUERY_DIR}/neighbor_query_${num_nodes}.txt &
   fi
 
   if [[ -n "$node" ]]; then
    echo creating node queries for ${num_nodes} nodes, warmup ${warmup_node}, measure ${measure_node}
-
-    cmd="${BIN_DIR}/../benchmark/bin/create node-queries \
-      ${NODE_FILE} \
-      ${warmup_node} \
-      ${measure_node} \
-      ${QUERY_DIR}/node_warmup_${num_nodes}.txt \
-      ${QUERY_DIR}/node_query_${num_nodes}.txt \
-      ${attributes} \
-      ${IS_NODE_FILE_CSV}"
-    echo $cmd
 
     ${BIN_DIR}/../benchmark/bin/create node-queries \
       ${NODE_FILE} \
@@ -63,13 +52,11 @@ do
       ${QUERY_DIR}/node_warmup_${num_nodes}.txt \
       ${QUERY_DIR}/node_query_${num_nodes}.txt \
       ${attributes} \
-      ${IS_NODE_FILE_CSV}
+      ${IS_NODE_FILE_CSV} &
   fi
 
   if [[ -n "$neighborNode" ]]; then
     echo creating neighbor-node queries for ${num_nodes} nodes, warmup ${warmup_neighbor_node}, measure ${measure_neighbor_node}
-
-    start_all
 
     # load sharded graph to generate queries
    ${BIN_DIR}/../benchmark/bin/create neighbor-node-queries \
@@ -80,9 +67,7 @@ do
      ${warmup_neighbor_node} \
      ${measure_neighbor_node} \
      ${QUERY_DIR}/neighbor_node_warmup_${num_nodes}.txt \
-     ${QUERY_DIR}/neighbor_node_query_${num_nodes}.txt
-
-   stop_all
+     ${QUERY_DIR}/neighbor_node_query_${num_nodes}.txt &
 
     # if noLoad, queries can have empty results
     # ${BIN_DIR}/../benchmark/bin/create neighbor-node-queries-noLoad \
@@ -99,7 +84,6 @@ do
   if [[ -n "$neighborAtype" ]]; then
     echo creating neighbor-atype queries, warmup ${warmup_neighbor_atype}, measure ${measure_neighbor_atype}
 
-    start_all
     # queries can have empty results
     ${BIN_DIR}/../benchmark/bin/create neighbor-atype-queries \
       ${numNode} \
@@ -107,8 +91,10 @@ do
       ${warmup_neighbor_atype} \
       ${measure_neighbor_atype} \
       ${QUERY_DIR}/neighborAtype_warmup_${num_nodes}.txt \
-      ${QUERY_DIR}/neighborAtype_query_${num_nodes}.txt
-    stop_all
+      ${QUERY_DIR}/neighborAtype_query_${num_nodes}.txt &
   fi
+
+  wait
+  stop_all
 
 done

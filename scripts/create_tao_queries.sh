@@ -42,19 +42,9 @@ function start_all() {
 }
 
 stop_all
+start_all
 
 if [[ -n "$assocRange" ]]; then
-  start_all
-
-  cmd="${BIN_DIR}/../benchmark/bin/create \
-    tao-assoc-range-queries \
-    ${numNode} \
-    ${max_num_atype} \
-    ${warmup_assocRange} \
-    ${measure_assocRange} \
-    ${QUERY_DIR}/assocRange_warmup.txt \
-    ${QUERY_DIR}/assocRange_query.txt"
-  echo $cmd
 
   ${BIN_DIR}/../benchmark/bin/create \
     tao-assoc-range-queries \
@@ -63,10 +53,8 @@ if [[ -n "$assocRange" ]]; then
     ${warmup_assocRange} \
     ${measure_assocRange} \
     ${QUERY_DIR}/assocRange_warmup.txt \
-    ${QUERY_DIR}/assocRange_query.txt
+    ${QUERY_DIR}/assocRange_query.txt &
 
-
-  stop_all
 fi
 
 if [[ -n "$objGet" ]]; then
@@ -77,12 +65,11 @@ if [[ -n "$objGet" ]]; then
     ${warmup_objGet} \
     ${measure_objGet} \
     ${QUERY_DIR}/objGet_warmup.txt \
-    ${QUERY_DIR}/objGet_query.txt
+    ${QUERY_DIR}/objGet_query.txt &
 
 fi
 
 if [[ -n "$assocGet" ]]; then
-  start_all
 
   ${BIN_DIR}/../benchmark/bin/create \
     tao-assoc-get-queries \
@@ -92,13 +79,11 @@ if [[ -n "$assocGet" ]]; then
     ${measure_assocGet} \
     ${ASSOC_FILE} \
     ${QUERY_DIR}/assocGet_warmup.txt \
-    ${QUERY_DIR}/assocGet_query.txt
+    ${QUERY_DIR}/assocGet_query.txt &
 
-  stop_all
 fi
 
 if [[ -n "$assocCount" ]]; then
-  start_all
 
   ${BIN_DIR}/../benchmark/bin/create \
     tao-assoc-count-queries \
@@ -107,13 +92,11 @@ if [[ -n "$assocCount" ]]; then
     ${warmup_assocCount} \
     ${measure_assocCount} \
     ${QUERY_DIR}/assocCount_warmup.txt \
-    ${QUERY_DIR}/assocCount_query.txt
+    ${QUERY_DIR}/assocCount_query.txt &
 
-  stop_all
 fi
 
 if [[ -n "$assocTimeRange" ]]; then
-  start_all
 
   ${BIN_DIR}/../benchmark/bin/create \
     tao-assoc-time-range-queries \
@@ -123,7 +106,9 @@ if [[ -n "$assocTimeRange" ]]; then
     ${measure_assocTimeRange} \
     ${ASSOC_FILE} \
     ${QUERY_DIR}/assocTimeRange_warmup.txt \
-    ${QUERY_DIR}/assocTimeRange_query.txt
+    ${QUERY_DIR}/assocTimeRange_query.txt &
 
-  stop_all
 fi
+
+wait
+stop_all
