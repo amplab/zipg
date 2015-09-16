@@ -190,9 +190,8 @@ void generate_neighbor_queries(
             out << node << std::endl;
         }
     };
-    std::thread warmup(output, warmup_file, warmup_size, rng1);
+    output(warmup_file, warmup_size, rng1);
     output(query_file, query_size, rng2);
-    warmup.join();
 }
 
 void generate_neighbor_queries_limited(
@@ -221,9 +220,8 @@ void generate_neighbor_queries_limited(
             out << node << std::endl;
         }
     };
-    std::thread warmup(output, warmup_file, warmup_size, rng1);
+    output(warmup_file, warmup_size, rng1);
     output(query_file, query_size, rng2);
-    warmup.join();
 }
 
 // Format: randomNodeId,atype.
@@ -252,9 +250,8 @@ void generate_neighbor_atype_queries(
             out << node << "," << atype << std::endl;
         }
     };
-    std::thread warmup(output, warmup_file, warmup_size, rng1);
+    output(warmup_file, warmup_size, rng1);
     output(query_file, query_size, rng2);
-    warmup.join();
 }
 
 void generate_neighbor_atype_queries_limited(
@@ -286,9 +283,8 @@ void generate_neighbor_atype_queries_limited(
             out << node << "," << atype << std::endl;
         }
     };
-    std::thread warmup(output, warmup_file, warmup_size, rng1);
+    output(warmup_file, warmup_size, rng1);
     output(query_file, query_size, rng2);
-    warmup.join();
 }
 
 void read_node_attributes(
@@ -453,9 +449,8 @@ void generate_neighbor_node_queries(
             out << node_id << "," << attr << "," << search_key << "\n";
         }
     };
-    std::thread warmup(output, warmup_file, warmup_size, rng1);
+    output(warmup_file, warmup_size, rng1);
     output(query_file, query_size, rng2);
-    warmup.join();
 }
 
 void generate_neighbor_node_queries_limited(
@@ -498,9 +493,8 @@ void generate_neighbor_node_queries_limited(
             out << node_id << "," << attr << "," << search_key << "\n";
         }
     };
-    std::thread warmup(output, warmup_file, warmup_size, rng1);
+    output(warmup_file, warmup_size, rng1);
     output(query_file, query_size, rng2);
-    warmup.join();
 }
 
 // Samples (nodeId, atype) uniformly at random.  Fix off=0, limit=1000.
@@ -530,9 +524,8 @@ void generate_tao_assoc_range_queries(
             ++i;
         }
     };
-    std::thread warmup(output, warmup_file, warmup_size, rng1);
+    output(warmup_file, warmup_size, rng1);
     output(query_file, query_size, rng2);
-    warmup.join();
 }
 
 void generate_tao_assoc_range_queries_limited(
@@ -567,9 +560,8 @@ void generate_tao_assoc_range_queries_limited(
             ++i;
         }
     };
-    std::thread warmup(output, warmup_file, warmup_size, rng1);
+    output(warmup_file, warmup_size, rng1);
     output(query_file, query_size, rng2);
-    warmup.join();
 }
 
 // Helper function that scans the assoc file and look for global minimum and
@@ -652,9 +644,8 @@ void generate_tao_time_related_queries_helper(
             ++i;
         }
     };
-    std::thread warmup(output, warmup_file, warmup_size, rng1);
+    output(warmup_file, warmup_size, rng1);
     output(query_file, query_size, rng2);
-    warmup.join();
 }
 
 void generate_tao_time_related_queries_helper_limited(
@@ -720,9 +711,8 @@ void generate_tao_time_related_queries_helper_limited(
             ++i;
         }
     };
-    std::thread warmup(output, warmup_file, warmup_size, rng1);
+    output(warmup_file, warmup_size, rng1);
     output(query_file, query_size, rng2);
-    warmup.join();
 }
 
 // Scans the assoc file and for global minimum and maximum timestamps.  Then,
