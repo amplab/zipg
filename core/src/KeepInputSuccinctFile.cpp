@@ -15,7 +15,7 @@ KeepInputSuccinctFile::KeepInputSuccinctFile(
         exit(1);
     }
 
-    COND_LOG_E("raw input size %d, sa %d, isa %d, npa %d\n",
+    COND_LOG_E("raw input size %lld, sa %d, isa %d, npa %d\n",
         raw_input_size,
         sa_sampling_rate,
         std::min(SPARSE_ISA_SR, raw_input_size / 2),

@@ -211,6 +211,7 @@ public:
         const int32_t attrId,
         const std::string& attrKey)
     {
+        COND_LOG_E("filter_nodes received\n");
         graph_->filter_nodes(_return, nodeIds, attrId, attrKey);
     }
 
