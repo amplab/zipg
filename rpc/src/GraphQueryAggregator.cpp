@@ -375,6 +375,7 @@ public:
         for (auto it = splits_by_keys.begin(); it != splits_by_keys.end(); ++it)
         {
             host_id = it->first;
+            COND_LOG_E("send target: host %d\n", host_id);
             if (host_id == local_host_id_) {
                 filter_nodes_local(_return, it->second, attrId, attrKey);
                 COND_LOG_E("locally filtered result: %d\n", _return.size());
@@ -385,17 +386,21 @@ public:
             }
         }
 
+        COND_LOG_E("about to receive from remote hosts\n");
+
         std::vector<int64_t> shard_result;
         for (auto it = splits_by_keys.begin(); it != splits_by_keys.end(); ++it)
         {
             host_id = it->first;
+            COND_LOG_E("recv target: host %d\n", host_id);
             // The equal case has already been computed in loop above
             if (host_id != local_host_id_) {
                 aggregators_.at(host_id).recv_filter_nodes_local(shard_result);
-                COND_LOG_E("remotely filtered result: %d\n", shard_result.size());
+                COND_LOG_E("remotely filtered result: %d\n",
+                    shard_result.size());
+                _return.insert(
+                    _return.end(), shard_result.begin(), shard_result.end());
             }
-            _return.insert(
-                _return.end(), shard_result.begin(), shard_result.end());
         }
     }
 
