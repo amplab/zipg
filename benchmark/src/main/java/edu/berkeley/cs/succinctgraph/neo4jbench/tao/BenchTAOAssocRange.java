@@ -142,6 +142,7 @@ public class BenchTAOAssocRange {
             }
             out.close();
             if (resOut != null) {
+                resOut.flush();
                 resOut.close();
             }
 

@@ -140,6 +140,7 @@ public class BenchTAOAssocGet {
             }
             out.close();
             if (resOut != null) {
+                resOut.flush();
                 resOut.close();
             }
 

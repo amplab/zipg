@@ -315,6 +315,7 @@ public class NeighborNodeBench {
             tx.success();
             out.close();
             if (resOut != null) {
+                resOut.flush();
                 resOut.close();
             }
 

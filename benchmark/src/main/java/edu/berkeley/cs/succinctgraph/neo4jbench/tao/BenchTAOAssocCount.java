@@ -121,6 +121,7 @@ public class BenchTAOAssocCount {
             }
             out.close();
             if (resOut != null) {
+                resOut.flush();
                 resOut.close();
             }
 

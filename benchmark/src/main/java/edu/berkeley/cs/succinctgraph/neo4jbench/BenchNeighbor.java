@@ -116,7 +116,10 @@ public class BenchNeighbor {
 
             tx.success();
             out.close();
-            if (resOut != null) resOut.close();
+            if (resOut != null) {
+                resOut.flush();
+                resOut.close();
+            }
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
