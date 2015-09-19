@@ -99,7 +99,7 @@ public:
     // Concatenates the result strings with new lines (including at the end).
     // The output is suitable to be used in SuccinctGraph::construct().
     static std::string format_node_attrs_str(
-        std::vector<std::vector<std::string>> node_attrs);
+        const std::vector<std::vector<std::string>>& node_attrs);
 
     // Output: nodeId [delim] attr0 [delim] ...
     // Note that node ids must be exactly the range [0, ..., L].

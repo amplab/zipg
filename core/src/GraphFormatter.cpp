@@ -107,7 +107,6 @@ void GraphFormatter::create_node_table_zipf(
     assert(num_attr <= SuccinctGraph::MAX_NUM_NODE_ATTRS);
 
     std::ifstream attr_in_stream(attr_file);
-    std::vector<std::vector<std::string>> attributes;
     std::string attr, tmp;
     size_t length = static_cast<size_t>(len);
 
@@ -136,58 +135,23 @@ void GraphFormatter::create_node_table_zipf(
         corpus.insert(attr.substr(0, length)); // possibly truncate
         attr.erase(0, length); // can potentially reuse this row
     }
+    attr_in_stream.close();
     std::copy(corpus.begin(), corpus.end(), std::back_inserter(corpus_vec));
 
-    for (int j = 0; j < num_attr; ++j) {
-        LOG_E("Populating attribute column %d\n", j);
-        // need attributes for column `attr`, length num_nodes
-        selected_attrs.resize(num_nodes);
+    std::ofstream node_table_out(out_file);
+    std::vector<std::string> node_attrs;
+    node_attrs.resize(num_attr);
 
-        // Sample from corpus using Zipf
-        if (j == 0) {
-            // record some stats
-            for (size_t node = 0; node < num_nodes; ++node) {
-                item_idx = zipf.next();
-                selected_attrs[node] = corpus_vec[item_idx];
-                ++idx_to_freq[item_idx];
-            }
-        } else {
-            for (size_t node = 0; node < num_nodes; ++node) {
-                selected_attrs[node] = corpus_vec[zipf.next()];
-            }
+    for (size_t node = 0; node < num_nodes; ++node) {
+        for (int i = 0; i < num_attr; ++i) {
+            node_attrs[i] = corpus_vec[zipf.next()];
         }
-        attributes.push_back(selected_attrs);
+        node_table_out << GraphFormatter::format_node_attrs_str({ node_attrs });
     }
 
     if (report_freq_dist) {
-        // Report: How many items appear X times
-//        std::unordered_map<std::string, int> val_to_freq;
-//        std::map<int, int> freq_to_freq;
-//        auto column = attributes.at(0);
-//        for (auto& val : column) {
-//            ++val_to_freq[val];
-//        }
-//        for (auto it = val_to_freq.begin(); it != val_to_freq.end(); ++it) {
-//            ++freq_to_freq[it->second];
-//        }
-//        for (auto it = freq_to_freq.begin(); it != freq_to_freq.end(); ++it) {
-//            LOG_E("%d %d\n", it->second, it->first);
-//        }
-        std::map<size_t, int> ordered;
-
-        LOG_E("idx freq\n");
-        for (auto& entry : idx_to_freq) {
-            ordered[entry.first] = entry.second;
-        }
-        for (auto& entry : ordered) {
-            LOG_E("%lld %d\n", entry.first, entry.second);
-        }
+        LOG_E("Sorry, refactored so reports are not available!\n");
     }
-
-    assert(attributes.size() == static_cast<size_t>(num_attr) &&
-        attributes.at(0).size() == static_cast<size_t>(num_nodes));
-
-    output_node_attributes(out_file, attributes, num_nodes, num_attr);
 }
 
 void GraphFormatter::create_node_table(
@@ -421,10 +385,10 @@ void GraphFormatter::create_edge_table(
 }
 
 std::string GraphFormatter::format_node_attrs_str(
-    std::vector<std::vector<std::string>> node_attrs) {
-
+    const std::vector<std::vector<std::string>>& node_attrs)
+{
     std::string result, formatted;
-    for (auto attrs : node_attrs) {
+    for (auto& attrs : node_attrs) {
         assert(attrs.size() <= SuccinctGraph::MAX_NUM_NODE_ATTRS);
         formatted.clear();
         for (size_t i = 0; i < attrs.size(); ++i) {
