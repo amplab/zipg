@@ -39,7 +39,7 @@ do
       ${warmup_neighbor} \
       ${measure_neighbor} \
       ${QUERY_DIR}/neighbor_warmup_${num_nodes}.txt \
-      ${QUERY_DIR}/neighbor_query_${num_nodes}.txt &
+      ${QUERY_DIR}/neighbor_query_${num_nodes}.txt 
   fi
 
   if [[ -n "$node" ]]; then
@@ -52,7 +52,7 @@ do
       ${QUERY_DIR}/node_warmup_${num_nodes}.txt \
       ${QUERY_DIR}/node_query_${num_nodes}.txt \
       ${attributes} \
-      ${IS_NODE_FILE_CSV} &
+      ${IS_NODE_FILE_CSV} 
   fi
 
   if [[ -n "$neighborNode" ]]; then
@@ -67,7 +67,7 @@ do
      ${warmup_neighbor_node} \
      ${measure_neighbor_node} \
      ${QUERY_DIR}/neighbor_node_warmup_${num_nodes}.txt \
-     ${QUERY_DIR}/neighbor_node_query_${num_nodes}.txt &
+     ${QUERY_DIR}/neighbor_node_query_${num_nodes}.txt 
 
     # if noLoad, queries can have empty results
     # ${BIN_DIR}/../benchmark/bin/create neighbor-node-queries-noLoad \
@@ -91,10 +91,9 @@ do
       ${warmup_neighbor_atype} \
       ${measure_neighbor_atype} \
       ${QUERY_DIR}/neighborAtype_warmup_${num_nodes}.txt \
-      ${QUERY_DIR}/neighborAtype_query_${num_nodes}.txt &
+      ${QUERY_DIR}/neighborAtype_query_${num_nodes}.txt 
   fi
 
-  wait
   stop_all
 
 done
