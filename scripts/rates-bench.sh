@@ -16,6 +16,7 @@ dataset="-liveJournal${minDeg}"
 #dataset="-40attr16each"
 #dataset="-2attr350each"
 dataset="twitter2010-40attr16each"
+dataset="orkut-40attr16each"
 
 minDegs=('-minDeg60')
 minDegs=('' '-minDeg30')
@@ -71,7 +72,11 @@ EDGE_FILE=${2:-/mnt2T/twitter2010-npa${npa}sa${sa}isa${isa}.assoc}
 
 function bench() {
 
-  if [[ "$dataset" == "twitter2010-40attr16each"* ]]; then
+  if [[ "$dataset" == "orkut-40attr16each"* ]]; then
+    pushd ${QUERY_DIR} >/dev/null
+    yes | cp -rf orkut-40attr16each-queries/*txt ./
+    popd >/dev/null
+  elif [[ "$dataset" == "twitter2010-40attr16each"* ]]; then
     pushd ${QUERY_DIR} >/dev/null
     yes | cp -rf twitter2010-40attr16each-queries/*txt ./
     popd >/dev/null
@@ -85,15 +90,18 @@ function bench() {
   fi
 
   # If there's an argument supplied to this script, these steps have been done
-  if [[ ( $# -eq 0 ) && ( -n "$SHARDED" ) ]]; then
-    bash ${SCRIPT_DIR}/../sbin/stop-all.sh
-    sleep 2
-  
-    bash ${SCRIPT_DIR}/../sbin/start-servers.sh $NODE_FILE $EDGE_FILE $sa $isa $npa &
-    sleep 2
-  
-    bash ${SCRIPT_DIR}/../sbin/start-handlers.sh &
-    sleep 2
+  if [[ $# -eq 0 ]]; then
+    echo "In rates-bench's stop"
+    if [[ -n "$SHARDED" ]]; then
+      bash ${SCRIPT_DIR}/../sbin/stop-all.sh
+      sleep 2
+    
+      bash ${SCRIPT_DIR}/../sbin/start-servers.sh $NODE_FILE $EDGE_FILE $sa $isa $npa &
+      sleep 2
+    
+      bash ${SCRIPT_DIR}/../sbin/start-handlers.sh &
+      sleep 2
+    fi
   fi
 
     if [[ -n "$benchNode" ]]; then
@@ -403,7 +411,7 @@ function bench() {
 for throughput_threads in 64 ; do
 #for minDeg in "${minDegs[@]}"; do
   #dataset="-liveJournal${minDeg}"
-  sa=32; isa=64; npa=128; bench
+  sa=32; isa=64; npa=128; bench "$@"
   #sa=8; isa=64; npa=64; bench
   #sa=4; isa=16; npa=16; bench
 #done

@@ -58,9 +58,11 @@ if [[ -n $copyShardFiles ]]; then
       fi
   
       echo "shard_id: ${shard_id}, host_id ${host_id}"
-  
-      rsync -ar ${nodeTbl} ${host}:${nodeTbl} &
-      rsync -ar ${edgeTbl} ${host}:${edgeTbl} &
+
+      d1=$(dirname "${nodeTbl}")
+      d2=$(dirname "${edgeTbl}")
+      rsync -ar ${nodeTbl} ${host}:$d1 &
+      rsync -ar ${edgeTbl} ${host}:$d2 &
   done
   wait
   echo "Shard files copied to all servers."
@@ -83,7 +85,7 @@ sleep 2
 
 #### Launch benchmark
 bash ${currDir}/sbin/hosts.sh \
-  ${currDir}/scripts/rates-bench.sh \
+  bash ${currDir}/scripts/rates-bench.sh \
   $node_file_raw $edge_file_raw \
 
 # TODO: fetch results?
