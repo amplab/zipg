@@ -37,4 +37,4 @@ nohup "${bin}/../rpc/bin/graph_query_aggregator" \
   -s $1 \
   -i $2 \
   -h "${SUCCINCT_CONF_DIR}/hosts" \
-  2>&1 | tee "${SUCCINCT_LOG_PATH}/handler_${2}.log" &
+  2>&1 > "${SUCCINCT_LOG_PATH}/handler_${2}.log" &

@@ -55,7 +55,7 @@ for host in `echo "$HOSTLIST"|sed  "s/#.*$//;/^$/d"`; do
   if [ -n "${SUCCINCT_SSH_FOREGROUND}" ]; then
     ssh $SUCCINCT_SSH_OPTS "$host" "$sbin/start-servers-local.sh" $SHARDS_PER_SERVER $num_hosts $i $node_file_raw $edge_file_raw $3 $4 $5 2>&1 | sed "s/^/$host: /"
   else
-    ssh $SUCCINCT_SSH_OPTS "$host" "$sbin/start-servers-local.sh" $SHARDS_PER_SERVER $num_hosts $i $node_file_raw $edge_file_raw $3 $4 $5 2>&1 | sed "s/^/$host: /" &
+    ssh $SUCCINCT_SSH_OPTS "$host" "$sbin/start-servers-local.sh 2>&1 >jaqen.log" $SHARDS_PER_SERVER $num_hosts $i $node_file_raw $edge_file_raw $3 $4 $5 2>&1 | sed "s/^/$host: /" &
   fi
   i=$(( $i + 1 ))
 done
