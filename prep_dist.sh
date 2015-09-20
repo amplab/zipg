@@ -88,4 +88,17 @@ bash ${currDir}/sbin/hosts.sh \
   bash ${currDir}/scripts/rates-bench.sh \
   $node_file_raw $edge_file_raw \
 
+# TODO: kill?
+
 # TODO: fetch results?
+rm -rf thput
+bash ${currDir}/sbin/hosts.sh \
+  tail -n1 throughput_tao_mix-npa128sa32isa64-64clients.txt | \
+  cut -d',' -f2 | \
+  cut -d' ' -f2 >>thput
+cat thput
+echo sum,$(awk '{ sum += $1 } END { print sum }' thput)
+# TODO: remove?
+
+# "$sbin/hosts.sh" cd "$SUCCINCT_HOME" \; awk '{ sum += \$1 } END { print sum }' throughput_results_access > "$SUCCINCT_RES_PATH/thput"
+# "$sbin/hosts.sh" cd "$SUCCINCT_HOME" \; rm throughput_results_access

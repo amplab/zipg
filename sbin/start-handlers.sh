@@ -49,4 +49,3 @@ for host in `echo "$HOSTLIST"|sed  "s/#.*$//;/^$/d"`; do
   fi
   i=$(( $i + 1 ))
 done
-echo "Handlers all launched."

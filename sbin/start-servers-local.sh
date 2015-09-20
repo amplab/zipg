@@ -22,7 +22,7 @@ export LD_LIBRARY_PATH=$SUCCINCT_HOME/lib
 ############# usage 
 
 # number of shards to launch on each physical node
-num_shards=$1
+num_shards_local=$1
 # total number of physical nodes in cluster
 num_hosts=$2
 # which id identifies this physical node?
@@ -48,8 +48,8 @@ npa_sr=${8:-128}
 # ??
 num_replicas=$( wc -l < ${SUCCINCT_CONF_DIR}/repl)
 
-if [ "$num_shards" = "" ]; then
-  num_shards=1
+if [ "$num_shards_local" = "" ]; then
+  num_shards_local=1
 fi
 
 if [ "$num_hosts" = "" ]; then
@@ -80,8 +80,8 @@ while read sr dist; do
 	i=$(($i + 1))
 done < ${SUCCINCT_CONF_DIR}/repl
 
-limit=$(($num_shards - 1))
-padWidth=${#limit}
+limit=$(($num_shards_local - 1))
+padWidth=${#TOTAL_NUM_SHARDS}
 paddedTotalNumShards=$(printf "%0*d" ${padWidth} ${TOTAL_NUM_SHARDS})
 
 for i in `seq 0 $limit`; do
