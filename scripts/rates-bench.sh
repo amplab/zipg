@@ -403,9 +403,11 @@ function bench() {
         throughput_tao_mix-npa${npa}sa${sa}isa${isa}-${throughput_threads}clients.txt
     fi
 
+  if [[ $# -eq 0 ]]; then
     if [[ -n "$SHARDED" ]]; then
     	bash ${SCRIPT_DIR}/../sbin/stop-all.sh
     fi
+  fi
 }
 
 for throughput_threads in 64 ; do
