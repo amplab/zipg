@@ -2,6 +2,7 @@
 
 ## Adapted from spark-ec2
 currDir=$(cd $(dirname $0); pwd)
+SLAVES=`cat ${currDir}/../conf/hosts`
 
 DELETE_FLAG=""
 
@@ -39,8 +40,6 @@ fi
 DIR=`readlink -f "$1"`
 DIR=`echo "$DIR"|sed 's@/$@@'`
 DEST=`dirname "$DIR"`
-
-SLAVES=`cat ${currDir}/../conf/hosts`
 
 SSH_OPTS="-o StrictHostKeyChecking=no -o ConnectTimeout=5"
 
