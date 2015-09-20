@@ -5,7 +5,7 @@ set -e
 # 1. modify the configs
 # 2. bash init.sh
 # FIXME: the manual installation somehow doesn't work; use 0.9.2
-# 3. bash sbin/hosts.sh /vol0/succinct-graph/build_thrift.sh &
+# 3. bash sbin/hosts-sudo.sh sudo bash /vol0/succinct-graph/build_thrift.sh
 # 4. build on this machine as well:
 #       sudo bash ./build_thrift.sh && cmake . && make -j
 # 5. Set the desired settings in rates-bench.sh
