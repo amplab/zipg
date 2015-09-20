@@ -3,9 +3,11 @@ set -e
 
 #### Steps:
 # 1. modify the configs
-# 2. bash ${currDir}/sbin/hosts.sh ${currDir}/build_thrift.sh &
-# 3. build successfully on this machine:
-#       ./build_thrift.sh && cmake . && make -j
+# 2. bash init.sh
+# FIXME: the manual installation somehow doesn't work; use 0.9.2
+# 3. bash sbin/hosts.sh /vol0/succinct-graph/build_thrift.sh &
+# 4. build on this machine as well:
+#       sudo bash ./build_thrift.sh && cmake . && make -j
 
 node_file_raw=/vol0/orkut-40attr16each-tpch-npa128sa32isa64.node
 edge_file_raw=/vol0/orkut-40attr16each-npa128sa32isa64.assoc
@@ -19,17 +21,11 @@ copyShardFiles=T
 
 #### Initial setup
 
-yes | cp ~/spark-ec2/slaves conf/hosts >/dev/null
-
 currDir=$(cd $(dirname $0); pwd)
 . "${currDir}/sbin/succinct-config.sh"
 . "${currDir}/sbin/load-succinct-env.sh"
 
-echo "Num shards: ${TOTAL_NUM_SHARDS}; Num hosts: ${num_hosts}"
-
-sbin/copy-dir --delete ./
-sbin/copy-dir --delete ~/.bashrc
-sbin/copy-dir --delete ~/.gitconfig
+bash ./init.sh
 
 #### Copy the corresponding shard files over
 if [[ -n $copyShardFiles ]]; then
@@ -68,21 +64,23 @@ if [[ -n $copyShardFiles ]]; then
   wait
   echo "Shard files copied to all servers."
 fi
-wait
+#wait
 
 #### Launch aggregator & shards on all hosts
-bash ${currDir}/sbin/hosts.sh ${currDir}/sbin/stop-all.sh
+bash ${currDir}/sbin/stop-all.sh 
 sleep 2
 
 bash ${currDir}/sbin/hosts.sh source "${currDir}/sbin/succinct-config.sh"
 bash ${currDir}/sbin/hosts.sh source "${currDir}/sbin/load-succinct-env.sh"
+#sleep 2
+
+${currDir}/sbin/start-servers.sh $node_file_raw $edge_file_raw $sa $isa $npa
 sleep 2
 
-bash ${currDir}/sbin/start-servers.sh $node_file_raw $edge_file_raw $sa $isa $npa &
-sleep 2
-
-bash ${currDir}/sbin/start-handlers.sh &
+${currDir}/sbin/start-handlers.sh 
 sleep 2
 
 #### Launch benchmark
 # TODO
+
+wait

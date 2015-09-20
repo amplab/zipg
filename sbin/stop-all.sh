@@ -5,8 +5,8 @@ sbin=`cd "$sbin"; pwd`
 
 # Stop master
 echo "Stopping master..."
-"$sbin/stop-master.sh"
+bash $sbin/stop-master.sh
 
 # Stop workers
 echo "Stopping workers..."
-"$sbin/stop-workers.sh"
+bash $sbin/stop-workers.sh
