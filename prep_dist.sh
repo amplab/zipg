@@ -1,11 +1,15 @@
 #!/bin/bash
 set -e
 
+#### Steps:
+# 1. modify the configs
+# 2. build successfully on this machine
+
 NDEBUG=-DNDEBUG # use this for last runs
 NDEBUG="" # use this for testing
 
-node_file_raw=my.node
-edge_file_raw=my.assoc
+node_file_raw=/vol0/orkut-40attr16each-tpch-npa128sa32isa64.node
+edge_file_raw=/vol0/orkut-40attr16each-npa128sa32isa64.assoc
 
 #### Initial setup
 
@@ -17,8 +21,6 @@ currDir=$(cd $(dirname $0); pwd)
 
 echo "Num shards: ${TOTAL_NUM_SHARDS}; Num hosts: ${num_hosts}"
 
-SGFLAGS="${NDEBUG}" cmake .
-make -j
 sbin/copy-dir --delete ./
 sbin/copy-dir --delete ~/.bashrc
 sbin/copy-dir --delete ~/.gitconfig
@@ -31,7 +33,7 @@ paddedTotalNumShards=$(printf "%0*d" ${padWidth} ${TOTAL_NUM_SHARDS})
 for shard_id in `seq 0 $limit`; do
     # transfer shard id i to an appropriate host
     host_id=$(($shard_id % num_hosts))
-    host=$(sed -n "${host_id}{p;q;}" ${currDir}/conf/hosts)
+    host=$(sed -n "$(($host_id + 1)){p;q;}" ${currDir}/conf/hosts)
 
     padded_shard_id=$(printf "%0*d" ${padWidth} ${shard_id})
     node_split="${node_file_raw}-part${padded_shard_id}of${paddedTotalNumShards}"
@@ -54,8 +56,8 @@ for shard_id in `seq 0 $limit`; do
 
     echo "shard_id: ${shard_id}, host_id ${host_id}"
 
-    rsync ${nodeTbl} ${host}:${nodeTbl} &
-    rsync ${edgeTbl} ${host}:${edgeTbl} &
+    rsync -ar ${nodeTbl} ${host}:${nodeTbl} &
+    rsync -ar ${edgeTbl} ${host}:${edgeTbl} &
 done
 wait
 echo "Shard files copied to all servers."
