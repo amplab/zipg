@@ -11,6 +11,11 @@ NDEBUG="" # use this for testing
 node_file_raw=/vol0/orkut-40attr16each-tpch-npa128sa32isa64.node
 edge_file_raw=/vol0/orkut-40attr16each-npa128sa32isa64.assoc
 
+# L0, by default
+npa=128
+sa=32
+isa=64
+
 #### Initial setup
 
 ln -sf ~/spark-ec2/slaves conf/hosts
@@ -61,3 +66,16 @@ for shard_id in `seq 0 $limit`; do
 done
 wait
 echo "Shard files copied to all servers."
+
+#### Launch aggregator & shards on all hosts
+bash ${currDir}/sbin/hosts.sh ${currDir}/sbin/stop-all.sh
+sleep 2
+
+bash ${currDir}/sbin/start-servers.sh $node_file_raw $edge_file_raw $sa $isa $npa
+sleep 2
+
+bash ${currDir}/sbin/start-handlers.sh &
+sleep 2
+
+#### Launch benchmark
+# TODO
