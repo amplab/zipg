@@ -5,15 +5,15 @@ NDEBUG=-DNDEBUG # use this for last runs
 NDEBUG="" # use this for testing
 
 node_file_raw=my.node
-edge_split=my.assoc
+edge_file_raw=my.assoc
 
 #### Initial setup
 
 ln -sf ~/spark-ec2/slaves conf/hosts
 
 currDir=$(cd $(dirname $0); pwd)
-. "${currDir}/succinct-config.sh"
-. "${currDir}/load-succinct-env.sh"
+. "${currDir}/sbin/succinct-config.sh"
+. "${currDir}/sbin/load-succinct-env.sh"
 
 echo "Num shards: ${TOTAL_NUM_SHARDS}; Num hosts: ${num_hosts}"
 
