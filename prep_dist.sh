@@ -84,6 +84,6 @@ sleep 2
 #### Launch benchmark
 bash ${currDir}/sbin/hosts.sh \
   ${currDir}/scripts/rates-bench.sh \
-  DUMMY \
+  $node_file_raw $edge_file_raw \
 
 # TODO: fetch results?

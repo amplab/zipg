@@ -60,6 +60,15 @@ benchTaoMixThput=T
 
 augOpt="-augOpts"
 
+# NOTE: binary format has changed due to rebasing
+#EDGE_FILE="data/higgs-social_network.opts-npa${npa}sa${sa}isa${isa}.edge_table"
+#NODE_FILE="data/higgs${dataset}-tpch-npa${npa}sa${sa}isa${isa}.nodeWithPtrs"
+#EDGE_FILE="/mnt2T/data/liveJournal${augOpt}${minDeg}-npa${npa}sa${sa}isa${isa}.assoc"
+#NODE_FILE="/mnt2T/data/liveJournal-40attr16each-tpch-npa${npa}sa${sa}isa${isa}.node"
+
+NODE_FILE=${1:-/mnt/twitter2010-40attr16each-tpch-npa${npa}sa${sa}isa${isa}.node}
+EDGE_FILE=${2:-/mnt2T/twitter2010-npa${npa}sa${sa}isa${isa}.assoc}
+
 function bench() {
 
   if [[ "$dataset" == "twitter2010-40attr16each"* ]]; then
@@ -74,15 +83,6 @@ function bench() {
     echo implement query copying for me! dataset: '${dataset}'
     exit 1
   fi
-
-  # NOTE: binary format has changed due to rebasing
-  #EDGE_FILE="data/higgs-social_network.opts-npa${npa}sa${sa}isa${isa}.edge_table"
-  #NODE_FILE="data/higgs${dataset}-tpch-npa${npa}sa${sa}isa${isa}.nodeWithPtrs"
-  #EDGE_FILE="/mnt2T/data/liveJournal${augOpt}${minDeg}-npa${npa}sa${sa}isa${isa}.assoc"
-  #NODE_FILE="/mnt2T/data/liveJournal-40attr16each-tpch-npa${npa}sa${sa}isa${isa}.node"
-  
-  EDGE_FILE="/mnt2T/twitter2010-npa${npa}sa${sa}isa${isa}.assoc"
-  NODE_FILE="/mnt/twitter2010-40attr16each-tpch-npa${npa}sa${sa}isa${isa}.node"
 
   # If there's an argument supplied to this script, these steps have been done
   if [[ ( $# -eq 0 ) && ( -n "$SHARDED" ) ]]; then
