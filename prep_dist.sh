@@ -8,6 +8,7 @@ set -e
 # 3. bash sbin/hosts.sh /vol0/succinct-graph/build_thrift.sh &
 # 4. build on this machine as well:
 #       sudo bash ./build_thrift.sh && cmake . && make -j
+# 5. Set the desired settings in rates-bench.sh
 
 node_file_raw=/vol0/orkut-40attr16each-tpch-npa128sa32isa64.node
 edge_file_raw=/vol0/orkut-40attr16each-npa128sa32isa64.assoc
@@ -81,6 +82,8 @@ ${currDir}/sbin/start-handlers.sh
 sleep 2
 
 #### Launch benchmark
-# TODO
+bash ${currDir}/sbin/hosts.sh \
+  ${currDir}/scripts/rates-bench.sh \
+  DUMMY \
 
-wait
+# TODO: fetch results?

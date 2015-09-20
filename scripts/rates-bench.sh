@@ -61,6 +61,7 @@ benchTaoMixThput=T
 augOpt="-augOpts"
 
 function bench() {
+
   if [[ "$dataset" == "twitter2010-40attr16each"* ]]; then
     pushd ${QUERY_DIR} >/dev/null
     yes | cp -rf twitter2010-40attr16each-queries/*txt ./
@@ -83,7 +84,8 @@ function bench() {
   EDGE_FILE="/mnt2T/twitter2010-npa${npa}sa${sa}isa${isa}.assoc"
   NODE_FILE="/mnt/twitter2010-40attr16each-tpch-npa${npa}sa${sa}isa${isa}.node"
 
-  if [[ -n "$SHARDED" ]]; then
+  # If there's an argument supplied to this script, these steps have been done
+  if [[ ( $# -eq 0 ) && ( -n "$SHARDED" ) ]]; then
     bash ${SCRIPT_DIR}/../sbin/stop-all.sh
     sleep 2
   
