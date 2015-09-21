@@ -19,14 +19,14 @@ edge_file_raw=/vol1/uk-2007-05-40attr16each-npa128sa32isa64.assoc
 node_file_raw=/vol0/twitter2010-40attr16each-tpch.node
 edge_file_raw=/vol0/twitter2010-npa128sa32isa64.assoc
 
-threads=( 16 )
+threads=( 32 )
 benches=(
-  #benchNeighborThput
-  #benchNhbrAtypeThput
-  #benchEdgeAttrsThput
-  #benchNhbrNodeThput
-  #benchNodeNodeThput
-  #benchMixThput
+  benchNeighborThput
+  benchNhbrAtypeThput
+  benchEdgeAttrsThput
+  benchNhbrNodeThput
+  benchNodeNodeThput
+  benchMixThput
   benchTaoMixThput
 )
 
@@ -34,9 +34,9 @@ benches=(
 # servers when the time's up.  The real times should be set
 # in the code (e.g. GraphBenchmark), and recompile accordingly.
 # in secs
-thputWarm=60
-thputMeasure=180
-thputCool=30
+# thputWarm=60
+# thputMeasure=180
+# thputCool=30
 
 #### Initial setup
 
@@ -134,7 +134,7 @@ for benchType in "${benches[@]}"; do
   for throughput_threads in ${threads[*]}; do
       start_all
 
-      bash ${currDir}/sbin/hosts.sh \
+      bash ${currDir}/sbin/hosts-noStderr.sh \
         $benchType=T bash ${currDir}/scripts/bench_func.sh \
         $node_file_raw $edge_file_raw $throughput_threads
 

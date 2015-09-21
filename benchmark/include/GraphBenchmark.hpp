@@ -32,9 +32,9 @@ private:
     constexpr static double ASSOC_TIME_RANGE_PERC = 0.028;
 
     // Timings for throughput benchmarks.
-    constexpr static int64_t WARMUP_MICROSECS = 180 * 1000 * 1000;
+    constexpr static int64_t WARMUP_MICROSECS = 300 * 1000 * 1000;
     constexpr static int64_t MEASURE_MICROSECS = 900 * 1000 * 1000;
-    constexpr static int64_t COOLDOWN_MICROSECS = 30 * 1000 * 1000;
+    constexpr static int64_t COOLDOWN_MICROSECS = 120 * 1000 * 1000;
 
     typedef enum {
         NHBR = 0,
@@ -93,6 +93,7 @@ private:
         }
 
         std::vector<shared_ptr<std::thread>> threads;
+        time_t start;
         switch (type) {
         case NHBR:
             LOG_E("Starting nhbr thput\n");
@@ -143,12 +144,13 @@ private:
             }
             break;
         case TAO_MIX:
-            LOG_E("Starting taoMix thput\n");
             for (auto thread_data : thread_datas) {
                 threads.push_back(shared_ptr<std::thread>(new std::thread(
                     &GraphBenchmark::benchmark_tao_mix_throughput_helper,
                     this, thread_data)));
             }
+            start = get_timestamp();
+            LOG_E("%lld,Starting taoMix thput\n", start);
             break;
         case EDGE_ATTRS:
             LOG_E("Starting edgeAttrs thput\n");
@@ -165,7 +167,7 @@ private:
         for (auto thread : threads) {
             thread->join();
         }
-        LOG_E("Ends thput\n");
+        LOG_E("Ends thput,%.1f\n", (get_timestamp() - start) * 1. / 1e6);
     }
 
     template<typename T>
