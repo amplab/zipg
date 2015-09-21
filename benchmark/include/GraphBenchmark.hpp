@@ -494,7 +494,8 @@ public:
         size_t warmup_size = warmup_neighbor_indices.size();
         size_t measure_size = neighbor_indices.size();
 
-        thread_local std::mt19937 gen(1618 + thread_data->client_id);
+        thread_local std::random_device rd;
+        thread_local std::mt19937 gen(rd());
         std::uniform_int_distribution<int> warmup_dis(0, warmup_size - 1);
         std::uniform_int_distribution<int> measure_dis(0, measure_size - 1);
 
@@ -557,7 +558,8 @@ public:
         size_t warmup_size = warmup_nhbrAtype_indices.size();
         size_t measure_size = nhbrAtype_indices.size();
 
-        thread_local std::mt19937 gen(1618 + thread_data->client_id);
+        thread_local std::random_device rd;
+        thread_local std::mt19937 gen(rd());
         std::uniform_int_distribution<int> warmup_dis(0, warmup_size - 1);
         std::uniform_int_distribution<int> measure_dis(0, measure_size - 1);
 
@@ -628,7 +630,8 @@ public:
         size_t warmup_size = warmup_nhbrAtype_indices.size();
         size_t measure_size = nhbrAtype_indices.size();
 
-        thread_local std::mt19937 gen(1618 + thread_data->client_id);
+        thread_local std::random_device rd;
+        thread_local std::mt19937 gen(rd());
         std::uniform_int_distribution<int> warmup_dis(0, warmup_size - 1);
         std::uniform_int_distribution<int> measure_dis(0, measure_size - 1);
 
@@ -699,7 +702,8 @@ public:
         size_t warmup_size = warmup_nhbrNode_indices.size();
         size_t measure_size = nhbrNode_indices.size();
 
-        thread_local std::mt19937 gen(1618 + thread_data->client_id);
+        thread_local std::random_device rd;
+        thread_local std::mt19937 gen(rd());
         std::uniform_int_distribution<int> warmup_dis(0, warmup_size - 1);
         std::uniform_int_distribution<int> measure_dis(0, measure_size - 1);
 
@@ -774,7 +778,8 @@ public:
         size_t warmup_size = warmup_node_attributes.size();
         size_t measure_size = node_attributes.size();
 
-        thread_local std::mt19937 gen(1618 + thread_data->client_id);
+        thread_local std::random_device rd;
+        thread_local std::mt19937 gen(rd());
         std::uniform_int_distribution<int> warmup_dis(0, warmup_size - 1);
         std::uniform_int_distribution<int> measure_dis(0, measure_size - 1);
 
@@ -842,7 +847,8 @@ public:
         size_t warmup_size = warmup_node_attributes.size();
         size_t measure_size = node_attributes.size();
 
-        thread_local std::mt19937 gen(1618 + thread_data->client_id);
+        thread_local std::random_device rd;
+        thread_local std::mt19937 gen(rd());
         std::uniform_int_distribution<int> warmup_dis(0, warmup_size - 1);
         std::uniform_int_distribution<int> measure_dis(0, measure_size - 1);
 
@@ -925,7 +931,8 @@ public:
         size_t node_size = node_attributes.size();
         size_t nhbr_atype_size = nhbrAtype_indices.size();
 
-        thread_local std::mt19937 gen(1618 + thread_data->client_id);
+        thread_local std::random_device rd;
+        thread_local std::mt19937 gen(rd());
         std::uniform_int_distribution<int> warmup_nhbr_dis(
             0, warmup_nhbr_size - 1);
         std::uniform_int_distribution<int> warmup_nhbr_node_dis(
@@ -1083,7 +1090,8 @@ public:
 
         int query, query_idx;
 
-        thread_local std::mt19937 gen(1618 + thread_data->client_id);
+        thread_local std::random_device rd;
+        thread_local std::mt19937 gen(rd());
         std::uniform_int_distribution<int> dist_query(0, 4);
 
         std::uniform_int_distribution<int> warmup_assoc_range_size(
