@@ -83,25 +83,47 @@ sleep 2
 ${currDir}/sbin/start-handlers.sh 
 sleep 2
 
+function timestamp() {
+  date +"%D-%T"
+}
+
 #### Launch benchmark
 for throughput_threads in 16 32 64; do
     bash ${currDir}/sbin/hosts-noStderr.sh \
       bash ${currDir}/scripts/rates-bench.sh \
-      $node_file_raw $edge_file_raw $throughput_threads \
+      $node_file_raw $edge_file_raw $throughput_threads
+
+    for bench in get_nodes2 get_nhbrsNode get_nhbrsAtype getEdgeAttrs get_nhbrs tao_mix mix; do
+      rm -rf thput
+      bash ${currDir}/sbin/hosts.sh \
+        tail -n1 throughput_${bench}-npa128sa32isa64-${throughput_threads}clients.txt | \
+        cut -d',' -f2 | \
+        cut -d' ' -f2 >>thput
+      cat thput # check each host serves roughly the same # of queries
+
+      f="thput-${bench}-${throughput_threads}clients.txt"
+      t=$(timestamp)
+      echo "$t,$bench" >>${f}
+      cat thput >> ${f}
+
+      entry="$t,$bench,${throughput_threads}*10,$(awk '{ sum += $1 } END { print sum }' thput)"
+      echo $entry
+      echo $entry >> thput-summary
+    done
 
     # TODO: kill?
-
-    # TODO: fetch results?
-    rm -rf thput
-    bash ${currDir}/sbin/hosts.sh \
-      tail -n1 throughput_tao_mix-npa128sa32isa64-${throughput_threads}clients.txt | \
-      cut -d',' -f2 | \
-      cut -d' ' -f2 >>thput
-    cat thput
-    echo ${throughput_threads}*10 clients,$(awk '{ sum += $1 } END { print sum }' thput) >>summary
-    cat summary
-    # TODO: remove?
-
-    # "$sbin/hosts.sh" cd "$SUCCINCT_HOME" \; awk '{ sum += \$1 } END { print sum }' throughput_results_access > "$SUCCINCT_RES_PATH/thput"
-    # "$sbin/hosts.sh" cd "$SUCCINCT_HOME" \; rm throughput_results_access
 done
+
+# TODO: fetch results?
+# rm -rf thput
+# bash ${currDir}/sbin/hosts.sh \
+  # tail -n1 throughput_tao_mix-npa128sa32isa64-${throughput_threads}clients.txt | \
+  # cut -d',' -f2 | \
+  # cut -d' ' -f2 >>thput
+# cat thput
+# echo ${throughput_threads}*10 clients,$(awk '{ sum += $1 } END { print sum }' thput) >>summary
+# cat summary
+# TODO: remove?
+
+# "$sbin/hosts.sh" cd "$SUCCINCT_HOME" \; awk '{ sum += \$1 } END { print sum }' throughput_results_access > "$SUCCINCT_RES_PATH/thput"
+# "$sbin/hosts.sh" cd "$SUCCINCT_HOME" \; rm throughput_results_access
