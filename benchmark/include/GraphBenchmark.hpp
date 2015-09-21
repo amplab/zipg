@@ -93,51 +93,81 @@ private:
         }
 
         std::vector<shared_ptr<std::thread>> threads;
-        for (auto thread_data : thread_datas) {
-            switch (type) {
-            case NHBR:
+        switch (type) {
+        case NHBR:
+            LOG_E("Starting nhbr thput\n");
+            for (auto thread_data : thread_datas) {
                 threads.push_back(shared_ptr<std::thread>(new std::thread(
                     &GraphBenchmark::benchmark_neighbor_throughput_helper,
                     this, thread_data)));
-                break;
-            case NHBR_ATYPE:
+            }
+            LOG_E("Ends nhbr thput\n");
+            break;
+        case NHBR_ATYPE:
+            LOG_E("Starting nhbrAtype thput\n");
+            for (auto thread_data : thread_datas) {
                 threads.push_back(shared_ptr<std::thread>(new std::thread(
                     &GraphBenchmark::benchmark_neighbor_atype_throughput_helper,
                     this, thread_data)));
-                break;
-            case NHBR_NODE:
+            }
+            LOG_E("Ends nhbrAtype thput\n");
+            break;
+        case NHBR_NODE:
+            LOG_E("Starting nhbrAttr thput\n");
+            for (auto thread_data : thread_datas) {
                 threads.push_back(shared_ptr<std::thread>(new std::thread(
                     &GraphBenchmark::benchmark_neighbor_node_throughput_helper,
                     this, thread_data)));
-                break;
-            case NODE:
+            }
+            LOG_E("Ends nhbrAttr thput\n");
+            break;
+        case NODE:
+            LOG_E("Starting node thput\n");
+            for (auto thread_data : thread_datas) {
                 threads.push_back(shared_ptr<std::thread>(new std::thread(
                     &GraphBenchmark::benchmark_node_throughput_helper,
                     this, thread_data)));
-                break;
-            case NODE2:
+            }
+            LOG_E("Ends node thput\n");
+            break;
+        case NODE2:
+            LOG_E("Starting nodeNode thput\n");
+            for (auto thread_data : thread_datas) {
                 threads.push_back(shared_ptr<std::thread>(new std::thread(
                     &GraphBenchmark::benchmark_node_node_throughput_helper,
                     this, thread_data)));
-                break;
-            case MIX:
+            }
+            LOG_E("Ends nodeNode thput\n");
+            break;
+        case MIX:
+            LOG_E("Starting mix thput\n");
+            for (auto thread_data : thread_datas) {
                 threads.push_back(shared_ptr<std::thread>(new std::thread(
                     &GraphBenchmark::benchmark_mix_throughput_helper,
                     this, thread_data)));
-                break;
-            case TAO_MIX:
+            }
+            LOG_E("Ends mix thput\n");
+            break;
+        case TAO_MIX:
+            LOG_E("Starting taoMix thput\n");
+            for (auto thread_data : thread_datas) {
                 threads.push_back(shared_ptr<std::thread>(new std::thread(
                     &GraphBenchmark::benchmark_tao_mix_throughput_helper,
                     this, thread_data)));
-                break;
-            case EDGE_ATTRS:
+            }
+            LOG_E("Ends taoMix thput\n");
+            break;
+        case EDGE_ATTRS:
+            LOG_E("Starting edgeAttrs thput\n");
+            for (auto thread_data : thread_datas) {
                 threads.push_back(shared_ptr<std::thread>(new std::thread(
                     &GraphBenchmark::benchmark_edge_attrs_throughput_helper,
                     this, thread_data)));
-                break;
-            default:
-                assert(false);
             }
+            LOG_E("Ends edgeAttrs thput\n");
+            break;
+        default:
+            assert(false);
         }
 
         for (auto thread : threads) {
@@ -466,7 +496,7 @@ public:
     {
         double query_thput = 0;
         double edges_thput = 0;
-        LOG_E("About to start querying on this thread...\n");
+        COND_LOG_E("About to start querying on this thread...\n");
 
         size_t warmup_size = warmup_neighbor_indices.size();
         size_t measure_size = neighbor_indices.size();
@@ -598,7 +628,7 @@ public:
     {
         double query_thput = 0;
         double edges_thput = 0;
-        LOG_E("About to start querying on this thread...\n");
+        COND_LOG_E("About to start querying on this thread...\n");
 
         size_t warmup_size = warmup_nhbrAtype_indices.size();
         size_t measure_size = nhbrAtype_indices.size();
@@ -668,7 +698,7 @@ public:
     {
         double query_thput = 0;
         double edges_thput = 0;
-        LOG_E("About to start querying on this thread...\n");
+        COND_LOG_E("About to start querying on this thread...\n");
 
         size_t warmup_size = warmup_nhbrNode_indices.size();
         size_t measure_size = nhbrNode_indices.size();
@@ -741,7 +771,7 @@ public:
     {
         double query_thput = 0;
         double edges_thput = 0;
-        LOG_E("About to start querying on this thread...\n");
+        COND_LOG_E("About to start querying on this thread...\n");
 
         size_t warmup_size = warmup_node_attributes.size();
         size_t measure_size = node_attributes.size();
@@ -808,7 +838,7 @@ public:
     {
         double query_thput = 0;
         double edges_thput = 0;
-        LOG_E("About to start querying on this thread...\n");
+        COND_LOG_E("About to start querying on this thread...\n");
 
         size_t warmup_size = warmup_node_attributes.size();
         size_t measure_size = node_attributes.size();
@@ -884,7 +914,7 @@ public:
     {
         double query_thput = 0;
         double edges_thput = 0;
-        LOG_E("About to start querying on this thread...\n");
+        COND_LOG_E("About to start querying on this thread...\n");
 
         size_t warmup_nhbr_size = warmup_neighbor_indices.size();
         size_t warmup_nhbr_node_size = warmup_nhbrNode_indices.size();
@@ -1048,7 +1078,7 @@ public:
     {
         double query_thput = 0;
         double edges_thput = 0;
-        LOG_E("About to start querying on this thread...\n");
+        COND_LOG_E("About to start querying on this thread...\n");
 
         int query, query_idx;
 
