@@ -101,7 +101,6 @@ private:
                     &GraphBenchmark::benchmark_neighbor_throughput_helper,
                     this, thread_data)));
             }
-            LOG_E("Ends nhbr thput\n");
             break;
         case NHBR_ATYPE:
             LOG_E("Starting nhbrAtype thput\n");
@@ -110,7 +109,6 @@ private:
                     &GraphBenchmark::benchmark_neighbor_atype_throughput_helper,
                     this, thread_data)));
             }
-            LOG_E("Ends nhbrAtype thput\n");
             break;
         case NHBR_NODE:
             LOG_E("Starting nhbrAttr thput\n");
@@ -119,7 +117,6 @@ private:
                     &GraphBenchmark::benchmark_neighbor_node_throughput_helper,
                     this, thread_data)));
             }
-            LOG_E("Ends nhbrAttr thput\n");
             break;
         case NODE:
             LOG_E("Starting node thput\n");
@@ -128,7 +125,6 @@ private:
                     &GraphBenchmark::benchmark_node_throughput_helper,
                     this, thread_data)));
             }
-            LOG_E("Ends node thput\n");
             break;
         case NODE2:
             LOG_E("Starting nodeNode thput\n");
@@ -137,7 +133,6 @@ private:
                     &GraphBenchmark::benchmark_node_node_throughput_helper,
                     this, thread_data)));
             }
-            LOG_E("Ends nodeNode thput\n");
             break;
         case MIX:
             LOG_E("Starting mix thput\n");
@@ -146,7 +141,6 @@ private:
                     &GraphBenchmark::benchmark_mix_throughput_helper,
                     this, thread_data)));
             }
-            LOG_E("Ends mix thput\n");
             break;
         case TAO_MIX:
             LOG_E("Starting taoMix thput\n");
@@ -155,7 +149,6 @@ private:
                     &GraphBenchmark::benchmark_tao_mix_throughput_helper,
                     this, thread_data)));
             }
-            LOG_E("Ends taoMix thput\n");
             break;
         case EDGE_ATTRS:
             LOG_E("Starting edgeAttrs thput\n");
@@ -164,7 +157,6 @@ private:
                     &GraphBenchmark::benchmark_edge_attrs_throughput_helper,
                     this, thread_data)));
             }
-            LOG_E("Ends edgeAttrs thput\n");
             break;
         default:
             assert(false);
@@ -173,6 +165,7 @@ private:
         for (auto thread : threads) {
             thread->join();
         }
+        LOG_E("Ends thput\n");
     }
 
     template<typename T>

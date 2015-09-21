@@ -84,7 +84,8 @@ ${currDir}/sbin/start-handlers.sh
 sleep 2
 
 #### Launch benchmark
-bash ${currDir}/sbin/hosts.sh \
+#bash ${currDir}/sbin/hosts.sh \
+bash ${currDir}/sbin/hosts-noStderr.sh \
   bash ${currDir}/scripts/rates-bench.sh \
   $node_file_raw $edge_file_raw \
 
