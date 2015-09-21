@@ -30,6 +30,14 @@ benches=(
   #benchTaoMixThput
 )
 
+# NOTE: settings here only affects this master killing all
+# servers when the time's up.  The real times should be set
+# in the code (e.g. GraphBenchmark), and recompile accordingly.
+# in secs
+thputWarm=10
+thputMeasure=30
+thputCool=5
+
 #### Initial setup
 
 currDir=$(cd $(dirname $0); pwd)
@@ -118,9 +126,12 @@ for benchType in "${benches[@]}"; do
 
       bash ${currDir}/sbin/hosts.sh \
         $benchType=T bash ${currDir}/scripts/bench_func.sh \
-        $node_file_raw $edge_file_raw $throughput_threads
+        $node_file_raw $edge_file_raw $throughput_threads &
 
-      # TODO: kill based on timings?
+      sleep 20 # 20 secs of buffer times...
+      thputSumTime=$(($thputWarm + $thputMeasure + $thputCool))
+      sleep $thputSumTime
+      stop_all
 
       for bench in get_nodes2 get_nhbrsNode get_nhbrsAtype getEdgeAttrs get_nhbrs tao_mix mix; do
         rm -rf thput
@@ -144,6 +155,5 @@ for benchType in "${benches[@]}"; do
         echo $entry >> thput-summary
       done
 
-      stop_all
   done
 done
