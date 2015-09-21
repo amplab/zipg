@@ -113,6 +113,16 @@ bash ${currDir}/sbin/hosts.sh source "${currDir}/sbin/load-succinct-env.sh"
 sleep 2
 
 #### Launch benchmark
+declare -A benchMap=(
+  ["benchTaoMixThput"]="tao_mix"
+  ["benchMixThput"]="mix"
+  ["benchNodeNodeThput"]="get_nodes2"
+  ["benchNhbrNodeThput"]="get_nhbrsNode"
+  ["benchEdgeAttrsThput"]="getEdgeAttrs"
+  ["benchNhbrAtypeThput"]="get_nhbrsAtype"
+  ["benchNeighborThput"]="get_nhbrs"
+)
+
 for throughput_threads in ${threads[*]}; do
     for bench in get_nodes2 get_nhbrsNode get_nhbrsAtype getEdgeAttrs get_nhbrs tao_mix mix; do
       bash ${currDir}/sbin/hosts.sh \
@@ -137,27 +147,26 @@ for benchType in "${benches[@]}"; do
 #      echo "Killed everyone, collecting logs"
 #      sleep 5
 
-      for bench in get_nodes2 get_nhbrsNode get_nhbrsAtype getEdgeAttrs get_nhbrs tao_mix mix; do
-        rm -rf thput
-        bash ${currDir}/sbin/hosts.sh \
-          tail -n1 throughput_${bench}-npa128sa32isa64-${throughput_threads}clients.txt | \
-          cut -d',' -f2 | \
-          cut -d' ' -f2 >>thput
-        sum=$(awk '{ sum += $1 } END { print sum }' thput)
-        if [[ 1 -eq "$(echo "${sum} == 0" | bc)" ]]; then
-          # some bench is not run
-          continue
-        fi
+      bench="${benchMap["$benchType"]}"
+      rm -rf thput
+      bash ${currDir}/sbin/hosts.sh \
+        tail -n1 throughput_${bench}-npa128sa32isa64-${throughput_threads}clients.txt | \
+        cut -d',' -f2 | \
+        cut -d' ' -f2 >>thput
+      sum=$(awk '{ sum += $1 } END { print sum }' thput)
+      if [[ 1 -eq "$(echo "${sum} == 0" | bc)" ]]; then
+        # some bench is not run
+        continue
+      fi
 
-        f="thput-${bench}-${throughput_threads}clients.txt"
-        t=$(timestamp)
-        echo "$t,$bench" >>${f}
-        cat thput >> ${f}
+      f="thput-${bench}-${throughput_threads}clients.txt"
+      t=$(timestamp)
+      echo "$t,$bench" >>${f}
+      cat thput >> ${f}
 
-        entry="$t,$bench,${throughput_threads}*10,$sum"
-        echo $entry
-        echo $entry >> thput-summary
-      done
+      entry="$t,$bench,${throughput_threads}*10,$sum"
+      echo $entry
+      echo $entry >> thput-summary
 
       stop_all
 
