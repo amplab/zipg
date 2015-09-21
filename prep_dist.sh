@@ -94,8 +94,6 @@ bash ${currDir}/sbin/hosts.sh source "${currDir}/sbin/succinct-config.sh"
 bash ${currDir}/sbin/hosts.sh source "${currDir}/sbin/load-succinct-env.sh"
 sleep 2
 
-start_all
-
 #### Launch benchmark
 threads=(16 32 64)
 
@@ -107,7 +105,7 @@ for throughput_threads in ${threads[*]}; do
 done
 
 for throughput_threads in ${threads[*]}; do
-    stop_all
+    start_all
 
     bash ${currDir}/sbin/hosts.sh \
       bash ${currDir}/scripts/rates-bench.sh \
@@ -136,5 +134,5 @@ for throughput_threads in ${threads[*]}; do
       echo $entry >> thput-summary
     done
 
-    start_all
+    stop_all
 done
