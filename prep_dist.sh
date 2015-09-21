@@ -144,7 +144,7 @@ for benchType in "${benches[@]}"; do
           cut -d',' -f2 | \
           cut -d' ' -f2 >>thput
         sum=$(awk '{ sum += $1 } END { print sum }' thput)
-        if [[ $sum -eq 0 ]]; then
+        if [[ 1 -eq "$(echo "${sum} == 0" | bc)" ]]; then
           # some bench is not run
           continue
         fi
