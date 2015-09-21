@@ -13,18 +13,21 @@ set -e
 npa=128; sa=32; isa=64 # L0, by default
 copyShardFiles=T
 
+node_file_raw=/vol1/uk-2007-05-40attr16each-tpch-npa128sa32isa64.node
+edge_file_raw=/vol1/uk-2007-05-40attr16each-npa128sa32isa64.assoc
+
 node_file_raw=/vol0/twitter2010-40attr16each-tpch.node
 edge_file_raw=/vol0/twitter2010-npa128sa32isa64.assoc
 
-threads=(16 32 64)
+threads=( 16 )
 benches=(
-  benchNeighborThput
-  benchNhbrAtypeThput
-  benchEdgeAttrsThput
-  benchNhbrNodeThput
-  benchNodeNodeThput
-  benchMixThput
-  benchTaoMixThput
+  #benchNeighborThput
+  #benchNhbrAtypeThput
+  #benchEdgeAttrsThput
+  #benchNhbrNodeThput
+  #benchNodeNodeThput
+  #benchMixThput
+  #benchTaoMixThput
 )
 
 #### Initial setup
@@ -109,13 +112,12 @@ for throughput_threads in ${threads[*]}; do
     done
 done
 
-for benchType in ${benches[*]}; do
+for benchType in "${benches[@]}"; do
   for throughput_threads in ${threads[*]}; do
       start_all
 
       bash ${currDir}/sbin/hosts.sh \
-        export $benchType=T && \
-        bash ${currDir}/scripts/bench_func.sh \
+        $benchType=T bash ${currDir}/scripts/bench_func.sh \
         $node_file_raw $edge_file_raw $throughput_threads
 
       # TODO: kill based on timings?
