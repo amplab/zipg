@@ -70,28 +70,49 @@ fi
 wait
 
 #### Launch aggregator & shards on all hosts
-bash ${currDir}/sbin/stop-all.sh 
-sleep 2
 
-bash ${currDir}/sbin/hosts.sh source "${currDir}/sbin/succinct-config.sh"
-bash ${currDir}/sbin/hosts.sh source "${currDir}/sbin/load-succinct-env.sh"
-sleep 2
+function stop_all() {
+  bash ${currDir}/sbin/stop-all.sh 
+  sleep 2
+}
 
-${currDir}/sbin/start-servers.sh $node_file_raw $edge_file_raw $sa $isa $npa
-sleep 2
+function start_all() {
+  ${currDir}/sbin/start-servers.sh $node_file_raw $edge_file_raw $sa $isa $npa
+  sleep 2
 
-${currDir}/sbin/start-handlers.sh 
-sleep 2
+  ${currDir}/sbin/start-handlers.sh 
+  sleep 2
+}
 
 function timestamp() {
   date +"%D-%T"
 }
 
+stop_all
+
+bash ${currDir}/sbin/hosts.sh source "${currDir}/sbin/succinct-config.sh"
+bash ${currDir}/sbin/hosts.sh source "${currDir}/sbin/load-succinct-env.sh"
+sleep 2
+
+start_all
+
 #### Launch benchmark
-for throughput_threads in 16 32 64; do
-    bash ${currDir}/sbin/hosts-noStderr.sh \
+threads=(16 32 64)
+
+for throughput_threads in ${threads[*]}; do
+    for bench in get_nodes2 get_nhbrsNode get_nhbrsAtype getEdgeAttrs get_nhbrs tao_mix mix; do
+      bash ${currDir}/sbin/hosts.sh \
+        rm -rf throughput_${bench}-npa128sa32isa64-${throughput_threads}clients.txt
+    done
+done
+
+for throughput_threads in ${threads[*]}; do
+    stop_all
+
+    bash ${currDir}/sbin/hosts.sh \
       bash ${currDir}/scripts/rates-bench.sh \
       $node_file_raw $edge_file_raw $throughput_threads
+    # TODO: kill based on timings?
 
     for bench in get_nodes2 get_nhbrsNode get_nhbrsAtype getEdgeAttrs get_nhbrs tao_mix mix; do
       rm -rf thput
@@ -99,6 +120,10 @@ for throughput_threads in 16 32 64; do
         tail -n1 throughput_${bench}-npa128sa32isa64-${throughput_threads}clients.txt | \
         cut -d',' -f2 | \
         cut -d' ' -f2 >>thput
+      if [[ ! "$(wc -l thput | cut -d' ' -f 1)" == $num_hosts ]]; then
+        # some bench is not run
+        continue
+      fi
       cat thput # check each host serves roughly the same # of queries
 
       f="thput-${bench}-${throughput_threads}clients.txt"
@@ -111,19 +136,5 @@ for throughput_threads in 16 32 64; do
       echo $entry >> thput-summary
     done
 
-    # TODO: kill?
+    start_all
 done
-
-# TODO: fetch results?
-# rm -rf thput
-# bash ${currDir}/sbin/hosts.sh \
-  # tail -n1 throughput_tao_mix-npa128sa32isa64-${throughput_threads}clients.txt | \
-  # cut -d',' -f2 | \
-  # cut -d' ' -f2 >>thput
-# cat thput
-# echo ${throughput_threads}*10 clients,$(awk '{ sum += $1 } END { print sum }' thput) >>summary
-# cat summary
-# TODO: remove?
-
-# "$sbin/hosts.sh" cd "$SUCCINCT_HOME" \; awk '{ sum += \$1 } END { print sum }' throughput_results_access > "$SUCCINCT_RES_PATH/thput"
-# "$sbin/hosts.sh" cd "$SUCCINCT_HOME" \; rm throughput_results_access
