@@ -144,13 +144,12 @@ private:
             }
             break;
         case TAO_MIX:
+            LOG_E("Starting taoMix thput\n", start);
             for (auto thread_data : thread_datas) {
                 threads.push_back(shared_ptr<std::thread>(new std::thread(
                     &GraphBenchmark::benchmark_tao_mix_throughput_helper,
                     this, thread_data)));
             }
-            start = get_timestamp();
-            LOG_E("%lld,Starting taoMix thput\n", start);
             break;
         case EDGE_ATTRS:
             LOG_E("Starting edgeAttrs thput\n");
@@ -164,10 +163,13 @@ private:
             assert(false);
         }
 
+        start = get_timestamp();
         for (auto thread : threads) {
             thread->join();
         }
-        LOG_E("Ends thput,%.1f\n", (get_timestamp() - start) * 1. / 1e6);
+        LOG_E("Ends thput,%.1f secs [warm+measure+cool = %.1f]\n",
+            (get_timestamp() - start) * 1. / 1e6,
+            (WARMUP_MICROSECS + MEASURE_MICROSECS + COOLDOWN_MICROSECS) / 1e6);
     }
 
     template<typename T>
