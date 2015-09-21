@@ -321,7 +321,8 @@ void read_node_attributes(
             }
             assert(attr.size() == num_actual_delims);
         }
-        attributes.push_back(attr);
+        attributes.emplace_back();
+        attributes.back() = attr;
     }
 }
 
@@ -348,7 +349,6 @@ void generate_node_queries(
     std::uniform_int_distribution<int> uni_attr(0, num_attributes - 1);
 
     std::ofstream warmup_out(warmup_query_file);
-    std::ofstream query_out(query_file);
     for (int64_t i = 0; i < warmup_size; i++) {
         int node_id = uni_node(rng);
         int attr1 = uni_attr(rng);
@@ -360,7 +360,9 @@ void generate_node_queries(
                    << attr2 << GraphFormatter::QUERY_FILED_DELIM
                    << search_key2 << "\n";
     }
+    warmup_out.close();
 
+    std::ofstream query_out(query_file);
     for (int64_t i = 0; i < query_size; i++) {
         int node_id = uni_node(rng);
         int attr1 = uni_attr(rng);
