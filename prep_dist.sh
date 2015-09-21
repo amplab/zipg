@@ -118,7 +118,8 @@ for throughput_threads in ${threads[*]}; do
         tail -n1 throughput_${bench}-npa128sa32isa64-${throughput_threads}clients.txt | \
         cut -d',' -f2 | \
         cut -d' ' -f2 >>thput
-      if [[ ! "$(wc -l thput | cut -d' ' -f 1)" == $num_hosts ]]; then
+      sum=$(awk '{ sum += $1 } END { print sum }' thput)
+      if [[ $sum -eq 0 ]]; then
         # some bench is not run
         continue
       fi
@@ -129,7 +130,7 @@ for throughput_threads in ${threads[*]}; do
       echo "$t,$bench" >>${f}
       cat thput >> ${f}
 
-      entry="$t,$bench,${throughput_threads}*10,$(awk '{ sum += $1 } END { print sum }' thput)"
+      entry="$t,$bench,${throughput_threads}*10,$sum"
       echo $entry
       echo $entry >> thput-summary
     done
