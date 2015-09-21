@@ -487,7 +487,7 @@ public:
                     mod_get(warmup_neighbor_indices, warmup_dis(gen)));
                 ++i;
             }
-            LOG_E("Warmup done: served %" PRId64 " queries\n", i);
+            COND_LOG_E("Warmup done: served %" PRId64 " queries\n", i);
 
             // Measure phase
             i = 0;
@@ -503,7 +503,7 @@ public:
             double total_secs = (end - start) * 1. / 1e6;
             query_thput = i * 1. / total_secs;
             edges_thput = edges * 1. / total_secs;
-            LOG_E("Query done: served %" PRId64 " queries\n", i);
+            COND_LOG_E("Query done: served %" PRId64 " queries\n", i);
 
             // Cooldown
             time_t cooldown_start = get_timestamp();
@@ -528,7 +528,7 @@ public:
     {
         double query_thput = 0;
         double edges_thput = 0;
-        LOG_E("About to start querying on this thread...\n");
+        COND_LOG_E("About to start querying on this thread...\n");
 
         size_t warmup_size = warmup_nhbrAtype_indices.size();
         size_t measure_size = nhbrAtype_indices.size();
@@ -552,7 +552,7 @@ public:
                     mod_get(warmup_atypes, query_idx));
                 ++i;
             }
-            LOG_E("Warmup done: served %" PRId64 " queries\n", i);
+            COND_LOG_E("Warmup done: served %" PRId64 " queries\n", i);
 
             // Measure phase
             i = 0;
@@ -571,7 +571,7 @@ public:
             double total_secs = (end - start) * 1. / 1e6;
             query_thput = i * 1. / total_secs;
             edges_thput = edges * 1. / total_secs;
-            LOG_E("Query done: served %" PRId64 " queries\n", i);
+            COND_LOG_E("Query done: served %" PRId64 " queries\n", i);
 
             // Cooldown
             time_t cooldown_start = get_timestamp();
@@ -622,7 +622,7 @@ public:
                     mod_get(warmup_atypes, query_idx));
                 ++i;
             }
-            LOG_E("Warmup done: served %" PRId64 " queries\n", i);
+            COND_LOG_E("Warmup done: served %" PRId64 " queries\n", i);
 
             // Measure phase
             i = 0;
@@ -641,7 +641,7 @@ public:
             double total_secs = (end - start) * 1. / 1e6;
             query_thput = i * 1. / total_secs;
             edges_thput = edges * 1. / total_secs;
-            LOG_E("Query done: served %" PRId64 " queries\n", i);
+            COND_LOG_E("Query done: served %" PRId64 " queries\n", i);
 
             // Cooldown
             time_t cooldown_start = get_timestamp();
@@ -693,7 +693,7 @@ public:
                     mod_get(warmup_nhbrNode_attrs, query_idx));
                 ++i;
             }
-            LOG_E("Warmup done: served %" PRId64 " queries\n", i);
+            COND_LOG_E("Warmup done: served %" PRId64 " queries\n", i);
 
             // Measure phase
             i = 0;
@@ -713,7 +713,7 @@ public:
             double total_secs = (end - start) * 1. / 1e6;
             query_thput = i * 1. / total_secs;
             edges_thput = edges * 1. / total_secs;
-            LOG_E("Query done: served %" PRId64 " queries\n", i);
+            COND_LOG_E("Query done: served %" PRId64 " queries\n", i);
 
             // Cooldown
             time_t cooldown_start = get_timestamp();
@@ -764,7 +764,7 @@ public:
                     mod_get(warmup_node_queries, query_idx));
                 ++i;
             }
-            LOG_E("Warmup done: served %" PRId64 " queries\n", i);
+            COND_LOG_E("Warmup done: served %" PRId64 " queries\n", i);
 
             // Measure phase
             i = 0;
@@ -782,7 +782,7 @@ public:
             double total_secs = (end - start) * 1. / 1e6;
             query_thput = i * 1. / total_secs;
             edges_thput = edges * 1. / total_secs;
-            LOG_E("Query done: served %" PRId64 " queries\n", i);
+            COND_LOG_E("Query done: served %" PRId64 " queries\n", i);
 
             // Cooldown
             time_t cooldown_start = get_timestamp();
@@ -834,7 +834,7 @@ public:
                     mod_get(warmup_node_queries2, query_idx));
                 ++i;
             }
-            LOG_E("Warmup done: served %" PRId64 " queries\n", i);
+            COND_LOG_E("Warmup done: served %" PRId64 " queries\n", i);
 
             // Measure phase
             i = 0;
@@ -855,7 +855,7 @@ public:
             double total_secs = (end - start) * 1. / 1e6;
             query_thput = i * 1. / total_secs;
             edges_thput = edges * 1. / total_secs;
-            LOG_E("Query done: served %" PRId64 " queries\n", i);
+            COND_LOG_E("Query done: served %" PRId64 " queries\n", i);
 
             // Cooldown
             time_t cooldown_start = get_timestamp();
@@ -958,7 +958,7 @@ public:
                 }
                 ++i;
             }
-            LOG_E("Warmup done: served %" PRId64 " queries\n", i);
+            COND_LOG_E("Warmup done: served %" PRId64 " queries\n", i);
 
             // Measure phase
             i = 0;
@@ -1013,7 +1013,7 @@ public:
             double total_secs = (end - start) * 1. / 1e6;
             query_thput = i * 1. / total_secs;
             edges_thput = edges * 1. / total_secs;
-            LOG_E("Query done: served %" PRId64 " queries\n", i);
+            COND_LOG_E("Query done: served %" PRId64 " queries\n", i);
 
             // Cooldown
             time_t cooldown_start = get_timestamp();
@@ -1130,7 +1130,7 @@ public:
                 }
                 ++i;
             }
-            LOG_E("Warmup done: served %" PRId64 " queries\n", i);
+            COND_LOG_E("Warmup done: served %" PRId64 " queries\n", i);
 
             // Measure phase
             i = 0;
@@ -1190,7 +1190,7 @@ public:
             double total_secs = (end - start) * 1. / 1e6;
             query_thput = i * 1. / total_secs;
             edges_thput = edges * 1. / total_secs;
-            LOG_E("Query done: served %" PRId64 " queries\n", i);
+            COND_LOG_E("Query done: served %" PRId64 " queries\n", i);
 
             // Cooldown
             time_t cooldown_start = get_timestamp();
