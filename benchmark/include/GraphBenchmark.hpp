@@ -528,6 +528,11 @@ public:
             edges_thput = edges * 1. / total_secs;
             COND_LOG_E("Query done: served %" PRId64 " queries\n", i);
 
+            std::ofstream ofs("throughput_get_nhbrs.txt",
+                std::ofstream::out | std::ofstream::app);
+            ofs << query_thput << " " << edges_thput << std::endl;
+            ofs.close();
+
             // Cooldown
             time_t cooldown_start = get_timestamp();
             while (get_timestamp() - cooldown_start < COOLDOWN_MICROSECS) {
@@ -535,10 +540,6 @@ public:
                     result, mod_get(neighbor_indices, i));
                 ++i;
             }
-
-            std::ofstream ofs("throughput_get_nhbrs.txt",
-                std::ofstream::out | std::ofstream::app);
-            ofs << query_thput << " " << edges_thput << std::endl;
 
         } catch (std::exception &e) {
             LOG_E("Throughput test ends...: '%s'\n", e.what());
@@ -596,6 +597,11 @@ public:
             edges_thput = edges * 1. / total_secs;
             COND_LOG_E("Query done: served %" PRId64 " queries\n", i);
 
+            std::ofstream ofs("throughput_get_nhbrsAtype.txt",
+                std::ofstream::out | std::ofstream::app);
+            ofs << query_thput << " " << edges_thput << std::endl;
+            ofs.close();
+
             // Cooldown
             time_t cooldown_start = get_timestamp();
             while (get_timestamp() - cooldown_start < COOLDOWN_MICROSECS) {
@@ -605,10 +611,6 @@ public:
                     mod_get(atypes, query_idx));
                 ++query_idx;
             }
-
-            std::ofstream ofs("throughput_get_nhbrsAtype.txt",
-                std::ofstream::out | std::ofstream::app);
-            ofs << query_thput << " " << edges_thput << std::endl;
 
         } catch (std::exception &e) {
             LOG_E("Throughput test ends...: '%s'\n", e.what());
@@ -666,6 +668,11 @@ public:
             edges_thput = edges * 1. / total_secs;
             COND_LOG_E("Query done: served %" PRId64 " queries\n", i);
 
+            std::ofstream ofs("throughput_getEdgeAttrs.txt",
+                std::ofstream::out | std::ofstream::app);
+            ofs << query_thput << " " << edges_thput << std::endl;
+            ofs.close();
+
             // Cooldown
             time_t cooldown_start = get_timestamp();
             while (get_timestamp() - cooldown_start < COOLDOWN_MICROSECS) {
@@ -675,10 +682,6 @@ public:
                     mod_get(atypes, query_idx));
                 ++query_idx;
             }
-
-            std::ofstream ofs("throughput_getEdgeAttrs.txt",
-                std::ofstream::out | std::ofstream::app);
-            ofs << query_thput << " " << edges_thput << std::endl;
 
         } catch (std::exception &e) {
             LOG_E("Throughput test ends...: '%s'\n", e.what());
@@ -738,6 +741,11 @@ public:
             edges_thput = edges * 1. / total_secs;
             COND_LOG_E("Query done: served %" PRId64 " queries\n", i);
 
+            std::ofstream ofs("throughput_get_nhbrsNode.txt",
+                std::ofstream::out | std::ofstream::app);
+            ofs << query_thput << " " << edges_thput << std::endl;
+            ofs.close();
+
             // Cooldown
             time_t cooldown_start = get_timestamp();
             while (get_timestamp() - cooldown_start < COOLDOWN_MICROSECS) {
@@ -749,9 +757,6 @@ public:
                 ++query_idx;
             }
 
-            std::ofstream ofs("throughput_get_nhbrsNode.txt",
-                std::ofstream::out | std::ofstream::app);
-            ofs << query_thput << " " << edges_thput << std::endl;
 
         } catch (std::exception &e) {
             LOG_E("Throughput test ends...: '%s'\n", e.what());
@@ -807,6 +812,11 @@ public:
             edges_thput = edges * 1. / total_secs;
             COND_LOG_E("Query done: served %" PRId64 " queries\n", i);
 
+            std::ofstream ofs("throughput_get_nodes.txt",
+                std::ofstream::out | std::ofstream::app);
+            ofs << query_thput << " " << edges_thput << std::endl;
+            ofs.close();
+
             // Cooldown
             time_t cooldown_start = get_timestamp();
             while (get_timestamp() - cooldown_start < COOLDOWN_MICROSECS) {
@@ -815,10 +825,6 @@ public:
                     mod_get(node_queries, query_idx));
                 ++query_idx;
             }
-
-            std::ofstream ofs("throughput_get_nodes.txt",
-                std::ofstream::out | std::ofstream::app);
-            ofs << query_thput << " " << edges_thput << std::endl;
 
         } catch (std::exception &e) {
             LOG_E("Throughput test ends...: '%s'\n", e.what());
@@ -880,6 +886,11 @@ public:
             edges_thput = edges * 1. / total_secs;
             COND_LOG_E("Query done: served %" PRId64 " queries\n", i);
 
+            std::ofstream ofs("throughput_get_nodes2.txt",
+                std::ofstream::out | std::ofstream::app);
+            ofs << query_thput << " " << edges_thput << std::endl;
+            ofs.close();
+
             // Cooldown
             time_t cooldown_start = get_timestamp();
             while (get_timestamp() - cooldown_start < COOLDOWN_MICROSECS) {
@@ -891,10 +902,6 @@ public:
                     mod_get(node_queries2, query_idx));
                 ++query_idx;
             }
-
-            std::ofstream ofs("throughput_get_nodes2.txt",
-                std::ofstream::out | std::ofstream::app);
-            ofs << query_thput << " " << edges_thput << std::endl;
 
         } catch (std::exception &e) {
             LOG_E("Throughput test ends...: '%s'\n", e.what());
@@ -1038,16 +1045,17 @@ public:
             edges_thput = edges * 1. / total_secs;
             COND_LOG_E("Query done: served %" PRId64 " queries\n", i);
 
+            std::ofstream ofs("throughput_mix.txt",
+                std::ofstream::out | std::ofstream::app);
+            ofs << query_thput << " " << edges_thput << std::endl;
+            ofs.close();
+
             // Cooldown
             time_t cooldown_start = get_timestamp();
             while (get_timestamp() - cooldown_start < COOLDOWN_MICROSECS) {
                 RUN_MIX_THPUT_BODY
                 ++query_idx;
             }
-
-            std::ofstream ofs("throughput_mix.txt",
-                std::ofstream::out | std::ofstream::app);
-            ofs << query_thput << " " << edges_thput << std::endl;
 
         } catch (std::exception &e) {
             LOG_E("Throughput test ends...: '%s'\n", e.what());
@@ -1215,15 +1223,16 @@ public:
             edges_thput = edges * 1. / total_secs;
             COND_LOG_E("Query done: served %" PRId64 " queries\n", i);
 
+            std::ofstream ofs("throughput_tao_mix.txt",
+                std::ofstream::out | std::ofstream::app);
+            ofs << query_thput << " " << edges_thput << std::endl;
+            ofs.close();
+
             // Cooldown
             time_t cooldown_start = get_timestamp();
             while (get_timestamp() - cooldown_start < COOLDOWN_MICROSECS) {
                 RUN_TAO_MIX_THPUT_BODY
             }
-
-            std::ofstream ofs("throughput_tao_mix.txt",
-                std::ofstream::out | std::ofstream::app);
-            ofs << query_thput << " " << edges_thput << std::endl;
 
         } catch (std::exception &e) {
             LOG_E("Throughput test ends...: '%s'\n", e.what());
