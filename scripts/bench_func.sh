@@ -1,28 +1,25 @@
 #!/bin/bash
 
+###### HACKY: this is basically rates-bench.sh, but this script takes those 
+###### `benchQuery` arguments from caller.
+
 SCRIPT_DIR=$(dirname $0)
 source ${SCRIPT_DIR}/config.sh
 source ${SCRIPT_DIR}/../conf/succinct-env.sh
+npa=128; sa=32; isa=64
+
+NODE_FILE=${1:-/mnt/twitter2010-40attr16each-tpch-npa${npa}sa${sa}isa${isa}.node}
+EDGE_FILE=${2:-/mnt2T/twitter2010-npa${npa}sa${sa}isa${isa}.assoc}
+throughput_threads=${3:-""}
 
 num_nodes=100000 # hack
+augOpt="-augOpts"
+# hostname of the master aggregator that bench client connects to
+# if desirable to put client on 1 host, and agg. on the other, change this
+masterHostName="localhost"
 
-minDeg="-minDeg45"
-minDeg="-minDeg60"
-minDeg="-minDeg30"
-minDeg=""
-dataset="-liveJournal${minDeg}"
-#dataset="-20attr35each"
-#dataset="-40attr16each"
-#dataset="-2attr350each"
 dataset="orkut-40attr16each"
 dataset="twitter2010-40attr16each"
-
-minDegs=('-minDeg60')
-minDegs=('' '-minDeg30')
-minDegs=('-minDeg30')
-minDegs=('-minDeg30WithTsAttr')
-minDegs=('' '-minDeg30WithTsAttr')
-minDegs=('')
 
 # NOTE: comment this out for non-sharded bench
 SHARDED=T
@@ -30,46 +27,7 @@ if [[ -z "$SHARDED" ]]; then
   TOTAL_NUM_SHARDS=no
 fi
 
-#benchNeighbor=T
-#benchNeighborAtype=T
-#benchNeighborNode=T
-#benchNode=T
-#benchNodeNode=T
-#benchMix=T
-
-# hostname of the master aggregator that bench client connects to
-# if desirable to put client on 1 host, and agg. on the other, change this
-masterHostName="localhost"
-
-#benchNodeThput=T # deprecated
-
-#benchNeighborThput=T
-#benchNhbrAtypeThput=T
-#benchEdgeAttrsThput=T
-#benchNhbrNodeThput=T
-#benchNodeNodeThput=T
-benchMixThput=T
-#benchTaoMixThput=T
-
-#benchAssocRange=T
-#benchAssocCount=T
-#benchObjGet=T
-#benchAssocGet=T
-#benchAssocTimeRange=T
-#benchTaoMix=T
-
-augOpt="-augOpts"
-
-# NOTE: binary format has changed due to rebasing
-#EDGE_FILE="data/higgs-social_network.opts-npa${npa}sa${sa}isa${isa}.edge_table"
-#NODE_FILE="data/higgs${dataset}-tpch-npa${npa}sa${sa}isa${isa}.nodeWithPtrs"
-#EDGE_FILE="/mnt2T/data/liveJournal${augOpt}${minDeg}-npa${npa}sa${sa}isa${isa}.assoc"
-#NODE_FILE="/mnt2T/data/liveJournal-40attr16each-tpch-npa${npa}sa${sa}isa${isa}.node"
-
-NODE_FILE=${1:-/mnt/twitter2010-40attr16each-tpch-npa${npa}sa${sa}isa${isa}.node}
-EDGE_FILE=${2:-/mnt2T/twitter2010-npa${npa}sa${sa}isa${isa}.assoc}
-throughput_threads=${3:-""}
-
+###############
 
 if [[ "$dataset" == "orkut-40attr16each"* ]]; then
   pushd ${QUERY_DIR} >/dev/null
@@ -413,12 +371,9 @@ function bench() {
 
 if [[ "$throughput_threads" == "" ]]; then
   for throughput_threads in 32 64; do
-  #for minDeg in "${minDegs[@]}"; do
-    #dataset="-liveJournal${minDeg}"
     sa=32; isa=64; npa=128; bench "$@"
     #sa=8; isa=64; npa=64; bench
     #sa=4; isa=16; npa=16; bench
-  #done
   done
 else
     sa=32; isa=64; npa=128; bench "$@" 2>&1

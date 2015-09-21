@@ -10,15 +10,22 @@ set -e
 #       sudo bash ./build_thrift.sh && cmake . && make -j
 # 5. Set the desired settings in rates-bench.sh
 
+npa=128; sa=32; isa=64 # L0, by default
+copyShardFiles=T
+
 node_file_raw=/vol0/twitter2010-40attr16each-tpch.node
 edge_file_raw=/vol0/twitter2010-npa128sa32isa64.assoc
 
-# L0, by default
-npa=128
-sa=32
-isa=64
-
-copyShardFiles=T
+threads=(16 32 64)
+benches=(
+  benchNeighborThput
+  benchNhbrAtypeThput
+  benchEdgeAttrsThput
+  benchNhbrNodeThput
+  benchNodeNodeThput
+  benchMixThput
+  benchTaoMixThput
+)
 
 #### Initial setup
 
@@ -95,8 +102,6 @@ bash ${currDir}/sbin/hosts.sh source "${currDir}/sbin/load-succinct-env.sh"
 sleep 2
 
 #### Launch benchmark
-threads=(16 32 64)
-
 for throughput_threads in ${threads[*]}; do
     for bench in get_nodes2 get_nhbrsNode get_nhbrsAtype getEdgeAttrs get_nhbrs tao_mix mix; do
       bash ${currDir}/sbin/hosts.sh \
@@ -104,36 +109,39 @@ for throughput_threads in ${threads[*]}; do
     done
 done
 
-for throughput_threads in ${threads[*]}; do
-    start_all
+for benchType in ${benches[*]}; do
+  for throughput_threads in ${threads[*]}; do
+      start_all
 
-    bash ${currDir}/sbin/hosts.sh \
-      bash ${currDir}/scripts/rates-bench.sh \
-      $node_file_raw $edge_file_raw $throughput_threads
-    # TODO: kill based on timings?
-
-    for bench in get_nodes2 get_nhbrsNode get_nhbrsAtype getEdgeAttrs get_nhbrs tao_mix mix; do
-      rm -rf thput
       bash ${currDir}/sbin/hosts.sh \
-        tail -n1 throughput_${bench}-npa128sa32isa64-${throughput_threads}clients.txt | \
-        cut -d',' -f2 | \
-        cut -d' ' -f2 >>thput
-      sum=$(awk '{ sum += $1 } END { print sum }' thput)
-      if [[ $sum -eq 0 ]]; then
-        # some bench is not run
-        continue
-      fi
-      cat thput # check each host serves roughly the same # of queries
+        export $benchType=T && \
+        bash ${currDir}/scripts/bench_func.sh \
+        $node_file_raw $edge_file_raw $throughput_threads
 
-      f="thput-${bench}-${throughput_threads}clients.txt"
-      t=$(timestamp)
-      echo "$t,$bench" >>${f}
-      cat thput >> ${f}
+      # TODO: kill based on timings?
 
-      entry="$t,$bench,${throughput_threads}*10,$sum"
-      echo $entry
-      echo $entry >> thput-summary
-    done
+      for bench in get_nodes2 get_nhbrsNode get_nhbrsAtype getEdgeAttrs get_nhbrs tao_mix mix; do
+        rm -rf thput
+        bash ${currDir}/sbin/hosts.sh \
+          tail -n1 throughput_${bench}-npa128sa32isa64-${throughput_threads}clients.txt | \
+          cut -d',' -f2 | \
+          cut -d' ' -f2 >>thput
+        sum=$(awk '{ sum += $1 } END { print sum }' thput)
+        if [[ $sum -eq 0 ]]; then
+          # some bench is not run
+          continue
+        fi
 
-    stop_all
+        f="thput-${bench}-${throughput_threads}clients.txt"
+        t=$(timestamp)
+        echo "$t,$bench" >>${f}
+        cat thput >> ${f}
+
+        entry="$t,$bench,${throughput_threads}*10,$sum"
+        echo $entry
+        echo $entry >> thput-summary
+      done
+
+      stop_all
+  done
 done
