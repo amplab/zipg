@@ -15,8 +15,8 @@ dataset="-liveJournal${minDeg}"
 #dataset="-20attr35each"
 #dataset="-40attr16each"
 #dataset="-2attr350each"
-dataset="twitter2010-40attr16each"
 dataset="orkut-40attr16each"
+dataset="twitter2010-40attr16each"
 
 minDegs=('-minDeg60')
 minDegs=('' '-minDeg30')
@@ -49,8 +49,8 @@ masterHostName="localhost"
 #benchEdgeAttrsThput=T
 #benchNhbrNodeThput=T
 #benchNodeNodeThput=T
-#benchMixThput=T
-benchTaoMixThput=T
+benchMixThput=T
+#benchTaoMixThput=T
 
 #benchAssocRange=T
 #benchAssocCount=T
@@ -69,6 +69,7 @@ augOpt="-augOpts"
 
 NODE_FILE=${1:-/mnt/twitter2010-40attr16each-tpch-npa${npa}sa${sa}isa${isa}.node}
 EDGE_FILE=${2:-/mnt2T/twitter2010-npa${npa}sa${sa}isa${isa}.assoc}
+throughput_threads=${3:-""}
 
 function bench() {
 
@@ -410,11 +411,15 @@ function bench() {
   fi
 }
 
-for throughput_threads in 64 ; do
-#for minDeg in "${minDegs[@]}"; do
-  #dataset="-liveJournal${minDeg}"
-  sa=32; isa=64; npa=128; bench "$@"
-  #sa=8; isa=64; npa=64; bench
-  #sa=4; isa=16; npa=16; bench
-#done
-done
+if [[ "$throughput_threads" == "" ]]; then
+  for throughput_threads in 32 64; do
+  #for minDeg in "${minDegs[@]}"; do
+    #dataset="-liveJournal${minDeg}"
+    sa=32; isa=64; npa=128; bench "$@"
+    #sa=8; isa=64; npa=64; bench
+    #sa=4; isa=16; npa=16; bench
+  #done
+  done
+else
+    sa=32; isa=64; npa=128; bench "$@" 2>&1
+fi

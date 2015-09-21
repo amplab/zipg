@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-
+yum install -y cmake
 git submodule update --init
 
 yes | cp ~/spark-ec2/slaves conf/hosts >/dev/null

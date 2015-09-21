@@ -10,8 +10,8 @@ set -e
 #       sudo bash ./build_thrift.sh && cmake . && make -j
 # 5. Set the desired settings in rates-bench.sh
 
-node_file_raw=/vol0/orkut-40attr16each-tpch-npa128sa32isa64.node
-edge_file_raw=/vol0/orkut-40attr16each-npa128sa32isa64.assoc
+node_file_raw=/vol0/twitter2010-40attr16each-tpch.node
+edge_file_raw=/vol0/twitter2010-npa128sa32isa64.assoc
 
 # L0, by default
 npa=128
@@ -61,13 +61,13 @@ if [[ -n $copyShardFiles ]]; then
 
       d1=$(dirname "${nodeTbl}")
       d2=$(dirname "${edgeTbl}")
-      rsync -ar ${nodeTbl} ${host}:$d1 &
-      rsync -ar ${edgeTbl} ${host}:$d2 &
+      rsync -arL ${nodeTbl} ${host}:$d1 &
+      rsync -arL ${edgeTbl} ${host}:$d2 &
   done
   wait
   echo "Shard files copied to all servers."
 fi
-#wait
+wait
 
 #### Launch aggregator & shards on all hosts
 bash ${currDir}/sbin/stop-all.sh 
@@ -75,7 +75,7 @@ sleep 2
 
 bash ${currDir}/sbin/hosts.sh source "${currDir}/sbin/succinct-config.sh"
 bash ${currDir}/sbin/hosts.sh source "${currDir}/sbin/load-succinct-env.sh"
-#sleep 2
+sleep 2
 
 ${currDir}/sbin/start-servers.sh $node_file_raw $edge_file_raw $sa $isa $npa
 sleep 2
@@ -84,22 +84,24 @@ ${currDir}/sbin/start-handlers.sh
 sleep 2
 
 #### Launch benchmark
-#bash ${currDir}/sbin/hosts.sh \
-bash ${currDir}/sbin/hosts-noStderr.sh \
-  bash ${currDir}/scripts/rates-bench.sh \
-  $node_file_raw $edge_file_raw \
+for throughput_threads in 16 32 64; do
+    bash ${currDir}/sbin/hosts-noStderr.sh \
+      bash ${currDir}/scripts/rates-bench.sh \
+      $node_file_raw $edge_file_raw $throughput_threads \
 
-# TODO: kill?
+    # TODO: kill?
 
-# TODO: fetch results?
-rm -rf thput
-bash ${currDir}/sbin/hosts.sh \
-  tail -n1 throughput_tao_mix-npa128sa32isa64-64clients.txt | \
-  cut -d',' -f2 | \
-  cut -d' ' -f2 >>thput
-cat thput
-echo sum,$(awk '{ sum += $1 } END { print sum }' thput)
-# TODO: remove?
+    # TODO: fetch results?
+    rm -rf thput
+    bash ${currDir}/sbin/hosts.sh \
+      tail -n1 throughput_tao_mix-npa128sa32isa64-${throughput_threads}clients.txt | \
+      cut -d',' -f2 | \
+      cut -d' ' -f2 >>thput
+    cat thput
+    echo ${throughput_threads}*10 clients,$(awk '{ sum += $1 } END { print sum }' thput) >>summary
+    cat summary
+    # TODO: remove?
 
-# "$sbin/hosts.sh" cd "$SUCCINCT_HOME" \; awk '{ sum += \$1 } END { print sum }' throughput_results_access > "$SUCCINCT_RES_PATH/thput"
-# "$sbin/hosts.sh" cd "$SUCCINCT_HOME" \; rm throughput_results_access
+    # "$sbin/hosts.sh" cd "$SUCCINCT_HOME" \; awk '{ sum += \$1 } END { print sum }' throughput_results_access > "$SUCCINCT_RES_PATH/thput"
+    # "$sbin/hosts.sh" cd "$SUCCINCT_HOME" \; rm throughput_results_access
+done
