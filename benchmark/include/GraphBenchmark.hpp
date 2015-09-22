@@ -87,6 +87,7 @@ private:
                     new benchmark_thread_data_t);
                 thread_data->client = client;
                 thread_data->client_id = i;
+                thread_data->transport = transport;
 
                 thread_datas.push_back(thread_data);
 
@@ -97,6 +98,7 @@ private:
 
         std::vector<shared_ptr<std::thread>> threads;
         time_t start;
+
         switch (type) {
         case NHBR:
             LOG_E("Starting nhbr thput\n");
@@ -173,6 +175,13 @@ private:
         LOG_E("Ends thput,%.1f secs [warm+measure+cool = %.1f]\n",
             (get_timestamp() - start) * 1. / 1e6,
             (WARMUP_MICROSECS + MEASURE_MICROSECS + COOLDOWN_MICROSECS) / 1e6);
+
+        // Close the client-side transports, otherwise Thrift on the
+        // server-side doesn't place nicely with next connections.
+        for (auto thread_data : thread_datas) {
+            thread_data->transport->close();
+        }
+        thread_datas.clear();
     }
 
     template<typename T>
@@ -182,6 +191,7 @@ private:
 
     typedef struct {
         shared_ptr<GraphQueryAggregatorServiceClient> client;
+        shared_ptr<TTransport> transport;
         int client_id; // for seeding
     } benchmark_thread_data_t;
 
