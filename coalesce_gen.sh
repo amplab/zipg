@@ -4,15 +4,17 @@ make -j partitioned-graph-formatter
 
 dataset=orkut-40attr16each
 dataset="uk-2007-05"
+genFromEdgeList=true # if false, coalesce from assocs
 
 if [[ "$dataset" == "uk-2007-05" ]]; then
+  genFromEdgeList=false
   output_file_prefix="/vol0/uk-2007-05-40attr16each-npa128sa32isa64.assoc"
   num_shards=16
   attr_file=/vol0/data_0
   edge_attr_size=128
   inner_delim='	' # tab
   end_delim='^M'
-  input_edgelists=(/vol0/uk-2007-05/part-*)
+  input_edgelists=(/vol1/uk*assoc*of40)
 elif [[ "$dataset" == "orkut-40attr16each" ]]; then
   output_file_prefix=/vol0/orkut-40attr16each-npa128sa32isa64.assoc
   num_shards=8
@@ -34,6 +36,7 @@ else
 fi
 
 ./core/bin/partitioned-graph-formatter \
+  ${genFromEdgeList} \
   ${output_file_prefix} \
   ${num_shards} \
   ${attr_file} \

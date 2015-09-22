@@ -9,6 +9,7 @@
 using boost::shared_ptr;
 
 void PartitionedGraphFormatter::coalescing_gen_assoc_shards(
+    bool gen_from_edge_list,
     const std::vector<std::string>& input_parts,
     char edge_inner_delim,
     char edge_end_delim,
@@ -35,41 +36,34 @@ void PartitionedGraphFormatter::coalescing_gen_assoc_shards(
 
     ThreadPool pool(200);
 
-    for (auto input_part : input_parts) {
-        pool.Enqueue([=] {
-            this->read_partition_gen_shard(
-                edge_inner_delim,
-                edge_end_delim,
-                num_atype,
-                num_shards,
-                bytes_per_attr,
-                attr_file,
-                input_part,
-                mutexes_for_out_shards,
-                shard_edge_outs
-            );
-            return;
-        });
-
-//    std::vector<shared_ptr<std::thread>> threads;
-//        threads.push_back(shared_ptr<std::thread>(new std::thread(
-//            &PartitionedGraphFormatter::read_partition_gen_shard,
-//            this,
-//            edge_inner_delim,
-//            edge_end_delim,
-//            num_atype,
-//            num_shards,
-//            bytes_per_attr,
-//            attr_file,
-//            input_part,
-//            mutexes_for_out_shards,
-//            shard_edge_outs)));
+    if (gen_from_edge_list) {
+        for (auto input_part : input_parts) {
+            pool.Enqueue([=] {
+                this->read_partition_gen_shard(
+                    edge_inner_delim,
+                    edge_end_delim,
+                    num_atype,
+                    num_shards,
+                    bytes_per_attr,
+                    attr_file,
+                    input_part,
+                    mutexes_for_out_shards,
+                    shard_edge_outs);
+                return;
+            });
+        }
+    } else {
+        for (auto input_part : input_parts) {
+            pool.Enqueue([=] {
+                this->coalescing_assoc_shards(
+                    num_shards,
+                    input_part,
+                    mutexes_for_out_shards,
+                    shard_edge_outs);
+                return;
+            });
+        }
     }
-//    for (auto thread_ptr : threads) {
-//        if (thread_ptr->joinable()) {
-//            thread_ptr->join();
-//        }
-//    }
     pool.ShutDown();
 }
 
@@ -156,16 +150,67 @@ void PartitionedGraphFormatter::read_partition_gen_shard(
     }
 }
 
+void PartitionedGraphFormatter::coalescing_assoc_shards(
+    int num_shards,
+    std::string partition_file,
+    std::vector<shared_ptr<std::mutex>> mutexes_for_out_shards,
+    std::vector<shared_ptr<std::ofstream>> shard_edge_outs)
+{
+    // Stream through each input part, for each edge, generate data & output
+    std::string line, str;
+    int64_t src;
+
+    const int output_buf_size = 5000;
+    std::map<int, std::vector<std::string>> shard_bufs;
+
+    std::ifstream edge_list_part(partition_file);
+    int shard_id;
+    while (std::getline(edge_list_part, line)) {
+        std::stringstream ss(line);
+        std::getline(ss, str, ' ');
+        src = std::stoll(str);
+        shard_id = src % num_shards;
+
+        auto& buf = shard_bufs[shard_id];
+        buf.emplace_back();
+        buf.back() = std::move(line);
+
+        if (buf.size() == output_buf_size) {
+            std::lock_guard<std::mutex> lk(*(mutexes_for_out_shards[shard_id]));
+            for (auto& assoc : buf) {
+                *(shard_edge_outs[shard_id])
+                    << assoc << std::endl;
+            }
+            buf.clear();
+        }
+    }
+
+    for (auto& entry : shard_bufs) {
+        shard_id = entry.first;
+        auto& buf = entry.second;
+        std::lock_guard<std::mutex> lk(*(mutexes_for_out_shards[shard_id]));
+
+        for (auto& assoc : buf) {
+            *(shard_edge_outs[shard_id])
+                << assoc << std::endl;
+        }
+
+        buf.clear();
+    }
+}
+
 int main(int argc, char **argv) {
-    std::string output_file_prefix(argv[1]);
-    int num_shards = std::stoi(argv[2]);
-    std::string attr_file(argv[3]); // TPC-H
-    int edge_attr_size = std::stoi(argv[4]);
-    char edge_inner_delim = std::string(argv[5]).at(0);
-    char edge_end_delim = std::string(argv[6]).at(0);
+    bool gen_from_edge_list = std::string(argv[1]) == "true";
+    std::string output_file_prefix(argv[2]);
+    int num_shards = std::stoi(argv[3]);
+    std::string attr_file(argv[4]); // TPC-H
+    int edge_attr_size = std::stoi(argv[5]);
+    char edge_inner_delim = std::string(argv[6]).at(0);
+    char edge_end_delim = std::string(argv[7]).at(0);
+    const int idx_guard = 8;
 
     std::vector<std::string> input_parts;
-    for (int i = 7; i < argc; ++i) {
+    for (int i = idx_guard; i < argc; ++i) {
         input_parts.emplace_back(argv[i]);
     }
 
@@ -174,6 +219,7 @@ int main(int argc, char **argv) {
 
     PartitionedGraphFormatter pgf;
     pgf.coalescing_gen_assoc_shards(
+        gen_from_edge_list,
         input_parts,
         edge_inner_delim,
         edge_end_delim,
