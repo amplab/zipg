@@ -344,19 +344,19 @@ public:
     }
 
     ~GraphBenchmark() {
-        if (aggregator_ != nullptr) {
-            aggregator_->shutdown();
-        }
+//        if (aggregator_ != nullptr) {
+//            aggregator_->shutdown();
+//        }
         if (transport_ != nullptr && transport_->isOpen()) {
             transport_->close();
         }
     }
 
     void cleanup() {
-        if (aggregator_ != nullptr) {
-            aggregator_->shutdown();
-            aggregator_ = nullptr;
-        }
+//        if (aggregator_ != nullptr) {
+//            aggregator_->shutdown();
+//            aggregator_ = nullptr;
+//        }
         if (transport_ != nullptr && transport_->isOpen()) {
             transport_->close();
             transport_ = nullptr;
