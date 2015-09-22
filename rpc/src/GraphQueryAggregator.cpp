@@ -563,6 +563,52 @@ public:
         }
     }
 
+    void assoc_range_batched(
+        std::vector<std::vector<ThriftAssoc>>& _return,
+        const std::vector<int64_t>& srcs,
+        const std::vector<int64_t>& atypes,
+        const std::vector<int32_t>& offs,
+        const std::vector<int32_t>& lens)
+    {
+        COND_LOG_E("in aggregator assoc_range\n");
+
+        const size_t query_len = srcs.size();
+        int64_t src, atype;
+        int32_t off, len;
+        int shard_id, host_id;
+
+        for (size_t i = 0; i < query_len; ++i) {
+            src = srcs.at(i);
+            atype = atypes.at(i);
+            off = offs.at(i);
+            len = lens.at(i);
+
+            shard_id = src % total_num_shards_;
+            host_id = shard_id % total_num_hosts_;
+            if (host_id == local_host_id_) {
+                local_shards_[shard_id / total_num_hosts_]
+                    .send_assoc_range(src, atype, off, len);
+            } else {
+                aggregators_.at(host_id).send_assoc_range_local(
+                    shard_id, src, atype, off, len);
+            }
+        }
+
+        _return.resize(len);
+        for (size_t i = 0; i < query_len; ++i) {
+            src = srcs.at(i);
+            shard_id = src % total_num_shards_;
+            host_id = shard_id % total_num_hosts_;
+            if (host_id == local_host_id_) {
+                local_shards_[shard_id / total_num_hosts_]
+                    .recv_assoc_range(_return[i]);
+            } else {
+                aggregators_.at(host_id).recv_assoc_range_local(
+                    _return[i]);
+            }
+        }
+    }
+
     void assoc_range_local(
         std::vector<ThriftAssoc>& _return,
         int32_t shardId,
@@ -573,6 +619,45 @@ public:
     {
         local_shards_[shardId / total_num_hosts_]
             .assoc_range(_return, src, atype, off, len);
+    }
+
+    void assoc_count_batched(
+        std::vector<int64_t>& _return,
+        const std::vector<int64_t>& srcs,
+        const std::vector<int64_t>& atypes)
+    {
+        const size_t query_len = srcs.size();
+        int64_t src, atype;
+        int shard_id, host_id;
+
+        for (size_t i = 0; i < query_len; ++i) {
+            src = srcs.at(i);
+            atype = atypes.at(i);
+
+            shard_id = src % total_num_shards_;
+            host_id = shard_id % total_num_hosts_;
+            if (host_id == local_host_id_) {
+                local_shards_[shard_id / total_num_hosts_]
+                    .send_assoc_count(src, atype);
+            } else {
+                aggregators_.at(host_id).send_assoc_count_local(
+                    shard_id, src, atype);
+            }
+        }
+
+        _return.resize(query_len);
+        for (size_t i = 0; i < query_len; ++i) {
+            src = srcs.at(i);
+
+            shard_id = src % total_num_shards_;
+            host_id = shard_id % total_num_hosts_;
+            if (host_id == local_host_id_) {
+                _return[i] = local_shards_[shard_id / total_num_hosts_]
+                    .recv_assoc_count();
+            } else {
+                _return[i] = aggregators_.at(host_id).recv_assoc_count_local();
+            }
+        }
     }
 
     int64_t assoc_count(int64_t src, int64_t atype) {
@@ -614,6 +699,59 @@ public:
         }
     }
 
+    void assoc_get_batched(
+        std::vector<std::vector<ThriftAssoc>>& _return,
+        const std::vector<int64_t>& srcs,
+        const std::vector<int64_t>& atypes,
+        const std::vector<std::set<int64_t>>& dstIdSets,
+        const std::vector<int64_t>& tLows,
+        const std::vector<int64_t>& tHighs)
+    {
+        COND_LOG_E("in agg. assoc_get()\n");
+
+        const size_t query_len = srcs.size();
+        int64_t src, atype, tLow, tHigh;
+        int shard_id, host_id;
+
+        for (size_t i = 0; i < query_len; ++i) {
+            src = srcs.at(i);
+            atype = atypes.at(i);
+            const auto& dstIdSet = dstIdSets.at(i);
+            tLow = tLows.at(i);
+            tHigh = tHighs.at(i);
+
+            shard_id = src % total_num_shards_;
+            host_id = shard_id % total_num_hosts_;
+            if (host_id == local_host_id_) {
+                COND_LOG_E("sending to shard %d\n", shard_id);
+                local_shards_[shard_id / total_num_hosts_]
+                    .send_assoc_get(src, atype, dstIdSet, tLow, tHigh);
+                COND_LOG_E("done\n");
+            } else {
+                aggregators_.at(host_id).send_assoc_get_local(
+                    shard_id, src, atype, dstIdSet, tLow, tHigh);
+            }
+        }
+
+        _return.resize(query_len);
+        for (size_t i = 0; i < query_len; ++i) {
+            src = srcs.at(i);
+
+            shard_id = src % total_num_shards_;
+            host_id = shard_id % total_num_hosts_;
+
+            if (host_id == local_host_id_) {
+                COND_LOG_E("sending to shard %d\n", shard_id);
+                local_shards_[shard_id / total_num_hosts_]
+                    .recv_assoc_get(_return[i]);
+                COND_LOG_E("done\n");
+            } else {
+                aggregators_.at(host_id).recv_assoc_get_local(
+                    _return[i]);
+            }
+        }
+    }
+
     void assoc_get_local(
         std::vector<ThriftAssoc>& _return,
         const int32_t shardId,
@@ -635,6 +773,43 @@ public:
                 .obj_get(_return, global_to_local_node_id(nodeId, shard_id));
         } else {
             aggregators_.at(host_id).obj_get_local(_return, shard_id, nodeId);
+        }
+    }
+
+    void obj_get_batched(
+        std::vector<std::vector<std::string>>& _return,
+        const std::vector<int64_t>& nodeIds)
+    {
+        const size_t query_len = nodeIds.size();
+        int64_t nodeId;
+        int shard_id, host_id;
+
+        for (size_t i = 0; i < query_len; ++i) {
+            nodeId = nodeIds.at(i);
+
+            shard_id = nodeId % total_num_shards_;
+            host_id = shard_id % total_num_hosts_;
+            if (host_id == local_host_id_) {
+                local_shards_[shard_id / total_num_hosts_].send_obj_get(
+                    global_to_local_node_id(nodeId, shard_id));
+            } else {
+                aggregators_.at(host_id).send_obj_get_local(
+                    shard_id, nodeId);
+            }
+        }
+
+        _return.resize(query_len);
+        for (size_t i = 0; i < query_len; ++i) {
+            nodeId = nodeIds.at(i);
+
+            shard_id = nodeId % total_num_shards_;
+            host_id = shard_id % total_num_hosts_;
+            if (host_id == local_host_id_) {
+                local_shards_[shard_id / total_num_hosts_].recv_obj_get(
+                    _return[i]);
+            } else {
+                aggregators_.at(host_id).recv_obj_get_local(_return[i]);
+            }
         }
     }
 
@@ -663,6 +838,53 @@ public:
         } else {
             aggregators_.at(host_id).assoc_time_range_local(
                 _return, shard_id, src, atype, tLow, tHigh, limit);
+        }
+    }
+
+    void assoc_time_range_batched(
+        std::vector<std::vector<ThriftAssoc>>& _return,
+        const std::vector<int64_t>& srcs,
+        const std::vector<int64_t>& atypes,
+        const std::vector<int64_t>& tLows,
+        const std::vector<int64_t>& tHighs,
+        const std::vector<int32_t>& limits)
+    {
+        const size_t query_len = srcs.size();
+        int64_t src, atype, tLow, tHigh;
+        int32_t limit;
+        int shard_id, host_id;
+
+        for (size_t i = 0; i < query_len; ++i) {
+            src = srcs.at(i);
+            atype = atypes.at(i);
+            tLow = tLows.at(i);
+            tHigh = tHighs.at(i);
+            limit = limits.at(i);
+
+            shard_id = src % total_num_shards_;
+            host_id = shard_id % total_num_hosts_;
+            if (host_id == local_host_id_) {
+                local_shards_[shard_id / total_num_hosts_]
+                    .send_assoc_time_range(src, atype, tLow, tHigh, limit);
+            } else {
+                aggregators_.at(host_id).send_assoc_time_range_local(
+                    shard_id, src, atype, tLow, tHigh, limit);
+            }
+        }
+
+        _return.resize(query_len);
+        for (size_t i = 0; i < query_len; ++i) {
+            src = srcs.at(i);
+
+            shard_id = src % total_num_shards_;
+            host_id = shard_id % total_num_hosts_;
+            if (host_id == local_host_id_) {
+                local_shards_[shard_id / total_num_hosts_]
+                    .recv_assoc_time_range(_return[i]);
+            } else {
+                aggregators_.at(host_id).recv_assoc_time_range_local(
+                    _return[i]);
+            }
         }
     }
 

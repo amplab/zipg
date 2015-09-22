@@ -24,13 +24,6 @@ using namespace ::apache::thrift::transport;
 class GraphBenchmark {
 private:
 
-   // Read workload distribution; from ATC 13 Bronson et al.
-    constexpr static double ASSOC_RANGE_PERC = 0.409;
-    constexpr static double OBJ_GET_PERC = 0.289;
-    constexpr static double ASSOC_GET_PERC = 0.157;
-    constexpr static double ASSOC_COUNT_PERC = 0.117;
-    constexpr static double ASSOC_TIME_RANGE_PERC = 0.028;
-
     // Timings for throughput benchmarks.
     // constexpr static int64_t WARMUP_MICROSECS = 300 * 1000 * 1000;
     // constexpr static int64_t MEASURE_MICROSECS = 900 * 1000 * 1000;
@@ -38,6 +31,8 @@ private:
     constexpr static int64_t WARMUP_MICROSECS = 60 * 1000 * 1000;
     constexpr static int64_t MEASURE_MICROSECS = 120 * 1000 * 1000;
     constexpr static int64_t COOLDOWN_MICROSECS = 30 * 1000 * 1000;
+
+    constexpr static int query_batch_size = 100;
 
     typedef enum {
         NHBR = 0,
@@ -50,6 +45,12 @@ private:
         EDGE_ATTRS = 7
     } BenchType;
 
+    // Read workload distribution; from ATC 13 Bronson et al.
+    constexpr static double ASSOC_RANGE_PERC = 0.409;
+    constexpr static double OBJ_GET_PERC = 0.289;
+    constexpr static double ASSOC_GET_PERC = 0.157;
+    constexpr static double ASSOC_COUNT_PERC = 0.117;
+    constexpr static double ASSOC_TIME_RANGE_PERC = 0.028;
     inline int choose_query(double rand_r) {
         if (rand_r < ASSOC_RANGE_PERC) {
             return 0;
@@ -1098,6 +1099,26 @@ public:
         bench_throughput(num_threads, master_hostname, BenchType::NHBR);
     }
 
+
+    typedef struct {
+        int64_t src, atype;
+        int32_t off, len;
+    } AssocRangeQuery;
+
+    typedef struct {
+        int64_t src, atype, tLow, tHigh;
+        std::set<int64_t> dstIdSet;
+    } AssocGetQuery;
+
+    typedef struct {
+        int64_t src, atype, tLow, tHigh;
+        int32_t limit;
+    } AssocTimeRangeQuery;
+
+    typedef struct {
+        int64_t src, atype;
+    } AssocCountQuery;
+
     std::pair<double, double> benchmark_tao_mix_throughput_helper(
         shared_ptr<benchmark_thread_data_t> thread_data)
     {
@@ -1137,6 +1158,12 @@ public:
         std::vector<ThriftAssoc> result;
         std::vector<std::string> attrs;
         int64_t i = 0;
+
+        // Batched queries
+//        std::vector<AssocRangeQuery> batched_assoc_range;
+//        std::vector<int64_t> batched_obj_get;
+//        std::vector<AssocGetQuery> batched_assoc_get;
+//        std::vector<AssocTimeRangeQuery> batched_assoc_time_range;
 
         try {
             // Warmup phase

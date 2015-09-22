@@ -4091,6 +4091,392 @@ uint32_t GraphQueryAggregatorService_assoc_range_presult::read(::apache::thrift:
   return xfer;
 }
 
+uint32_t GraphQueryAggregatorService_assoc_range_batched_args::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->src.clear();
+            uint32_t _size298;
+            ::apache::thrift::protocol::TType _etype301;
+            xfer += iprot->readListBegin(_etype301, _size298);
+            this->src.resize(_size298);
+            uint32_t _i302;
+            for (_i302 = 0; _i302 < _size298; ++_i302)
+            {
+              xfer += iprot->readI64(this->src[_i302]);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.src = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->atype.clear();
+            uint32_t _size303;
+            ::apache::thrift::protocol::TType _etype306;
+            xfer += iprot->readListBegin(_etype306, _size303);
+            this->atype.resize(_size303);
+            uint32_t _i307;
+            for (_i307 = 0; _i307 < _size303; ++_i307)
+            {
+              xfer += iprot->readI64(this->atype[_i307]);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.atype = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->off.clear();
+            uint32_t _size308;
+            ::apache::thrift::protocol::TType _etype311;
+            xfer += iprot->readListBegin(_etype311, _size308);
+            this->off.resize(_size308);
+            uint32_t _i312;
+            for (_i312 = 0; _i312 < _size308; ++_i312)
+            {
+              xfer += iprot->readI32(this->off[_i312]);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.off = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->len.clear();
+            uint32_t _size313;
+            ::apache::thrift::protocol::TType _etype316;
+            xfer += iprot->readListBegin(_etype316, _size313);
+            this->len.resize(_size313);
+            uint32_t _i317;
+            for (_i317 = 0; _i317 < _size313; ++_i317)
+            {
+              xfer += iprot->readI32(this->len[_i317]);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.len = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t GraphQueryAggregatorService_assoc_range_batched_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  xfer += oprot->writeStructBegin("GraphQueryAggregatorService_assoc_range_batched_args");
+
+  xfer += oprot->writeFieldBegin("src", ::apache::thrift::protocol::T_LIST, 1);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->src.size()));
+    std::vector<int64_t> ::const_iterator _iter318;
+    for (_iter318 = this->src.begin(); _iter318 != this->src.end(); ++_iter318)
+    {
+      xfer += oprot->writeI64((*_iter318));
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("atype", ::apache::thrift::protocol::T_LIST, 2);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->atype.size()));
+    std::vector<int64_t> ::const_iterator _iter319;
+    for (_iter319 = this->atype.begin(); _iter319 != this->atype.end(); ++_iter319)
+    {
+      xfer += oprot->writeI64((*_iter319));
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("off", ::apache::thrift::protocol::T_LIST, 3);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I32, static_cast<uint32_t>(this->off.size()));
+    std::vector<int32_t> ::const_iterator _iter320;
+    for (_iter320 = this->off.begin(); _iter320 != this->off.end(); ++_iter320)
+    {
+      xfer += oprot->writeI32((*_iter320));
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("len", ::apache::thrift::protocol::T_LIST, 4);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I32, static_cast<uint32_t>(this->len.size()));
+    std::vector<int32_t> ::const_iterator _iter321;
+    for (_iter321 = this->len.begin(); _iter321 != this->len.end(); ++_iter321)
+    {
+      xfer += oprot->writeI32((*_iter321));
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+uint32_t GraphQueryAggregatorService_assoc_range_batched_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  xfer += oprot->writeStructBegin("GraphQueryAggregatorService_assoc_range_batched_pargs");
+
+  xfer += oprot->writeFieldBegin("src", ::apache::thrift::protocol::T_LIST, 1);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>((*(this->src)).size()));
+    std::vector<int64_t> ::const_iterator _iter322;
+    for (_iter322 = (*(this->src)).begin(); _iter322 != (*(this->src)).end(); ++_iter322)
+    {
+      xfer += oprot->writeI64((*_iter322));
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("atype", ::apache::thrift::protocol::T_LIST, 2);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>((*(this->atype)).size()));
+    std::vector<int64_t> ::const_iterator _iter323;
+    for (_iter323 = (*(this->atype)).begin(); _iter323 != (*(this->atype)).end(); ++_iter323)
+    {
+      xfer += oprot->writeI64((*_iter323));
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("off", ::apache::thrift::protocol::T_LIST, 3);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I32, static_cast<uint32_t>((*(this->off)).size()));
+    std::vector<int32_t> ::const_iterator _iter324;
+    for (_iter324 = (*(this->off)).begin(); _iter324 != (*(this->off)).end(); ++_iter324)
+    {
+      xfer += oprot->writeI32((*_iter324));
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("len", ::apache::thrift::protocol::T_LIST, 4);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I32, static_cast<uint32_t>((*(this->len)).size()));
+    std::vector<int32_t> ::const_iterator _iter325;
+    for (_iter325 = (*(this->len)).begin(); _iter325 != (*(this->len)).end(); ++_iter325)
+    {
+      xfer += oprot->writeI32((*_iter325));
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+uint32_t GraphQueryAggregatorService_assoc_range_batched_result::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 0:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->success.clear();
+            uint32_t _size326;
+            ::apache::thrift::protocol::TType _etype329;
+            xfer += iprot->readListBegin(_etype329, _size326);
+            this->success.resize(_size326);
+            uint32_t _i330;
+            for (_i330 = 0; _i330 < _size326; ++_i330)
+            {
+              {
+                this->success[_i330].clear();
+                uint32_t _size331;
+                ::apache::thrift::protocol::TType _etype334;
+                xfer += iprot->readListBegin(_etype334, _size331);
+                this->success[_i330].resize(_size331);
+                uint32_t _i335;
+                for (_i335 = 0; _i335 < _size331; ++_i335)
+                {
+                  xfer += this->success[_i330][_i335].read(iprot);
+                }
+                xfer += iprot->readListEnd();
+              }
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.success = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t GraphQueryAggregatorService_assoc_range_batched_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
+
+  uint32_t xfer = 0;
+
+  xfer += oprot->writeStructBegin("GraphQueryAggregatorService_assoc_range_batched_result");
+
+  if (this->__isset.success) {
+    xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
+    {
+      xfer += oprot->writeListBegin(::apache::thrift::protocol::T_LIST, static_cast<uint32_t>(this->success.size()));
+      std::vector<std::vector<ThriftAssoc> > ::const_iterator _iter336;
+      for (_iter336 = this->success.begin(); _iter336 != this->success.end(); ++_iter336)
+      {
+        {
+          xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>((*_iter336).size()));
+          std::vector<ThriftAssoc> ::const_iterator _iter337;
+          for (_iter337 = (*_iter336).begin(); _iter337 != (*_iter336).end(); ++_iter337)
+          {
+            xfer += (*_iter337).write(oprot);
+          }
+          xfer += oprot->writeListEnd();
+        }
+      }
+      xfer += oprot->writeListEnd();
+    }
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+uint32_t GraphQueryAggregatorService_assoc_range_batched_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 0:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            (*(this->success)).clear();
+            uint32_t _size338;
+            ::apache::thrift::protocol::TType _etype341;
+            xfer += iprot->readListBegin(_etype341, _size338);
+            (*(this->success)).resize(_size338);
+            uint32_t _i342;
+            for (_i342 = 0; _i342 < _size338; ++_i342)
+            {
+              {
+                (*(this->success))[_i342].clear();
+                uint32_t _size343;
+                ::apache::thrift::protocol::TType _etype346;
+                xfer += iprot->readListBegin(_etype346, _size343);
+                (*(this->success))[_i342].resize(_size343);
+                uint32_t _i347;
+                for (_i347 = 0; _i347 < _size343; ++_i347)
+                {
+                  xfer += (*(this->success))[_i342][_i347].read(iprot);
+                }
+                xfer += iprot->readListEnd();
+              }
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.success = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
 uint32_t GraphQueryAggregatorService_assoc_range_local_args::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   uint32_t xfer = 0;
@@ -4245,14 +4631,14 @@ uint32_t GraphQueryAggregatorService_assoc_range_local_result::read(::apache::th
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->success.clear();
-            uint32_t _size298;
-            ::apache::thrift::protocol::TType _etype301;
-            xfer += iprot->readListBegin(_etype301, _size298);
-            this->success.resize(_size298);
-            uint32_t _i302;
-            for (_i302 = 0; _i302 < _size298; ++_i302)
+            uint32_t _size348;
+            ::apache::thrift::protocol::TType _etype351;
+            xfer += iprot->readListBegin(_etype351, _size348);
+            this->success.resize(_size348);
+            uint32_t _i352;
+            for (_i352 = 0; _i352 < _size348; ++_i352)
             {
-              xfer += this->success[_i302].read(iprot);
+              xfer += this->success[_i352].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -4283,10 +4669,10 @@ uint32_t GraphQueryAggregatorService_assoc_range_local_result::write(::apache::t
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->success.size()));
-      std::vector<ThriftAssoc> ::const_iterator _iter303;
-      for (_iter303 = this->success.begin(); _iter303 != this->success.end(); ++_iter303)
+      std::vector<ThriftAssoc> ::const_iterator _iter353;
+      for (_iter353 = this->success.begin(); _iter353 != this->success.end(); ++_iter353)
       {
-        xfer += (*_iter303).write(oprot);
+        xfer += (*_iter353).write(oprot);
       }
       xfer += oprot->writeListEnd();
     }
@@ -4321,14 +4707,14 @@ uint32_t GraphQueryAggregatorService_assoc_range_local_presult::read(::apache::t
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             (*(this->success)).clear();
-            uint32_t _size304;
-            ::apache::thrift::protocol::TType _etype307;
-            xfer += iprot->readListBegin(_etype307, _size304);
-            (*(this->success)).resize(_size304);
-            uint32_t _i308;
-            for (_i308 = 0; _i308 < _size304; ++_i308)
+            uint32_t _size354;
+            ::apache::thrift::protocol::TType _etype357;
+            xfer += iprot->readListBegin(_etype357, _size354);
+            (*(this->success)).resize(_size354);
+            uint32_t _i358;
+            for (_i358 = 0; _i358 < _size354; ++_i358)
             {
-              xfer += (*(this->success))[_i308].read(iprot);
+              xfer += (*(this->success))[_i358].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -4510,6 +4896,272 @@ uint32_t GraphQueryAggregatorService_assoc_count_presult::read(::apache::thrift:
       case 0:
         if (ftype == ::apache::thrift::protocol::T_I64) {
           xfer += iprot->readI64((*(this->success)));
+          this->__isset.success = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t GraphQueryAggregatorService_assoc_count_batched_args::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->src.clear();
+            uint32_t _size359;
+            ::apache::thrift::protocol::TType _etype362;
+            xfer += iprot->readListBegin(_etype362, _size359);
+            this->src.resize(_size359);
+            uint32_t _i363;
+            for (_i363 = 0; _i363 < _size359; ++_i363)
+            {
+              xfer += iprot->readI64(this->src[_i363]);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.src = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->atype.clear();
+            uint32_t _size364;
+            ::apache::thrift::protocol::TType _etype367;
+            xfer += iprot->readListBegin(_etype367, _size364);
+            this->atype.resize(_size364);
+            uint32_t _i368;
+            for (_i368 = 0; _i368 < _size364; ++_i368)
+            {
+              xfer += iprot->readI64(this->atype[_i368]);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.atype = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t GraphQueryAggregatorService_assoc_count_batched_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  xfer += oprot->writeStructBegin("GraphQueryAggregatorService_assoc_count_batched_args");
+
+  xfer += oprot->writeFieldBegin("src", ::apache::thrift::protocol::T_LIST, 1);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->src.size()));
+    std::vector<int64_t> ::const_iterator _iter369;
+    for (_iter369 = this->src.begin(); _iter369 != this->src.end(); ++_iter369)
+    {
+      xfer += oprot->writeI64((*_iter369));
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("atype", ::apache::thrift::protocol::T_LIST, 2);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->atype.size()));
+    std::vector<int64_t> ::const_iterator _iter370;
+    for (_iter370 = this->atype.begin(); _iter370 != this->atype.end(); ++_iter370)
+    {
+      xfer += oprot->writeI64((*_iter370));
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+uint32_t GraphQueryAggregatorService_assoc_count_batched_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  xfer += oprot->writeStructBegin("GraphQueryAggregatorService_assoc_count_batched_pargs");
+
+  xfer += oprot->writeFieldBegin("src", ::apache::thrift::protocol::T_LIST, 1);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>((*(this->src)).size()));
+    std::vector<int64_t> ::const_iterator _iter371;
+    for (_iter371 = (*(this->src)).begin(); _iter371 != (*(this->src)).end(); ++_iter371)
+    {
+      xfer += oprot->writeI64((*_iter371));
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("atype", ::apache::thrift::protocol::T_LIST, 2);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>((*(this->atype)).size()));
+    std::vector<int64_t> ::const_iterator _iter372;
+    for (_iter372 = (*(this->atype)).begin(); _iter372 != (*(this->atype)).end(); ++_iter372)
+    {
+      xfer += oprot->writeI64((*_iter372));
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+uint32_t GraphQueryAggregatorService_assoc_count_batched_result::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 0:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->success.clear();
+            uint32_t _size373;
+            ::apache::thrift::protocol::TType _etype376;
+            xfer += iprot->readListBegin(_etype376, _size373);
+            this->success.resize(_size373);
+            uint32_t _i377;
+            for (_i377 = 0; _i377 < _size373; ++_i377)
+            {
+              xfer += iprot->readI64(this->success[_i377]);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.success = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t GraphQueryAggregatorService_assoc_count_batched_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
+
+  uint32_t xfer = 0;
+
+  xfer += oprot->writeStructBegin("GraphQueryAggregatorService_assoc_count_batched_result");
+
+  if (this->__isset.success) {
+    xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
+    {
+      xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->success.size()));
+      std::vector<int64_t> ::const_iterator _iter378;
+      for (_iter378 = this->success.begin(); _iter378 != this->success.end(); ++_iter378)
+      {
+        xfer += oprot->writeI64((*_iter378));
+      }
+      xfer += oprot->writeListEnd();
+    }
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+uint32_t GraphQueryAggregatorService_assoc_count_batched_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 0:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            (*(this->success)).clear();
+            uint32_t _size379;
+            ::apache::thrift::protocol::TType _etype382;
+            xfer += iprot->readListBegin(_etype382, _size379);
+            (*(this->success)).resize(_size379);
+            uint32_t _i383;
+            for (_i383 = 0; _i383 < _size379; ++_i383)
+            {
+              xfer += iprot->readI64((*(this->success))[_i383]);
+            }
+            xfer += iprot->readListEnd();
+          }
           this->__isset.success = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -4761,15 +5413,15 @@ uint32_t GraphQueryAggregatorService_assoc_get_args::read(::apache::thrift::prot
         if (ftype == ::apache::thrift::protocol::T_SET) {
           {
             this->dstIdSet.clear();
-            uint32_t _size309;
-            ::apache::thrift::protocol::TType _etype312;
-            xfer += iprot->readSetBegin(_etype312, _size309);
-            uint32_t _i313;
-            for (_i313 = 0; _i313 < _size309; ++_i313)
+            uint32_t _size384;
+            ::apache::thrift::protocol::TType _etype387;
+            xfer += iprot->readSetBegin(_etype387, _size384);
+            uint32_t _i388;
+            for (_i388 = 0; _i388 < _size384; ++_i388)
             {
-              int64_t _elem314;
-              xfer += iprot->readI64(_elem314);
-              this->dstIdSet.insert(_elem314);
+              int64_t _elem389;
+              xfer += iprot->readI64(_elem389);
+              this->dstIdSet.insert(_elem389);
             }
             xfer += iprot->readSetEnd();
           }
@@ -4821,10 +5473,10 @@ uint32_t GraphQueryAggregatorService_assoc_get_args::write(::apache::thrift::pro
   xfer += oprot->writeFieldBegin("dstIdSet", ::apache::thrift::protocol::T_SET, 3);
   {
     xfer += oprot->writeSetBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->dstIdSet.size()));
-    std::set<int64_t> ::const_iterator _iter315;
-    for (_iter315 = this->dstIdSet.begin(); _iter315 != this->dstIdSet.end(); ++_iter315)
+    std::set<int64_t> ::const_iterator _iter390;
+    for (_iter390 = this->dstIdSet.begin(); _iter390 != this->dstIdSet.end(); ++_iter390)
     {
-      xfer += oprot->writeI64((*_iter315));
+      xfer += oprot->writeI64((*_iter390));
     }
     xfer += oprot->writeSetEnd();
   }
@@ -4858,10 +5510,10 @@ uint32_t GraphQueryAggregatorService_assoc_get_pargs::write(::apache::thrift::pr
   xfer += oprot->writeFieldBegin("dstIdSet", ::apache::thrift::protocol::T_SET, 3);
   {
     xfer += oprot->writeSetBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>((*(this->dstIdSet)).size()));
-    std::set<int64_t> ::const_iterator _iter316;
-    for (_iter316 = (*(this->dstIdSet)).begin(); _iter316 != (*(this->dstIdSet)).end(); ++_iter316)
+    std::set<int64_t> ::const_iterator _iter391;
+    for (_iter391 = (*(this->dstIdSet)).begin(); _iter391 != (*(this->dstIdSet)).end(); ++_iter391)
     {
-      xfer += oprot->writeI64((*_iter316));
+      xfer += oprot->writeI64((*_iter391));
     }
     xfer += oprot->writeSetEnd();
   }
@@ -4904,14 +5556,14 @@ uint32_t GraphQueryAggregatorService_assoc_get_result::read(::apache::thrift::pr
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->success.clear();
-            uint32_t _size317;
-            ::apache::thrift::protocol::TType _etype320;
-            xfer += iprot->readListBegin(_etype320, _size317);
-            this->success.resize(_size317);
-            uint32_t _i321;
-            for (_i321 = 0; _i321 < _size317; ++_i321)
+            uint32_t _size392;
+            ::apache::thrift::protocol::TType _etype395;
+            xfer += iprot->readListBegin(_etype395, _size392);
+            this->success.resize(_size392);
+            uint32_t _i396;
+            for (_i396 = 0; _i396 < _size392; ++_i396)
             {
-              xfer += this->success[_i321].read(iprot);
+              xfer += this->success[_i396].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -4942,10 +5594,10 @@ uint32_t GraphQueryAggregatorService_assoc_get_result::write(::apache::thrift::p
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->success.size()));
-      std::vector<ThriftAssoc> ::const_iterator _iter322;
-      for (_iter322 = this->success.begin(); _iter322 != this->success.end(); ++_iter322)
+      std::vector<ThriftAssoc> ::const_iterator _iter397;
+      for (_iter397 = this->success.begin(); _iter397 != this->success.end(); ++_iter397)
       {
-        xfer += (*_iter322).write(oprot);
+        xfer += (*_iter397).write(oprot);
       }
       xfer += oprot->writeListEnd();
     }
@@ -4980,14 +5632,473 @@ uint32_t GraphQueryAggregatorService_assoc_get_presult::read(::apache::thrift::p
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             (*(this->success)).clear();
-            uint32_t _size323;
-            ::apache::thrift::protocol::TType _etype326;
-            xfer += iprot->readListBegin(_etype326, _size323);
-            (*(this->success)).resize(_size323);
-            uint32_t _i327;
-            for (_i327 = 0; _i327 < _size323; ++_i327)
+            uint32_t _size398;
+            ::apache::thrift::protocol::TType _etype401;
+            xfer += iprot->readListBegin(_etype401, _size398);
+            (*(this->success)).resize(_size398);
+            uint32_t _i402;
+            for (_i402 = 0; _i402 < _size398; ++_i402)
             {
-              xfer += (*(this->success))[_i327].read(iprot);
+              xfer += (*(this->success))[_i402].read(iprot);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.success = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t GraphQueryAggregatorService_assoc_get_batched_args::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->src.clear();
+            uint32_t _size403;
+            ::apache::thrift::protocol::TType _etype406;
+            xfer += iprot->readListBegin(_etype406, _size403);
+            this->src.resize(_size403);
+            uint32_t _i407;
+            for (_i407 = 0; _i407 < _size403; ++_i407)
+            {
+              xfer += iprot->readI64(this->src[_i407]);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.src = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->atype.clear();
+            uint32_t _size408;
+            ::apache::thrift::protocol::TType _etype411;
+            xfer += iprot->readListBegin(_etype411, _size408);
+            this->atype.resize(_size408);
+            uint32_t _i412;
+            for (_i412 = 0; _i412 < _size408; ++_i412)
+            {
+              xfer += iprot->readI64(this->atype[_i412]);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.atype = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->dstIdSet.clear();
+            uint32_t _size413;
+            ::apache::thrift::protocol::TType _etype416;
+            xfer += iprot->readListBegin(_etype416, _size413);
+            this->dstIdSet.resize(_size413);
+            uint32_t _i417;
+            for (_i417 = 0; _i417 < _size413; ++_i417)
+            {
+              {
+                this->dstIdSet[_i417].clear();
+                uint32_t _size418;
+                ::apache::thrift::protocol::TType _etype421;
+                xfer += iprot->readSetBegin(_etype421, _size418);
+                uint32_t _i422;
+                for (_i422 = 0; _i422 < _size418; ++_i422)
+                {
+                  int64_t _elem423;
+                  xfer += iprot->readI64(_elem423);
+                  this->dstIdSet[_i417].insert(_elem423);
+                }
+                xfer += iprot->readSetEnd();
+              }
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.dstIdSet = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->tLow.clear();
+            uint32_t _size424;
+            ::apache::thrift::protocol::TType _etype427;
+            xfer += iprot->readListBegin(_etype427, _size424);
+            this->tLow.resize(_size424);
+            uint32_t _i428;
+            for (_i428 = 0; _i428 < _size424; ++_i428)
+            {
+              xfer += iprot->readI64(this->tLow[_i428]);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.tLow = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 5:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->tHigh.clear();
+            uint32_t _size429;
+            ::apache::thrift::protocol::TType _etype432;
+            xfer += iprot->readListBegin(_etype432, _size429);
+            this->tHigh.resize(_size429);
+            uint32_t _i433;
+            for (_i433 = 0; _i433 < _size429; ++_i433)
+            {
+              xfer += iprot->readI64(this->tHigh[_i433]);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.tHigh = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t GraphQueryAggregatorService_assoc_get_batched_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  xfer += oprot->writeStructBegin("GraphQueryAggregatorService_assoc_get_batched_args");
+
+  xfer += oprot->writeFieldBegin("src", ::apache::thrift::protocol::T_LIST, 1);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->src.size()));
+    std::vector<int64_t> ::const_iterator _iter434;
+    for (_iter434 = this->src.begin(); _iter434 != this->src.end(); ++_iter434)
+    {
+      xfer += oprot->writeI64((*_iter434));
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("atype", ::apache::thrift::protocol::T_LIST, 2);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->atype.size()));
+    std::vector<int64_t> ::const_iterator _iter435;
+    for (_iter435 = this->atype.begin(); _iter435 != this->atype.end(); ++_iter435)
+    {
+      xfer += oprot->writeI64((*_iter435));
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("dstIdSet", ::apache::thrift::protocol::T_LIST, 3);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_SET, static_cast<uint32_t>(this->dstIdSet.size()));
+    std::vector<std::set<int64_t> > ::const_iterator _iter436;
+    for (_iter436 = this->dstIdSet.begin(); _iter436 != this->dstIdSet.end(); ++_iter436)
+    {
+      {
+        xfer += oprot->writeSetBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>((*_iter436).size()));
+        std::set<int64_t> ::const_iterator _iter437;
+        for (_iter437 = (*_iter436).begin(); _iter437 != (*_iter436).end(); ++_iter437)
+        {
+          xfer += oprot->writeI64((*_iter437));
+        }
+        xfer += oprot->writeSetEnd();
+      }
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("tLow", ::apache::thrift::protocol::T_LIST, 4);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->tLow.size()));
+    std::vector<int64_t> ::const_iterator _iter438;
+    for (_iter438 = this->tLow.begin(); _iter438 != this->tLow.end(); ++_iter438)
+    {
+      xfer += oprot->writeI64((*_iter438));
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("tHigh", ::apache::thrift::protocol::T_LIST, 5);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->tHigh.size()));
+    std::vector<int64_t> ::const_iterator _iter439;
+    for (_iter439 = this->tHigh.begin(); _iter439 != this->tHigh.end(); ++_iter439)
+    {
+      xfer += oprot->writeI64((*_iter439));
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+uint32_t GraphQueryAggregatorService_assoc_get_batched_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  xfer += oprot->writeStructBegin("GraphQueryAggregatorService_assoc_get_batched_pargs");
+
+  xfer += oprot->writeFieldBegin("src", ::apache::thrift::protocol::T_LIST, 1);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>((*(this->src)).size()));
+    std::vector<int64_t> ::const_iterator _iter440;
+    for (_iter440 = (*(this->src)).begin(); _iter440 != (*(this->src)).end(); ++_iter440)
+    {
+      xfer += oprot->writeI64((*_iter440));
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("atype", ::apache::thrift::protocol::T_LIST, 2);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>((*(this->atype)).size()));
+    std::vector<int64_t> ::const_iterator _iter441;
+    for (_iter441 = (*(this->atype)).begin(); _iter441 != (*(this->atype)).end(); ++_iter441)
+    {
+      xfer += oprot->writeI64((*_iter441));
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("dstIdSet", ::apache::thrift::protocol::T_LIST, 3);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_SET, static_cast<uint32_t>((*(this->dstIdSet)).size()));
+    std::vector<std::set<int64_t> > ::const_iterator _iter442;
+    for (_iter442 = (*(this->dstIdSet)).begin(); _iter442 != (*(this->dstIdSet)).end(); ++_iter442)
+    {
+      {
+        xfer += oprot->writeSetBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>((*_iter442).size()));
+        std::set<int64_t> ::const_iterator _iter443;
+        for (_iter443 = (*_iter442).begin(); _iter443 != (*_iter442).end(); ++_iter443)
+        {
+          xfer += oprot->writeI64((*_iter443));
+        }
+        xfer += oprot->writeSetEnd();
+      }
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("tLow", ::apache::thrift::protocol::T_LIST, 4);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>((*(this->tLow)).size()));
+    std::vector<int64_t> ::const_iterator _iter444;
+    for (_iter444 = (*(this->tLow)).begin(); _iter444 != (*(this->tLow)).end(); ++_iter444)
+    {
+      xfer += oprot->writeI64((*_iter444));
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("tHigh", ::apache::thrift::protocol::T_LIST, 5);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>((*(this->tHigh)).size()));
+    std::vector<int64_t> ::const_iterator _iter445;
+    for (_iter445 = (*(this->tHigh)).begin(); _iter445 != (*(this->tHigh)).end(); ++_iter445)
+    {
+      xfer += oprot->writeI64((*_iter445));
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+uint32_t GraphQueryAggregatorService_assoc_get_batched_result::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 0:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->success.clear();
+            uint32_t _size446;
+            ::apache::thrift::protocol::TType _etype449;
+            xfer += iprot->readListBegin(_etype449, _size446);
+            this->success.resize(_size446);
+            uint32_t _i450;
+            for (_i450 = 0; _i450 < _size446; ++_i450)
+            {
+              {
+                this->success[_i450].clear();
+                uint32_t _size451;
+                ::apache::thrift::protocol::TType _etype454;
+                xfer += iprot->readListBegin(_etype454, _size451);
+                this->success[_i450].resize(_size451);
+                uint32_t _i455;
+                for (_i455 = 0; _i455 < _size451; ++_i455)
+                {
+                  xfer += this->success[_i450][_i455].read(iprot);
+                }
+                xfer += iprot->readListEnd();
+              }
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.success = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t GraphQueryAggregatorService_assoc_get_batched_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
+
+  uint32_t xfer = 0;
+
+  xfer += oprot->writeStructBegin("GraphQueryAggregatorService_assoc_get_batched_result");
+
+  if (this->__isset.success) {
+    xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
+    {
+      xfer += oprot->writeListBegin(::apache::thrift::protocol::T_LIST, static_cast<uint32_t>(this->success.size()));
+      std::vector<std::vector<ThriftAssoc> > ::const_iterator _iter456;
+      for (_iter456 = this->success.begin(); _iter456 != this->success.end(); ++_iter456)
+      {
+        {
+          xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>((*_iter456).size()));
+          std::vector<ThriftAssoc> ::const_iterator _iter457;
+          for (_iter457 = (*_iter456).begin(); _iter457 != (*_iter456).end(); ++_iter457)
+          {
+            xfer += (*_iter457).write(oprot);
+          }
+          xfer += oprot->writeListEnd();
+        }
+      }
+      xfer += oprot->writeListEnd();
+    }
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+uint32_t GraphQueryAggregatorService_assoc_get_batched_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 0:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            (*(this->success)).clear();
+            uint32_t _size458;
+            ::apache::thrift::protocol::TType _etype461;
+            xfer += iprot->readListBegin(_etype461, _size458);
+            (*(this->success)).resize(_size458);
+            uint32_t _i462;
+            for (_i462 = 0; _i462 < _size458; ++_i462)
+            {
+              {
+                (*(this->success))[_i462].clear();
+                uint32_t _size463;
+                ::apache::thrift::protocol::TType _etype466;
+                xfer += iprot->readListBegin(_etype466, _size463);
+                (*(this->success))[_i462].resize(_size463);
+                uint32_t _i467;
+                for (_i467 = 0; _i467 < _size463; ++_i467)
+                {
+                  xfer += (*(this->success))[_i462][_i467].read(iprot);
+                }
+                xfer += iprot->readListEnd();
+              }
             }
             xfer += iprot->readListEnd();
           }
@@ -5056,15 +6167,15 @@ uint32_t GraphQueryAggregatorService_assoc_get_local_args::read(::apache::thrift
         if (ftype == ::apache::thrift::protocol::T_SET) {
           {
             this->dstIdSet.clear();
-            uint32_t _size328;
-            ::apache::thrift::protocol::TType _etype331;
-            xfer += iprot->readSetBegin(_etype331, _size328);
-            uint32_t _i332;
-            for (_i332 = 0; _i332 < _size328; ++_i332)
+            uint32_t _size468;
+            ::apache::thrift::protocol::TType _etype471;
+            xfer += iprot->readSetBegin(_etype471, _size468);
+            uint32_t _i472;
+            for (_i472 = 0; _i472 < _size468; ++_i472)
             {
-              int64_t _elem333;
-              xfer += iprot->readI64(_elem333);
-              this->dstIdSet.insert(_elem333);
+              int64_t _elem473;
+              xfer += iprot->readI64(_elem473);
+              this->dstIdSet.insert(_elem473);
             }
             xfer += iprot->readSetEnd();
           }
@@ -5120,10 +6231,10 @@ uint32_t GraphQueryAggregatorService_assoc_get_local_args::write(::apache::thrif
   xfer += oprot->writeFieldBegin("dstIdSet", ::apache::thrift::protocol::T_SET, 4);
   {
     xfer += oprot->writeSetBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->dstIdSet.size()));
-    std::set<int64_t> ::const_iterator _iter334;
-    for (_iter334 = this->dstIdSet.begin(); _iter334 != this->dstIdSet.end(); ++_iter334)
+    std::set<int64_t> ::const_iterator _iter474;
+    for (_iter474 = this->dstIdSet.begin(); _iter474 != this->dstIdSet.end(); ++_iter474)
     {
-      xfer += oprot->writeI64((*_iter334));
+      xfer += oprot->writeI64((*_iter474));
     }
     xfer += oprot->writeSetEnd();
   }
@@ -5161,10 +6272,10 @@ uint32_t GraphQueryAggregatorService_assoc_get_local_pargs::write(::apache::thri
   xfer += oprot->writeFieldBegin("dstIdSet", ::apache::thrift::protocol::T_SET, 4);
   {
     xfer += oprot->writeSetBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>((*(this->dstIdSet)).size()));
-    std::set<int64_t> ::const_iterator _iter335;
-    for (_iter335 = (*(this->dstIdSet)).begin(); _iter335 != (*(this->dstIdSet)).end(); ++_iter335)
+    std::set<int64_t> ::const_iterator _iter475;
+    for (_iter475 = (*(this->dstIdSet)).begin(); _iter475 != (*(this->dstIdSet)).end(); ++_iter475)
     {
-      xfer += oprot->writeI64((*_iter335));
+      xfer += oprot->writeI64((*_iter475));
     }
     xfer += oprot->writeSetEnd();
   }
@@ -5207,14 +6318,14 @@ uint32_t GraphQueryAggregatorService_assoc_get_local_result::read(::apache::thri
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->success.clear();
-            uint32_t _size336;
-            ::apache::thrift::protocol::TType _etype339;
-            xfer += iprot->readListBegin(_etype339, _size336);
-            this->success.resize(_size336);
-            uint32_t _i340;
-            for (_i340 = 0; _i340 < _size336; ++_i340)
+            uint32_t _size476;
+            ::apache::thrift::protocol::TType _etype479;
+            xfer += iprot->readListBegin(_etype479, _size476);
+            this->success.resize(_size476);
+            uint32_t _i480;
+            for (_i480 = 0; _i480 < _size476; ++_i480)
             {
-              xfer += this->success[_i340].read(iprot);
+              xfer += this->success[_i480].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -5245,10 +6356,10 @@ uint32_t GraphQueryAggregatorService_assoc_get_local_result::write(::apache::thr
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->success.size()));
-      std::vector<ThriftAssoc> ::const_iterator _iter341;
-      for (_iter341 = this->success.begin(); _iter341 != this->success.end(); ++_iter341)
+      std::vector<ThriftAssoc> ::const_iterator _iter481;
+      for (_iter481 = this->success.begin(); _iter481 != this->success.end(); ++_iter481)
       {
-        xfer += (*_iter341).write(oprot);
+        xfer += (*_iter481).write(oprot);
       }
       xfer += oprot->writeListEnd();
     }
@@ -5283,14 +6394,14 @@ uint32_t GraphQueryAggregatorService_assoc_get_local_presult::read(::apache::thr
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             (*(this->success)).clear();
-            uint32_t _size342;
-            ::apache::thrift::protocol::TType _etype345;
-            xfer += iprot->readListBegin(_etype345, _size342);
-            (*(this->success)).resize(_size342);
-            uint32_t _i346;
-            for (_i346 = 0; _i346 < _size342; ++_i346)
+            uint32_t _size482;
+            ::apache::thrift::protocol::TType _etype485;
+            xfer += iprot->readListBegin(_etype485, _size482);
+            (*(this->success)).resize(_size482);
+            uint32_t _i486;
+            for (_i486 = 0; _i486 < _size482; ++_i486)
             {
-              xfer += (*(this->success))[_i346].read(iprot);
+              xfer += (*(this->success))[_i486].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -5401,14 +6512,14 @@ uint32_t GraphQueryAggregatorService_obj_get_result::read(::apache::thrift::prot
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->success.clear();
-            uint32_t _size347;
-            ::apache::thrift::protocol::TType _etype350;
-            xfer += iprot->readListBegin(_etype350, _size347);
-            this->success.resize(_size347);
-            uint32_t _i351;
-            for (_i351 = 0; _i351 < _size347; ++_i351)
+            uint32_t _size487;
+            ::apache::thrift::protocol::TType _etype490;
+            xfer += iprot->readListBegin(_etype490, _size487);
+            this->success.resize(_size487);
+            uint32_t _i491;
+            for (_i491 = 0; _i491 < _size487; ++_i491)
             {
-              xfer += iprot->readString(this->success[_i351]);
+              xfer += iprot->readString(this->success[_i491]);
             }
             xfer += iprot->readListEnd();
           }
@@ -5439,10 +6550,10 @@ uint32_t GraphQueryAggregatorService_obj_get_result::write(::apache::thrift::pro
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->success.size()));
-      std::vector<std::string> ::const_iterator _iter352;
-      for (_iter352 = this->success.begin(); _iter352 != this->success.end(); ++_iter352)
+      std::vector<std::string> ::const_iterator _iter492;
+      for (_iter492 = this->success.begin(); _iter492 != this->success.end(); ++_iter492)
       {
-        xfer += oprot->writeString((*_iter352));
+        xfer += oprot->writeString((*_iter492));
       }
       xfer += oprot->writeListEnd();
     }
@@ -5477,14 +6588,268 @@ uint32_t GraphQueryAggregatorService_obj_get_presult::read(::apache::thrift::pro
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             (*(this->success)).clear();
-            uint32_t _size353;
-            ::apache::thrift::protocol::TType _etype356;
-            xfer += iprot->readListBegin(_etype356, _size353);
-            (*(this->success)).resize(_size353);
-            uint32_t _i357;
-            for (_i357 = 0; _i357 < _size353; ++_i357)
+            uint32_t _size493;
+            ::apache::thrift::protocol::TType _etype496;
+            xfer += iprot->readListBegin(_etype496, _size493);
+            (*(this->success)).resize(_size493);
+            uint32_t _i497;
+            for (_i497 = 0; _i497 < _size493; ++_i497)
             {
-              xfer += iprot->readString((*(this->success))[_i357]);
+              xfer += iprot->readString((*(this->success))[_i497]);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.success = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t GraphQueryAggregatorService_obj_get_batched_args::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->nodeId.clear();
+            uint32_t _size498;
+            ::apache::thrift::protocol::TType _etype501;
+            xfer += iprot->readListBegin(_etype501, _size498);
+            this->nodeId.resize(_size498);
+            uint32_t _i502;
+            for (_i502 = 0; _i502 < _size498; ++_i502)
+            {
+              xfer += iprot->readI64(this->nodeId[_i502]);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.nodeId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t GraphQueryAggregatorService_obj_get_batched_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  xfer += oprot->writeStructBegin("GraphQueryAggregatorService_obj_get_batched_args");
+
+  xfer += oprot->writeFieldBegin("nodeId", ::apache::thrift::protocol::T_LIST, 1);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->nodeId.size()));
+    std::vector<int64_t> ::const_iterator _iter503;
+    for (_iter503 = this->nodeId.begin(); _iter503 != this->nodeId.end(); ++_iter503)
+    {
+      xfer += oprot->writeI64((*_iter503));
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+uint32_t GraphQueryAggregatorService_obj_get_batched_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  xfer += oprot->writeStructBegin("GraphQueryAggregatorService_obj_get_batched_pargs");
+
+  xfer += oprot->writeFieldBegin("nodeId", ::apache::thrift::protocol::T_LIST, 1);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>((*(this->nodeId)).size()));
+    std::vector<int64_t> ::const_iterator _iter504;
+    for (_iter504 = (*(this->nodeId)).begin(); _iter504 != (*(this->nodeId)).end(); ++_iter504)
+    {
+      xfer += oprot->writeI64((*_iter504));
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+uint32_t GraphQueryAggregatorService_obj_get_batched_result::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 0:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->success.clear();
+            uint32_t _size505;
+            ::apache::thrift::protocol::TType _etype508;
+            xfer += iprot->readListBegin(_etype508, _size505);
+            this->success.resize(_size505);
+            uint32_t _i509;
+            for (_i509 = 0; _i509 < _size505; ++_i509)
+            {
+              {
+                this->success[_i509].clear();
+                uint32_t _size510;
+                ::apache::thrift::protocol::TType _etype513;
+                xfer += iprot->readListBegin(_etype513, _size510);
+                this->success[_i509].resize(_size510);
+                uint32_t _i514;
+                for (_i514 = 0; _i514 < _size510; ++_i514)
+                {
+                  xfer += iprot->readString(this->success[_i509][_i514]);
+                }
+                xfer += iprot->readListEnd();
+              }
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.success = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t GraphQueryAggregatorService_obj_get_batched_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
+
+  uint32_t xfer = 0;
+
+  xfer += oprot->writeStructBegin("GraphQueryAggregatorService_obj_get_batched_result");
+
+  if (this->__isset.success) {
+    xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
+    {
+      xfer += oprot->writeListBegin(::apache::thrift::protocol::T_LIST, static_cast<uint32_t>(this->success.size()));
+      std::vector<std::vector<std::string> > ::const_iterator _iter515;
+      for (_iter515 = this->success.begin(); _iter515 != this->success.end(); ++_iter515)
+      {
+        {
+          xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>((*_iter515).size()));
+          std::vector<std::string> ::const_iterator _iter516;
+          for (_iter516 = (*_iter515).begin(); _iter516 != (*_iter515).end(); ++_iter516)
+          {
+            xfer += oprot->writeString((*_iter516));
+          }
+          xfer += oprot->writeListEnd();
+        }
+      }
+      xfer += oprot->writeListEnd();
+    }
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+uint32_t GraphQueryAggregatorService_obj_get_batched_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 0:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            (*(this->success)).clear();
+            uint32_t _size517;
+            ::apache::thrift::protocol::TType _etype520;
+            xfer += iprot->readListBegin(_etype520, _size517);
+            (*(this->success)).resize(_size517);
+            uint32_t _i521;
+            for (_i521 = 0; _i521 < _size517; ++_i521)
+            {
+              {
+                (*(this->success))[_i521].clear();
+                uint32_t _size522;
+                ::apache::thrift::protocol::TType _etype525;
+                xfer += iprot->readListBegin(_etype525, _size522);
+                (*(this->success))[_i521].resize(_size522);
+                uint32_t _i526;
+                for (_i526 = 0; _i526 < _size522; ++_i526)
+                {
+                  xfer += iprot->readString((*(this->success))[_i521][_i526]);
+                }
+                xfer += iprot->readListEnd();
+              }
             }
             xfer += iprot->readListEnd();
           }
@@ -5611,14 +6976,14 @@ uint32_t GraphQueryAggregatorService_obj_get_local_result::read(::apache::thrift
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->success.clear();
-            uint32_t _size358;
-            ::apache::thrift::protocol::TType _etype361;
-            xfer += iprot->readListBegin(_etype361, _size358);
-            this->success.resize(_size358);
-            uint32_t _i362;
-            for (_i362 = 0; _i362 < _size358; ++_i362)
+            uint32_t _size527;
+            ::apache::thrift::protocol::TType _etype530;
+            xfer += iprot->readListBegin(_etype530, _size527);
+            this->success.resize(_size527);
+            uint32_t _i531;
+            for (_i531 = 0; _i531 < _size527; ++_i531)
             {
-              xfer += iprot->readString(this->success[_i362]);
+              xfer += iprot->readString(this->success[_i531]);
             }
             xfer += iprot->readListEnd();
           }
@@ -5649,10 +7014,10 @@ uint32_t GraphQueryAggregatorService_obj_get_local_result::write(::apache::thrif
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->success.size()));
-      std::vector<std::string> ::const_iterator _iter363;
-      for (_iter363 = this->success.begin(); _iter363 != this->success.end(); ++_iter363)
+      std::vector<std::string> ::const_iterator _iter532;
+      for (_iter532 = this->success.begin(); _iter532 != this->success.end(); ++_iter532)
       {
-        xfer += oprot->writeString((*_iter363));
+        xfer += oprot->writeString((*_iter532));
       }
       xfer += oprot->writeListEnd();
     }
@@ -5687,14 +7052,14 @@ uint32_t GraphQueryAggregatorService_obj_get_local_presult::read(::apache::thrif
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             (*(this->success)).clear();
-            uint32_t _size364;
-            ::apache::thrift::protocol::TType _etype367;
-            xfer += iprot->readListBegin(_etype367, _size364);
-            (*(this->success)).resize(_size364);
-            uint32_t _i368;
-            for (_i368 = 0; _i368 < _size364; ++_i368)
+            uint32_t _size533;
+            ::apache::thrift::protocol::TType _etype536;
+            xfer += iprot->readListBegin(_etype536, _size533);
+            (*(this->success)).resize(_size533);
+            uint32_t _i537;
+            for (_i537 = 0; _i537 < _size533; ++_i537)
             {
-              xfer += iprot->readString((*(this->success))[_i368]);
+              xfer += iprot->readString((*(this->success))[_i537]);
             }
             xfer += iprot->readListEnd();
           }
@@ -5869,14 +7234,14 @@ uint32_t GraphQueryAggregatorService_assoc_time_range_result::read(::apache::thr
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->success.clear();
-            uint32_t _size369;
-            ::apache::thrift::protocol::TType _etype372;
-            xfer += iprot->readListBegin(_etype372, _size369);
-            this->success.resize(_size369);
-            uint32_t _i373;
-            for (_i373 = 0; _i373 < _size369; ++_i373)
+            uint32_t _size538;
+            ::apache::thrift::protocol::TType _etype541;
+            xfer += iprot->readListBegin(_etype541, _size538);
+            this->success.resize(_size538);
+            uint32_t _i542;
+            for (_i542 = 0; _i542 < _size538; ++_i542)
             {
-              xfer += this->success[_i373].read(iprot);
+              xfer += this->success[_i542].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -5907,10 +7272,10 @@ uint32_t GraphQueryAggregatorService_assoc_time_range_result::write(::apache::th
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->success.size()));
-      std::vector<ThriftAssoc> ::const_iterator _iter374;
-      for (_iter374 = this->success.begin(); _iter374 != this->success.end(); ++_iter374)
+      std::vector<ThriftAssoc> ::const_iterator _iter543;
+      for (_iter543 = this->success.begin(); _iter543 != this->success.end(); ++_iter543)
       {
-        xfer += (*_iter374).write(oprot);
+        xfer += (*_iter543).write(oprot);
       }
       xfer += oprot->writeListEnd();
     }
@@ -5945,14 +7310,444 @@ uint32_t GraphQueryAggregatorService_assoc_time_range_presult::read(::apache::th
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             (*(this->success)).clear();
-            uint32_t _size375;
-            ::apache::thrift::protocol::TType _etype378;
-            xfer += iprot->readListBegin(_etype378, _size375);
-            (*(this->success)).resize(_size375);
-            uint32_t _i379;
-            for (_i379 = 0; _i379 < _size375; ++_i379)
+            uint32_t _size544;
+            ::apache::thrift::protocol::TType _etype547;
+            xfer += iprot->readListBegin(_etype547, _size544);
+            (*(this->success)).resize(_size544);
+            uint32_t _i548;
+            for (_i548 = 0; _i548 < _size544; ++_i548)
             {
-              xfer += (*(this->success))[_i379].read(iprot);
+              xfer += (*(this->success))[_i548].read(iprot);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.success = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t GraphQueryAggregatorService_assoc_time_range_batched_args::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->src.clear();
+            uint32_t _size549;
+            ::apache::thrift::protocol::TType _etype552;
+            xfer += iprot->readListBegin(_etype552, _size549);
+            this->src.resize(_size549);
+            uint32_t _i553;
+            for (_i553 = 0; _i553 < _size549; ++_i553)
+            {
+              xfer += iprot->readI64(this->src[_i553]);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.src = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->atype.clear();
+            uint32_t _size554;
+            ::apache::thrift::protocol::TType _etype557;
+            xfer += iprot->readListBegin(_etype557, _size554);
+            this->atype.resize(_size554);
+            uint32_t _i558;
+            for (_i558 = 0; _i558 < _size554; ++_i558)
+            {
+              xfer += iprot->readI64(this->atype[_i558]);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.atype = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->tLow.clear();
+            uint32_t _size559;
+            ::apache::thrift::protocol::TType _etype562;
+            xfer += iprot->readListBegin(_etype562, _size559);
+            this->tLow.resize(_size559);
+            uint32_t _i563;
+            for (_i563 = 0; _i563 < _size559; ++_i563)
+            {
+              xfer += iprot->readI64(this->tLow[_i563]);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.tLow = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->tHigh.clear();
+            uint32_t _size564;
+            ::apache::thrift::protocol::TType _etype567;
+            xfer += iprot->readListBegin(_etype567, _size564);
+            this->tHigh.resize(_size564);
+            uint32_t _i568;
+            for (_i568 = 0; _i568 < _size564; ++_i568)
+            {
+              xfer += iprot->readI64(this->tHigh[_i568]);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.tHigh = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 5:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->limit.clear();
+            uint32_t _size569;
+            ::apache::thrift::protocol::TType _etype572;
+            xfer += iprot->readListBegin(_etype572, _size569);
+            this->limit.resize(_size569);
+            uint32_t _i573;
+            for (_i573 = 0; _i573 < _size569; ++_i573)
+            {
+              xfer += iprot->readI32(this->limit[_i573]);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.limit = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t GraphQueryAggregatorService_assoc_time_range_batched_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  xfer += oprot->writeStructBegin("GraphQueryAggregatorService_assoc_time_range_batched_args");
+
+  xfer += oprot->writeFieldBegin("src", ::apache::thrift::protocol::T_LIST, 1);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->src.size()));
+    std::vector<int64_t> ::const_iterator _iter574;
+    for (_iter574 = this->src.begin(); _iter574 != this->src.end(); ++_iter574)
+    {
+      xfer += oprot->writeI64((*_iter574));
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("atype", ::apache::thrift::protocol::T_LIST, 2);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->atype.size()));
+    std::vector<int64_t> ::const_iterator _iter575;
+    for (_iter575 = this->atype.begin(); _iter575 != this->atype.end(); ++_iter575)
+    {
+      xfer += oprot->writeI64((*_iter575));
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("tLow", ::apache::thrift::protocol::T_LIST, 3);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->tLow.size()));
+    std::vector<int64_t> ::const_iterator _iter576;
+    for (_iter576 = this->tLow.begin(); _iter576 != this->tLow.end(); ++_iter576)
+    {
+      xfer += oprot->writeI64((*_iter576));
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("tHigh", ::apache::thrift::protocol::T_LIST, 4);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->tHigh.size()));
+    std::vector<int64_t> ::const_iterator _iter577;
+    for (_iter577 = this->tHigh.begin(); _iter577 != this->tHigh.end(); ++_iter577)
+    {
+      xfer += oprot->writeI64((*_iter577));
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("limit", ::apache::thrift::protocol::T_LIST, 5);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I32, static_cast<uint32_t>(this->limit.size()));
+    std::vector<int32_t> ::const_iterator _iter578;
+    for (_iter578 = this->limit.begin(); _iter578 != this->limit.end(); ++_iter578)
+    {
+      xfer += oprot->writeI32((*_iter578));
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+uint32_t GraphQueryAggregatorService_assoc_time_range_batched_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  xfer += oprot->writeStructBegin("GraphQueryAggregatorService_assoc_time_range_batched_pargs");
+
+  xfer += oprot->writeFieldBegin("src", ::apache::thrift::protocol::T_LIST, 1);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>((*(this->src)).size()));
+    std::vector<int64_t> ::const_iterator _iter579;
+    for (_iter579 = (*(this->src)).begin(); _iter579 != (*(this->src)).end(); ++_iter579)
+    {
+      xfer += oprot->writeI64((*_iter579));
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("atype", ::apache::thrift::protocol::T_LIST, 2);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>((*(this->atype)).size()));
+    std::vector<int64_t> ::const_iterator _iter580;
+    for (_iter580 = (*(this->atype)).begin(); _iter580 != (*(this->atype)).end(); ++_iter580)
+    {
+      xfer += oprot->writeI64((*_iter580));
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("tLow", ::apache::thrift::protocol::T_LIST, 3);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>((*(this->tLow)).size()));
+    std::vector<int64_t> ::const_iterator _iter581;
+    for (_iter581 = (*(this->tLow)).begin(); _iter581 != (*(this->tLow)).end(); ++_iter581)
+    {
+      xfer += oprot->writeI64((*_iter581));
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("tHigh", ::apache::thrift::protocol::T_LIST, 4);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>((*(this->tHigh)).size()));
+    std::vector<int64_t> ::const_iterator _iter582;
+    for (_iter582 = (*(this->tHigh)).begin(); _iter582 != (*(this->tHigh)).end(); ++_iter582)
+    {
+      xfer += oprot->writeI64((*_iter582));
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("limit", ::apache::thrift::protocol::T_LIST, 5);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I32, static_cast<uint32_t>((*(this->limit)).size()));
+    std::vector<int32_t> ::const_iterator _iter583;
+    for (_iter583 = (*(this->limit)).begin(); _iter583 != (*(this->limit)).end(); ++_iter583)
+    {
+      xfer += oprot->writeI32((*_iter583));
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+uint32_t GraphQueryAggregatorService_assoc_time_range_batched_result::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 0:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->success.clear();
+            uint32_t _size584;
+            ::apache::thrift::protocol::TType _etype587;
+            xfer += iprot->readListBegin(_etype587, _size584);
+            this->success.resize(_size584);
+            uint32_t _i588;
+            for (_i588 = 0; _i588 < _size584; ++_i588)
+            {
+              {
+                this->success[_i588].clear();
+                uint32_t _size589;
+                ::apache::thrift::protocol::TType _etype592;
+                xfer += iprot->readListBegin(_etype592, _size589);
+                this->success[_i588].resize(_size589);
+                uint32_t _i593;
+                for (_i593 = 0; _i593 < _size589; ++_i593)
+                {
+                  xfer += this->success[_i588][_i593].read(iprot);
+                }
+                xfer += iprot->readListEnd();
+              }
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.success = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t GraphQueryAggregatorService_assoc_time_range_batched_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
+
+  uint32_t xfer = 0;
+
+  xfer += oprot->writeStructBegin("GraphQueryAggregatorService_assoc_time_range_batched_result");
+
+  if (this->__isset.success) {
+    xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
+    {
+      xfer += oprot->writeListBegin(::apache::thrift::protocol::T_LIST, static_cast<uint32_t>(this->success.size()));
+      std::vector<std::vector<ThriftAssoc> > ::const_iterator _iter594;
+      for (_iter594 = this->success.begin(); _iter594 != this->success.end(); ++_iter594)
+      {
+        {
+          xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>((*_iter594).size()));
+          std::vector<ThriftAssoc> ::const_iterator _iter595;
+          for (_iter595 = (*_iter594).begin(); _iter595 != (*_iter594).end(); ++_iter595)
+          {
+            xfer += (*_iter595).write(oprot);
+          }
+          xfer += oprot->writeListEnd();
+        }
+      }
+      xfer += oprot->writeListEnd();
+    }
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+uint32_t GraphQueryAggregatorService_assoc_time_range_batched_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 0:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            (*(this->success)).clear();
+            uint32_t _size596;
+            ::apache::thrift::protocol::TType _etype599;
+            xfer += iprot->readListBegin(_etype599, _size596);
+            (*(this->success)).resize(_size596);
+            uint32_t _i600;
+            for (_i600 = 0; _i600 < _size596; ++_i600)
+            {
+              {
+                (*(this->success))[_i600].clear();
+                uint32_t _size601;
+                ::apache::thrift::protocol::TType _etype604;
+                xfer += iprot->readListBegin(_etype604, _size601);
+                (*(this->success))[_i600].resize(_size601);
+                uint32_t _i605;
+                for (_i605 = 0; _i605 < _size601; ++_i605)
+                {
+                  xfer += (*(this->success))[_i600][_i605].read(iprot);
+                }
+                xfer += iprot->readListEnd();
+              }
             }
             xfer += iprot->readListEnd();
           }
@@ -6143,14 +7938,14 @@ uint32_t GraphQueryAggregatorService_assoc_time_range_local_result::read(::apach
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->success.clear();
-            uint32_t _size380;
-            ::apache::thrift::protocol::TType _etype383;
-            xfer += iprot->readListBegin(_etype383, _size380);
-            this->success.resize(_size380);
-            uint32_t _i384;
-            for (_i384 = 0; _i384 < _size380; ++_i384)
+            uint32_t _size606;
+            ::apache::thrift::protocol::TType _etype609;
+            xfer += iprot->readListBegin(_etype609, _size606);
+            this->success.resize(_size606);
+            uint32_t _i610;
+            for (_i610 = 0; _i610 < _size606; ++_i610)
             {
-              xfer += this->success[_i384].read(iprot);
+              xfer += this->success[_i610].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -6181,10 +7976,10 @@ uint32_t GraphQueryAggregatorService_assoc_time_range_local_result::write(::apac
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->success.size()));
-      std::vector<ThriftAssoc> ::const_iterator _iter385;
-      for (_iter385 = this->success.begin(); _iter385 != this->success.end(); ++_iter385)
+      std::vector<ThriftAssoc> ::const_iterator _iter611;
+      for (_iter611 = this->success.begin(); _iter611 != this->success.end(); ++_iter611)
       {
-        xfer += (*_iter385).write(oprot);
+        xfer += (*_iter611).write(oprot);
       }
       xfer += oprot->writeListEnd();
     }
@@ -6219,14 +8014,14 @@ uint32_t GraphQueryAggregatorService_assoc_time_range_local_presult::read(::apac
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             (*(this->success)).clear();
-            uint32_t _size386;
-            ::apache::thrift::protocol::TType _etype389;
-            xfer += iprot->readListBegin(_etype389, _size386);
-            (*(this->success)).resize(_size386);
-            uint32_t _i390;
-            for (_i390 = 0; _i390 < _size386; ++_i390)
+            uint32_t _size612;
+            ::apache::thrift::protocol::TType _etype615;
+            xfer += iprot->readListBegin(_etype615, _size612);
+            (*(this->success)).resize(_size612);
+            uint32_t _i616;
+            for (_i616 = 0; _i616 < _size612; ++_i616)
             {
-              xfer += (*(this->success))[_i390].read(iprot);
+              xfer += (*(this->success))[_i616].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -7470,6 +9265,67 @@ void GraphQueryAggregatorServiceClient::recv_assoc_range(std::vector<ThriftAssoc
   throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "assoc_range failed: unknown result");
 }
 
+void GraphQueryAggregatorServiceClient::assoc_range_batched(std::vector<std::vector<ThriftAssoc> > & _return, const std::vector<int64_t> & src, const std::vector<int64_t> & atype, const std::vector<int32_t> & off, const std::vector<int32_t> & len)
+{
+  send_assoc_range_batched(src, atype, off, len);
+  recv_assoc_range_batched(_return);
+}
+
+void GraphQueryAggregatorServiceClient::send_assoc_range_batched(const std::vector<int64_t> & src, const std::vector<int64_t> & atype, const std::vector<int32_t> & off, const std::vector<int32_t> & len)
+{
+  int32_t cseqid = 0;
+  oprot_->writeMessageBegin("assoc_range_batched", ::apache::thrift::protocol::T_CALL, cseqid);
+
+  GraphQueryAggregatorService_assoc_range_batched_pargs args;
+  args.src = &src;
+  args.atype = &atype;
+  args.off = &off;
+  args.len = &len;
+  args.write(oprot_);
+
+  oprot_->writeMessageEnd();
+  oprot_->getTransport()->writeEnd();
+  oprot_->getTransport()->flush();
+}
+
+void GraphQueryAggregatorServiceClient::recv_assoc_range_batched(std::vector<std::vector<ThriftAssoc> > & _return)
+{
+
+  int32_t rseqid = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TMessageType mtype;
+
+  iprot_->readMessageBegin(fname, mtype, rseqid);
+  if (mtype == ::apache::thrift::protocol::T_EXCEPTION) {
+    ::apache::thrift::TApplicationException x;
+    x.read(iprot_);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+    throw x;
+  }
+  if (mtype != ::apache::thrift::protocol::T_REPLY) {
+    iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+  }
+  if (fname.compare("assoc_range_batched") != 0) {
+    iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+  }
+  GraphQueryAggregatorService_assoc_range_batched_presult result;
+  result.success = &_return;
+  result.read(iprot_);
+  iprot_->readMessageEnd();
+  iprot_->getTransport()->readEnd();
+
+  if (result.__isset.success) {
+    // _return pointer has now been filled
+    return;
+  }
+  throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "assoc_range_batched failed: unknown result");
+}
+
 void GraphQueryAggregatorServiceClient::assoc_range_local(std::vector<ThriftAssoc> & _return, const int32_t shardId, const int64_t src, const int64_t atype, const int32_t off, const int32_t len)
 {
   send_assoc_range_local(shardId, src, atype, off, len);
@@ -7589,6 +9445,65 @@ int64_t GraphQueryAggregatorServiceClient::recv_assoc_count()
     return _return;
   }
   throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "assoc_count failed: unknown result");
+}
+
+void GraphQueryAggregatorServiceClient::assoc_count_batched(std::vector<int64_t> & _return, const std::vector<int64_t> & src, const std::vector<int64_t> & atype)
+{
+  send_assoc_count_batched(src, atype);
+  recv_assoc_count_batched(_return);
+}
+
+void GraphQueryAggregatorServiceClient::send_assoc_count_batched(const std::vector<int64_t> & src, const std::vector<int64_t> & atype)
+{
+  int32_t cseqid = 0;
+  oprot_->writeMessageBegin("assoc_count_batched", ::apache::thrift::protocol::T_CALL, cseqid);
+
+  GraphQueryAggregatorService_assoc_count_batched_pargs args;
+  args.src = &src;
+  args.atype = &atype;
+  args.write(oprot_);
+
+  oprot_->writeMessageEnd();
+  oprot_->getTransport()->writeEnd();
+  oprot_->getTransport()->flush();
+}
+
+void GraphQueryAggregatorServiceClient::recv_assoc_count_batched(std::vector<int64_t> & _return)
+{
+
+  int32_t rseqid = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TMessageType mtype;
+
+  iprot_->readMessageBegin(fname, mtype, rseqid);
+  if (mtype == ::apache::thrift::protocol::T_EXCEPTION) {
+    ::apache::thrift::TApplicationException x;
+    x.read(iprot_);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+    throw x;
+  }
+  if (mtype != ::apache::thrift::protocol::T_REPLY) {
+    iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+  }
+  if (fname.compare("assoc_count_batched") != 0) {
+    iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+  }
+  GraphQueryAggregatorService_assoc_count_batched_presult result;
+  result.success = &_return;
+  result.read(iprot_);
+  iprot_->readMessageEnd();
+  iprot_->getTransport()->readEnd();
+
+  if (result.__isset.success) {
+    // _return pointer has now been filled
+    return;
+  }
+  throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "assoc_count_batched failed: unknown result");
 }
 
 int64_t GraphQueryAggregatorServiceClient::assoc_count_local(const int32_t shardId, const int64_t src, const int64_t atype)
@@ -7713,6 +9628,68 @@ void GraphQueryAggregatorServiceClient::recv_assoc_get(std::vector<ThriftAssoc> 
   throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "assoc_get failed: unknown result");
 }
 
+void GraphQueryAggregatorServiceClient::assoc_get_batched(std::vector<std::vector<ThriftAssoc> > & _return, const std::vector<int64_t> & src, const std::vector<int64_t> & atype, const std::vector<std::set<int64_t> > & dstIdSet, const std::vector<int64_t> & tLow, const std::vector<int64_t> & tHigh)
+{
+  send_assoc_get_batched(src, atype, dstIdSet, tLow, tHigh);
+  recv_assoc_get_batched(_return);
+}
+
+void GraphQueryAggregatorServiceClient::send_assoc_get_batched(const std::vector<int64_t> & src, const std::vector<int64_t> & atype, const std::vector<std::set<int64_t> > & dstIdSet, const std::vector<int64_t> & tLow, const std::vector<int64_t> & tHigh)
+{
+  int32_t cseqid = 0;
+  oprot_->writeMessageBegin("assoc_get_batched", ::apache::thrift::protocol::T_CALL, cseqid);
+
+  GraphQueryAggregatorService_assoc_get_batched_pargs args;
+  args.src = &src;
+  args.atype = &atype;
+  args.dstIdSet = &dstIdSet;
+  args.tLow = &tLow;
+  args.tHigh = &tHigh;
+  args.write(oprot_);
+
+  oprot_->writeMessageEnd();
+  oprot_->getTransport()->writeEnd();
+  oprot_->getTransport()->flush();
+}
+
+void GraphQueryAggregatorServiceClient::recv_assoc_get_batched(std::vector<std::vector<ThriftAssoc> > & _return)
+{
+
+  int32_t rseqid = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TMessageType mtype;
+
+  iprot_->readMessageBegin(fname, mtype, rseqid);
+  if (mtype == ::apache::thrift::protocol::T_EXCEPTION) {
+    ::apache::thrift::TApplicationException x;
+    x.read(iprot_);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+    throw x;
+  }
+  if (mtype != ::apache::thrift::protocol::T_REPLY) {
+    iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+  }
+  if (fname.compare("assoc_get_batched") != 0) {
+    iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+  }
+  GraphQueryAggregatorService_assoc_get_batched_presult result;
+  result.success = &_return;
+  result.read(iprot_);
+  iprot_->readMessageEnd();
+  iprot_->getTransport()->readEnd();
+
+  if (result.__isset.success) {
+    // _return pointer has now been filled
+    return;
+  }
+  throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "assoc_get_batched failed: unknown result");
+}
+
 void GraphQueryAggregatorServiceClient::assoc_get_local(std::vector<ThriftAssoc> & _return, const int32_t shardId, const int64_t src, const int64_t atype, const std::set<int64_t> & dstIdSet, const int64_t tLow, const int64_t tHigh)
 {
   send_assoc_get_local(shardId, src, atype, dstIdSet, tLow, tHigh);
@@ -7834,6 +9811,64 @@ void GraphQueryAggregatorServiceClient::recv_obj_get(std::vector<std::string> & 
   throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "obj_get failed: unknown result");
 }
 
+void GraphQueryAggregatorServiceClient::obj_get_batched(std::vector<std::vector<std::string> > & _return, const std::vector<int64_t> & nodeId)
+{
+  send_obj_get_batched(nodeId);
+  recv_obj_get_batched(_return);
+}
+
+void GraphQueryAggregatorServiceClient::send_obj_get_batched(const std::vector<int64_t> & nodeId)
+{
+  int32_t cseqid = 0;
+  oprot_->writeMessageBegin("obj_get_batched", ::apache::thrift::protocol::T_CALL, cseqid);
+
+  GraphQueryAggregatorService_obj_get_batched_pargs args;
+  args.nodeId = &nodeId;
+  args.write(oprot_);
+
+  oprot_->writeMessageEnd();
+  oprot_->getTransport()->writeEnd();
+  oprot_->getTransport()->flush();
+}
+
+void GraphQueryAggregatorServiceClient::recv_obj_get_batched(std::vector<std::vector<std::string> > & _return)
+{
+
+  int32_t rseqid = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TMessageType mtype;
+
+  iprot_->readMessageBegin(fname, mtype, rseqid);
+  if (mtype == ::apache::thrift::protocol::T_EXCEPTION) {
+    ::apache::thrift::TApplicationException x;
+    x.read(iprot_);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+    throw x;
+  }
+  if (mtype != ::apache::thrift::protocol::T_REPLY) {
+    iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+  }
+  if (fname.compare("obj_get_batched") != 0) {
+    iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+  }
+  GraphQueryAggregatorService_obj_get_batched_presult result;
+  result.success = &_return;
+  result.read(iprot_);
+  iprot_->readMessageEnd();
+  iprot_->getTransport()->readEnd();
+
+  if (result.__isset.success) {
+    // _return pointer has now been filled
+    return;
+  }
+  throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "obj_get_batched failed: unknown result");
+}
+
 void GraphQueryAggregatorServiceClient::obj_get_local(std::vector<std::string> & _return, const int32_t shardId, const int64_t nodeId)
 {
   send_obj_get_local(shardId, nodeId);
@@ -7953,6 +9988,68 @@ void GraphQueryAggregatorServiceClient::recv_assoc_time_range(std::vector<Thrift
     return;
   }
   throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "assoc_time_range failed: unknown result");
+}
+
+void GraphQueryAggregatorServiceClient::assoc_time_range_batched(std::vector<std::vector<ThriftAssoc> > & _return, const std::vector<int64_t> & src, const std::vector<int64_t> & atype, const std::vector<int64_t> & tLow, const std::vector<int64_t> & tHigh, const std::vector<int32_t> & limit)
+{
+  send_assoc_time_range_batched(src, atype, tLow, tHigh, limit);
+  recv_assoc_time_range_batched(_return);
+}
+
+void GraphQueryAggregatorServiceClient::send_assoc_time_range_batched(const std::vector<int64_t> & src, const std::vector<int64_t> & atype, const std::vector<int64_t> & tLow, const std::vector<int64_t> & tHigh, const std::vector<int32_t> & limit)
+{
+  int32_t cseqid = 0;
+  oprot_->writeMessageBegin("assoc_time_range_batched", ::apache::thrift::protocol::T_CALL, cseqid);
+
+  GraphQueryAggregatorService_assoc_time_range_batched_pargs args;
+  args.src = &src;
+  args.atype = &atype;
+  args.tLow = &tLow;
+  args.tHigh = &tHigh;
+  args.limit = &limit;
+  args.write(oprot_);
+
+  oprot_->writeMessageEnd();
+  oprot_->getTransport()->writeEnd();
+  oprot_->getTransport()->flush();
+}
+
+void GraphQueryAggregatorServiceClient::recv_assoc_time_range_batched(std::vector<std::vector<ThriftAssoc> > & _return)
+{
+
+  int32_t rseqid = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TMessageType mtype;
+
+  iprot_->readMessageBegin(fname, mtype, rseqid);
+  if (mtype == ::apache::thrift::protocol::T_EXCEPTION) {
+    ::apache::thrift::TApplicationException x;
+    x.read(iprot_);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+    throw x;
+  }
+  if (mtype != ::apache::thrift::protocol::T_REPLY) {
+    iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+  }
+  if (fname.compare("assoc_time_range_batched") != 0) {
+    iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+  }
+  GraphQueryAggregatorService_assoc_time_range_batched_presult result;
+  result.success = &_return;
+  result.read(iprot_);
+  iprot_->readMessageEnd();
+  iprot_->getTransport()->readEnd();
+
+  if (result.__isset.success) {
+    // _return pointer has now been filled
+    return;
+  }
+  throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "assoc_time_range_batched failed: unknown result");
 }
 
 void GraphQueryAggregatorServiceClient::assoc_time_range_local(std::vector<ThriftAssoc> & _return, const int32_t shardId, const int64_t src, const int64_t atype, const int64_t tLow, const int64_t tHigh, const int32_t limit)
@@ -9168,6 +11265,60 @@ void GraphQueryAggregatorServiceProcessor::process_assoc_range(int32_t seqid, ::
   }
 }
 
+void GraphQueryAggregatorServiceProcessor::process_assoc_range_batched(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
+{
+  void* ctx = NULL;
+  if (this->eventHandler_.get() != NULL) {
+    ctx = this->eventHandler_->getContext("GraphQueryAggregatorService.assoc_range_batched", callContext);
+  }
+  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "GraphQueryAggregatorService.assoc_range_batched");
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->preRead(ctx, "GraphQueryAggregatorService.assoc_range_batched");
+  }
+
+  GraphQueryAggregatorService_assoc_range_batched_args args;
+  args.read(iprot);
+  iprot->readMessageEnd();
+  uint32_t bytes = iprot->getTransport()->readEnd();
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->postRead(ctx, "GraphQueryAggregatorService.assoc_range_batched", bytes);
+  }
+
+  GraphQueryAggregatorService_assoc_range_batched_result result;
+  try {
+    iface_->assoc_range_batched(result.success, args.src, args.atype, args.off, args.len);
+    result.__isset.success = true;
+  } catch (const std::exception& e) {
+    if (this->eventHandler_.get() != NULL) {
+      this->eventHandler_->handlerError(ctx, "GraphQueryAggregatorService.assoc_range_batched");
+    }
+
+    ::apache::thrift::TApplicationException x(e.what());
+    oprot->writeMessageBegin("assoc_range_batched", ::apache::thrift::protocol::T_EXCEPTION, seqid);
+    x.write(oprot);
+    oprot->writeMessageEnd();
+    oprot->getTransport()->writeEnd();
+    oprot->getTransport()->flush();
+    return;
+  }
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->preWrite(ctx, "GraphQueryAggregatorService.assoc_range_batched");
+  }
+
+  oprot->writeMessageBegin("assoc_range_batched", ::apache::thrift::protocol::T_REPLY, seqid);
+  result.write(oprot);
+  oprot->writeMessageEnd();
+  bytes = oprot->getTransport()->writeEnd();
+  oprot->getTransport()->flush();
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->postWrite(ctx, "GraphQueryAggregatorService.assoc_range_batched", bytes);
+  }
+}
+
 void GraphQueryAggregatorServiceProcessor::process_assoc_range_local(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
 {
   void* ctx = NULL;
@@ -9273,6 +11424,60 @@ void GraphQueryAggregatorServiceProcessor::process_assoc_count(int32_t seqid, ::
 
   if (this->eventHandler_.get() != NULL) {
     this->eventHandler_->postWrite(ctx, "GraphQueryAggregatorService.assoc_count", bytes);
+  }
+}
+
+void GraphQueryAggregatorServiceProcessor::process_assoc_count_batched(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
+{
+  void* ctx = NULL;
+  if (this->eventHandler_.get() != NULL) {
+    ctx = this->eventHandler_->getContext("GraphQueryAggregatorService.assoc_count_batched", callContext);
+  }
+  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "GraphQueryAggregatorService.assoc_count_batched");
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->preRead(ctx, "GraphQueryAggregatorService.assoc_count_batched");
+  }
+
+  GraphQueryAggregatorService_assoc_count_batched_args args;
+  args.read(iprot);
+  iprot->readMessageEnd();
+  uint32_t bytes = iprot->getTransport()->readEnd();
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->postRead(ctx, "GraphQueryAggregatorService.assoc_count_batched", bytes);
+  }
+
+  GraphQueryAggregatorService_assoc_count_batched_result result;
+  try {
+    iface_->assoc_count_batched(result.success, args.src, args.atype);
+    result.__isset.success = true;
+  } catch (const std::exception& e) {
+    if (this->eventHandler_.get() != NULL) {
+      this->eventHandler_->handlerError(ctx, "GraphQueryAggregatorService.assoc_count_batched");
+    }
+
+    ::apache::thrift::TApplicationException x(e.what());
+    oprot->writeMessageBegin("assoc_count_batched", ::apache::thrift::protocol::T_EXCEPTION, seqid);
+    x.write(oprot);
+    oprot->writeMessageEnd();
+    oprot->getTransport()->writeEnd();
+    oprot->getTransport()->flush();
+    return;
+  }
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->preWrite(ctx, "GraphQueryAggregatorService.assoc_count_batched");
+  }
+
+  oprot->writeMessageBegin("assoc_count_batched", ::apache::thrift::protocol::T_REPLY, seqid);
+  result.write(oprot);
+  oprot->writeMessageEnd();
+  bytes = oprot->getTransport()->writeEnd();
+  oprot->getTransport()->flush();
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->postWrite(ctx, "GraphQueryAggregatorService.assoc_count_batched", bytes);
   }
 }
 
@@ -9384,6 +11589,60 @@ void GraphQueryAggregatorServiceProcessor::process_assoc_get(int32_t seqid, ::ap
   }
 }
 
+void GraphQueryAggregatorServiceProcessor::process_assoc_get_batched(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
+{
+  void* ctx = NULL;
+  if (this->eventHandler_.get() != NULL) {
+    ctx = this->eventHandler_->getContext("GraphQueryAggregatorService.assoc_get_batched", callContext);
+  }
+  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "GraphQueryAggregatorService.assoc_get_batched");
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->preRead(ctx, "GraphQueryAggregatorService.assoc_get_batched");
+  }
+
+  GraphQueryAggregatorService_assoc_get_batched_args args;
+  args.read(iprot);
+  iprot->readMessageEnd();
+  uint32_t bytes = iprot->getTransport()->readEnd();
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->postRead(ctx, "GraphQueryAggregatorService.assoc_get_batched", bytes);
+  }
+
+  GraphQueryAggregatorService_assoc_get_batched_result result;
+  try {
+    iface_->assoc_get_batched(result.success, args.src, args.atype, args.dstIdSet, args.tLow, args.tHigh);
+    result.__isset.success = true;
+  } catch (const std::exception& e) {
+    if (this->eventHandler_.get() != NULL) {
+      this->eventHandler_->handlerError(ctx, "GraphQueryAggregatorService.assoc_get_batched");
+    }
+
+    ::apache::thrift::TApplicationException x(e.what());
+    oprot->writeMessageBegin("assoc_get_batched", ::apache::thrift::protocol::T_EXCEPTION, seqid);
+    x.write(oprot);
+    oprot->writeMessageEnd();
+    oprot->getTransport()->writeEnd();
+    oprot->getTransport()->flush();
+    return;
+  }
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->preWrite(ctx, "GraphQueryAggregatorService.assoc_get_batched");
+  }
+
+  oprot->writeMessageBegin("assoc_get_batched", ::apache::thrift::protocol::T_REPLY, seqid);
+  result.write(oprot);
+  oprot->writeMessageEnd();
+  bytes = oprot->getTransport()->writeEnd();
+  oprot->getTransport()->flush();
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->postWrite(ctx, "GraphQueryAggregatorService.assoc_get_batched", bytes);
+  }
+}
+
 void GraphQueryAggregatorServiceProcessor::process_assoc_get_local(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
 {
   void* ctx = NULL;
@@ -9492,6 +11751,60 @@ void GraphQueryAggregatorServiceProcessor::process_obj_get(int32_t seqid, ::apac
   }
 }
 
+void GraphQueryAggregatorServiceProcessor::process_obj_get_batched(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
+{
+  void* ctx = NULL;
+  if (this->eventHandler_.get() != NULL) {
+    ctx = this->eventHandler_->getContext("GraphQueryAggregatorService.obj_get_batched", callContext);
+  }
+  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "GraphQueryAggregatorService.obj_get_batched");
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->preRead(ctx, "GraphQueryAggregatorService.obj_get_batched");
+  }
+
+  GraphQueryAggregatorService_obj_get_batched_args args;
+  args.read(iprot);
+  iprot->readMessageEnd();
+  uint32_t bytes = iprot->getTransport()->readEnd();
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->postRead(ctx, "GraphQueryAggregatorService.obj_get_batched", bytes);
+  }
+
+  GraphQueryAggregatorService_obj_get_batched_result result;
+  try {
+    iface_->obj_get_batched(result.success, args.nodeId);
+    result.__isset.success = true;
+  } catch (const std::exception& e) {
+    if (this->eventHandler_.get() != NULL) {
+      this->eventHandler_->handlerError(ctx, "GraphQueryAggregatorService.obj_get_batched");
+    }
+
+    ::apache::thrift::TApplicationException x(e.what());
+    oprot->writeMessageBegin("obj_get_batched", ::apache::thrift::protocol::T_EXCEPTION, seqid);
+    x.write(oprot);
+    oprot->writeMessageEnd();
+    oprot->getTransport()->writeEnd();
+    oprot->getTransport()->flush();
+    return;
+  }
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->preWrite(ctx, "GraphQueryAggregatorService.obj_get_batched");
+  }
+
+  oprot->writeMessageBegin("obj_get_batched", ::apache::thrift::protocol::T_REPLY, seqid);
+  result.write(oprot);
+  oprot->writeMessageEnd();
+  bytes = oprot->getTransport()->writeEnd();
+  oprot->getTransport()->flush();
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->postWrite(ctx, "GraphQueryAggregatorService.obj_get_batched", bytes);
+  }
+}
+
 void GraphQueryAggregatorServiceProcessor::process_obj_get_local(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
 {
   void* ctx = NULL;
@@ -9597,6 +11910,60 @@ void GraphQueryAggregatorServiceProcessor::process_assoc_time_range(int32_t seqi
 
   if (this->eventHandler_.get() != NULL) {
     this->eventHandler_->postWrite(ctx, "GraphQueryAggregatorService.assoc_time_range", bytes);
+  }
+}
+
+void GraphQueryAggregatorServiceProcessor::process_assoc_time_range_batched(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
+{
+  void* ctx = NULL;
+  if (this->eventHandler_.get() != NULL) {
+    ctx = this->eventHandler_->getContext("GraphQueryAggregatorService.assoc_time_range_batched", callContext);
+  }
+  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "GraphQueryAggregatorService.assoc_time_range_batched");
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->preRead(ctx, "GraphQueryAggregatorService.assoc_time_range_batched");
+  }
+
+  GraphQueryAggregatorService_assoc_time_range_batched_args args;
+  args.read(iprot);
+  iprot->readMessageEnd();
+  uint32_t bytes = iprot->getTransport()->readEnd();
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->postRead(ctx, "GraphQueryAggregatorService.assoc_time_range_batched", bytes);
+  }
+
+  GraphQueryAggregatorService_assoc_time_range_batched_result result;
+  try {
+    iface_->assoc_time_range_batched(result.success, args.src, args.atype, args.tLow, args.tHigh, args.limit);
+    result.__isset.success = true;
+  } catch (const std::exception& e) {
+    if (this->eventHandler_.get() != NULL) {
+      this->eventHandler_->handlerError(ctx, "GraphQueryAggregatorService.assoc_time_range_batched");
+    }
+
+    ::apache::thrift::TApplicationException x(e.what());
+    oprot->writeMessageBegin("assoc_time_range_batched", ::apache::thrift::protocol::T_EXCEPTION, seqid);
+    x.write(oprot);
+    oprot->writeMessageEnd();
+    oprot->getTransport()->writeEnd();
+    oprot->getTransport()->flush();
+    return;
+  }
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->preWrite(ctx, "GraphQueryAggregatorService.assoc_time_range_batched");
+  }
+
+  oprot->writeMessageBegin("assoc_time_range_batched", ::apache::thrift::protocol::T_REPLY, seqid);
+  result.write(oprot);
+  oprot->writeMessageEnd();
+  bytes = oprot->getTransport()->writeEnd();
+  oprot->getTransport()->flush();
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->postWrite(ctx, "GraphQueryAggregatorService.assoc_time_range_batched", bytes);
   }
 }
 

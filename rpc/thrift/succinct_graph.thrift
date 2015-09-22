@@ -140,10 +140,15 @@ service GraphQueryAggregatorService {
     list<ThriftAssoc> assoc_range(
         1: i64 src, 2: i64 atype, 3: i32 off, 4: i32 len),
 
+    list<list<ThriftAssoc>> assoc_range_batched(
+        1: list<i64> src, 2: list<i64> atype, 3: list<i32> off, 4: list<i32> len),
+
     list<ThriftAssoc> assoc_range_local(
         1: i32 shardId, 2: i64 src, 3: i64 atype, 4: i32 off, 5: i32 len),
 
     i64 assoc_count(1: i64 src, 2: i64 atype),
+
+    list<i64> assoc_count_batched(1: list<i64> src, 2: list<i64> atype),
 
     i64 assoc_count_local(1: i32 shardId, 2: i64 src, 3: i64 atype),
 
@@ -151,17 +156,27 @@ service GraphQueryAggregatorService {
         1: i64 src, 2: i64 atype, 3: set<i64> dstIdSet,
         4: i64 tLow, 5: i64 tHigh),
 
+    list<list<ThriftAssoc>> assoc_get_batched(
+        1: list<i64> src, 2: list<i64> atype, 3: list<set<i64>> dstIdSet,
+        4: list<i64> tLow, 5: list<i64> tHigh),
+
     list<ThriftAssoc> assoc_get_local(
         1: i32 shardId, 2: i64 src, 3: i64 atype,
         4: set<i64> dstIdSet, 5: i64 tLow, 6: i64 tHigh),
 
     list<string> obj_get(1: i64 nodeId),
 
+    list<list<string>> obj_get_batched(1: list<i64> nodeId),
+
     list<string> obj_get_local(1: i32 shardId, 2: i64 nodeId),
 
     list<ThriftAssoc> assoc_time_range(
         1: i64 src, 2: i64 atype,
         3: i64 tLow, 4: i64 tHigh, 5: i32 limit),
+
+    list<list<ThriftAssoc>> assoc_time_range_batched(
+        1: list<i64> src, 2: list<i64> atype,
+        3: list<i64> tLow, 4: list<i64> tHigh, 5: list<i32> limit),
 
     list<ThriftAssoc> assoc_time_range_local(
         1: i32 shardId, 2: i64 src, 3: i64 atype,
