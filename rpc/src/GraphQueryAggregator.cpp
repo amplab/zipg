@@ -224,6 +224,8 @@ public:
         if (host_id == local_host_id_) {
             get_attribute_local(_return, shard_id, nodeId, attrId);
         } else {
+            COND_LOG_E("nodeId %lld, host id %d, aggs size\n",
+                nodeId, host_id, aggregators_.size());
             aggregators_.at(host_id).get_attribute_local(
                 _return, shard_id, nodeId, attrId);
         }

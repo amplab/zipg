@@ -350,15 +350,22 @@ void generate_node_queries(
     auto output = [&](const std::string& out_file, const int64_t out_size) {
         std::ofstream out(out_file);
         for (int64_t i = 0; i < out_size; i++) {
-            int node_id = uni_node(rng);
-            int attr1 = uni_attr(rng);
-            aggregator->get_attribute(search_key1, node_id, attr1);
-            int attr2 = uni_attr(rng);
-            aggregator->get_attribute(search_key2, node_id, attr2);
-            out << attr1 << GraphFormatter::QUERY_FILED_DELIM
-               << search_key1 << GraphFormatter::QUERY_FILED_DELIM
-               << attr2 << GraphFormatter::QUERY_FILED_DELIM
-               << search_key2 << "\n";
+            while (true) {
+                int node_id = uni_node(rng);
+                int attr1 = uni_attr(rng);
+                aggregator->get_attribute(search_key1, node_id, attr1);
+                if (search_key1.empty()) {
+                    continue;
+                }
+                int attr2 = uni_attr(rng);
+                aggregator->get_attribute(search_key2, node_id, attr2);
+                assert(!search_key2.empty());
+                out << attr1 << GraphFormatter::QUERY_FILED_DELIM
+                   << search_key1 << GraphFormatter::QUERY_FILED_DELIM
+                   << attr2 << GraphFormatter::QUERY_FILED_DELIM
+                   << search_key2 << "\n";
+               break;
+           }
         }
         out.close();
     };
