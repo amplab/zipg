@@ -19,14 +19,14 @@ edge_file_raw=/vol1/uk-2007-05-40attr16each-npa128sa32isa64.assoc
 node_file_raw=/vol0/twitter2010-40attr16each-tpch.node
 edge_file_raw=/vol0/twitter2010-npa128sa32isa64.assoc
 
-threads=( 64 128 256 512 )
+threads=( 32 )
 benches=(
-  # benchNeighborThput
-  # benchNhbrAtypeThput
-  # benchEdgeAttrsThput
-  # benchNhbrNodeThput
-  # benchNodeNodeThput
-  # benchMixThput
+  #benchNeighborThput
+  #benchNhbrAtypeThput
+  #benchEdgeAttrsThput
+  #benchNhbrNodeThput
+  #benchNodeNodeThput
+  benchMixThput
   benchTaoMixThput
 )
 
@@ -132,7 +132,7 @@ done
 
 for benchType in "${benches[@]}"; do
   for throughput_threads in ${threads[*]}; do
-      start_all
+      #start_all
 
 #      bash ${currDir}/sbin/hosts-noStderr.sh \
 #        $benchType=T bash ${currDir}/scripts/bench_func.sh \
@@ -145,7 +145,7 @@ for benchType in "${benches[@]}"; do
         clusterHost=$(sed -n "${i}{p;q;}" ${currDir}/conf/hosts.clus | sed 's/\n//g')
         ssh -o StrictHostKeyChecking=no $clientHost \
           "$benchType=T bash ${currDir}/scripts/bench_func.sh \
-            $node_file_raw $edge_file_raw $throughput_threads $clusterHost 2>&1 >run.log" &
+            $node_file_raw $edge_file_raw $throughput_threads $clusterHost false 2>&1 >run.log" &
       done
       wait
 
@@ -165,14 +165,16 @@ for benchType in "${benches[@]}"; do
         cut -d',' -f2 | \
         cut -d' ' -f2 >>thput
       sum=$(awk '{ sum += $1 } END { print sum }' thput)
-      if [[ 1 -eq "$(echo "${sum} == 0" | bc)" ]]; then
-        # some bench is not run
-        continue
-      fi
+      #if [[ 1 -eq "$(echo "${sum} == 0" | bc)" ]]; then
+      #  # some bench is not run
+      #  continue
+      #fi
 
       f="thput-${bench}-${throughput_threads}clients.txt"
       t=$(timestamp)
       echo "$t,$bench" >>${f}
+      sanity=$(${currDir}/sbin/hosts.sh tail -n1 run.log)
+      echo $sanity >> ${f}
       cat thput >> ${f}
 
       entry="$t,$bench,${throughput_threads}*10,$sum"
