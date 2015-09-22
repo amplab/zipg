@@ -1283,7 +1283,7 @@ public:
         };
 #endif
 
-        int64_t i = 0;
+        int64_t i = 0, batches = 0;
         try {
             // Warmup phase
             time_t start = get_timestamp();
@@ -1394,7 +1394,7 @@ public:
 #endif // batch query
                 ++i;
             }
-            COND_LOG_E("Warmup done: served %" PRId64 " queries\n", i);
+            COND_LOG_E("Warmup done: served %" PRId64 " queries/batches\n", i);
 
             // Measure phase
             i = 0;
@@ -1511,6 +1511,7 @@ public:
                 edges += assoc_range_results.size() + \
                     assoc_get_results.size() + \
                     assoc_time_range_results.size(); \
+                ++batches;
                 i += query_batch_size;
 #endif // BATCH_QUERY
 
@@ -1524,7 +1525,13 @@ public:
             double total_secs = (end - start) * 1. / 1e6;
             query_thput = i * 1. / total_secs;
             edges_thput = edges * 1. / total_secs;
+#ifndef BATCH_QUERY
             COND_LOG_E("Query done: served %" PRId64 " queries\n", i);
+#else
+            COND_LOG_E(
+                "Query done: served %" PRId64 " queries, %lld %d-batches\n",
+                i, batches, query_batch_size);
+#endif
 
             std::ofstream ofs("throughput_tao_mix.txt",
                 std::ofstream::out | std::ofstream::app);
