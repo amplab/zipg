@@ -30,36 +30,6 @@ if [[ -z "$SHARDED" ]]; then
   TOTAL_NUM_SHARDS=no
 fi
 
-#benchNeighbor=T
-#benchNeighborAtype=T
-#benchNeighborNode=T
-#benchNode=T
-#benchNodeNode=T
-#benchMix=T
-
-# hostname of the master aggregator that bench client connects to
-# if desirable to put client on 1 host, and agg. on the other, change this
-masterHostName="localhost"
-
-#benchNodeThput=T # deprecated
-
-#benchNeighborThput=T
-#benchNhbrAtypeThput=T
-#benchEdgeAttrsThput=T
-#benchNhbrNodeThput=T
-#benchNodeNodeThput=T
-benchMixThput=T
-#benchTaoMixThput=T
-
-#benchAssocRange=T
-#benchAssocCount=T
-#benchObjGet=T
-#benchAssocGet=T
-#benchAssocTimeRange=T
-#benchTaoMix=T
-
-augOpt="-augOpts"
-
 # NOTE: binary format has changed due to rebasing
 #EDGE_FILE="data/higgs-social_network.opts-npa${npa}sa${sa}isa${isa}.edge_table"
 #NODE_FILE="data/higgs${dataset}-tpch-npa${npa}sa${sa}isa${isa}.nodeWithPtrs"
@@ -70,6 +40,42 @@ NODE_FILE=${1:-/mnt/twitter2010-40attr16each-tpch-npa${npa}sa${sa}isa${isa}.node
 EDGE_FILE=${2:-/mnt2T/twitter2010-npa${npa}sa${sa}isa${isa}.assoc}
 throughput_threads=${3:-""}
 
+NODE_FILE=/vol0/twitter2010-40attr16each-tpch.node
+EDGE_FILE=/vol0/twitter2010-npa128sa32isa64.assoc
+
+# hostname of the master aggregator that bench client connects to
+# if desirable to put client on 1 host, and agg. on the other, change this
+masterHostName="localhost"
+masterHostName="ec2-52-88-170-99.us-west-2.compute.amazonaws.com"
+masterHostName=${4:-"localhost"}
+
+#benchNeighbor=T
+#benchNeighborAtype=T
+#benchNeighborNode=T
+#benchNodeNode=T
+#benchMix=T
+
+#benchNode=T
+#benchNodeThput=T # deprecated
+
+##### NOTE: for distributed thput bench, just comment these out and control from prep_dist.sh.
+
+#benchNeighborThput=T
+#benchNhbrAtypeThput=T
+#benchEdgeAttrsThput=T
+#benchNhbrNodeThput=T
+#benchNodeNodeThput=T
+#benchMixThput=T
+benchTaoMixThput=T
+
+#benchAssocRange=T
+#benchAssocCount=T
+#benchObjGet=T
+#benchAssocGet=T
+#benchAssocTimeRange=T
+#benchTaoMix=T
+
+augOpt="-augOpts"
 
 if [[ "$dataset" == "orkut-40attr16each"* ]]; then
   pushd ${QUERY_DIR} >/dev/null
@@ -412,7 +418,7 @@ function bench() {
 }
 
 if [[ "$throughput_threads" == "" ]]; then
-  for throughput_threads in 32 64; do
+  for throughput_threads in 64 128 256 512; do
   #for minDeg in "${minDegs[@]}"; do
     #dataset="-liveJournal${minDeg}"
     sa=32; isa=64; npa=128; bench "$@"

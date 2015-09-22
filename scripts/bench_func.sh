@@ -11,12 +11,13 @@ npa=128; sa=32; isa=64
 NODE_FILE=${1:-/mnt/twitter2010-40attr16each-tpch-npa${npa}sa${sa}isa${isa}.node}
 EDGE_FILE=${2:-/mnt2T/twitter2010-npa${npa}sa${sa}isa${isa}.assoc}
 throughput_threads=${3:-""}
+# hostname of the master aggregator that bench client connects to
+# if desirable to put client on 1 host, and agg. on the other, change this
+masterHostName=${4:-"localhost"}
+copyQueries=${5:-"true"}
 
 num_nodes=100000 # hack
 augOpt="-augOpts"
-# hostname of the master aggregator that bench client connects to
-# if desirable to put client on 1 host, and agg. on the other, change this
-masterHostName="localhost"
 
 dataset="orkut-40attr16each"
 dataset="twitter2010-40attr16each"
@@ -29,23 +30,25 @@ fi
 
 ###############
 
-if [[ "$dataset" == "orkut-40attr16each"* ]]; then
-  pushd ${QUERY_DIR} >/dev/null
-  yes | cp -rf orkut-40attr16each-queries/*txt ./
-  popd >/dev/null
-elif [[ "$dataset" == "twitter2010-40attr16each"* ]]; then
-  pushd ${QUERY_DIR} >/dev/null
-  yes | cp -rf twitter2010-40attr16each-queries/*txt ./
-  popd >/dev/null
-elif [[ "$dataset" == "-liveJournal"* ]]; then
-  pushd ${QUERY_DIR} >/dev/null
-  yes | cp -rf liveJournal-40attr16each${minDeg}-queries/*txt ./
-  popd >/dev/null
-else
-  echo implement query copying for me! dataset: '${dataset}'
-  exit 1
+if [[ "$copyQueries" == "true" ]]; then
+  if [[ "$dataset" == "orkut-40attr16each"* ]]; then
+    pushd ${QUERY_DIR} >/dev/null
+    yes | cp -rf orkut-40attr16each-queries/*txt ./
+    popd >/dev/null
+  elif [[ "$dataset" == "twitter2010-40attr16each"* ]]; then
+    pushd ${QUERY_DIR} >/dev/null
+    yes | cp -rf twitter2010-40attr16each-queries/*txt ./
+    popd >/dev/null
+  elif [[ "$dataset" == "-liveJournal"* ]]; then
+    pushd ${QUERY_DIR} >/dev/null
+    yes | cp -rf liveJournal-40attr16each${minDeg}-queries/*txt ./
+    popd >/dev/null
+  else
+    echo implement query copying for me! dataset: '${dataset}'
+    exit 1
+  fi
 fi
-
+  
 function bench() {
 
   # If there's an argument supplied to this script, these steps have been done
