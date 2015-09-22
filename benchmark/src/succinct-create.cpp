@@ -329,7 +329,7 @@ void read_node_attributes(
 // Format: attrIdx1<DELIM>attrKey1<DELIM>attrIdx2<DELIM>attrKey2
 // where <DELIM> is GraphFormatter::QUERY_FILED_DELIM.
 void generate_node_queries(
-    std::string node_file,
+    size_t num_attributes,
     int warmup_size,
     int query_size,
     std::string warmup_query_file,
@@ -337,43 +337,33 @@ void generate_node_queries(
     int num_actual_delims,
     bool is_comma_separated = true)
 {
-    std::vector<std::vector<std::string>> attributes;
-    int64_t nodes = 0;
-    read_node_attributes(
-        attributes, nodes, node_file, num_actual_delims, is_comma_separated);
+    auto aggregator = init_sharded_graph();
 
-    size_t num_attributes = attributes.at(0).size();
+    int64_t nodes = 0;
+
     std::random_device rd;
     std::mt19937 rng(rd());
     std::uniform_int_distribution<int64_t> uni_node(0, nodes - 1);
     std::uniform_int_distribution<int> uni_attr(0, num_attributes - 1);
+    std::string search_key1, search_key2;
 
-    std::ofstream warmup_out(warmup_query_file);
-    for (int64_t i = 0; i < warmup_size; i++) {
-        int node_id = uni_node(rng);
-        int attr1 = uni_attr(rng);
-        std::string search_key1 = attributes.at(node_id).at(attr1);
-        int attr2 = uni_attr(rng);
-        std::string search_key2 = attributes.at(node_id).at(attr2);
-        warmup_out << attr1 << GraphFormatter::QUERY_FILED_DELIM
-                   << search_key1 << GraphFormatter::QUERY_FILED_DELIM
-                   << attr2 << GraphFormatter::QUERY_FILED_DELIM
-                   << search_key2 << "\n";
-    }
-    warmup_out.close();
-
-    std::ofstream query_out(query_file);
-    for (int64_t i = 0; i < query_size; i++) {
-        int node_id = uni_node(rng);
-        int attr1 = uni_attr(rng);
-        std::string search_key1 = attributes.at(node_id).at(attr1);
-        int attr2 = uni_attr(rng);
-        std::string search_key2 = attributes.at(node_id).at(attr2);
-        query_out << attr1 << GraphFormatter::QUERY_FILED_DELIM
-                   << search_key1 << GraphFormatter::QUERY_FILED_DELIM
-                   << attr2 << GraphFormatter::QUERY_FILED_DELIM
-                   << search_key2 << "\n";
-    }
+    auto output = [&](const std::string& out_file, const int64_t out_size) {
+        std::ofstream out(out_file);
+        for (int64_t i = 0; i < out_size; i++) {
+            int node_id = uni_node(rng);
+            int attr1 = uni_attr(rng);
+            aggregator->get_attribute(search_key1, node_id, attr1);
+            int attr2 = uni_attr(rng);
+            aggregator->get_attribute(search_key2, node_id, attr2);
+            out << attr1 << GraphFormatter::QUERY_FILED_DELIM
+               << search_key1 << GraphFormatter::QUERY_FILED_DELIM
+               << attr2 << GraphFormatter::QUERY_FILED_DELIM
+               << search_key2 << "\n";
+        }
+        out.close();
+    };
+    output(warmup_query_file, warmup_size);
+    output(query_file, query_size);
 }
 
 // Format: randomNodeId,attrIdx,attrKey.
@@ -810,7 +800,7 @@ int main(int argc, char **argv) {
 
     } else if (type == "node-queries") {
 
-        std::string node_file = argv[2];
+        int64_t num_attributes = std::stoll(argv[2]);
         int warmup_size = atoi(argv[3]);
         int query_size = atoi(argv[4]);
         std::string warmup_file = argv[5];
@@ -819,7 +809,7 @@ int main(int argc, char **argv) {
         bool is_node_file_comma_separated = true;
         if (std::strcmp(argv[8], "1")) is_node_file_comma_separated = false;
         generate_node_queries(
-            node_file,
+            num_attributes,
             warmup_size,
             query_size,
             warmup_file,

@@ -10,6 +10,7 @@ neighborNode=T
 
 #numNode=$(wc -l ${NODE_FILE} | cut -d' ' -f 1) # calculate once
 numNode=41652230
+numNodeAttrs=40
 
 NODE_FILE=/mnt/twitter2010-40attr16each-tpch-npa128sa32isa64.node
 EDGE_FILE=/mnt2T/twitter2010-npa128sa32isa64.assoc
@@ -46,7 +47,7 @@ do
    echo creating node queries for ${num_nodes} nodes, warmup ${warmup_node}, measure ${measure_node}
 
     ${BIN_DIR}/../benchmark/bin/create node-queries \
-      ${NODE_FILE} \
+      ${numNodeAttrs} \
       ${warmup_node} \
       ${measure_node} \
       ${QUERY_DIR}/node_warmup_${num_nodes}.txt \
