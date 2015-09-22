@@ -25,12 +25,12 @@ class GraphBenchmark {
 private:
 
     // Timings for throughput benchmarks.
-    // constexpr static int64_t WARMUP_MICROSECS = 300 * 1000 * 1000;
-    // constexpr static int64_t MEASURE_MICROSECS = 900 * 1000 * 1000;
-    // constexpr static int64_t COOLDOWN_MICROSECS = 120 * 1000 * 1000;
-    constexpr static int64_t WARMUP_MICROSECS = 60 * 1000 * 1000;
-    constexpr static int64_t MEASURE_MICROSECS = 120 * 1000 * 1000;
-    constexpr static int64_t COOLDOWN_MICROSECS = 30 * 1000 * 1000;
+    constexpr static int64_t WARMUP_MICROSECS = 300 * 1000 * 1000;
+    constexpr static int64_t MEASURE_MICROSECS = 900 * 1000 * 1000;
+    constexpr static int64_t COOLDOWN_MICROSECS = 450 * 1000 * 1000;
+    //constexpr static int64_t WARMUP_MICROSECS = 60 * 1000 * 1000;
+    //constexpr static int64_t MEASURE_MICROSECS = 120 * 1000 * 1000;
+    //constexpr static int64_t COOLDOWN_MICROSECS = 30 * 1000 * 1000;
 
     constexpr static int query_batch_size = 100;
 
@@ -203,7 +203,7 @@ public:
 
         if (graph_ == nullptr) {
             // sharded bench
-            init_sharded_benchmark(master_hostname);
+            // init_sharded_benchmark(master_hostname);
 
             get_neighbors_f_ = [this](std::vector<int64_t>& nhbrs, int64_t id) {
                 aggregator_->get_neighbors(nhbrs, id);
