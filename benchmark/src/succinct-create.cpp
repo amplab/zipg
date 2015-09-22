@@ -447,7 +447,7 @@ void generate_neighbor_node_queries(
             std::vector<int64_t>::const_iterator it(neighbors.begin());
             int neighbor_idx = rand() % neighbors.size();
             std::advance(it, neighbor_idx);
-            aggregator->get_attribute_local(search_key, *it, attr);
+            aggregator->get_attribute(search_key, *it, attr);
             out << node_id << "," << attr << "," << search_key << "\n";
         }
     };
@@ -491,7 +491,7 @@ void generate_neighbor_node_queries_limited(
             std::vector<int64_t>::const_iterator it(neighbors.begin());
             int neighbor_idx = rand() % neighbors.size();
             std::advance(it, neighbor_idx);
-            aggregator->get_attribute_local(search_key, *it, attr);
+            aggregator->get_attribute(search_key, *it, attr);
             out << node_id << "," << attr << "," << search_key << "\n";
         }
     };

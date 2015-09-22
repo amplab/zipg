@@ -21,7 +21,8 @@ class GraphQueryAggregatorServiceIf {
   virtual void shutdown() = 0;
   virtual void disconnect_from_local_shards() = 0;
   virtual void disconnect_from_aggregators() = 0;
-  virtual void get_attribute_local(std::string& _return, const int64_t nodeId, const int32_t attrId) = 0;
+  virtual void get_attribute(std::string& _return, const int64_t nodeId, const int32_t attrId) = 0;
+  virtual void get_attribute_local(std::string& _return, const int64_t shardId, const int64_t nodeId, const int32_t attrId) = 0;
   virtual void get_neighbors(std::vector<int64_t> & _return, const int64_t nodeId) = 0;
   virtual void get_neighbors_local(std::vector<int64_t> & _return, const int32_t shardId, const int64_t nodeId) = 0;
   virtual void get_neighbors_atype(std::vector<int64_t> & _return, const int64_t nodeId, const int64_t atype) = 0;
@@ -100,7 +101,10 @@ class GraphQueryAggregatorServiceNull : virtual public GraphQueryAggregatorServi
   void disconnect_from_aggregators() {
     return;
   }
-  void get_attribute_local(std::string& /* _return */, const int64_t /* nodeId */, const int32_t /* attrId */) {
+  void get_attribute(std::string& /* _return */, const int64_t /* nodeId */, const int32_t /* attrId */) {
+    return;
+  }
+  void get_attribute_local(std::string& /* _return */, const int64_t /* shardId */, const int64_t /* nodeId */, const int32_t /* attrId */) {
     return;
   }
   void get_neighbors(std::vector<int64_t> & /* _return */, const int64_t /* nodeId */) {
@@ -695,8 +699,126 @@ class GraphQueryAggregatorService_disconnect_from_aggregators_presult {
 
 };
 
+typedef struct _GraphQueryAggregatorService_get_attribute_args__isset {
+  _GraphQueryAggregatorService_get_attribute_args__isset() : nodeId(false), attrId(false) {}
+  bool nodeId;
+  bool attrId;
+} _GraphQueryAggregatorService_get_attribute_args__isset;
+
+class GraphQueryAggregatorService_get_attribute_args {
+ public:
+
+  GraphQueryAggregatorService_get_attribute_args() : nodeId(0), attrId(0) {
+  }
+
+  virtual ~GraphQueryAggregatorService_get_attribute_args() throw() {}
+
+  int64_t nodeId;
+  int32_t attrId;
+
+  _GraphQueryAggregatorService_get_attribute_args__isset __isset;
+
+  void __set_nodeId(const int64_t val) {
+    nodeId = val;
+  }
+
+  void __set_attrId(const int32_t val) {
+    attrId = val;
+  }
+
+  bool operator == (const GraphQueryAggregatorService_get_attribute_args & rhs) const
+  {
+    if (!(nodeId == rhs.nodeId))
+      return false;
+    if (!(attrId == rhs.attrId))
+      return false;
+    return true;
+  }
+  bool operator != (const GraphQueryAggregatorService_get_attribute_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GraphQueryAggregatorService_get_attribute_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class GraphQueryAggregatorService_get_attribute_pargs {
+ public:
+
+
+  virtual ~GraphQueryAggregatorService_get_attribute_pargs() throw() {}
+
+  const int64_t* nodeId;
+  const int32_t* attrId;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _GraphQueryAggregatorService_get_attribute_result__isset {
+  _GraphQueryAggregatorService_get_attribute_result__isset() : success(false) {}
+  bool success;
+} _GraphQueryAggregatorService_get_attribute_result__isset;
+
+class GraphQueryAggregatorService_get_attribute_result {
+ public:
+
+  GraphQueryAggregatorService_get_attribute_result() : success() {
+  }
+
+  virtual ~GraphQueryAggregatorService_get_attribute_result() throw() {}
+
+  std::string success;
+
+  _GraphQueryAggregatorService_get_attribute_result__isset __isset;
+
+  void __set_success(const std::string& val) {
+    success = val;
+  }
+
+  bool operator == (const GraphQueryAggregatorService_get_attribute_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    return true;
+  }
+  bool operator != (const GraphQueryAggregatorService_get_attribute_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GraphQueryAggregatorService_get_attribute_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _GraphQueryAggregatorService_get_attribute_presult__isset {
+  _GraphQueryAggregatorService_get_attribute_presult__isset() : success(false) {}
+  bool success;
+} _GraphQueryAggregatorService_get_attribute_presult__isset;
+
+class GraphQueryAggregatorService_get_attribute_presult {
+ public:
+
+
+  virtual ~GraphQueryAggregatorService_get_attribute_presult() throw() {}
+
+  std::string* success;
+
+  _GraphQueryAggregatorService_get_attribute_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 typedef struct _GraphQueryAggregatorService_get_attribute_local_args__isset {
-  _GraphQueryAggregatorService_get_attribute_local_args__isset() : nodeId(false), attrId(false) {}
+  _GraphQueryAggregatorService_get_attribute_local_args__isset() : shardId(false), nodeId(false), attrId(false) {}
+  bool shardId;
   bool nodeId;
   bool attrId;
 } _GraphQueryAggregatorService_get_attribute_local_args__isset;
@@ -704,15 +826,20 @@ typedef struct _GraphQueryAggregatorService_get_attribute_local_args__isset {
 class GraphQueryAggregatorService_get_attribute_local_args {
  public:
 
-  GraphQueryAggregatorService_get_attribute_local_args() : nodeId(0), attrId(0) {
+  GraphQueryAggregatorService_get_attribute_local_args() : shardId(0), nodeId(0), attrId(0) {
   }
 
   virtual ~GraphQueryAggregatorService_get_attribute_local_args() throw() {}
 
+  int64_t shardId;
   int64_t nodeId;
   int32_t attrId;
 
   _GraphQueryAggregatorService_get_attribute_local_args__isset __isset;
+
+  void __set_shardId(const int64_t val) {
+    shardId = val;
+  }
 
   void __set_nodeId(const int64_t val) {
     nodeId = val;
@@ -724,6 +851,8 @@ class GraphQueryAggregatorService_get_attribute_local_args {
 
   bool operator == (const GraphQueryAggregatorService_get_attribute_local_args & rhs) const
   {
+    if (!(shardId == rhs.shardId))
+      return false;
     if (!(nodeId == rhs.nodeId))
       return false;
     if (!(attrId == rhs.attrId))
@@ -748,6 +877,7 @@ class GraphQueryAggregatorService_get_attribute_local_pargs {
 
   virtual ~GraphQueryAggregatorService_get_attribute_local_pargs() throw() {}
 
+  const int64_t* shardId;
   const int64_t* nodeId;
   const int32_t* attrId;
 
@@ -4441,8 +4571,11 @@ class GraphQueryAggregatorServiceClient : virtual public GraphQueryAggregatorSer
   void disconnect_from_aggregators();
   void send_disconnect_from_aggregators();
   void recv_disconnect_from_aggregators();
-  void get_attribute_local(std::string& _return, const int64_t nodeId, const int32_t attrId);
-  void send_get_attribute_local(const int64_t nodeId, const int32_t attrId);
+  void get_attribute(std::string& _return, const int64_t nodeId, const int32_t attrId);
+  void send_get_attribute(const int64_t nodeId, const int32_t attrId);
+  void recv_get_attribute(std::string& _return);
+  void get_attribute_local(std::string& _return, const int64_t shardId, const int64_t nodeId, const int32_t attrId);
+  void send_get_attribute_local(const int64_t shardId, const int64_t nodeId, const int32_t attrId);
   void recv_get_attribute_local(std::string& _return);
   void get_neighbors(std::vector<int64_t> & _return, const int64_t nodeId);
   void send_get_neighbors(const int64_t nodeId);
@@ -4549,6 +4682,7 @@ class GraphQueryAggregatorServiceProcessor : public ::apache::thrift::TDispatchP
   void process_shutdown(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_disconnect_from_local_shards(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_disconnect_from_aggregators(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_get_attribute(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_attribute_local(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_neighbors(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_neighbors_local(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -4587,6 +4721,7 @@ class GraphQueryAggregatorServiceProcessor : public ::apache::thrift::TDispatchP
     processMap_["shutdown"] = &GraphQueryAggregatorServiceProcessor::process_shutdown;
     processMap_["disconnect_from_local_shards"] = &GraphQueryAggregatorServiceProcessor::process_disconnect_from_local_shards;
     processMap_["disconnect_from_aggregators"] = &GraphQueryAggregatorServiceProcessor::process_disconnect_from_aggregators;
+    processMap_["get_attribute"] = &GraphQueryAggregatorServiceProcessor::process_get_attribute;
     processMap_["get_attribute_local"] = &GraphQueryAggregatorServiceProcessor::process_get_attribute_local;
     processMap_["get_neighbors"] = &GraphQueryAggregatorServiceProcessor::process_get_neighbors;
     processMap_["get_neighbors_local"] = &GraphQueryAggregatorServiceProcessor::process_get_neighbors_local;
@@ -4698,13 +4833,23 @@ class GraphQueryAggregatorServiceMultiface : virtual public GraphQueryAggregator
     ifaces_[i]->disconnect_from_aggregators();
   }
 
-  void get_attribute_local(std::string& _return, const int64_t nodeId, const int32_t attrId) {
+  void get_attribute(std::string& _return, const int64_t nodeId, const int32_t attrId) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
-      ifaces_[i]->get_attribute_local(_return, nodeId, attrId);
+      ifaces_[i]->get_attribute(_return, nodeId, attrId);
     }
-    ifaces_[i]->get_attribute_local(_return, nodeId, attrId);
+    ifaces_[i]->get_attribute(_return, nodeId, attrId);
+    return;
+  }
+
+  void get_attribute_local(std::string& _return, const int64_t shardId, const int64_t nodeId, const int32_t attrId) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->get_attribute_local(_return, shardId, nodeId, attrId);
+    }
+    ifaces_[i]->get_attribute_local(_return, shardId, nodeId, attrId);
     return;
   }
 

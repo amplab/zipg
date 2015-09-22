@@ -761,7 +761,7 @@ uint32_t GraphQueryAggregatorService_disconnect_from_aggregators_presult::read(:
   return xfer;
 }
 
-uint32_t GraphQueryAggregatorService_get_attribute_local_args::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t GraphQueryAggregatorService_get_attribute_args::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   uint32_t xfer = 0;
   std::string fname;
@@ -809,9 +809,9 @@ uint32_t GraphQueryAggregatorService_get_attribute_local_args::read(::apache::th
   return xfer;
 }
 
-uint32_t GraphQueryAggregatorService_get_attribute_local_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t GraphQueryAggregatorService_get_attribute_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
   uint32_t xfer = 0;
-  xfer += oprot->writeStructBegin("GraphQueryAggregatorService_get_attribute_local_args");
+  xfer += oprot->writeStructBegin("GraphQueryAggregatorService_get_attribute_args");
 
   xfer += oprot->writeFieldBegin("nodeId", ::apache::thrift::protocol::T_I64, 1);
   xfer += oprot->writeI64(this->nodeId);
@@ -826,15 +826,209 @@ uint32_t GraphQueryAggregatorService_get_attribute_local_args::write(::apache::t
   return xfer;
 }
 
-uint32_t GraphQueryAggregatorService_get_attribute_local_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t GraphQueryAggregatorService_get_attribute_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
   uint32_t xfer = 0;
-  xfer += oprot->writeStructBegin("GraphQueryAggregatorService_get_attribute_local_pargs");
+  xfer += oprot->writeStructBegin("GraphQueryAggregatorService_get_attribute_pargs");
 
   xfer += oprot->writeFieldBegin("nodeId", ::apache::thrift::protocol::T_I64, 1);
   xfer += oprot->writeI64((*(this->nodeId)));
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldBegin("attrId", ::apache::thrift::protocol::T_I32, 2);
+  xfer += oprot->writeI32((*(this->attrId)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+uint32_t GraphQueryAggregatorService_get_attribute_result::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 0:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->success);
+          this->__isset.success = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t GraphQueryAggregatorService_get_attribute_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
+
+  uint32_t xfer = 0;
+
+  xfer += oprot->writeStructBegin("GraphQueryAggregatorService_get_attribute_result");
+
+  if (this->__isset.success) {
+    xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_STRING, 0);
+    xfer += oprot->writeString(this->success);
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+uint32_t GraphQueryAggregatorService_get_attribute_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 0:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString((*(this->success)));
+          this->__isset.success = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t GraphQueryAggregatorService_get_attribute_local_args::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->shardId);
+          this->__isset.shardId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->nodeId);
+          this->__isset.nodeId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->attrId);
+          this->__isset.attrId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t GraphQueryAggregatorService_get_attribute_local_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  xfer += oprot->writeStructBegin("GraphQueryAggregatorService_get_attribute_local_args");
+
+  xfer += oprot->writeFieldBegin("shardId", ::apache::thrift::protocol::T_I64, 1);
+  xfer += oprot->writeI64(this->shardId);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("nodeId", ::apache::thrift::protocol::T_I64, 2);
+  xfer += oprot->writeI64(this->nodeId);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("attrId", ::apache::thrift::protocol::T_I32, 3);
+  xfer += oprot->writeI32(this->attrId);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+uint32_t GraphQueryAggregatorService_get_attribute_local_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  xfer += oprot->writeStructBegin("GraphQueryAggregatorService_get_attribute_local_pargs");
+
+  xfer += oprot->writeFieldBegin("shardId", ::apache::thrift::protocol::T_I64, 1);
+  xfer += oprot->writeI64((*(this->shardId)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("nodeId", ::apache::thrift::protocol::T_I64, 2);
+  xfer += oprot->writeI64((*(this->nodeId)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("attrId", ::apache::thrift::protocol::T_I32, 3);
   xfer += oprot->writeI32((*(this->attrId)));
   xfer += oprot->writeFieldEnd();
 
@@ -8369,18 +8563,78 @@ void GraphQueryAggregatorServiceClient::recv_disconnect_from_aggregators()
   return;
 }
 
-void GraphQueryAggregatorServiceClient::get_attribute_local(std::string& _return, const int64_t nodeId, const int32_t attrId)
+void GraphQueryAggregatorServiceClient::get_attribute(std::string& _return, const int64_t nodeId, const int32_t attrId)
 {
-  send_get_attribute_local(nodeId, attrId);
+  send_get_attribute(nodeId, attrId);
+  recv_get_attribute(_return);
+}
+
+void GraphQueryAggregatorServiceClient::send_get_attribute(const int64_t nodeId, const int32_t attrId)
+{
+  int32_t cseqid = 0;
+  oprot_->writeMessageBegin("get_attribute", ::apache::thrift::protocol::T_CALL, cseqid);
+
+  GraphQueryAggregatorService_get_attribute_pargs args;
+  args.nodeId = &nodeId;
+  args.attrId = &attrId;
+  args.write(oprot_);
+
+  oprot_->writeMessageEnd();
+  oprot_->getTransport()->writeEnd();
+  oprot_->getTransport()->flush();
+}
+
+void GraphQueryAggregatorServiceClient::recv_get_attribute(std::string& _return)
+{
+
+  int32_t rseqid = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TMessageType mtype;
+
+  iprot_->readMessageBegin(fname, mtype, rseqid);
+  if (mtype == ::apache::thrift::protocol::T_EXCEPTION) {
+    ::apache::thrift::TApplicationException x;
+    x.read(iprot_);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+    throw x;
+  }
+  if (mtype != ::apache::thrift::protocol::T_REPLY) {
+    iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+  }
+  if (fname.compare("get_attribute") != 0) {
+    iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+  }
+  GraphQueryAggregatorService_get_attribute_presult result;
+  result.success = &_return;
+  result.read(iprot_);
+  iprot_->readMessageEnd();
+  iprot_->getTransport()->readEnd();
+
+  if (result.__isset.success) {
+    // _return pointer has now been filled
+    return;
+  }
+  throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "get_attribute failed: unknown result");
+}
+
+void GraphQueryAggregatorServiceClient::get_attribute_local(std::string& _return, const int64_t shardId, const int64_t nodeId, const int32_t attrId)
+{
+  send_get_attribute_local(shardId, nodeId, attrId);
   recv_get_attribute_local(_return);
 }
 
-void GraphQueryAggregatorServiceClient::send_get_attribute_local(const int64_t nodeId, const int32_t attrId)
+void GraphQueryAggregatorServiceClient::send_get_attribute_local(const int64_t shardId, const int64_t nodeId, const int32_t attrId)
 {
   int32_t cseqid = 0;
   oprot_->writeMessageBegin("get_attribute_local", ::apache::thrift::protocol::T_CALL, cseqid);
 
   GraphQueryAggregatorService_get_attribute_local_pargs args;
+  args.shardId = &shardId;
   args.nodeId = &nodeId;
   args.attrId = &attrId;
   args.write(oprot_);
@@ -10455,6 +10709,60 @@ void GraphQueryAggregatorServiceProcessor::process_disconnect_from_aggregators(i
   }
 }
 
+void GraphQueryAggregatorServiceProcessor::process_get_attribute(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
+{
+  void* ctx = NULL;
+  if (this->eventHandler_.get() != NULL) {
+    ctx = this->eventHandler_->getContext("GraphQueryAggregatorService.get_attribute", callContext);
+  }
+  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "GraphQueryAggregatorService.get_attribute");
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->preRead(ctx, "GraphQueryAggregatorService.get_attribute");
+  }
+
+  GraphQueryAggregatorService_get_attribute_args args;
+  args.read(iprot);
+  iprot->readMessageEnd();
+  uint32_t bytes = iprot->getTransport()->readEnd();
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->postRead(ctx, "GraphQueryAggregatorService.get_attribute", bytes);
+  }
+
+  GraphQueryAggregatorService_get_attribute_result result;
+  try {
+    iface_->get_attribute(result.success, args.nodeId, args.attrId);
+    result.__isset.success = true;
+  } catch (const std::exception& e) {
+    if (this->eventHandler_.get() != NULL) {
+      this->eventHandler_->handlerError(ctx, "GraphQueryAggregatorService.get_attribute");
+    }
+
+    ::apache::thrift::TApplicationException x(e.what());
+    oprot->writeMessageBegin("get_attribute", ::apache::thrift::protocol::T_EXCEPTION, seqid);
+    x.write(oprot);
+    oprot->writeMessageEnd();
+    oprot->getTransport()->writeEnd();
+    oprot->getTransport()->flush();
+    return;
+  }
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->preWrite(ctx, "GraphQueryAggregatorService.get_attribute");
+  }
+
+  oprot->writeMessageBegin("get_attribute", ::apache::thrift::protocol::T_REPLY, seqid);
+  result.write(oprot);
+  oprot->writeMessageEnd();
+  bytes = oprot->getTransport()->writeEnd();
+  oprot->getTransport()->flush();
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->postWrite(ctx, "GraphQueryAggregatorService.get_attribute", bytes);
+  }
+}
+
 void GraphQueryAggregatorServiceProcessor::process_get_attribute_local(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
 {
   void* ctx = NULL;
@@ -10478,7 +10786,7 @@ void GraphQueryAggregatorServiceProcessor::process_get_attribute_local(int32_t s
 
   GraphQueryAggregatorService_get_attribute_local_result result;
   try {
-    iface_->get_attribute_local(result.success, args.nodeId, args.attrId);
+    iface_->get_attribute_local(result.success, args.shardId, args.nodeId, args.attrId);
     result.__isset.success = true;
   } catch (const std::exception& e) {
     if (this->eventHandler_.get() != NULL) {

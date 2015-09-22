@@ -214,19 +214,29 @@ private:
 
 public:
 
-    void get_attribute_local(
+    void get_attribute(
         std::string& _return,
         const int64_t nodeId,
         const int32_t attrId)
     {
         int shard_id = nodeId % total_num_shards_;
         int host_id = shard_id % total_num_hosts_;
-        if (host_id != local_host_id_) {
-            LOG_E("get_attribute()'s internal for now: supports 1 agg. only\n");
-            exit(1);
+        if (host_id == local_host_id_) {
+            get_attribute_local(_return, shard_id, nodeId, attrId);
+        } else {
+            aggregators_.at(host_id).get_attribute_local(
+                _return, shard_id, nodeId, attrId);
         }
+    }
+
+    void get_attribute_local(
+        std::string& _return,
+        const int64_t shard_id,
+        const int64_t node_id,
+        const int32_t attrId)
+    {
         local_shards_.at(shard_id / total_num_hosts_).get_attribute_local(
-            _return, global_to_local_node_id(nodeId, shard_id), attrId);
+            _return, global_to_local_node_id(node_id, shard_id), attrId);
     }
 
     void get_neighbors(std::vector<int64_t> & _return, const int64_t nodeId) {

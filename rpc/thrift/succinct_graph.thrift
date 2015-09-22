@@ -91,7 +91,9 @@ service GraphQueryAggregatorService {
 
     // Primitive queries
 
-    string get_attribute_local(1: i64 nodeId, 2: i32 attrId),
+    string get_attribute(1: i64 nodeId, 2: i32 attrId),
+
+    string get_attribute_local(1: i64 shardId, 2: i64 nodeId, 3: i32 attrId),
 
     list<i64> get_neighbors(1: i64 nodeId),
 
