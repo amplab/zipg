@@ -19,14 +19,14 @@ edge_file_raw=/vol1/uk-2007-05-40attr16each-npa128sa32isa64.assoc
 node_file_raw=/vol0/twitter2010-40attr16each-tpch.node
 edge_file_raw=/vol0/twitter2010-npa128sa32isa64.assoc
 
-threads=( 32 )
+threads=( 64 128 256 512 )
 benches=(
-  benchNeighborThput
-  benchNhbrAtypeThput
-  benchEdgeAttrsThput
-  benchNhbrNodeThput
-  benchNodeNodeThput
-  benchMixThput
+#  benchNeighborThput
+#  benchNhbrAtypeThput
+#  benchEdgeAttrsThput
+#  benchNhbrNodeThput
+#  benchNodeNodeThput
+#  benchMixThput
   benchTaoMixThput
 )
 
@@ -137,6 +137,20 @@ for benchType in "${benches[@]}"; do
       bash ${currDir}/sbin/hosts-noStderr.sh \
         $benchType=T bash ${currDir}/scripts/bench_func.sh \
         $node_file_raw $edge_file_raw $throughput_threads
+      
+      # assign aggregator in a round-robin fashion
+#      i=0
+#      for host in $(cat ${currDir}/conf/hosts); do
+#        if [[ $i -eq 0 ]]; then
+#          export $benchType=T ; bash ${currDir}/scripts/bench_func.sh \
+#            $node_file_raw $edge_file_raw $throughput_threads $host &
+#        else
+#          export $benchType=T ; bash ${currDir}/scripts/bench_func.sh \
+#            $node_file_raw $edge_file_raw $throughput_threads $host false &
+#        fi
+#        i=$(($i + 1))
+#      done
+#      wait
 
 #      sleep 120 # buffer times (for reading queries, etc.)
 #      echo "Master starts timing..."
