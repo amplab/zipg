@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -ex
 
 #### Steps:
 # 1. modify the configs
@@ -11,7 +11,7 @@ set -e
 # 5. Set the desired settings in rates-bench.sh
 
 npa=128; sa=32; isa=64 # L0, by default
-copyShardFiles=T
+#copyShardFiles=T
 
 node_file_raw=/vol1/uk-2007-05-40attr16each-tpch-npa128sa32isa64.node
 edge_file_raw=/vol1/uk-2007-05-40attr16each-npa128sa32isa64.assoc
@@ -21,12 +21,12 @@ edge_file_raw=/vol0/twitter2010-npa128sa32isa64.assoc
 
 threads=( 64 128 256 512 )
 benches=(
-#  benchNeighborThput
-#  benchNhbrAtypeThput
-#  benchEdgeAttrsThput
-#  benchNhbrNodeThput
-#  benchNodeNodeThput
-#  benchMixThput
+  # benchNeighborThput
+  # benchNhbrAtypeThput
+  # benchEdgeAttrsThput
+  # benchNhbrNodeThput
+  # benchNodeNodeThput
+  # benchMixThput
   benchTaoMixThput
 )
 
@@ -134,23 +134,20 @@ for benchType in "${benches[@]}"; do
   for throughput_threads in ${threads[*]}; do
       start_all
 
-      bash ${currDir}/sbin/hosts-noStderr.sh \
-        $benchType=T bash ${currDir}/scripts/bench_func.sh \
-        $node_file_raw $edge_file_raw $throughput_threads
+#      bash ${currDir}/sbin/hosts-noStderr.sh \
+#        $benchType=T bash ${currDir}/scripts/bench_func.sh \
+#        $node_file_raw $edge_file_raw $throughput_threads
       
       # assign aggregator in a round-robin fashion
-#      i=0
-#      for host in $(cat ${currDir}/conf/hosts); do
-#        if [[ $i -eq 0 ]]; then
-#          export $benchType=T ; bash ${currDir}/scripts/bench_func.sh \
-#            $node_file_raw $edge_file_raw $throughput_threads $host &
-#        else
-#          export $benchType=T ; bash ${currDir}/scripts/bench_func.sh \
-#            $node_file_raw $edge_file_raw $throughput_threads $host false &
-#        fi
-#        i=$(($i + 1))
-#      done
-#      wait
+      # For now, assume #clientHosts == #serverHosts
+      for i in $(seq 1 $num_hosts); do
+        clientHost=$(sed -n "${i}{p;q;}" ~/spark-ec2/slaves | sed 's/\n//g')
+        clusterHost=$(sed -n "${i}{p;q;}" ${currDir}/conf/hosts.clus | sed 's/\n//g')
+        ssh -o StrictHostKeyChecking=no $clientHost \
+          "$benchType=T bash ${currDir}/scripts/bench_func.sh \
+            $node_file_raw $edge_file_raw $throughput_threads $clusterHost 2>&1 >run.log" &
+      done
+      wait
 
 #      sleep 120 # buffer times (for reading queries, etc.)
 #      echo "Master starts timing..."
