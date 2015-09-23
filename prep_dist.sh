@@ -19,15 +19,15 @@ edge_file_raw=/vol1/uk-2007-05-40attr16each-npa128sa32isa64.assoc
 node_file_raw=/vol0/twitter2010-40attr16each-tpch.node
 edge_file_raw=/vol0/twitter2010-npa128sa32isa64.assoc
 
-threads=( 32 )
+threads=( 64 32 )
 benches=(
-  #benchNeighborThput
-  #benchNhbrAtypeThput
-  #benchEdgeAttrsThput
-  #benchNhbrNodeThput
-  #benchNodeNodeThput
-  benchMixThput
   benchTaoMixThput
+  benchMixThput
+  benchNhbrNodeThput
+  benchNeighborThput
+  benchNhbrAtypeThput
+  benchNodeNodeThput
+  benchEdgeAttrsThput
 )
 
 # NOTE: settings here only affects this master killing all
@@ -132,22 +132,25 @@ done
 
 for benchType in "${benches[@]}"; do
   for throughput_threads in ${threads[*]}; do
-      #start_all
+      start_all
 
-#      bash ${currDir}/sbin/hosts-noStderr.sh \
-#        $benchType=T bash ${currDir}/scripts/bench_func.sh \
-#        $node_file_raw $edge_file_raw $throughput_threads
+      launcherStart=$(date +"%s")
+      bash ${currDir}/sbin/hosts-noStderr.sh \
+        $benchType=T bash ${currDir}/scripts/bench_func.sh \
+        $node_file_raw $edge_file_raw $throughput_threads localhost true 2>&1 >run.log
+      wait
+      launcherEnd=$(date +"%s")
       
       # assign aggregator in a round-robin fashion
       # For now, assume #clientHosts == #serverHosts
-      for i in $(seq 1 $num_hosts); do
-        clientHost=$(sed -n "${i}{p;q;}" ~/spark-ec2/slaves | sed 's/\n//g')
-        clusterHost=$(sed -n "${i}{p;q;}" ${currDir}/conf/hosts.clus | sed 's/\n//g')
-        ssh -o StrictHostKeyChecking=no $clientHost \
-          "$benchType=T bash ${currDir}/scripts/bench_func.sh \
-            $node_file_raw $edge_file_raw $throughput_threads $clusterHost false 2>&1 >run.log" &
-      done
-      wait
+#      for i in $(seq 1 $num_hosts); do
+#        clientHost=$(sed -n "${i}{p;q;}" ~/spark-ec2/slaves | sed 's/\n//g')
+#        clusterHost=$(sed -n "${i}{p;q;}" ${currDir}/conf/hosts.clus | sed 's/\n//g')
+#        ssh -o StrictHostKeyChecking=no $clientHost \
+#          "$benchType=T bash ${currDir}/scripts/bench_func.sh \
+#            $node_file_raw $edge_file_raw $throughput_threads $clusterHost false 2>&1 >run.log" &
+#      done
+#      wait
 
 #      sleep 120 # buffer times (for reading queries, etc.)
 #      echo "Master starts timing..."
@@ -175,6 +178,7 @@ for benchType in "${benches[@]}"; do
       echo "$t,$bench" >>${f}
       sanity=$(${currDir}/sbin/hosts.sh tail -n1 run.log)
       echo $sanity >> ${f}
+      echo "Measured from master: $((launcherEnd - launcherStart)) secs" >> ${f}
       cat thput >> ${f}
 
       entry="$t,$bench,${throughput_threads}*10,$sum"
@@ -185,3 +189,4 @@ for benchType in "${benches[@]}"; do
 
   done
 done
+#start_all
