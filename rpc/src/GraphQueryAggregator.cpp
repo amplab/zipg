@@ -89,7 +89,7 @@ public:
     }
 
     int32_t init_local_shards() {
-        LOG_E("About to connect to local shards and init them\n");
+        COND_LOG_E("About to connect to local shards and init them\n");
         if (connect_to_local_shards() != 0) {
             LOG_E("Connection to local shards failed\n");
             exit(1);
@@ -103,7 +103,7 @@ public:
                 exit(1);
             }
         }
-        LOG_E("init_local_shards() done\n");
+        COND_LOG_E("init_local_shards() done\n");
         return 0;
     }
 
@@ -115,7 +115,7 @@ public:
                 continue;
             }
 
-            LOG_E("Connecting to remote aggregator on host %d...\n", i);
+            COND_LOG_E("Connecting to remote aggregator on host %d...\n", i);
             try {
                 shared_ptr<TSocket> socket(new TSocket(
                     hostnames_.at(i), QUERY_HANDLER_PORT));
@@ -125,7 +125,7 @@ public:
                 GraphQueryAggregatorServiceClient client(protocol);
 
                 transport->open();
-                LOG_E("Connected!\n");
+                COND_LOG_E("Connected!\n");
 
                 // Critical, otherwise this agg. client won't have sockets open
                 // to its own local shard servers.
@@ -145,7 +145,7 @@ public:
                 total_num_hosts_, hostnames_.size());
             return 1;
         }
-        LOG_E("Aggregators connected: cluster has %zu aggregators in total.\n",
+        COND_LOG_E("Aggregators connected: cluster has %zu aggregators in total.\n",
             hostnames_.size());
         return 0;
     }
@@ -188,7 +188,7 @@ private:
             // to a healthy cluster of aggregators & shard servers.
             if (i < local_shards_.size()) continue;
 
-            LOG_E("Connecting to local server %d...", i);
+            COND_LOG_E("Connecting to local server %d...", i);
             try {
                 shared_ptr<TSocket> socket(new TSocket(
                     "localhost", QUERY_SERVER_PORT + i));
@@ -198,7 +198,7 @@ private:
                 GraphQueryServiceClient client(protocol);
 
                 transport->open();
-                LOG_E("Connected!\n");
+                COND_LOG_E("Connected!\n");
                 local_shards_.push_back(client);
                 shard_transports_.push_back(transport);
             } catch (std::exception& e) {
@@ -206,7 +206,7 @@ private:
                 return 1;
             }
         }
-        LOG_E(
+        COND_LOG_E(
             "Currently have %zu local server connections.\n",
             local_shards_.size());
         return 0;
