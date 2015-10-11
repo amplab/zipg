@@ -1,5 +1,5 @@
 # NOTE: #shards should be a multiple of num_hosts for now.
-export TOTAL_NUM_SHARDS=8
+export TOTAL_NUM_SHARDS=40
 
 # hacky
 export num_hosts="$(cat "$(dirname "${BASH_SOURCE:-$0}")"/../conf/hosts | sed "s/#.*$//;/^$/d" | wc -l)"

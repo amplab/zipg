@@ -2,6 +2,8 @@
 set -ex
 
 #### Steps:
+# 0. If ulimit is too low (O(1k)), manually append line "* soft nofile 1000000"
+# (and another for 'hard') onto /etc/security/limits.conf.
 # 1. modify the configs
 # 2. bash init.sh
 # FIXME: the manual installation somehow doesn't work; use 0.9.2
@@ -13,21 +15,20 @@ set -ex
 npa=128; sa=32; isa=64 # L0, by default
 #copyShardFiles=T
 
-node_file_raw=/vol1/uk-2007-05-40attr16each-tpch-npa128sa32isa64.node
-edge_file_raw=/vol1/uk-2007-05-40attr16each-npa128sa32isa64.assoc
-
 node_file_raw=/vol0/twitter2010-40attr16each-tpch.node
 edge_file_raw=/vol0/twitter2010-npa128sa32isa64.assoc
+node_file_raw=/vol0/uk-2007-05-40attr16each-tpch-npa128sa32isa64.node
+edge_file_raw=/vol0/uk-2007-05-40attr16each-npa128sa32isa64.assoc
 
-threads=( 64 32 )
+threads=( 32 )
 benches=(
   benchTaoMixThput
-  benchMixThput
-  benchNhbrNodeThput
-  benchNeighborThput
-  benchNhbrAtypeThput
-  benchNodeNodeThput
-  benchEdgeAttrsThput
+#  benchMixThput
+#  benchNhbrNodeThput
+#  benchNeighborThput
+#  benchNhbrAtypeThput
+#  benchNodeNodeThput
+#  benchEdgeAttrsThput
 )
 
 # NOTE: settings here only affects this master killing all
@@ -44,7 +45,7 @@ currDir=$(cd $(dirname $0); pwd)
 . "${currDir}/sbin/succinct-config.sh"
 . "${currDir}/sbin/load-succinct-env.sh"
 
-bash ./init.sh
+#bash ./init.sh
 
 #### Copy the corresponding shard files over
 if [[ -n $copyShardFiles ]]; then
@@ -137,7 +138,7 @@ for benchType in "${benches[@]}"; do
       launcherStart=$(date +"%s")
       bash ${currDir}/sbin/hosts-noStderr.sh \
         $benchType=T bash ${currDir}/scripts/bench_func.sh \
-        $node_file_raw $edge_file_raw $throughput_threads localhost true 2>&1 >run.log
+        $node_file_raw $edge_file_raw $throughput_threads localhost false 2>&1 >run.log
       wait
       launcherEnd=$(date +"%s")
       
