@@ -21,6 +21,7 @@ augOpt="-augOpts"
 
 dataset="orkut-40attr16each"
 dataset="twitter2010-40attr16each"
+dataset="uk-2007-05-40attr16each"
 
 # NOTE: comment this out for non-sharded bench
 SHARDED=T
@@ -31,7 +32,11 @@ fi
 ###############
 
 if [[ "$copyQueries" == "true" ]]; then
-  if [[ "$dataset" == "orkut-40attr16each"* ]]; then
+  if [[ "$dataset" == "uk-2007-05-40attr16each"* ]]; then
+    pushd ${QUERY_DIR} >/dev/null
+    yes | cp -rf ${dataset}-queries/*txt ./
+    popd >/dev/null
+  elif [[ "$dataset" == "orkut-40attr16each"* ]]; then
     pushd ${QUERY_DIR} >/dev/null
     yes | cp -rf orkut-40attr16each-queries/*txt ./
     popd >/dev/null
