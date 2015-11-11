@@ -4,13 +4,10 @@
 #include <thrift/transport/TServerSocket.h>
 #include <thrift/transport/TBufferTransports.h>
 
+#include "GraphLogStore.h"
 #include "SuccinctGraph.hpp"
-#include "multistore/KVLogStore.h"
 #include "utils.h"
 #include "ports.h"
-
-#include "utils/definitions.h"
-#include "succinct_base.h"
 
 #include <unordered_map>
 
@@ -360,8 +357,10 @@ private:
     const std::string node_file_;
     const std::string edge_file_;
     const bool construct_;
+
     const shared_ptr<SuccinctGraph> graph_;
-    const shared_ptr<KVLogStore> node_log_store_ = nullptr;
+    const shared_ptr<GraphLogStore> graph_log_store_;
+
     bool initialized_;
 
     bool node_table_empty_ = true;

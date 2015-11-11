@@ -1,7 +1,16 @@
 #ifndef KV_LOG_STORE_H
 #define KV_LOG_STORE_H
 
+// Succinct stuff
+#include "utils/definitions.h"
+#include "succinct_base.h"
+
+#include "utils.h"
+
+#include <set>
+#include <string>
 #include <unordered_map>
+#include <vector>
 
 // LogStore with a key-value interface.
 class KVLogStore {
@@ -11,9 +20,10 @@ public:
         : input_file_(input_file)
     { }
 
+    // Reads in file, build ngram index, etc.
     void init();
 
-    int32_t append(int64_t key, const std::string& value);
+    int32_t append(int64_t key, std::string& value);
 
     void search(std::set<int64_t> &_return, const std::string& substring);
 
@@ -25,12 +35,7 @@ private:
 
     int64_t get_value_offset_pos(const int64_t key);
 
-    int64_t get_key_pos(const int64_t value_offset) {
-        long pos = std::prev(std::upper_bound(value_offsets.begin(),
-            value_offsets.end(), value_offset)) - value_offsets.begin();
-        return (pos >= keys.size() || ACCESSBIT(invalid_offsets, pos) == 1)
-            ? -1 : pos;
-    }
+    int64_t get_key_pos(const int64_t value_offset);
 
     // For Log Store and Suffix Store
     char *data;
