@@ -5,8 +5,14 @@
 #include <thrift/transport/TBufferTransports.h>
 
 #include "SuccinctGraph.hpp"
+#include "multistore/KVLogStore.h"
 #include "utils.h"
 #include "ports.h"
+
+#include "utils/definitions.h"
+#include "succinct_base.h"
+
+#include <unordered_map>
 
 using namespace ::apache::thrift;
 using namespace ::apache::thrift::protocol;
@@ -26,14 +32,16 @@ public:
         int32_t isa_sampling_rate,
         int32_t npa_sampling_rate,
         int shard_id,
-        int total_num_shards)
+        int total_num_shards,
+        StoreMode store_mode = SuccinctStore)
     : shard_id_(shard_id),
       total_num_shards_(total_num_shards),
       node_file_(node_file),
       edge_file_(edge_file),
       construct_(construct),
       graph_(new SuccinctGraph("")), // just no-op object alloc
-      initialized_(false)
+      initialized_(false),
+      store_mode_(store_mode)
     {
         graph_->set_npa_sampling_rate(npa_sampling_rate);
         graph_->set_sa_sampling_rate(sa_sampling_rate);
@@ -61,28 +69,64 @@ public:
             return 0;
         }
         LOG_E("In shard %d's init()\n", shard_id_);
-        if (construct_) {
-            LOG_E("Construct is set to true: starting to construct & encode\n");
-            if (!node_table_empty_ && !edge_table_empty_) {
-                graph_->construct(node_file_, edge_file_); // in parallel
-            } else if (!node_table_empty_) {
-                graph_->construct_node_table(node_file_);
-            } else if (!edge_table_empty_) {
-                graph_->construct_edge_table(edge_file_);
+        switch (store_mode_) {
+
+        case SuccinctStore:
+            if (construct_) {
+                LOG_E("Construct is set to true:"
+                    " starting to construct & encode\n");
+                if (!node_table_empty_ && !edge_table_empty_) {
+                    graph_->construct(node_file_, edge_file_); // in parallel
+                } else if (!node_table_empty_) {
+                    graph_->construct_node_table(node_file_);
+                } else if (!edge_table_empty_) {
+                    graph_->construct_edge_table(edge_file_);
+                } else {
+                    assert(false && "Neither node file nor edge file exists!");
+                }
             } else {
-                assert(false && "Neither node file nor edge file exists!");
+                LOG_E("Construct is set to false: starting to load\n");
+                if (!node_table_empty_ && !edge_table_empty_) {
+                    graph_->load(node_file_, edge_file_);
+                } else if (!node_table_empty_) {
+                    graph_->load_node_table(node_file_);
+                } else if (!edge_table_empty_) {
+                    graph_->load_edge_table(edge_file_);
+                } else {
+                    assert(false && "Neither node file nor edge file exists!");
+                }
             }
-        } else {
-            LOG_E("Construct is set to false: starting to load\n");
-            if (!node_table_empty_ && !edge_table_empty_) {
-                graph_->load(node_file_, edge_file_);
-            } else if (!node_table_empty_) {
-                graph_->load_node_table(node_file_);
-            } else if (!edge_table_empty_) {
-                graph_->load_edge_table(edge_file_);
-            } else {
-                assert(false && "Neither node file nor edge file exists!");
-            }
+            break;
+
+        case SuffixStore:
+            // TODO
+            break;
+
+        case LogStore:
+//            if (option == 1 || option == 2) {
+//                std::ifstream ip;
+//                ip.open(input_file.c_str());
+//                std::string *str = new std::string(
+//                    std::istreambuf_iterator<char>(ip),
+//                    std::istreambuf_iterator<char>());
+//                data = (char *) str->c_str();
+//
+//                create_ngram_idx();
+//
+//                if (option == 2) {
+//                    writeLogStoreToFile((input_file + "_logstore").c_str());
+//                    std::cout << "Wrote log store to file "
+//                        << (input_file + "_suffixstore").c_str() << std::endl;
+//                }
+//            } else {
+//                // Read from file
+//                readLogStoreFromFile(input_file.c_str());
+//                std::cout << "Loaded log store from file!" << std::endl;
+//            }
+//            break;
+
+        default:
+            break;
         }
         initialized_ = true;
         LOG_E("Initialization at this shard: done\n");
@@ -307,6 +351,9 @@ public:
 
 private:
 
+    // By default, SuccinctStore
+    const StoreMode store_mode_;
+
     const int shard_id_;
     const int total_num_shards_;
 
@@ -314,6 +361,7 @@ private:
     const std::string edge_file_;
     const bool construct_;
     const shared_ptr<SuccinctGraph> graph_;
+    const shared_ptr<KVLogStore> node_log_store_ = nullptr;
     bool initialized_;
 
     bool node_table_empty_ = true;
@@ -363,6 +411,7 @@ int main(int argc, char **argv) {
     std::string edge_file = std::string(argv[optind + 1]);
     bool construct = (mode == 0) ? true : false;
 
+    // TODO: take in a StoreMode from CLI
     try {
         shared_ptr<GraphQueryServiceHandler> handler(
             new GraphQueryServiceHandler(
