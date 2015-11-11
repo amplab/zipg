@@ -85,7 +85,7 @@ private:
     std::unordered_map<std::string, std::vector<uint32_t> > ngram_idx;
     uint32_t ngram_n = 3;
 
-    static constexpr char delim = (char) 10;
+    static constexpr char delim = '\n';
     std::vector<long> keys;
     std::vector<long> value_offsets;
 

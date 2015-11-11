@@ -131,12 +131,15 @@ void KVLogStore::init(int option) {
     COND_LOG_E("Done ngram index\n");
 }
 
+// TODO: think about concurrent writes
 int32_t KVLogStore::append(int64_t key, const std::string& value) {
+    if (data_pos + value.length() > MAX_LOG_STORE_SIZE) {
+        return -1;   // Data exceeds max chunk size
+    }
     std::string val(value);
-    if(data_pos + val.length() > MAX_LOG_STORE_SIZE) return -1;   // Data exceeds max chunk size
     keys.push_back(key);
     value_offsets.push_back(data_pos);
-    // val += delim;
+    val += delim;
     strncpy(data + data_pos, val.c_str(), val.length());
     // Update the index
     for(uint64_t i = data_pos - ngram_n; i < data_pos + val.length() - ngram_n; i++) {
@@ -172,13 +175,18 @@ void KVLogStore::search(
 void KVLogStore::get_value(std::string &value, uint64_t key) {
     value.clear();
     int64_t pos = get_value_offset_pos(key);
-    LOG_E("get_value_offset_pos done: %lld; key %lld, value_offsets.size %d\n",
+    COND_LOG_E("get_value_offset_pos done: %lld; key %lld, "
+        "value_offsets.size %d\n",
         pos, key, value_offsets.size());
-    if(pos < 0)
+    if (pos < 0) {
         return;
-    uint64_t start = value_offsets[pos];
-    uint32_t end = (pos + 1 < value_offsets.size()) ? value_offsets[pos + 1] : data_pos;
-    value.resize(end - start);
-    for(uint32_t i = start; i < end; i++)
-        value[i - start] = data[i];
+    }
+    int64_t start = value_offsets[pos];
+    int64_t end = (pos + 1 < value_offsets.size())
+        ? value_offsets[pos + 1] : data_pos;
+    size_t len = end - start - 1; // -1 for ignoring the delim
+    value.resize(len);
+    for (size_t i = 0; i < len; ++i) {
+        value[i] = data[start + i];
+    }
 }

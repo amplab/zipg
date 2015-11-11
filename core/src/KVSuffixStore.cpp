@@ -215,12 +215,18 @@ void KVSuffixStore::search(
 void KVSuffixStore::get_value(std::string &value, uint64_t key) {
     value.clear();
     int64_t pos = get_value_offset_pos(key);
-    if(pos < 0)
+    COND_LOG_E("get_value_offset_pos done: %lld; key %lld, "
+        "value_offsets.size %d\n",
+        pos, key, value_offsets.size());
+    if (pos < 0) {
         return;
+    }
     int64_t start = value_offsets[pos];
     int64_t end = (pos + 1 < value_offsets.size())
         ? value_offsets[pos + 1] : sa_n - 1;
-    value.resize(end - start);
-    for(int64_t i = start; i < end; i++)
-        value[i - start] = data[i];
+    size_t len = end - start - 1; // -1 for ignoring the delim
+    value.resize(len);
+    for (size_t i = 0; i < len; ++i) {
+        value[i] = data[start + i];
+    }
 }

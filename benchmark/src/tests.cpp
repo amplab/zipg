@@ -73,9 +73,7 @@ void test_suffix_store() {
     kv_suffix_store.search(keys, "16181");
     assert_eq(keys, { });
 
-    // TODO: these two are actually bugs in semantics, I think.
-    kv_suffix_store.search(keys, "1618M");
-    assert_eq(keys, { 0 });
+    // TODO: bugs in semantics (partial match), I think.
     kv_suffix_store.search(keys, "Mar");
     assert_eq(keys, { 1 });
 
