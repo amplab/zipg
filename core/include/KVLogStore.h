@@ -43,6 +43,23 @@ public:
 
 private:
 
+    void read_pointers(const char *ptrs_file) {
+        std::ifstream ip;
+        ip.open(ptrs_file);
+        std::string line;
+        std::string key, value;
+        long line_num = 0;
+        while (std::getline(ip, line)) {
+            uint32_t kv_split_index = line.find_first_of('\t');
+            key = line.substr(0, kv_split_index);
+            value = line.substr(kv_split_index + 1);
+            keys.push_back(std::stoll(key));
+            value_offsets.push_back(atol(value.c_str()));
+            line_num++;
+        }
+        LOG_E("Read %lld KV pointers.\n", keys.size());
+    }
+
     int64_t get_value_offset_pos(const int64_t key);
 
     int64_t get_key_pos(const int64_t value_offset);
@@ -51,7 +68,6 @@ private:
     void writeLogStoreToFile(const char* logstore_path);
 
     void read_data(const char *input_file);
-    void read_pointers(const char *ptrs_file);
     void create_ngram_idx();
 
     const std::string input_file_, pointer_file_;

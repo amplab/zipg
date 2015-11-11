@@ -1,21 +1,139 @@
 #include "KVSuffixStore.h"
 
+#include "utils/divsufsortxx.h"
+#include "utils/divsufsortxx_utility.h"
+
+/* Check if n is a power of 2 */
+#define ISPOWOF2(n)     ((n != 0) && ((n & (n - 1)) == 0))
+/* Integer logarithm to the base 2 -- fast */
+int intLog2(long n) {
+    int l = ISPOWOF2(n) ? 0 : 1;
+    while (n >>= 1) ++l;
+    return l;
+}
+
 int64_t KVSuffixStore::get_value_offset_pos(const int64_t key) {
     long pos = std::lower_bound(
         keys.begin(), keys.end(), key) - keys.begin();
-    return (keys[pos] != key || pos >= keys.size() ||
-        ACCESSBIT(invalid_offsets, pos) == 1) ? -1 : pos;
+    return (keys[pos] != key || pos >= keys.size()) ? -1 : pos;
 }
 
 int64_t KVSuffixStore::get_key_pos(const int64_t value_offset) {
     long pos = std::prev(std::upper_bound(value_offsets.begin(),
         value_offsets.end(), value_offset)) - value_offsets.begin();
-    return (pos >= keys.size() || ACCESSBIT(invalid_offsets, pos) == 1)
-        ? -1 : pos;
+    return pos >= keys.size() ? -1 : pos;
 }
 
 void KVSuffixStore::init(int option) {
-    // TODO
+    if (option == 1 || option == 2) {
+        std::ifstream ip;
+        ip.open(input_file_.c_str());
+        std::string *str = new std::string((std::istreambuf_iterator<char>(ip)),
+                                            std::istreambuf_iterator<char>());
+        str->append(1, (char)1);
+
+        sa_n = str->length();
+        ip.close();
+        std::cout << "File read into memory!" << std::endl;
+        bits = intLog2(sa_n + 1);
+
+        // Construct suffix array
+        long *lSA = new long[sa_n];
+        divsufsortxx::constructSA((const unsigned char *)str->c_str(),
+            ((const unsigned char *)str->c_str()) + sa_n, lSA, lSA + sa_n, 256);
+
+        std::cout << "Built SA\n";
+        SA = new SuccinctBase::Bitmap;
+        createBMArray(&SA, lSA, sa_n, bits);
+        delete [] lSA;
+        std::cout << "Compacted SA\n";
+
+        data = (char *) str->c_str();
+
+        read_pointers(pointer_file_.c_str());
+
+        if (option == 2) {
+            writeSuffixStoreToFile((input_file_ + "_suffixstore").c_str());
+            std::cout << "Wrote suffix store to file "
+                << (input_file_ + "_suffixstore").c_str() << std::endl;
+        }
+    } else {
+        // Read from file
+        readSuffixStoreFromFile(input_file_.c_str());
+        std::cout << "Loaded suffix store from file!" << std::endl;
+    }
+}
+
+void KVSuffixStore::writeSuffixStoreToFile(const char *suffixstore_path) {
+    std::ofstream suffixstore_file(suffixstore_path);
+    suffixstore_file << sa_n << std::endl;
+    suffixstore_file << bits << std::endl;
+
+    // Write char array to file
+    suffixstore_file.write(data, sa_n);
+
+    // Write suffix array to file
+    suffixstore_file << SA->size << std::endl;
+
+    for(long i = 0; i < (SA->size / 64) + 1; i++) {
+        suffixstore_file << SA->bitmap[i] << " ";
+    }
+    suffixstore_file << std::endl;
+
+    std::cout << "Wrote suffix array to file!" << std::endl;
+    suffixstore_file.close();
+}
+
+void KVSuffixStore::readSuffixStoreFromFile(const char *suffixstore_path) {
+    std::ifstream suffixstore_file(suffixstore_path);
+    suffixstore_file >> sa_n;
+    suffixstore_file >> bits;
+
+    suffixstore_file.ignore();
+    data = new char[sa_n];
+
+    // Read char array from file
+    suffixstore_file.read(data, sa_n);
+
+    // Read suffix array from file
+    SA = new SuccinctBase::Bitmap;
+    suffixstore_file >> SA->size;
+    SA->bitmap = new uint64_t[(SA->size / 64) + 1];
+    for(long i = 0; i < (SA->size / 64) + 1; i++) {
+        suffixstore_file >> SA->bitmap[i];
+    }
+
+    suffixstore_file.close();
+}
+
+/* Creates bitmap array */
+void KVSuffixStore::createBMArray(
+    SuccinctBase::Bitmap **B, long *A, long n, int b)
+{
+    initBitmap(B, n * b);
+    for (long i = 0; i < n; i++) {
+        setBMArray(B, i, A[i], b);
+    }
+    std::cout << std::endl;
+}
+
+/* Creates a bitmap, initialized to all zeros */
+void KVSuffixStore::initBitmap(SuccinctBase::Bitmap **B, long n) {
+    (*B)->bitmap = new uint64_t[(n / 64) + 1]();
+    (*B)->size = n;
+}
+
+/* Set bit in BitMap at pos */
+void KVSuffixStore::setBMArray(
+    SuccinctBase::Bitmap **B, long i, long val, int b)
+{
+    unsigned long s = i * b, e = i * b + (b - 1);
+    if ((s / 64) == (e / 64)) {
+        (*B)->bitmap[s / 64] |= (val << (63 - e % 64));
+    } else {
+        (*B)->bitmap[s / 64] |= (val >> (e % 64 + 1));
+        (*B)->bitmap[e / 64] |= (val << (63 - e % 64));
+    }
 }
 
 int KVSuffixStore::ss_compare(const char *p, long i) {
@@ -95,12 +213,13 @@ void KVSuffixStore::search(
 }
 
 void KVSuffixStore::get_value(std::string &value, uint64_t key) {
-    value = "";
+    value.clear();
     int64_t pos = get_value_offset_pos(key);
     if(pos < 0)
         return;
     int64_t start = value_offsets[pos];
-    int64_t end = (pos + 1 < value_offsets.size()) ? value_offsets[pos + 1] : sa_n - 1;
+    int64_t end = (pos + 1 < value_offsets.size())
+        ? value_offsets[pos + 1] : sa_n - 1;
     value.resize(end - start);
     for(int64_t i = start; i < end; i++)
         value[i - start] = data[i];

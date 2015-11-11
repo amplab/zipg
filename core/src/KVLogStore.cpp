@@ -22,7 +22,7 @@ void KVLogStore::readLogStoreFromFile(const char* logstore_path) {
 
     logstore_file.ignore();
 
-    data = new char[MAX_LOG_STORE_SIZE]; // FIXME
+    data = new char[MAX_LOG_STORE_SIZE];
 
     // Read char array from file
     logstore_file.read(data, data_pos);
@@ -99,23 +99,6 @@ void KVLogStore::read_data(const char *input_file) {
 
     data_pos = size;
     LOG_E("Log store read %zu bytes\n", data_pos);
-}
-
-void KVLogStore::read_pointers(const char *ptrs_file) {
-    std::ifstream ip;
-    ip.open(ptrs_file);
-    std::string line;
-    std::string key, value;
-    long line_num = 0;
-    while (std::getline(ip, line)) {
-        uint32_t kv_split_index = line.find_first_of('\t');
-        key = line.substr(0, kv_split_index);
-        value = line.substr(kv_split_index + 1);
-        keys.push_back(line_num);
-        value_offsets.push_back(atol(value.c_str()));
-        line_num++;
-    }
-    LOG_E("Read %lld KV pointers.\n", keys.size());
 }
 
 // Log and suffix store initialization functions
@@ -195,7 +178,6 @@ void KVLogStore::get_value(std::string &value, uint64_t key) {
         return;
     uint64_t start = value_offsets[pos];
     uint32_t end = (pos + 1 < value_offsets.size()) ? value_offsets[pos + 1] : data_pos;
-    LOG_E("start %d, end %d, vals[next] %d\n", start, end, value_offsets[pos + 1]);
     value.resize(end - start);
     for(uint32_t i = start; i < end; i++)
         value[i - start] = data[i];
