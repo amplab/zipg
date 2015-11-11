@@ -4,6 +4,7 @@
 #include <sstream>
 #include <thread>
 
+#include "GraphFormatter.hpp"
 #include "SuccinctGraphSerde.hpp"
 #include "utils.h"
 
@@ -130,21 +131,8 @@ void SuccinctGraph::construct_node_table(std::string node_file) {
     //   (2) to jump to attrK, read from distance up to (& including) len(K-1).
 
     while (std::getline(in_stream, line)) {
-        std::stringstream ss(line);
-        attr_lengths.clear();
-        int distance = 0;
-
-        std::getline(ss, token, static_cast<char>(DELIMITERS[0])); // skip first delim
-
-        // Need to reach DELIMITERS[MAX] as well
-        for (int i = 1; i <= MAX_NUM_NODE_ATTRS; ++i) {
-            // assumes consecutive use of the delimiters
-            if (!std::getline(ss, token, static_cast<char>(DELIMITERS[i])))
-                break;
-            attr_lengths.push_back(token.length());
-            // account for one delimiter after each len here
-            distance += num_digits(token.length()) + 1;
-        }
+        int64_t distance = GraphFormatter::format_lengths_of_attrs(
+            line, attr_lengths);
         out_stream << distance << NODE_TABLE_HEADER_DELIM;
         for (int64_t len : attr_lengths)
             out_stream << len << NODE_TABLE_HEADER_DELIM;

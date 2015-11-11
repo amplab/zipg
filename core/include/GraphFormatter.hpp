@@ -101,6 +101,12 @@ public:
     static std::string format_node_attrs_str(
         const std::vector<std::vector<std::string>>& node_attrs);
 
+    // Given a properly delimed property string (e.g. returned by
+    // format_node_attrs_str()), puts the length info into `attr_lengths`, and
+    // return the initial "distance", which is the sum of all lengths, roughly.
+    static int64_t format_lengths_of_attrs(
+        const std::string& delimed, std::vector<int64_t>& attr_lengths);
+
     // Output: nodeId [delim] attr0 [delim] ...
     // Note that node ids must be exactly the range [0, ..., L].
     static void format_neo4j_node_from_node_file(
@@ -138,6 +144,17 @@ private:
         struct timeval now;
         gettimeofday(&now, NULL);
         return (int64_t) now.tv_sec * 1000 + now.tv_usec / 1000;
+    }
+
+    // This can be > 5x faster (loop unroll / static lookup).
+    static int32_t num_digits(int64_t number) {
+       if (number == 0) return 1;
+       int32_t digits = 0;
+       while (number != 0) {
+           number /= 10;
+           ++digits;
+       }
+       return digits;
     }
 
     static void output_node_attributes(
