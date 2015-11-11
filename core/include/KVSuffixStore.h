@@ -1,5 +1,5 @@
-#ifndef KV_LOG_STORE_H
-#define KV_LOG_STORE_H
+#ifndef KV_SUFFIX_STORE_H
+#define KV_SUFFIX_STORE_H
 
 // Succinct stuff
 #include "utils/definitions.h"
@@ -12,18 +12,17 @@
 #include <unordered_map>
 #include <vector>
 
-// LogStore with a key-value interface.
-class KVLogStore {
+#define ss_lookupSA(i)     (accessBMArray(SA, i, bits))
+
+// SuffixStore with a key-value interface.
+class KVSuffixStore {
 public:
 
-    KVLogStore(const std::string& input_file)
+    KVSuffixStore(const std::string& input_file)
         : input_file_(input_file)
     { }
 
-    // Reads in file, build ngram index, etc.
     void init();
-
-    int32_t append(int64_t key, std::string& value);
 
     void search(std::set<int64_t> &_return, const std::string& substring);
 
@@ -31,25 +30,25 @@ public:
 
 private:
 
+    SuccinctBase::Bitmap *SA;
+    long sa_n;
+    int bits;
+
     const std::string input_file_;
 
+    // Common for SuffixStore and LogStore
     int64_t get_value_offset_pos(const int64_t key);
-
     int64_t get_key_pos(const int64_t value_offset);
+
+    std::pair<long, long> ss_getRange(const char *p);
+
+    long accessBMArray(SuccinctBase::Bitmap *B, long i, int b);
+
+    int ss_compare(const char *p, long i);
 
     // For Log Store and Suffix Store
     char *data;
 
-    // Only for log store
-    uint64_t data_pos;
-
-    // Index to speed up searches
-    // Note: Index only works when logstore data is < 2GB; for larger log
-    // stores, switch to long offsets.
-    std::unordered_map<std::string, std::vector<uint32_t> > ngram_idx;
-    uint32_t ngram_n;
-
-    char delim;
     std::vector<long> keys;
     std::vector<long> value_offsets;
 

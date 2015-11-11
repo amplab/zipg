@@ -36,3 +36,6 @@ add_executable(create src/succinct-create.cpp)
 target_link_libraries(create succinctgraph)
 target_link_libraries(create succinctgraph-client)
 target_link_libraries(create ${THRIFT_LIBRARIES})
+
+add_executable(tests src/tests.cpp)
+target_link_libraries(tests succinctgraph)
