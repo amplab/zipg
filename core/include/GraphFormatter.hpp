@@ -102,10 +102,9 @@ public:
         const std::vector<std::vector<std::string>>& node_attrs);
 
     // Given a properly delimed property string (e.g. returned by
-    // format_node_attrs_str()), puts the length info into `attr_lengths`, and
-    // return the initial "distance", which is the sum of all lengths, roughly.
-    static int64_t format_lengths_of_attrs(
-        const std::string& delimed, std::vector<int64_t>& attr_lengths);
+    // format_node_attrs_str()), attach the metadata length info.  The result
+    // is suitable for acting as a value in the Node Table.
+    static std::string attach_attr_lengths(const std::string& delimed);
 
     // Output: nodeId [delim] attr0 [delim] ...
     // Note that node ids must be exactly the range [0, ..., L].

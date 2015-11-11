@@ -207,9 +207,12 @@ public:
     uint32_t npa_sampling_rate = 256;
 
     // TODO: consider moving these to GraphFormatter / Serde?
+    // *****Note that it is important the delim is not in DELIMITERS.*****
+    const static char NODE_TABLE_HEADER_DELIM;
     // Internal node attributes delimiters.  Assumes any char of them doesn't
     // appear in the actual node attributes passed-in by user input.
     const static std::vector<unsigned char> DELIMITERS;
+
 
     // Hard assumption: support up to this many # of node attributes.  The
     // character in DELIMITERS indexed by this is used as a special

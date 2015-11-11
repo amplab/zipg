@@ -33,7 +33,7 @@ constexpr char METADATA_DELIM = '\x06'; // delim after all these header metadata
 
 // Used in node table layout only.
 // *****Note that it is important the delim is not in DELIMITERS.*****
-constexpr char NODE_TABLE_HEADER_DELIM = '\x1F';
+const char SuccinctGraph::NODE_TABLE_HEADER_DELIM = '\x1F';
 const std::vector<unsigned char> SuccinctGraph::DELIMITERS = {
     // 20 non-ASCII delims (ord >= 128)
     128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142,
@@ -131,12 +131,7 @@ void SuccinctGraph::construct_node_table(std::string node_file) {
     //   (2) to jump to attrK, read from distance up to (& including) len(K-1).
 
     while (std::getline(in_stream, line)) {
-        int64_t distance = GraphFormatter::format_lengths_of_attrs(
-            line, attr_lengths);
-        out_stream << distance << NODE_TABLE_HEADER_DELIM;
-        for (int64_t len : attr_lengths)
-            out_stream << len << NODE_TABLE_HEADER_DELIM;
-        out_stream << line << "\n";
+        out_stream << GraphFormatter::attach_attr_lengths(line);
     }
     out_stream.close();
 

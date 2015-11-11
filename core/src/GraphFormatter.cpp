@@ -467,9 +467,9 @@ void GraphFormatter::format_neo4j_edge_from_edge_file(
 }
 
 
-int64_t GraphFormatter::format_lengths_of_attrs(
-    const std::string& delimed, std::vector<int64_t>& attr_lengths)
+std::string GraphFormatter::attach_attr_lengths(const std::string& delimed)
 {
+    std::vector<int> attr_lengths(SuccinctGraph::MAX_NUM_NODE_ATTRS);
     std::string token;
     std::stringstream ss(delimed);
     attr_lengths.clear();
@@ -490,5 +490,15 @@ int64_t GraphFormatter::format_lengths_of_attrs(
         // account for one delimiter after each len here
         distance += num_digits(token.length()) + 1;
     }
-    return distance;
+
+    std::string out_line;
+    out_line += std::to_string(distance) +
+        SuccinctGraph::NODE_TABLE_HEADER_DELIM;
+    for (auto len : attr_lengths) {
+        out_line += std::to_string(len) +
+            SuccinctGraph::NODE_TABLE_HEADER_DELIM;
+    }
+    out_line += delimed + "\n";
+
+    return out_line;
 }
