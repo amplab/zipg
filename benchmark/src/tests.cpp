@@ -47,13 +47,13 @@ void test_log_store() {
     kv_log_store.get_value(ret, 2);
     assert(ret == "sup");
 
-    kv_log_store.append(3, "1618");
+    kv_log_store.append(4, "1618");
     kv_log_store.search(keys, "1618");
-    assert_eq(keys, { 0, 3 });
+    assert_eq(keys, { 0, 4 });
 
-    kv_log_store.append(4, "1619");
+    kv_log_store.append(10, "1619");
     kv_log_store.search(keys, "1619");
-    assert_eq(keys, { 4 });
+    assert_eq(keys, { 10 });
 }
 
 void test_suffix_store() {
