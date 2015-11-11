@@ -45,9 +45,6 @@ inline bool file_or_dir_exists(const std::string& pathname) {
     return (stat(pathname.c_str(), &buffer) == 0);
 }
 
-// Mutli-store related, copied from nsdi15 code
-#define MAX_LOG_SIZE		131072000	// 125MB
-
 enum StoreMode {
     SuccinctStore,
     SuffixStore,

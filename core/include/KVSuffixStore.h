@@ -22,7 +22,7 @@ public:
         : input_file_(input_file)
     { }
 
-    void init();
+    void init(int option = 1);
 
     void search(std::set<int64_t> &_return, const std::string& substring);
 

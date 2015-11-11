@@ -14,7 +14,7 @@ int64_t KVSuffixStore::get_key_pos(const int64_t value_offset) {
         ? -1 : pos;
 }
 
-void KVSuffixStore::init() {
+void KVSuffixStore::init(int option) {
     // TODO
 }
 
@@ -80,6 +80,7 @@ std::pair<long, long> KVSuffixStore::ss_getRange(const char *p) {
 void KVSuffixStore::search(
     std::set<int64_t> &_return, const std::string& substring)
 {
+    _return.clear();
     std::pair<long, long> range;
     range = ss_getRange(substring.c_str());
 
