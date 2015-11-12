@@ -100,27 +100,11 @@ public:
             break;
 
         case LogStore:
-//            if (option == 1 || option == 2) {
-//                std::ifstream ip;
-//                ip.open(input_file.c_str());
-//                std::string *str = new std::string(
-//                    std::istreambuf_iterator<char>(ip),
-//                    std::istreambuf_iterator<char>());
-//                data = (char *) str->c_str();
-//
-//                create_ngram_idx();
-//
-//                if (option == 2) {
-//                    writeLogStoreToFile((input_file + "_logstore").c_str());
-//                    std::cout << "Wrote log store to file "
-//                        << (input_file + "_suffixstore").c_str() << std::endl;
-//                }
-//            } else {
-//                // Read from file
-//                readLogStoreFromFile(input_file.c_str());
-//                std::cout << "Loaded log store from file!" << std::endl;
-//            }
-//            break;
+            // TODO
+            graph_log_store_ = shared_ptr<GraphLogStore>(new GraphLogStore(
+                node_file_, edge_file_));
+            graph_log_store_->init();
+            break;
 
         default:
             break;
@@ -359,7 +343,7 @@ private:
     const bool construct_;
 
     const shared_ptr<SuccinctGraph> graph_;
-    const shared_ptr<GraphLogStore> graph_log_store_;
+    shared_ptr<GraphLogStore> graph_log_store_ = nullptr;
 
     bool initialized_;
 

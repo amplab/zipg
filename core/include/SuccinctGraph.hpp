@@ -76,6 +76,17 @@ public:
     size_t storage_size();
     size_t serialize();
 
+    // This can be > 5x faster (loop unroll / static lookup).
+    inline static int32_t num_digits(int64_t number) {
+       if (number == 0) return 1;
+       int32_t digits = 0;
+       while (number != 0) {
+           number /= 10;
+           ++digits;
+       }
+       return digits;
+    }
+
     /**************** Internal formats ****************/
     // C.f. the LinkBench paper, Sigmoid 2013
 
@@ -270,17 +281,6 @@ private:
         gettimeofday (&now, NULL);
 
         return  now.tv_usec + (time_t)now.tv_sec * 1000000;
-    }
-
-    // This can be > 5x faster (loop unroll / static lookup).
-    inline static int32_t num_digits(int64_t number) {
-       if (number == 0) return 1;
-       int32_t digits = 0;
-       while (number != 0) {
-           number /= 10;
-           ++digits;
-       }
-       return digits;
     }
 
 };

@@ -24,13 +24,20 @@ public:
           pointer_file_(pointer_file)
     { }
 
+    KVLogStore(const std::string& input_file)
+        : input_file_(input_file),
+          pointer_file_("")
+    { }
+
     ~KVLogStore() {
         if (data != nullptr) {
             delete [] data;
         }
     }
 
-    // Reads in file, build ngram index, etc.
+    // Reads in file and builds ngram index.  If `pointer_file_` is empty
+    // string, builds pointers on the fly by scanning the input, with newlines
+    // acting as record delimiters.
     void init(int option = 1);
 
     int32_t append(int64_t key, const std::string& value);
@@ -48,16 +55,33 @@ private:
         ip.open(ptrs_file);
         std::string line;
         std::string key, value;
-        long line_num = 0;
         while (std::getline(ip, line)) {
             uint32_t kv_split_index = line.find_first_of('\t');
             key = line.substr(0, kv_split_index);
             value = line.substr(kv_split_index + 1);
             keys.push_back(std::stoll(key));
             value_offsets.push_back(atol(value.c_str()));
-            line_num++;
         }
         LOG_E("Read %lld KV pointers.\n", keys.size());
+    }
+
+    // Builds pointers by scanning the input.  Uses line numbers (0-based)
+    // as keys, and newlines as record delims.
+    void build_pointers() {
+        keys.clear();
+        value_offsets.clear();
+
+        std::ifstream ifstream(input_file_);
+        std::string line;
+        size_t curr_len = 0, i = 0;
+        // treating newlines as record delim, and
+        // line numbers as keys
+        while (std::getline(ifstream, line)) {
+            keys.push_back(i);
+            value_offsets.push_back(curr_len);
+            curr_len += line.length() + 1; // +1 for stripped newline
+            ++i;
+        }
     }
 
     int64_t get_value_offset_pos(const int64_t key);

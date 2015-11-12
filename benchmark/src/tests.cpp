@@ -1,3 +1,4 @@
+#include "GraphLogStore.h"
 #include "KVLogStore.h"
 #include "KVSuffixStore.h"
 #include "utils.h"
@@ -28,7 +29,7 @@ void assert_eq(
     assert_eq(vec, expected);
 }
 
-void test_log_store() {
+void test_kv_log_store() {
     std::string ret;
     std::set<int64_t> keys;
 
@@ -56,7 +57,7 @@ void test_log_store() {
     assert_eq(keys, { 10 });
 }
 
-void test_suffix_store() {
+void test_kv_suffix_store() {
     KVSuffixStore kv_suffix_store("tests/vals", "tests/ptrs");
     kv_suffix_store.init();
 
@@ -82,9 +83,39 @@ void test_suffix_store() {
     assert_eq(keys, { 1 });
 }
 
+void test_graph_log_store() {
+    std::set<int64_t> keys;
+    std::string attr;
+
+    GraphLogStore graph_log_store("tests/empty", "");
+    graph_log_store.init();
+
+    std::vector<std::string> attrs{ "what's up?" };
+    std::vector<std::string> attrs2{ "what's up?", "bro" };
+    graph_log_store.append_node(0, attrs);
+    graph_log_store.append_node(2, attrs2);
+
+    graph_log_store.get_attribute(attr, 0, 0);
+    assert(attr == "what's up?");
+    graph_log_store.get_attribute(attr, 0, 1);
+    assert(attr == "");
+    graph_log_store.get_attribute(attr, 2, 1);
+    assert(attr == "bro");
+    graph_log_store.get_attribute(attr, 2, 0);
+    assert(attr == "what's up?");
+
+//    graph_log_store.get_nodes(keys, 0, "");
+//    graph_log_store.get_nodes(keys, 0, "what's up?");
+//    assert_eq(keys, { 0, 2 });
+
+    LOG_E("Done: test_graph_log_store\n");
+}
+
 int main(int argc, char **argv) {
 
-    test_log_store();
-    test_suffix_store();
+    test_kv_log_store();
+    test_kv_suffix_store();
+
+    test_graph_log_store();
 
 }

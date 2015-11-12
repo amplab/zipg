@@ -126,7 +126,11 @@ void KVLogStore::init(int option) {
 	// just the values
 	read_data(input_file_.c_str());
 	// format: "[key] \t [offset into the value file]"
-	read_pointers(pointer_file_.c_str());
+	if (pointer_file_ != "") {
+	    read_pointers(pointer_file_.c_str());
+	} else {
+	    build_pointers();
+	}
 	create_ngram_idx();
     COND_LOG_E("Done ngram index\n");
 }
