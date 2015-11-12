@@ -1,5 +1,7 @@
 #include "KVLogStore.h"
 
+#include <algorithm>
+
 int64_t KVLogStore::get_value_offset_pos(const int64_t key) {
     long pos = std::lower_bound(
         keys.begin(), keys.end(), key) - keys.begin();
@@ -107,7 +109,6 @@ void KVLogStore::create_ngram_idx() {
         std::string ngram = "";
         for(uint32_t off = 0; off < ngram_n; off++) {
             // assert(i + off < data_pos);
-            LOG_E("%d\n", off);
             ngram += data[i + off];
         }
         ngram_idx[ngram].push_back(i);
@@ -145,9 +146,14 @@ int32_t KVLogStore::append(int64_t key, const std::string& value) {
     value_offsets.push_back(data_pos);
     val += delim;
     strncpy(data + data_pos, val.c_str(), val.length());
+
     // Update the index
-    for(uint64_t i = data_pos - ngram_n; i < data_pos + val.length() - ngram_n; i++) {
-        std::string ngram = "";
+
+    // min with 0, since data_pos can be small (or zero) initially
+    for(uint64_t i = std::min(data_pos - ngram_n, 0ULL);
+        i < data_pos + val.length() - ngram_n; i++)
+    {
+        std::string ngram;
         for(uint32_t off = 0; off < ngram_n; off++) {
             ngram += data[i + off];
         }
