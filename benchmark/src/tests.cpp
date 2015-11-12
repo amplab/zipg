@@ -92,7 +92,7 @@ void test_graph_log_store() {
 
     std::vector<std::string> attrs{ "what's up?" };
     std::vector<std::string> attrs2{ "what's up?", "bro" };
-    std::vector<std::string> attrs3{ "heyy" };
+    std::vector<std::string> attrs3{ "heyy", "", "k" };
     std::vector<std::string> attrs4{ "heyy", "k" };
     graph_log_store.append_node(0, attrs);
     graph_log_store.append_node(2, attrs2);
@@ -119,15 +119,14 @@ void test_graph_log_store() {
     assert_eq(keys, { 3, 5 });
 
     graph_log_store.get_nodes(keys, 0, "what's up?");
+    assert_eq(keys, { 0, 2 });
 
-    for (int64_t key : keys) {
-        std::cout << key << " ";
-    }
-    std::cout << std::endl;
+    graph_log_store.get_nodes(keys, 0, "what's up?", 1, "bro");
+    assert_eq(keys, { 2 });
 
-    assert_eq(keys, { 0, 2 }); // FIXME: fails, 2 only
+    graph_log_store.get_nodes(keys, 0, "heyy", 2, "k");
+    assert_eq(keys, { 3 });
 
-    LOG_E("Done: test_graph_log_store\n");
 }
 
 int main(int argc, char **argv) {

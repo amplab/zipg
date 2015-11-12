@@ -14,7 +14,10 @@ void GraphLogStore::append_node(
     std::string delimed(GraphFormatter::format_node_attrs_str({ attrs }));
     std::string val(GraphFormatter::attach_attr_lengths(delimed));
     COND_LOG_E("Appending node %lld, attrs '%s'\n", node_id, val.c_str());
-    node_table_->append(node_id, val);
+    if (node_table_->append(node_id, val)) {
+        LOG_E("Failed append node %lld, LogStore full?\n", node_id);
+        exit(-1);
+    }
 }
 
 
@@ -62,10 +65,28 @@ void GraphLogStore::get_nodes(
     int attr,
     const std::string& search_key)
 {
-    // TODO
     result.clear();
-    COND_LOG_E("key '%s', search string '%s'\n", search_key.c_str(),
-        SuccinctGraph::mk_node_attr_key(attr, search_key).c_str());
     node_table_->search(result,
         std::move(SuccinctGraph::mk_node_attr_key(attr, search_key)));
+}
+
+void GraphLogStore::get_nodes(
+    std::set<int64_t>& result,
+    int attr1,
+    const std::string& search_key1,
+    int attr2,
+    const std::string& search_key2)
+{
+    result.clear();
+    std::set<int64_t> s1, s2;
+    node_table_->search(s1,
+        std::move(SuccinctGraph::mk_node_attr_key(attr1, search_key1)));
+    node_table_->search(s2,
+        std::move(SuccinctGraph::mk_node_attr_key(attr2, search_key2)));
+
+    COND_LOG_E("s1 size %d, s2 size %d\n", s1.size(), s2.size());
+
+    // result.end() is a hint that supposedly is faster than .begin()
+    std::set_intersection(s1.begin(), s1.end(), s2.begin(), s2.end(),
+                          std::inserter(result, result.end()));
 }

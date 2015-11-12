@@ -167,7 +167,8 @@ void KVLogStore::search(
     std::set<int64_t> &_return, const std::string& substring)
 {
     _return.clear();
-    COND_LOG_E("search string '%s'\n", substring.c_str());
+    COND_LOG_E("search string '%s' (size %d)\n",
+        substring.c_str(), substring.length());
     std::string substring_ngram = substring.substr(0, ngram_n);
     std::vector<uint32_t> idx_offsets = ngram_idx[substring_ngram];
 

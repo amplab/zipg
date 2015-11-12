@@ -10,6 +10,10 @@
 // A graph that is backed by LogStore and thus supports individual node/edge
 // insertions.  In other words, the Node Table is backed by KVLogStore, and the
 // Edge Table by FileLogStore.
+//
+// Limitation: it relies on an ngram index to perform search on the node
+// properties.  By default, n = 3, and therefore we can't search along an empty
+// search string (we could if n is smaller).
 class GraphLogStore {
 public:
 
@@ -48,6 +52,13 @@ public:
         std::set<int64_t>& result,
         int attr,
         const std::string& search_key);
+
+    void get_nodes(
+        std::set<int64_t>& result,
+        int attr1,
+        const std::string& search_key1,
+        int attr2,
+        const std::string& search_key2);
 
 private:
     const std::string node_file_, edge_file_;
