@@ -131,7 +131,7 @@ void SuccinctGraph::construct_node_table(std::string node_file) {
     //   (2) to jump to attrK, read from distance up to (& including) len(K-1).
 
     while (std::getline(in_stream, line)) {
-        out_stream << GraphFormatter::attach_attr_lengths(line);
+        out_stream << GraphFormatter::attach_attr_lengths(line + "\n");
     }
     out_stream.close();
 

@@ -104,7 +104,15 @@ public:
     // Given a properly delimed property string (e.g. returned by
     // format_node_attrs_str()), attach the metadata length info.  The result
     // is suitable for acting as a value in the Node Table.
+    //
+    // Does not append a newline to `delimed`; hence, it should contain one if
+    // the input is meant to be a Node Table record.
     static std::string attach_attr_lengths(const std::string& delimed);
+
+    // Basically, map over each line, invoke format_node_attrs_str() then
+    // attach_attr_lengths().  Inefficient.
+    static std::string to_node_table_format(
+        const std::vector<std::vector<std::string>>& node_attrs);
 
     // Output: nodeId [delim] attr0 [delim] ...
     // Note that node ids must be exactly the range [0, ..., L].
@@ -136,6 +144,9 @@ public:
     // Used only when generating & parsing queries, not part of the internal
     // graph layout.  Assumes this is char uniquely identifiable (among attrs).
     static const char QUERY_FILED_DELIM = '\x02';
+
+    static std::string write_to_temp_file(const std::string& content);
+
 
 private:
 

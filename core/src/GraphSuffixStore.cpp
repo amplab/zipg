@@ -1,26 +1,13 @@
-#include "GraphLogStore.h"
+#include "GraphSuffixStore.h"
 
 #include "GraphFormatter.hpp"
 
-void GraphLogStore::init(int option) {
-    node_table_ = std::make_shared<KVLogStore>(node_file_);
+void GraphSuffixStore::init(int option) {
+    node_table_ = std::make_shared<KVSuffixStore>(node_file_);
     node_table_->init(option);
 }
 
-// Serialize into the "[lengths] [attrs]" format, and call append().
-void GraphLogStore::append_node(
-    int64_t node_id, std::vector<std::string>& attrs)
-{
-    std::string delimed(GraphFormatter::format_node_attrs_str({ attrs }));
-    std::string val(GraphFormatter::attach_attr_lengths(delimed));
-    COND_LOG_E("Appending node %lld, attrs '%s'\n", node_id, val.c_str());
-    if (node_table_->append(node_id, val)) {
-        LOG_E("Failed append node %lld, LogStore full?\n", node_id);
-        exit(-1);
-    }
-}
-
-void GraphLogStore::get_attribute(
+void GraphSuffixStore::get_attribute(
     std::string& result, int64_t node_id, int attr)
 {
     result.clear();
@@ -59,7 +46,7 @@ void GraphLogStore::get_attribute(
     }
 }
 
-void GraphLogStore::get_nodes(
+void GraphSuffixStore::get_nodes(
     std::set<int64_t>& result,
     int attr,
     const std::string& search_key)
@@ -69,7 +56,7 @@ void GraphLogStore::get_nodes(
         std::move(SuccinctGraph::mk_node_attr_key(attr, search_key)));
 }
 
-void GraphLogStore::get_nodes(
+void GraphSuffixStore::get_nodes(
     std::set<int64_t>& result,
     int attr1,
     const std::string& search_key1,
@@ -82,8 +69,6 @@ void GraphLogStore::get_nodes(
         std::move(SuccinctGraph::mk_node_attr_key(attr1, search_key1)));
     node_table_->search(s2,
         std::move(SuccinctGraph::mk_node_attr_key(attr2, search_key2)));
-
-    COND_LOG_E("s1 size %d, s2 size %d\n", s1.size(), s2.size());
 
     // result.end() is a hint that supposedly is faster than .begin()
     std::set_intersection(s1.begin(), s1.end(), s2.begin(), s2.end(),

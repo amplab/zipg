@@ -50,7 +50,11 @@ void KVSuffixStore::init(int option) {
 
         data = (char *) str->c_str();
 
-        read_pointers(pointer_file_.c_str());
+        if (pointer_file_ != "") {
+            read_pointers(pointer_file_.c_str());
+        } else {
+            build_pointers();
+        }
 
         if (option == 2) {
             writeSuffixStoreToFile((input_file_ + "_suffixstore").c_str());
@@ -205,6 +209,8 @@ void KVSuffixStore::search(
     // fprintf(stderr, "Range: %lu, %lu\n", range.first, range.second);
 
     long sp = range.first, ep = range.second;
+    COND_LOG_E("start %ld, end %ld, search key '%s' (size %d)\n",
+        sp, ep, substring.c_str(), substring.length());
     for (long i = 0; i < ep - sp + 1; i++) {
         long pos = get_key_pos(ss_lookupSA(sp + i));
         if(pos >= 0)

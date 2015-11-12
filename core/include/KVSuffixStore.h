@@ -18,8 +18,11 @@
 class KVSuffixStore {
 public:
 
+    // The `input_file` should be properly delimed, and with property lengths
+    // calculated and attached.  In other words, it should be the content of
+    // final input into `new SuccinctShard()`.
     KVSuffixStore(const std::string& input_file,
-                  const std::string& pointer_file)
+                  const std::string& pointer_file = "")
         : input_file_(input_file),
           pointer_file_(pointer_file)
     { }
@@ -54,6 +57,25 @@ private:
             line_num++;
         }
         LOG_E("Read %lld KV pointers.\n", keys.size());
+    }
+
+    // Builds pointers by scanning the input.  Uses line numbers (0-based)
+    // as keys, and newlines as record delims.
+    void build_pointers() {
+        keys.clear();
+        value_offsets.clear();
+
+        std::ifstream ifstream(input_file_);
+        std::string line;
+        size_t curr_len = 0, i = 0;
+        // treating newlines as record delim, and
+        // line numbers as keys
+        while (std::getline(ifstream, line)) {
+            keys.push_back(i);
+            value_offsets.push_back(curr_len);
+            curr_len += line.length() + 1; // +1 for stripped newline
+            ++i;
+        }
     }
 
     SuccinctBase::Bitmap *SA = nullptr;

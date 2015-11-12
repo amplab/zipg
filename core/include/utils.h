@@ -4,6 +4,8 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 
+#include <string>
+
 // For proper (u)int64t printing
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>

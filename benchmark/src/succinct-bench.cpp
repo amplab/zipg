@@ -605,14 +605,10 @@ int main(int argc, char **argv) {
                                         "8 6 1 0 \n" // edge has empty attr
                                         "6 1 1 111111 abcd\n";
 
-        std::string node_tmp_pathname = std::tmpnam(NULL);
-        std::string edge_tmp_pathname = std::tmpnam(NULL);
-        std::FILE* node_tmp_file = std::fopen(node_tmp_pathname.c_str(), "w+");
-        std::FILE* edge_tmp_file = std::fopen(edge_tmp_pathname.c_str(), "w+");
-        std::fputs(node_file_content.c_str(), node_tmp_file);
-        std::fputs(edge_file_content.c_str(), edge_tmp_file);
-        std::fclose(node_tmp_file);
-        std::fclose(edge_tmp_file);
+        std::string node_tmp_pathname = GraphFormatter::write_to_temp_file(
+            node_file_content);
+        std::string edge_tmp_pathname = GraphFormatter::write_to_temp_file(
+            edge_file_content);
         printf("node tmp: %s\nedge tmp %s\n",
             node_tmp_pathname.c_str(), edge_tmp_pathname.c_str());
 

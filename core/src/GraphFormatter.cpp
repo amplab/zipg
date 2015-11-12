@@ -466,7 +466,6 @@ void GraphFormatter::format_neo4j_edge_from_edge_file(
     out_stream.close();
 }
 
-
 std::string GraphFormatter::attach_attr_lengths(const std::string& delimed)
 {
     std::vector<int> attr_lengths(SuccinctGraph::MAX_NUM_NODE_ATTRS);
@@ -498,7 +497,29 @@ std::string GraphFormatter::attach_attr_lengths(const std::string& delimed)
         out_line += std::to_string(len) +
             SuccinctGraph::NODE_TABLE_HEADER_DELIM;
     }
-    out_line += delimed + "\n";
+    out_line += delimed;
 
     return out_line;
+}
+
+// When done using the tempfile, use `std::remove()` to remove it.
+std::string GraphFormatter::write_to_temp_file(const std::string& content) {
+    std::string pathname = std::tmpnam(NULL);
+    std::FILE* tmp_file = std::fopen(pathname.c_str(), "w+");
+    std::fputs(content.c_str(), tmp_file);
+    COND_LOG_E("Content '%s'\n", content.c_str());
+    std::fclose(tmp_file);
+    return pathname;
+}
+
+
+std::string GraphFormatter::to_node_table_format(
+    const std::vector<std::vector<std::string>>& node_attrs)
+{
+    std::string res;
+    for (auto& attrs : node_attrs) {
+        std::string delimed(format_node_attrs_str({ attrs }));
+        res += attach_attr_lengths(delimed);
+    }
+    return res;
 }

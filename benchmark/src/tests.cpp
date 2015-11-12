@@ -1,4 +1,6 @@
+#include "GraphFormatter.hpp"
 #include "GraphLogStore.h"
+#include "GraphSuffixStore.h"
 #include "KVLogStore.h"
 #include "KVSuffixStore.h"
 #include "utils.h"
@@ -129,11 +131,37 @@ void test_graph_log_store() {
 
 }
 
+void test_graph_suffix_store() {
+
+    std::string node_file_content = GraphFormatter::to_node_table_format(
+        { { "Winter", "is", "coming" },
+          { "is", "Winter", "here" },
+          { "George", "R", "R", "Martin", "writes", "too", "damn", "slow" }
+        });
+    std::string tmp_pathname(
+        GraphFormatter::write_to_temp_file(node_file_content));
+    LOG_E("File: %s\n", tmp_pathname.c_str());
+
+    GraphSuffixStore graph_suffix_store(tmp_pathname, "");
+    graph_suffix_store.init();
+    std::set<int64_t> keys;
+
+    graph_suffix_store.get_nodes(keys, 0, "Winter");
+    assert_eq(keys, { 0 }); // FIXME: empty!
+
+    graph_suffix_store.get_nodes(keys, 0, "is");
+    LOG_E("keys size %d\n", keys.size()),
+    assert_eq(keys, { 1 });
+
+    std::remove(tmp_pathname.c_str());
+}
+
 int main(int argc, char **argv) {
 
-    test_kv_log_store();
-    test_kv_suffix_store();
-
-    test_graph_log_store();
+//    test_kv_log_store();
+//    test_kv_suffix_store();
+//
+//    test_graph_log_store();
+    test_graph_suffix_store();
 
 }
