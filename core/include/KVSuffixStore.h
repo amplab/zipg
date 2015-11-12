@@ -102,11 +102,10 @@ private:
     int ss_compare(const char *p, long i);
 
     // For Log Store and Suffix Store
-    char *data = nullptr;
+    uint8_t *data = nullptr;
 
     std::vector<long> keys;
     std::vector<long> value_offsets;
-
 
 };
 

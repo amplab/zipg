@@ -48,7 +48,7 @@ void KVSuffixStore::init(int option) {
         delete [] lSA;
         std::cout << "Compacted SA\n";
 
-        data = (char *) str->c_str();
+        data = (uint8_t *) str->c_str();
 
         if (pointer_file_ != "") {
             read_pointers(pointer_file_.c_str());
@@ -74,7 +74,7 @@ void KVSuffixStore::writeSuffixStoreToFile(const char *suffixstore_path) {
     suffixstore_file << bits << std::endl;
 
     // Write char array to file
-    suffixstore_file.write(data, sa_n);
+    suffixstore_file.write((char*) data, sa_n);
 
     // Write suffix array to file
     suffixstore_file << SA->size << std::endl;
@@ -94,10 +94,10 @@ void KVSuffixStore::readSuffixStoreFromFile(const char *suffixstore_path) {
     suffixstore_file >> bits;
 
     suffixstore_file.ignore();
-    data = new char[sa_n];
+    data = new uint8_t[sa_n];
 
     // Read char array from file
-    suffixstore_file.read(data, sa_n);
+    suffixstore_file.read((char*) data, sa_n);
 
     // Read suffix array from file
     SA = new SuccinctBase::Bitmap;
