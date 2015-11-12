@@ -144,9 +144,9 @@ int KVSuffixStore::ss_compare(const char *p, long i) {
     long j = 0;
     long pos = ss_lookupSA(i);
     do {
-        if(p[j] < data[pos])
+        if(static_cast<uint8_t>(p[j]) < data[pos])
             return -1;
-        else if(p[j] > data[pos])
+        else if(static_cast<uint8_t>(p[j]) > data[pos])
             return 1;
         j++;
         pos = (pos + 1) % sa_n;
