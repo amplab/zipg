@@ -150,7 +150,6 @@ public:
     static void build_assoc_map(std::map<std::pair<int64_t, int64_t>,
         std::vector<SuccinctGraph::Assoc>>& assoc_map, const std::string& in);
 
-
 private:
 
     static int64_t time_millis() {

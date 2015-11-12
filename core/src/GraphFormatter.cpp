@@ -8,6 +8,7 @@
 #include <sys/time.h>
 
 #include "SuccinctGraph.hpp"
+#include "SuccinctGraphSerde.hpp"
 #include "ZipfGenerator.hpp"
 #include "utils.h"
 

@@ -80,6 +80,10 @@ public:
 
     static std::string mk_edge_table_search_key(int64_t src, int64_t atype);
 
+    static void output_edge_table(
+        const std::string& edge_file,
+        const std::string& out_file);
+
     inline static std::string mk_node_attr_key(
         int attr, const std::string& query_key)
     {
@@ -231,6 +235,13 @@ public:
     uint32_t npa_sampling_rate = 256;
 
     // TODO: consider moving these to GraphFormatter / Serde?
+
+    // Used in edge table layout only.
+    const static char NODE_ID_DELIM;
+    const static char ATYPE_DELIM;
+    const static char TIMESTAMP_WIDTH_DELIM; // delim right before timestamp width
+    const static char EDGE_WIDTH_DELIM; // delim right before edge width
+    const static char METADATA_DELIM; // delim after all these header metadata
     // *****Note that it is important the delim is not in DELIMITERS.*****
     const static char NODE_TABLE_HEADER_DELIM;
     // Internal node attributes delimiters.  Assumes any char of them doesn't
