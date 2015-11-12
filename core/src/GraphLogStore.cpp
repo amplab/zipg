@@ -13,6 +13,7 @@ void GraphLogStore::append_node(
 {
     std::string delimed(GraphFormatter::format_node_attrs_str({ attrs }));
     std::string val(GraphFormatter::attach_attr_lengths(delimed));
+    COND_LOG_E("Appending node %lld, attrs '%s'\n", node_id, val.c_str());
     node_table_->append(node_id, val);
 }
 
@@ -56,11 +57,15 @@ void GraphLogStore::get_attribute(
     }
 }
 
-void get_nodes(
+void GraphLogStore::get_nodes(
     std::set<int64_t>& result,
     int attr,
     const std::string& search_key)
 {
     // TODO
     result.clear();
+    COND_LOG_E("key '%s', search string '%s'\n", search_key.c_str(),
+        SuccinctGraph::mk_node_attr_key(attr, search_key).c_str());
+    node_table_->search(result,
+        std::move(SuccinctGraph::mk_node_attr_key(attr, search_key)));
 }

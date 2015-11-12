@@ -92,8 +92,14 @@ void test_graph_log_store() {
 
     std::vector<std::string> attrs{ "what's up?" };
     std::vector<std::string> attrs2{ "what's up?", "bro" };
+    std::vector<std::string> attrs3{ "heyy" };
+    std::vector<std::string> attrs4{ "heyy", "k" };
     graph_log_store.append_node(0, attrs);
     graph_log_store.append_node(2, attrs2);
+    graph_log_store.append_node(3, attrs3);
+    graph_log_store.append_node(5, attrs4);
+
+    // get_attr
 
     graph_log_store.get_attribute(attr, 0, 0);
     assert(attr == "what's up?");
@@ -104,9 +110,22 @@ void test_graph_log_store() {
     graph_log_store.get_attribute(attr, 2, 0);
     assert(attr == "what's up?");
 
-//    graph_log_store.get_nodes(keys, 0, "");
-//    graph_log_store.get_nodes(keys, 0, "what's up?");
-//    assert_eq(keys, { 0, 2 });
+    // search
+
+    graph_log_store.get_nodes(keys, 1, "bro");
+    assert_eq(keys, { 2 });
+
+    graph_log_store.get_nodes(keys, 0, "heyy");
+    assert_eq(keys, { 3, 5 });
+
+    graph_log_store.get_nodes(keys, 0, "what's up?");
+
+    for (int64_t key : keys) {
+        std::cout << key << " ";
+    }
+    std::cout << std::endl;
+
+    assert_eq(keys, { 0, 2 }); // FIXME: fails, 2 only
 
     LOG_E("Done: test_graph_log_store\n");
 }

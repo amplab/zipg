@@ -1159,13 +1159,6 @@ void SuccinctGraph::get_neighbors(std::vector<int64_t>& result, int64_t node) {
 #endif
 }
 
-inline std::string mk_node_attr_key(int attr, const std::string& query_key) {
-    assert(attr < SuccinctGraph::MAX_NUM_NODE_ATTRS);
-    return static_cast<char>(SuccinctGraph::DELIMITERS[attr]) +
-        query_key +
-        static_cast<char>(SuccinctGraph::DELIMITERS[attr + 1]);
-}
-
 void SuccinctGraph::filter_nodes(
     std::vector<int64_t>& result,
     const std::vector<int64_t>& node_ids,

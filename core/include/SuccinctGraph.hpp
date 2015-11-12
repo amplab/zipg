@@ -76,6 +76,15 @@ public:
     size_t storage_size();
     size_t serialize();
 
+    inline static std::string mk_node_attr_key(
+        int attr, const std::string& query_key)
+    {
+        assert(attr < SuccinctGraph::MAX_NUM_NODE_ATTRS);
+        return static_cast<char>(SuccinctGraph::DELIMITERS[attr]) +
+            query_key +
+            static_cast<char>(SuccinctGraph::DELIMITERS[attr + 1]);
+    }
+
     // This can be > 5x faster (loop unroll / static lookup).
     inline static int32_t num_digits(int64_t number) {
        if (number == 0) return 1;
