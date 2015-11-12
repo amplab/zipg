@@ -183,18 +183,22 @@ std::pair<long, long> FileSuffixStore::ss_getRange(const char *p) {
 }
 
 void FileSuffixStore::search(
-    std::set<int64_t> &_return, const std::string& substring)
+    std::vector<int64_t>& result, const std::string& substring)
 {
+    result.clear();
     COND_LOG_E("search key '%s' (size %d)\n",
         substring.c_str(), substring.length());
 
-    _return.clear();
     std::pair<long, long> range(ss_getRange(substring.c_str()));
+    if (range.first > range.second) {
+        return;
+    }
 
     COND_LOG_E("Range: %lu, %lu\n", range.first, range.second);
 
+    result.resize((size_t) range.second - range.first + 1);
     for (int64_t i = range.first; i <= range.second; ++i) {
-        _return.insert(static_cast<int64_t>(ss_lookupSA(i)));
+        result[i - range.first] = static_cast<int64_t>(ss_lookupSA(i));
     }
 }
 

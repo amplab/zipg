@@ -241,7 +241,7 @@ void test_file_suffix_store() {
     LOG_E("File: %s\n", edge_table_file.c_str());
 
     FileSuffixStore file_suffix_store(edge_table_file);
-    std::set<int64_t> keys;
+    std::vector<int64_t> keys;
     std::string str;
 
     file_suffix_store.init();
@@ -258,15 +258,15 @@ void test_file_suffix_store() {
         keys, SuccinctGraph::mk_edge_table_search_key(0, 0));
     assert(keys.size() == 1);
 
-    file_suffix_store.extract(str, *(keys.begin()) + 1, 1);
+    file_suffix_store.extract(str, keys[0] + 1, 1);
     assert(str == "0");
 
-    file_suffix_store.extract(str, *(keys.begin()) + 3, 1);
+    file_suffix_store.extract(str, keys[0] + 3, 1);
     assert(str == "0");
 
     file_suffix_store.search(
         keys, SuccinctGraph::mk_edge_table_search_key(6, 1));
-    file_suffix_store.extract(str, *(keys.begin()) + 1, 1);
+    file_suffix_store.extract(str, keys[0] + 1, 1);
     assert(str == "6");
 
     std::remove(edge_file.c_str());
