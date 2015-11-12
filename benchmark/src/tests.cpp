@@ -3,6 +3,7 @@
 #include "GraphSuffixStore.h"
 #include "KVLogStore.h"
 #include "KVSuffixStore.h"
+//#include "StructuredEdgeTable.h"
 #include "utils.h"
 
 #include <set>
@@ -132,7 +133,6 @@ void test_graph_log_store() {
 }
 
 void test_graph_suffix_store() {
-
     std::string node_file_content = GraphFormatter::to_node_table_format(
         { { "Winter", "is", "coming" },
           { "is", "Winter", "here" },
@@ -145,23 +145,45 @@ void test_graph_suffix_store() {
     GraphSuffixStore graph_suffix_store(tmp_pathname, "");
     graph_suffix_store.init();
     std::set<int64_t> keys;
+    std::string res;
 
-    graph_suffix_store.get_nodes(keys, 0, "Winter");
-    assert_eq(keys, { 0 }); // FIXME: empty!
+    graph_suffix_store.get_attribute(res, 0, 1);
+    assert(res == "is");
+
+    graph_suffix_store.get_nodes(keys, 1, "is");
+    assert_eq(keys, { 0 });
 
     graph_suffix_store.get_nodes(keys, 0, "is");
-    LOG_E("keys size %d\n", keys.size()),
     assert_eq(keys, { 1 });
+
+    graph_suffix_store.get_nodes(keys, 0, "Winter", 2, "coming");
+    assert_eq(keys, { 0 });
+
+    graph_suffix_store.get_nodes(keys, 0, "Winter", 3, "");
+    assert_eq(keys, { 0 });
+
+    graph_suffix_store.get_nodes(keys, 2, "R", 5, "too");
+    assert_eq(keys, { 2 });
+
+    graph_suffix_store.get_nodes(keys, 2, "R", 6, "too");
+    assert_eq(keys, { });
 
     std::remove(tmp_pathname.c_str());
 }
 
+//void test_structured_edge_table() {
+//    StructuredEdgeTable edge_table;
+//    edge_table.add_assoc(1, 1, 1, 1, "");
+//}
+
 int main(int argc, char **argv) {
 
-//    test_kv_log_store();
-//    test_kv_suffix_store();
-//
-//    test_graph_log_store();
+    test_kv_log_store();
+    test_kv_suffix_store();
+
+    test_graph_log_store();
     test_graph_suffix_store();
+
+//    test_structured_edge_table();
 
 }
