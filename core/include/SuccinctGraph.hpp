@@ -76,6 +76,8 @@ public:
     size_t storage_size();
     size_t serialize();
 
+    /**************** Helper methods ****************/
+
     inline static std::string mk_node_attr_key(
         int attr, const std::string& query_key)
     {

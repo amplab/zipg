@@ -147,6 +147,9 @@ public:
 
     static std::string write_to_temp_file(const std::string& content);
 
+    static void build_assoc_map(std::map<std::pair<int64_t, int64_t>,
+        std::vector<SuccinctGraph::Assoc>>& assoc_map, const std::string& in);
+
 
 private:
 

@@ -173,38 +173,16 @@ void SuccinctGraph::construct_edge_table(
 
     std::map<AssocListKey, std::vector<Assoc>> assoc_map;
     std::string line, token;
-    std::ifstream edge_file_stream(edge_file);
     AType atype = -1LL;
     Timestamp time = -1LL;
     NodeId src_id = -1LL, dst_id = -1LL;
 
     if (!file_or_dir_exists(edge_file_name)) {
         LOG_E("Initializing edge table (SuccinctFile)\n");
-        while (std::getline(edge_file_stream, line)) {
-            std::stringstream ss(line);
-            int token_idx = 0;
-            while (std::getline(ss, token, ' ')) {
-                ++token_idx;
-                if (token_idx == 1) src_id = std::stoll(token);
-                else if (token_idx == 2) dst_id = std::stoll(token);
-                else if (token_idx == 3) atype = std::stoll(token);
-                else if (token_idx == 4) time = std::stoll(token);
-                token.clear();
-                if (token_idx == 4) break;
-            }
-            std::getline(ss, token); // rest of the data is attr
-            Assoc assoc = { src_id, dst_id, atype, time, token };
-            assoc_map[std::make_pair(src_id, atype)].push_back(assoc);
-        }
-        edge_file_stream.close();
 
-        for (auto it = assoc_map.begin(); it != assoc_map.end(); ++it) {
-            std::sort(it->second.begin(),
-                      it->second.end(),
-                      cmp_assoc_by_decreasing_time);
-        }
+        GraphFormatter::build_assoc_map(assoc_map, edge_file);
+
         std::ofstream edge_file_out(edge_file_name);
-
         NodeId max_dst_id = -1, max_timestamp = -1;
 
         for (auto it = assoc_map.begin(); it != assoc_map.end(); ++it) {
