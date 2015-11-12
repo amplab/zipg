@@ -78,6 +78,8 @@ public:
 
     /**************** Helper methods ****************/
 
+    static std::string mk_edge_table_search_key(int64_t src, int64_t atype);
+
     inline static std::string mk_node_attr_key(
         int attr, const std::string& query_key)
     {

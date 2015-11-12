@@ -334,6 +334,12 @@ void SuccinctGraph::remove_generated_files() {
     delete[] cmd;
 }
 
+std::string SuccinctGraph::mk_edge_table_search_key(int64_t src, int64_t atype) {
+    std::string key(1, NODE_ID_DELIM);
+    return key + std::to_string(src) + ATYPE_DELIM +
+        std::to_string(atype) + TIMESTAMP_WIDTH_DELIM;
+}
+
 std::vector<int64_t>
 SuccinctGraph::get_edge_table_offsets(NodeId id, AType atype) {
     std::vector<int64_t> res;
@@ -366,10 +372,7 @@ SuccinctGraph::get_edge_table_offsets(NodeId id, AType atype) {
         }
     } else {
         // case: id & atype are specified.
-        key += std::to_string(id) +
-            ATYPE_DELIM +
-            std::to_string(atype) +
-            TIMESTAMP_WIDTH_DELIM;
+        key = mk_edge_table_search_key(id, atype);
         COND_LOG_E("About to search for '%s' (size %d) in edge table\n",
             key.c_str(), key.size());
         EDGE_TABLE->Search(res, key);
