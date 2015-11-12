@@ -2,6 +2,7 @@
 #define GRAPH_LOG_STORE_H
 
 #include "KVLogStore.h"
+#include "StructuredEdgeTable.h"
 
 #include <set>
 #include <string>
@@ -60,14 +61,18 @@ public:
         int attr2,
         const std::string& search_key2);
 
+    std::vector<SuccinctGraph::Assoc> assoc_range(
+        int64_t src,
+        int64_t atype,
+        int32_t off,
+        int32_t len);
+
 private:
     const std::string node_file_, edge_file_;
     std::string node_pointer_file;
 
     std::shared_ptr<KVLogStore> node_table_ = nullptr;
-    // TODO: add this
-    // FileLogStore edge_table_;
-
+    StructuredEdgeTable edge_table_;
 
 };
 

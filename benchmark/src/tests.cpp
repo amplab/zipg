@@ -10,6 +10,23 @@
 #include <string>
 
 void assert_eq(
+    const std::vector<SuccinctGraph::Assoc>& actual,
+    std::initializer_list<SuccinctGraph::Assoc> expected) {
+
+    assert(expected.size() == actual.size());
+    int i = 0;
+    for (auto expected_assoc : expected) {
+        auto actual_assoc = actual[i];
+        assert(expected_assoc.src_id == actual_assoc.src_id);
+        assert(expected_assoc.dst_id == actual_assoc.dst_id);
+        assert(expected_assoc.atype == actual_assoc.atype);
+        assert(expected_assoc.time == actual_assoc.time);
+        assert(expected_assoc.attr == actual_assoc.attr);
+        ++i;
+    }
+}
+
+void assert_eq(
     const std::vector<int64_t>& actual,
     std::initializer_list<int64_t> expected)
 {
@@ -171,19 +188,39 @@ void test_graph_suffix_store() {
     std::remove(tmp_pathname.c_str());
 }
 
-//void test_structured_edge_table() {
-//    StructuredEdgeTable edge_table;
-//    edge_table.add_assoc(1, 1, 1, 1, "");
-//}
+void test_structured_edge_table() {
+    StructuredEdgeTable edge_table;
+    std::vector<SuccinctGraph::Assoc> assocs;
+
+    edge_table.add_assoc(0, 0, 0, 0, "");
+    assocs = edge_table.assoc_range(0, 0, 0, 0);
+    assert_eq(assocs, { });
+
+    assocs = edge_table.assoc_range(0, 0, 0, 1);
+    assert_eq(assocs, { { 0, 0, 0, 0, "" } });
+
+    edge_table.add_assoc(0, 0, 1, 0, "newer");
+    assocs = edge_table.assoc_range(0, 0, 0, 1);
+    assert_eq(assocs, { { 0, 0, 1, 0, "newer" } });
+
+    assocs = edge_table.assoc_range(0, 0, 1, 1);
+    assert_eq(assocs, { { 0, 0, 0, 0, "" } });
+
+    assocs = edge_table.assoc_range(0, 0, 1, 100);
+    assert_eq(assocs, { { 0, 0, 0, 0, "" } });
+
+    assocs = edge_table.assoc_range(0, 0, 0, 100);
+    assert_eq(assocs, { { 0, 0, 1, 0, "newer" }, { 0, 0, 0, 0, "" } });
+}
 
 int main(int argc, char **argv) {
 
-    test_kv_log_store();
-    test_kv_suffix_store();
+//    test_kv_log_store();
+//    test_kv_suffix_store();
+//
+//    test_graph_log_store();
+//    test_graph_suffix_store();
 
-    test_graph_log_store();
-    test_graph_suffix_store();
-
-//    test_structured_edge_table();
+    test_structured_edge_table();
 
 }
