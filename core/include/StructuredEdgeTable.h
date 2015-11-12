@@ -10,6 +10,14 @@
 class StructuredEdgeTable {
 public:
 
+    StructuredEdgeTable(const std::string edge_file = "")
+        : edge_file_(edge_file)
+    { }
+
+    // Reads in the `edge_file_`, convert the data into structured data (i.e.
+    // populate the `edges` map).
+    void init(int option);
+
     // Limitation: we assume timestamp for a particular (src, atype) is
     // monotonically increasing for now (think: social network).
     void add_assoc(
@@ -37,6 +45,8 @@ private:
     // Assumes the vector<EdgeData>'s are sorted by descending timestamps.
     std::unordered_map<
         int64_t, std::unordered_map<int64_t, std::vector<EdgeData> > > edges;
+
+    const std::string edge_file_;
 
 };
 

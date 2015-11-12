@@ -5,6 +5,7 @@
 void GraphLogStore::init(int option) {
     node_table_ = std::make_shared<KVLogStore>(node_file_);
     node_table_->init(option);
+    edge_table_.init(option);
 }
 
 // Serialize into the "[lengths] [attrs]" format, and call append().
@@ -18,6 +19,15 @@ void GraphLogStore::append_node(
         LOG_E("Failed append node %lld, LogStore full?\n", node_id);
         exit(-1);
     }
+}
+void GraphLogStore::append_edge(
+    int64_t src,
+    int64_t atype,
+    int64_t dst,
+    int64_t timestamp,
+    const std::string& attr)
+{
+    edge_table_.add_assoc(src, atype, dst, timestamp, attr);
 }
 
 void GraphLogStore::get_attribute(
@@ -88,4 +98,13 @@ void GraphLogStore::get_nodes(
     // result.end() is a hint that supposedly is faster than .begin()
     std::set_intersection(s1.begin(), s1.end(), s2.begin(), s2.end(),
                           std::inserter(result, result.end()));
+}
+
+std::vector<SuccinctGraph::Assoc> GraphLogStore::assoc_range(
+    int64_t src,
+    int64_t atype,
+    int32_t off,
+    int32_t len)
+{
+    return edge_table_.assoc_range(src, atype, off, len);
 }

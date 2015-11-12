@@ -157,8 +157,7 @@ void SuccinctGraph::output_edge_table(
     const std::string& edge_file,
     const std::string& out_file)
 {
-    std::map<std::pair<int64_t, int64_t>,
-        std::vector<Assoc>> assoc_map;
+    std::map<std::pair<int64_t, int64_t>, std::vector<Assoc>> assoc_map;
     GraphFormatter::build_assoc_map(assoc_map, edge_file);
 
     std::ofstream edge_file_out(out_file);

@@ -25,8 +25,9 @@ public:
         const std::string& node_file,
         const std::string& edge_file)
         : node_file_(node_file),
+          edge_file_(edge_file),
           node_pointer_file(""), // FIXME?
-          edge_file_(edge_file)
+          edge_table_(edge_file)
     { }
 
     void init(int option = 1);
@@ -37,7 +38,6 @@ public:
     // that these id's are local keys.
     void append_node(int64_t node_id, std::vector<std::string>& attrs);
 
-    // TODO
     void append_edge(
         int64_t src,
         int64_t atype,

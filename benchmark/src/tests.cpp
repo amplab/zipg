@@ -111,6 +111,8 @@ void test_graph_log_store() {
     GraphLogStore graph_log_store("tests/empty", "");
     graph_log_store.init();
 
+    // append nodes
+
     std::vector<std::string> attrs{ "what's up?" };
     std::vector<std::string> attrs2{ "what's up?", "bro" };
     std::vector<std::string> attrs3{ "heyy", "", "k" };
@@ -148,6 +150,15 @@ void test_graph_log_store() {
     graph_log_store.get_nodes(keys, 0, "heyy", 2, "k");
     assert_eq(keys, { 3 });
 
+    // append edges
+
+    graph_log_store.append_edge(0, 0, 2, 1618, "I am Edge");
+    assert_eq(graph_log_store.assoc_range(0, 0, 0, 1),
+        { { 0, 0, 2, 1618, "I am Edge" } });
+
+    graph_log_store.append_edge(0, 0, 2, 1619, "I am Edge2");
+    assert_eq(graph_log_store.assoc_range(0, 0, 0, 1),
+        { { 0, 0, 2, 1619, "I am Edge2" } });
 }
 
 void test_graph_suffix_store() {
@@ -267,8 +278,8 @@ int main(int argc, char **argv) {
     test_kv_log_store();
     test_kv_suffix_store();
 
-    // TODO: incorporate structured edge table
     test_graph_log_store();
+    // TODO: incorporate file suffix store
     test_graph_suffix_store();
 
     test_structured_edge_table();
