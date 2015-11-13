@@ -35,6 +35,11 @@ public:
 
     void extract(std::string& ret, int64_t off, int64_t len);
 
+    // Returns the offset after delim.
+    int64_t skip_until(int64_t off, unsigned char delim);
+
+    int64_t extract_until(std::string& ret, int64_t off, unsigned char delim);
+
 private:
 
     SuccinctBase::Bitmap *SA = nullptr;

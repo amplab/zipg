@@ -169,12 +169,25 @@ void test_graph_suffix_store() {
         });
     std::string tmp_pathname(
         GraphFormatter::write_to_temp_file(node_file_content));
-    LOG_E("File: %s\n", tmp_pathname.c_str());
+    LOG_E("Node File: %s\n", tmp_pathname.c_str());
 
-    GraphSuffixStore graph_suffix_store(tmp_pathname, "");
+    std::string edge_file_content = "0 1 2 41842148 a b\n"
+                                    "0 1618 2 93244 sup\n"
+                                    "0 1 2 9324 suc\n"
+                                    "0 2 0 9324 succinct is cool\n"
+                                    "6 1 1 111111 abcd\n";
+    std::string edge_file(
+        GraphFormatter::write_to_temp_file(edge_file_content));
+    std::string edge_table_file(
+        GraphFormatter::write_to_temp_file(""));
+    SuccinctGraph::output_edge_table(edge_file, edge_table_file);
+
+    GraphSuffixStore graph_suffix_store(tmp_pathname, edge_table_file);
     graph_suffix_store.init();
     std::set<int64_t> keys;
     std::string res;
+
+    // Node Table
 
     graph_suffix_store.get_attribute(res, 0, 1);
     assert(res == "is");
@@ -197,7 +210,26 @@ void test_graph_suffix_store() {
     graph_suffix_store.get_nodes(keys, 2, "R", 6, "too");
     assert_eq(keys, { });
 
+    // Edge Table
+
+    assert_eq(graph_suffix_store.assoc_range(0, 0, 100, 1), { });
+
+    assert_eq(graph_suffix_store.assoc_range(0, 0, 0, 1),
+        { {0, 2, 0, 9324, "succinct is cool"} });
+
+    assert_eq(graph_suffix_store.assoc_range(0, 2, 0, 2),
+        { {0, 1, 2, 41842148, "a b"},
+          {0, 1618, 2, 93244, "sup"} });
+
+    assert_eq(graph_suffix_store.assoc_range(0, 2, 2, 1),
+        { {0, 1, 2, 9324, "suc"} });
+
+    assert_eq(graph_suffix_store.assoc_range(6, 1, 0, 1),
+        { {6, 1, 1, 111111, "abcd"} });
+
     std::remove(tmp_pathname.c_str());
+    std::remove(edge_file.c_str());
+    std::remove(edge_table_file.c_str());
 }
 
 void test_structured_edge_table() {

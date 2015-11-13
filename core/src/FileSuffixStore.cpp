@@ -209,3 +209,21 @@ void FileSuffixStore::extract(std::string& ret, int64_t off, int64_t len) {
         ret[i - off] = data[i];
     }
 }
+
+int64_t FileSuffixStore::skip_until(int64_t off, unsigned char delim) {
+    while (delim != data[off]) {
+        ++off;
+    }
+    return off + 1;
+}
+
+int64_t FileSuffixStore::extract_until(
+    std::string& ret, int64_t off, unsigned char delim)
+{
+    ret.clear();
+    while (delim != data[off]) {
+        ret += data[off];
+        ++off;
+    }
+    return off + 1;
+}

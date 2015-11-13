@@ -1,7 +1,9 @@
 #ifndef GRAPH_SUFFIX_STORE_H
 #define GRAPH_SUFFIX_STORE_H
 
+#include "FileSuffixStore.h"
 #include "KVSuffixStore.h"
+#include "SuccinctGraph.hpp"
 
 #include <set>
 #include <string>
@@ -19,8 +21,9 @@ public:
         const std::string& node_file,
         const std::string& edge_file)
         : node_file_(node_file),
+          edge_file_(edge_file),
           node_pointer_file(""), // FIXME?
-          edge_file_(edge_file)
+          edge_table_(edge_file)
     { }
 
     void init(int option = 1);
@@ -41,14 +44,19 @@ public:
         int attr2,
         const std::string& search_key2);
 
+    std::vector<SuccinctGraph::Assoc> assoc_range(
+        int64_t src,
+        int64_t atype,
+        int32_t off,
+        int32_t len);
+
 private:
+
     const std::string node_file_, edge_file_;
     std::string node_pointer_file;
 
     std::shared_ptr<KVSuffixStore> node_table_ = nullptr;
-    // TODO: add this
-    // FileSuffixStore edge_table_;
-
+    FileSuffixStore edge_table_;
 
 };
 
