@@ -3,6 +3,7 @@
 
 #include "SuccinctGraph.hpp"
 
+#include <mutex>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -20,6 +21,8 @@ public:
 
     // Limitation: we assume timestamp for a particular (src, atype) is
     // monotonically increasing for now (think: social network).
+    //
+    // Thread-safe for concurrent writes.
     void add_assoc(
         int64_t src,
         int64_t atype,
@@ -48,6 +51,7 @@ private:
 
     const std::string edge_file_;
 
+    std::mutex mutex_;
 };
 
 #endif

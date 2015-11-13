@@ -36,8 +36,11 @@ public:
     // Limitation: `node_id` must be larger than all current node_id's managed
     // by the current GraphLogStore (because insertion sort is not done).  Note
     // that these id's are local keys.
+    //
+    // Thread-safe: internally, a lock is used.
     void append_node(int64_t node_id, std::vector<std::string>& attrs);
 
+    // Thread-safe: internally, a lock is used.
     void append_edge(
         int64_t src,
         int64_t atype,

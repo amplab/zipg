@@ -7,6 +7,7 @@
 
 #include "utils.h"
 
+#include <mutex>
 #include <set>
 #include <string>
 #include <unordered_map>
@@ -40,6 +41,7 @@ public:
     // acting as record delimiters.
     void init(int option = 1);
 
+    // Thread-safe for concurrent writes.
     int32_t append(int64_t key, const std::string& value);
 
     // Clears `_return` for caller.
@@ -113,6 +115,7 @@ private:
     std::vector<long> keys;
     std::vector<long> value_offsets;
 
+    std::mutex mutex_;
 };
 
 #endif

@@ -136,8 +136,9 @@ void KVLogStore::init(int option) {
     COND_LOG_E("Done ngram index\n");
 }
 
-// TODO: think about concurrent writes
 int32_t KVLogStore::append(int64_t key, const std::string& value) {
+    std::lock_guard<std::mutex> lock(mutex_);
+
     if (data_pos + value.length() > MAX_LOG_STORE_SIZE) {
         return -1;   // Data exceeds max chunk size
     }

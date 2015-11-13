@@ -45,6 +45,7 @@ void StructuredEdgeTable::add_assoc(
     int64_t timestamp,
     const std::string& attr)
 {
+    std::lock_guard<std::mutex> lock(mutex_);
     edges[src][atype].emplace_back(EdgeData{ dst, timestamp, attr });
 }
 
