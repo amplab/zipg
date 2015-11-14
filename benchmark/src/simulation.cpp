@@ -2,12 +2,18 @@
 
 #include "utils.h"
 
-#include <set>
 #include <string>
+#include <unordered_set>
+
+#include <boost/functional/hash.hpp>
 
 int main(int argc, char **argv) {
     size_t last_size = 0;
-    std::set< std::pair<int64_t, int64_t> > set, new_set;
+
+    std::unordered_set<
+        std::pair<int64_t, int64_t>,
+        boost::hash< std::pair<int, int> >
+    > set, new_set;
 
     for (int i = 1; i < argc; ++i) {
         std::string assoc_list_shard(argv[i]);

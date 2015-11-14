@@ -4,7 +4,10 @@
 #include <fstream>
 #include <random>
 #include <string>
+#include <unordered_set>
 #include <vector>
+
+#include <boost/functional/hash.hpp>
 
 #include "SuccinctGraph.hpp"
 
@@ -95,7 +98,10 @@ public:
 
     static void read_assoc_list(
         const std::string& file,
-        std::set<std::pair<int64_t, int64_t>>& assoc_lists);
+        std::unordered_set<
+            std::pair<int64_t, int64_t>,
+            boost::hash< std::pair<int, int> >
+        >& assoc_lists);
 
     // Applies special delimiter logic: prepend each attribute with a unique
     // delimiter that doesn't appear in the input; concatenates these into a

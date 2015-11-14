@@ -225,7 +225,10 @@ std::vector<std::vector<int64_t>> GraphFormatter::read_edge_list(
 
 void GraphFormatter::read_assoc_list(
     const std::string& file,
-    std::set<std::pair<int64_t, int64_t>>& assoc_lists)
+    std::unordered_set<
+        std::pair<int64_t, int64_t>,
+        boost::hash< std::pair<int, int> >
+    >& assoc_lists)
 {
     std::ifstream in_stream(file);
     std::string line, token;
