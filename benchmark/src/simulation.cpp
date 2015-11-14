@@ -7,6 +7,19 @@
 
 #include <boost/functional/hash.hpp>
 
+const std::string set_out_file = "all_assoc_lists.set";
+
+void serialize(std::unordered_set<
+                       std::pair<int64_t, int64_t>,
+                       boost::hash< std::pair<int, int> >
+               > set)
+{
+    std::ofstream ofstream(set_out_file);
+    for (auto it = set.begin(); it != set.end(); ++it) {
+        ofstream << it->first << " " << it->second << std::endl;
+    }
+}
+
 int main(int argc, char **argv) {
     size_t last_size = 0;
 
@@ -23,6 +36,8 @@ int main(int argc, char **argv) {
         last_size = set.size();
     }
     LOG_E("Total # assoc lists in input shards: %lld\n", set.size());
+
+    serialize(set);
 
     constexpr size_t num_nodes = 41652230;
     constexpr size_t num_edges = 1468365182;
