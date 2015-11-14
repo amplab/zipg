@@ -223,6 +223,24 @@ std::vector<std::vector<int64_t>> GraphFormatter::read_edge_list(
     return result;
 }
 
+void GraphFormatter::read_assoc_list(
+    const std::string& file,
+    std::set<std::pair<int64_t, int64_t>>& assoc_lists)
+{
+    assoc_lists.clear();
+    std::ifstream in_stream(file);
+    std::string line, token;
+    while (std::getline(in_stream, line)) {
+        std::stringstream ss(line);
+        std::getline(ss, token, ' ');
+        int64_t src_id = std::stoll(token);
+        std::getline(ss, token, ' '); // ignore dst id
+        std::getline(ss, token, ' ');
+        int64_t atype = std::stoll(token);
+        assoc_lists.insert(std::make_pair(src_id, atype));
+    }
+}
+
 void GraphFormatter::make_rand_assoc(
     SuccinctGraph::Assoc& assoc,
     int64_t src_id,

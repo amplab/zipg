@@ -93,6 +93,10 @@ public:
         char edge_inner_delim = ' ',
         char edge_end_delim = '\n');
 
+    static void read_assoc_list(
+        const std::string& file,
+        std::set<std::pair<int64_t, int64_t>>& assoc_lists);
+
     // Applies special delimiter logic: prepend each attribute with a unique
     // delimiter that doesn't appear in the input; concatenates these into a
     // string, then takes care of appending delimiters for absent attributes.

@@ -39,3 +39,6 @@ target_link_libraries(create ${THRIFT_LIBRARIES})
 
 add_executable(tests src/tests.cpp)
 target_link_libraries(tests succinctgraph)
+
+add_executable(sim src/simulation.cpp)
+target_link_libraries(sim succinctgraph)
