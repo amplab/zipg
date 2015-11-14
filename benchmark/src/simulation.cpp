@@ -61,7 +61,7 @@ int main(int argc, char **argv) {
     constexpr size_t num_nodes = 41652230;
     constexpr size_t num_edges = 1468365182;
     constexpr size_t num_atypes = 5;
-    constexpr size_t edges_per_suff_store = 3.5 * 1000000; // 512 MB
+    constexpr size_t edges_per_suff_store = 3.5 * 1000000 * 2; // 1 GB
 
     std::random_device rd;
     std::mt19937 rng(rd());
@@ -69,6 +69,13 @@ int main(int argc, char **argv) {
     std::uniform_int_distribution<int> uni_atype(0, num_atypes - 1);
 
     size_t num_assoc_list_with_updates = 0;
+
+    auto report = [&](size_t num_edges) {
+        LOG_E("# lists that have updates w/ @ %lld new edges: %lld (%.1f\%)\n",
+            num_edges,
+            num_assoc_list_with_updates,
+            num_assoc_list_with_updates * 1. / set.size());
+    };
 
     for (size_t i = 0; i < edges_per_suff_store; ++i) {
         int64_t src = uni_node(rng);
@@ -86,10 +93,11 @@ int main(int argc, char **argv) {
             ++num_assoc_list_with_updates;
         }
         new_set.insert(pair);
+
+        if (i == edges_per_suff_store / 2 || i == edges_per_suff_store / 8) {
+            report(i);
+        }
     }
-    LOG_E("Number of assoc lists that have updates now: %lld\n",
-        num_assoc_list_with_updates);
-    LOG_E("Number of assoc lists in the new shard (filled by updates): %lld\n",
-        new_set.size());
+    report(edges_per_suff_store);
 
 }
