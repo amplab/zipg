@@ -227,7 +227,6 @@ void GraphFormatter::read_assoc_list(
     const std::string& file,
     std::set<std::pair<int64_t, int64_t>>& assoc_lists)
 {
-    assoc_lists.clear();
     std::ifstream in_stream(file);
     std::string line, token;
     while (std::getline(in_stream, line)) {

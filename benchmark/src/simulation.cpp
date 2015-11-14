@@ -6,18 +6,17 @@
 #include <string>
 
 int main(int argc, char **argv) {
-    size_t sum_original = 0;
+    size_t last_size = 0;
     std::set< std::pair<int64_t, int64_t> > set, new_set;
 
     for (int i = 1; i < argc; ++i) {
         std::string assoc_list_shard(argv[i]);
-        set.clear();
         GraphFormatter::read_assoc_list(assoc_list_shard, set);
         LOG_E("%d assoc lists in shard '%s'\n",
-            set.size(), assoc_list_shard.c_str());
-        sum_original += set.size();
+            set.size() - last_size, assoc_list_shard.c_str());
+        last_size = set.size();
     }
-    LOG_E("Total # assoc lists in input shards: %lld\n", sum_original);
+    LOG_E("Total # assoc lists in input shards: %lld\n", set.size());
 
     constexpr size_t num_nodes = 41652230;
     constexpr size_t num_edges = 1468365182;
