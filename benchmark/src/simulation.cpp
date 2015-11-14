@@ -74,7 +74,7 @@ int main(int argc, char **argv) {
         LOG_E("# lists that have updates w/ @ %lld new edges: %lld (%.1f\%)\n",
             num_edges,
             num_assoc_list_with_updates,
-            num_assoc_list_with_updates * 1. / set.size());
+            static_cast<double>(num_assoc_list_with_updates) / set.size() * 100);
     };
 
     for (size_t i = 0; i < edges_per_suff_store; ++i) {
