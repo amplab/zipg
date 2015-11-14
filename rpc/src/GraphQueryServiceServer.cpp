@@ -5,6 +5,7 @@
 #include <thrift/transport/TBufferTransports.h>
 
 #include "GraphLogStore.h"
+#include "GraphSuffixStore.h"
 #include "SuccinctGraph.hpp"
 #include "utils.h"
 #include "ports.h"
@@ -97,6 +98,9 @@ public:
 
         case SuffixStore:
             // TODO
+            graph_suffix_store_ = shared_ptr<GraphSuffixStore>(
+                new GraphSuffixStore(node_file_, edge_file_));
+            graph_suffix_store_->init();
             break;
 
         case LogStore:
@@ -344,11 +348,25 @@ private:
 
     const shared_ptr<SuccinctGraph> graph_;
     shared_ptr<GraphLogStore> graph_log_store_ = nullptr;
+    shared_ptr<GraphSuffixStore> graph_suffix_store_ = nullptr;
 
     bool initialized_;
 
     bool node_table_empty_ = true;
     bool edge_table_empty_ = true;
+
+    // Updates
+
+    // src -> (atype -> [shard id, file offset])
+    typedef std::pair<int, int64_t> EdgeUpdatePtr;
+
+    std::unordered_map<int64_t,
+        std::unordered_map<int64_t, std::vector<EdgeUpdatePtr>>
+    > edge_update_ptrs;
+
+    // src -> (shard id, file offset)
+    typedef std::pair<int, int64_t> NodeUpdatePtr;
+    std::unordered_map<int64_t, NodeUpdatePtr> node_update_ptrs;
 };
 
 int main(int argc, char **argv) {
