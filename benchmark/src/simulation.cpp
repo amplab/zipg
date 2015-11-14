@@ -29,7 +29,15 @@ int main(int argc, char **argv) {
         int64_t src = uni_node(rng);
         int64_t atype = uni_atype(rng);
         auto pair = std::make_pair(src, atype);
-        if (set.count(pair) == 1 && new_set.count(pair) == 0) {
+
+        // NOTE: only add edges to existing assoc lists
+        while (set.count(pair) == 0) {
+            src = uni_node(rng);
+            atype = uni_atype(rng);
+            pair = std::make_pair(src, atype);
+        }
+
+        if (new_set.count(pair) == 0) {
             ++num_assoc_list_with_updates;
         }
         new_set.insert(pair);
