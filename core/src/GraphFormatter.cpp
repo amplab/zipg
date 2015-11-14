@@ -298,6 +298,40 @@ void GraphFormatter::make_rand_assoc(
     }
 }
 
+void GraphFormatter::make_rand_assoc(
+    SuccinctGraph::Assoc& assoc,
+    int64_t src_id,
+    int64_t atype,
+    const std::string& attr_file,
+    std::ifstream& attr_in_stream,
+    int bytes_per_attr,
+    std::uniform_int_distribution<int64_t> node_dis,
+    std::uniform_int_distribution<int64_t> time_dis,
+    std::mt19937& rng)
+{
+    SuccinctGraph::Timestamp time = time_dis(rng);
+    SuccinctGraph::NodeId dst_id = node_dis(rng);
+
+    if (attr_in_stream.eof()) {
+       // if attrs exhausted, recycle
+       attr_in_stream.close();
+       attr_in_stream.open(attr_file);
+    }
+    std::string attr;
+    // introduce some randomness so that threads don't gen. the same attributes
+    std::getline(attr_in_stream, attr);
+    if (rand() % 2 == 0) {
+        std::getline(attr_in_stream, attr);
+    }
+    if (attr.length() > static_cast<size_t>(bytes_per_attr)) {
+       attr = attr.substr(0, bytes_per_attr);
+    } else {
+       // just pad with '|'
+       attr += std::string(bytes_per_attr - attr.length(), '|');
+    }
+    assoc = { src_id, dst_id, atype, time, attr };
+}
+
 void GraphFormatter::create_edge_table(
     const std::string& file,
     const std::string& attr_file,

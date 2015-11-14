@@ -22,7 +22,6 @@ public:
         const std::string& edge_file)
         : node_file_(node_file),
           edge_file_(edge_file),
-          node_pointer_file(""), // FIXME?
           edge_table_(edge_file)
     { }
 
@@ -53,7 +52,6 @@ public:
 private:
 
     const std::string node_file_, edge_file_;
-    std::string node_pointer_file;
 
     std::shared_ptr<KVSuffixStore> node_table_ = nullptr;
     FileSuffixStore edge_table_;

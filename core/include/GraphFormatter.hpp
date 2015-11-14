@@ -151,6 +151,20 @@ public:
         bool augmented_assoc = false,
         bool assign_ts_attr_to_dummy = false);
 
+    // Generates a new assoc that comes with: a random dst id, a random
+    // timestamp (both directly sampled from the distributions) and a random
+    // edge attribute (picked by scanning the edge attribute file).
+    static void make_rand_assoc(
+        SuccinctGraph::Assoc& assoc,
+        int64_t src_id,
+        int64_t atype,
+        const std::string& attr_file,
+        std::ifstream& attr_in_stream,
+        int bytes_per_attr,
+        std::uniform_int_distribution<int64_t> node_dis,
+        std::uniform_int_distribution<int64_t> time_dis,
+        std::mt19937& rng);
+
     // Used only when generating & parsing queries, not part of the internal
     // graph layout.  Assumes this is char uniquely identifiable (among attrs).
     static const char QUERY_FILED_DELIM = '\x02';
