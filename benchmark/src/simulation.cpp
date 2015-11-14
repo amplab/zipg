@@ -12,11 +12,29 @@ const std::string set_out_file = "all_assoc_lists.set";
 void serialize(std::unordered_set<
                        std::pair<int64_t, int64_t>,
                        boost::hash< std::pair<int, int> >
-               > set)
+               >& set)
 {
     std::ofstream ofstream(set_out_file);
     for (auto it = set.begin(); it != set.end(); ++it) {
         ofstream << it->first << " " << it->second << std::endl;
+    }
+}
+
+void deserialize(std::unordered_set<
+                       std::pair<int64_t, int64_t>,
+                       boost::hash< std::pair<int, int> >
+               >& set)
+{
+    std::ifstream ifstream(set_out_file);
+    std::string line, token;
+    int64_t src, atype;
+    while (std::getline(ifstream, line)) {
+        std::stringstream ss(line);
+        std::getline(ss, token, ' ');
+        src = std::stoll(token);
+        std::getline(ss, token);
+        atype = std::stoll(token);
+        set.insert(std::make_pair(src, atype));
     }
 }
 
@@ -28,16 +46,17 @@ int main(int argc, char **argv) {
         boost::hash< std::pair<int, int> >
     > set, new_set;
 
-    for (int i = 1; i < argc; ++i) {
-        std::string assoc_list_shard(argv[i]);
-        GraphFormatter::read_assoc_list(assoc_list_shard, set);
-        LOG_E("%d assoc lists in shard '%s'\n",
-            set.size() - last_size, assoc_list_shard.c_str());
-        last_size = set.size();
-    }
-    LOG_E("Total # assoc lists in input shards: %lld\n", set.size());
+//    for (int i = 1; i < argc; ++i) {
+//        std::string assoc_list_shard(argv[i]);
+//        GraphFormatter::read_assoc_list(assoc_list_shard, set);
+//        LOG_E("%d assoc lists in shard '%s'\n",
+//            set.size() - last_size, assoc_list_shard.c_str());
+//        last_size = set.size();
+//    }
+//    serialize(set);
 
-    serialize(set);
+    deserialize(set);
+    LOG_E("Total # assoc lists in input shards: %lld\n", set.size());
 
     constexpr size_t num_nodes = 41652230;
     constexpr size_t num_edges = 1468365182;
