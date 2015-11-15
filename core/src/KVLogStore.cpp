@@ -4,7 +4,9 @@
 
 // Option: 1 for initialize; 2 for init and write it out; 3 for read in.
 void KVLogStore::init(int option) {
-    if (option == 1 || option == 2) {
+    if (option == 1 || option == 2
+        || !file_or_dir_exists((input_file_ + "_logstore").c_str()))
+    {
         data = new char[MAX_LOG_STORE_SIZE];
         // just the values
         read_data(input_file_.c_str());
@@ -27,17 +29,30 @@ void KVLogStore::init(int option) {
     }
 }
 
-int64_t KVLogStore::get_value_offset_pos(const int64_t key) {
-    long pos = std::lower_bound(
-        keys.begin(), keys.end(), key) - keys.begin();
-    COND_LOG_E("pos = %d, keys.size = %d\n", pos, keys.size());
-    return (keys[pos] != key || pos >= keys.size()) ? -1 : pos;
-}
+void KVLogStore::writeLogStoreToFile(const char* logstore_path) {
+    std::ofstream logstore_file(logstore_path);
+    logstore_file << data_pos << std::endl;
+    logstore_file << ngram_n << std::endl;
 
-int64_t KVLogStore::get_key_pos(const int64_t value_offset) {
-    long pos = std::prev(std::upper_bound(value_offsets.begin(),
-        value_offsets.end(), value_offset)) - value_offsets.begin();
-    return pos >= keys.size() ? -1 : pos;
+    // Write char array to file
+    logstore_file.write(data, data_pos);
+
+    // Write ngram_idx to file
+    logstore_file << ngram_idx.size() << std::endl;
+    for (std::unordered_map<std::string, std::vector<uint32_t> >::iterator it = ngram_idx.begin(); it != ngram_idx.end(); ++it) {
+        // Write string
+        for(uint32_t i = 0; i < ngram_n; i++) {
+            logstore_file << (int)it->first[i] << " ";
+        }
+        logstore_file << it->second.size() << std::endl;
+        for(uint64_t i = 0; i < it->second.size(); i++) {
+            logstore_file << it->second[i] << " ";
+        }
+        logstore_file << "\n";
+    }
+
+    std::cout << "Wrote ngram_idx to file!" << std::endl;
+    logstore_file.close();
 }
 
 void KVLogStore::readLogStoreFromFile(const char* logstore_path) {
@@ -90,30 +105,17 @@ void KVLogStore::readLogStoreFromFile(const char* logstore_path) {
     }
 }
 
-void KVLogStore::writeLogStoreToFile(const char* logstore_path) {
-    std::ofstream logstore_file(logstore_path);
-    logstore_file << data_pos << std::endl;
-    logstore_file << ngram_n << std::endl;
+int64_t KVLogStore::get_value_offset_pos(const int64_t key) {
+    long pos = std::lower_bound(
+        keys.begin(), keys.end(), key) - keys.begin();
+    COND_LOG_E("pos = %d, keys.size = %d\n", pos, keys.size());
+    return (keys[pos] != key || pos >= keys.size()) ? -1 : pos;
+}
 
-    // Write char array to file
-    logstore_file.write(data, data_pos);
-
-    // Write ngram_idx to file
-    logstore_file << ngram_idx.size() << std::endl;
-    for (std::unordered_map<std::string, std::vector<uint32_t> >::iterator it = ngram_idx.begin(); it != ngram_idx.end(); ++it) {
-        // Write string
-        for(uint32_t i = 0; i < ngram_n; i++) {
-            logstore_file << (int)it->first[i] << " ";
-        }
-        logstore_file << it->second.size() << std::endl;
-        for(uint64_t i = 0; i < it->second.size(); i++) {
-            logstore_file << it->second[i] << " ";
-        }
-        logstore_file << "\n";
-    }
-
-    std::cout << "Wrote ngram_idx to file!" << std::endl;
-    logstore_file.close();
+int64_t KVLogStore::get_key_pos(const int64_t value_offset) {
+    long pos = std::prev(std::upper_bound(value_offsets.begin(),
+        value_offsets.end(), value_offset)) - value_offsets.begin();
+    return pos >= keys.size() ? -1 : pos;
 }
 
 // Reads into `data`, updating `data_pos` correctly.

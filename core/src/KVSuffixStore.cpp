@@ -25,7 +25,9 @@ int64_t KVSuffixStore::get_key_pos(const int64_t value_offset) {
 }
 
 void KVSuffixStore::init(int option) {
-    if (option == 1 || option == 2) {
+    if (option == 1 || option == 2
+        || !file_or_dir_exists((input_file_ + "_suffixstore").c_str()))
+    {
         std::ifstream ip;
         ip.open(input_file_.c_str());
         std::string *str = new std::string((std::istreambuf_iterator<char>(ip)),

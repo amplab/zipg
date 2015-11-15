@@ -6,7 +6,9 @@
 #include <algorithm>
 
 void StructuredEdgeTable::init(int option) {
-    if (option == 1 || option == 2) {
+    if (option == 1 || option == 2
+        || !file_or_dir_exists((edge_file_ + "_logstore").c_str()))
+    {
         std::map<std::pair<int64_t, int64_t>,
             std::vector<SuccinctGraph::Assoc>> assoc_map;
         GraphFormatter::build_assoc_map(assoc_map, edge_file_);
