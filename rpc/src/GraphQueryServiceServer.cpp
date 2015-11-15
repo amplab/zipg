@@ -102,14 +102,12 @@ public:
             break;
 
         case StoreMode::SuffixStore:
-            // TODO: load vs. construct
             graph_suffix_store_ = shared_ptr<GraphSuffixStore>(
                 new GraphSuffixStore(node_file_, edge_file_));
             graph_suffix_store_->init();
             break;
 
         case StoreMode::LogStore:
-            // TODO: load vs. construct
             graph_log_store_ = shared_ptr<GraphLogStore>(new GraphLogStore(
                 node_file_, edge_file_));
             graph_log_store_->init();

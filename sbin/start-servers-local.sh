@@ -45,6 +45,17 @@ sa_sr=${6:-32}
 isa_sr=${7:-64}
 npa_sr=${8:-128}
 
+storeMode=succinctstore
+num_succinctstore_hosts=$num_hosts
+if [[ "$ENABLE_MULTI_STORE" == T ]]; then
+  if [[ $(( num_hosts - 1 == local_host_id )) ]]; then
+    storeMode=logstore
+  elif [[ $(( num_hosts - 2 == local_host_id )) ]]; then
+    storeMode=suffixstore
+  fi
+  num_succinctstore_hosts=$(( num_hosts - 2 )) 
+fi
+
 # ??
 num_replicas=$( wc -l < ${SUCCINCT_CONF_DIR}/repl)
 
@@ -80,24 +91,44 @@ while read sr dist; do
 	i=$(($i + 1))
 done < ${SUCCINCT_CONF_DIR}/repl
 
-limit=$(($num_shards_local - 1))
-padWidth=${#TOTAL_NUM_SHARDS}
-paddedTotalNumShards=$(printf "%0*d" ${padWidth} ${TOTAL_NUM_SHARDS})
+case "$storeMode" in
+  succinctstore )
+    limit=$(($num_shards_local - 1))
+    padWidth=${#TOTAL_NUM_SHARDS}
+    ;;
+  suffixstore )
+    limit=$(( NUM_SUFFIXSTORE_PARTS - 1 ))
+    padWidth=${#NUM_SUFFIXSTORE_PARTS}
+    ;;
+  logstore )
+    limit=$(( NUM_LOGSTORE_PARTS - 1 ))
+    padWidth=${#NUM_LOGSTORE_PARTS}
+    ;;
+esac
 
 for i in `seq 0 $limit`; do
 	port=$(($QUERY_SERVER_PORT + $i))
-	shard_id=$(($i * $num_hosts + local_host_id)) # balance across physical nodes
+
+    case "$storeMode" in
+      succinctstore )
+        shard_id=$(($i * $num_succinctstore_hosts + local_host_id)) # balance across physical nodes
+        ;;
+      * )
+        shard_id=$i
+        ;;
+    esac
+
     padded_shard_id=$(printf "%0*d" ${padWidth} ${shard_id})
 
     if [[ "${node_file_raw}" = /* ]]; then
-      node_split="${node_file_raw}-part${padded_shard_id}of${paddedTotalNumShards}"
+      node_split="${node_file_raw}-part${padded_shard_id}of${TOTAL_NUM_SHARDS}"
     else
-      node_split="${sbin}/${node_file_raw}-part${padded_shard_id}of${paddedTotalNumShards}"
+      node_split="${sbin}/${node_file_raw}-part${padded_shard_id}of${TOTAL_NUM_SHARDS}"
     fi
     if [[ "${edge_file_raw}" = /* ]]; then
-      edge_split="${edge_file_raw}-part${padded_shard_id}of${paddedTotalNumShards}"
+      edge_split="${edge_file_raw}-part${padded_shard_id}of${TOTAL_NUM_SHARDS}"
     else
-      edge_split="${sbin}/${edge_file_raw}-part${padded_shard_id}of${paddedTotalNumShards}"
+      edge_split="${sbin}/${edge_file_raw}-part${padded_shard_id}of${TOTAL_NUM_SHARDS}"
     fi
 
     # Encoded succinct dirs
@@ -126,6 +157,18 @@ for i in `seq 0 $limit`; do
       nodeInput=$node_split
       edgeInput=$edge_split
     fi
+
+    ##### special cases: if logstore or suffixstore, modify input arguments
+    case "$storeMode" in
+      logstore )
+        nodeInput="${node_file_raw}.logstore-part${padded_shard_id}of${NUM_LOGSTORE_PARTS}_logstore"
+        edgeInput="${edge_file_raw}.logstore-part${padded_shard_id}of${NUM_LOGSTORE_PARTS}_logstore"
+        ;;
+      suffixstore )
+        nodeInput="${node_file_raw}.suffixstore-part${padded_shard_id}of${NUM_SUFFIXSTORE_PARTS}_suffixstore"
+        edgeInput="${edge_file_raw}.suffixstore-part${padded_shard_id}of${NUM_SUFFIXSTORE_PARTS}_suffixstore"
+        ;;
+    esac
 
     echo "Launching shard ${shard_id}"
 
