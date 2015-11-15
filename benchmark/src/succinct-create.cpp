@@ -1062,6 +1062,45 @@ int main(int argc, char **argv) {
             neo4j_edge_out
         );
 
+    } else if (type == "make-store") {
+
+        std::string store_out = argv[2];
+        size_t num_edges_to_add = std::stoll(argv[3]);
+        size_t num_nodes = std::stoll(argv[4]);
+        size_t num_atypes = atoi(argv[5]);
+        std::string assoc_set_file = argv[6];
+        std::string attr_file = argv[7];
+        int bytes_per_attr = atoi(argv[8]);
+        int64_t min_time = std::stoll(argv[9]);
+        int64_t max_time = std::stoll(argv[10]);
+        int suffix_or_log = atoi(argv[11]); // 0 for Suffix, 1 for log
+
+        if (suffix_or_log == 0) {
+            GraphFormatter::make_rand_suffix_store(
+                store_out,
+                num_edges_to_add,
+                num_nodes,
+                num_atypes,
+                assoc_set_file,
+                attr_file,
+                bytes_per_attr,
+                min_time,
+                max_time);
+        } else {
+            GraphFormatter::make_rand_log_store(
+                store_out,
+                num_edges_to_add,
+                num_nodes,
+                num_atypes,
+                assoc_set_file,
+                attr_file,
+                bytes_per_attr,
+                min_time,
+                max_time);
+        }
+
+        LOG_E("Store generated: '%s'\n", store_out.c_str());
+
     } else {
         printf("Unsupported command type: '%s'\n", type.c_str());
         assert(1); // not supported

@@ -25,12 +25,6 @@ using namespace ::apache::thrift::server;
 using boost::shared_ptr;
 
 class GraphQueryServiceHandler : virtual public GraphQueryServiceIf {
-private:
-
-    typedef std::unordered_set<
-                std::pair<int64_t, int64_t>,
-                boost::hash< std::pair<int, int> >> AssocSet;
-
 public:
 
     GraphQueryServiceHandler(
@@ -69,60 +63,6 @@ public:
             " (specified, please check actual)\n",
             shard_id_, total_num_shards_, isa_sampling_rate,
             sa_sampling_rate, npa_sampling_rate);
-    }
-
-    void bulk_add_suffix_store(
-        GraphSuffixStore& store,
-        size_t num_edges_to_add,
-        size_t num_nodes,
-        size_t num_atypes,
-        AssocSet& set,
-        const std::string& attr_file,
-        int bytes_per_attr,
-        int64_t min_time,
-        int64_t max_time)
-    {
-        std::random_device rd;
-        std::mt19937 rng(rd());
-        std::uniform_int_distribution<int64_t> uni_node(0, num_nodes - 1);
-        std::uniform_int_distribution<int> uni_atype(0, num_atypes - 1);
-        std::uniform_int_distribution<int64_t> uni_time(min_time, max_time);
-
-        int64_t src, atype;
-        SuccinctGraph::Assoc assoc;
-        std::ifstream attr_in(attr_file);
-
-        char f[26];
-        sprintf(f, "suffix_store_shard%02d.edge", shard_id_);
-        std::stringstream ss(f);
-
-        for (size_t i = 0; i < num_edges_to_add; ++i) {
-            src = uni_node(rng);
-            atype = uni_atype(rng);
-            auto pair = std::make_pair(src, atype);
-
-            // NOTE: only add edges to existing assoc lists
-            while (set.count(pair) == 0) {
-                src = uni_node(rng);
-                atype = uni_atype(rng);
-                pair = std::make_pair(src, atype);
-            }
-
-            GraphFormatter::make_rand_assoc(
-                assoc, src, atype,
-                attr_file, attr_in, bytes_per_attr,
-                uni_time, uni_node, rng);
-
-            ss << assoc.src_id
-                << ' ' << assoc.dst_id
-                << ' ' << assoc.atype
-                << ' ' << assoc.time
-                << ' ' << assoc.attr << std::endl;
-        }
-        ss.flush();
-
-        // Construct store
-        store.init("EMPTY_NODE", std::string(f));
     }
 
     // Loads or constructs graph shards.

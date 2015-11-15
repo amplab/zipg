@@ -7,6 +7,8 @@
 #include <vector>
 #include <sys/time.h>
 
+#include "GraphLogStore.h"
+#include "GraphSuffixStore.h"
 #include "SuccinctGraph.hpp"
 #include "SuccinctGraphSerde.hpp"
 #include "ZipfGenerator.hpp"
@@ -619,5 +621,135 @@ void GraphFormatter::build_assoc_map(std::map<SuccinctGraph::AssocListKey,
         std::sort(it->second.begin(),
                   it->second.end(),
                   SuccinctGraph::cmp_assoc_by_decreasing_time);
+    }
+}
+
+void GraphFormatter::populate_random_store(
+    const std::string& store_out,
+    size_t num_edges_to_add,
+    size_t num_nodes,
+    size_t num_atypes,
+    AssocSet& set,
+    const std::string& attr_file,
+    int bytes_per_attr,
+    int64_t min_time,
+    int64_t max_time)
+{
+    std::random_device rd;
+    std::mt19937 rng(rd());
+    std::uniform_int_distribution<int64_t> uni_node(0, num_nodes - 1);
+    std::uniform_int_distribution<int> uni_atype(0, num_atypes - 1);
+    std::uniform_int_distribution<int64_t> uni_time(min_time, max_time);
+
+    int64_t src, atype;
+    SuccinctGraph::Assoc assoc;
+    std::ifstream attr_in(attr_file);
+    std::stringstream ss(store_out);
+
+    for (size_t i = 0; i < num_edges_to_add; ++i) {
+        src = uni_node(rng);
+        atype = uni_atype(rng);
+        auto pair = std::make_pair(src, atype);
+
+        // NOTE: only add edges to existing assoc lists
+        while (set.count(pair) == 0) {
+            src = uni_node(rng);
+            atype = uni_atype(rng);
+            pair = std::make_pair(src, atype);
+        }
+
+        GraphFormatter::make_rand_assoc(
+            assoc, src, atype,
+            attr_file, attr_in, bytes_per_attr,
+            uni_time, uni_node, rng);
+
+        ss << assoc.src_id
+            << ' ' << assoc.dst_id
+            << ' ' << assoc.atype
+            << ' ' << assoc.time
+            << ' ' << assoc.attr << std::endl;
+    }
+    ss.flush();
+}
+
+void GraphFormatter::make_rand_suffix_store(
+    const std::string& store_out,
+    size_t num_edges_to_add,
+    size_t num_nodes,
+    size_t num_atypes,
+    const std::string& assoc_set_file,
+    const std::string& attr_file,
+    int bytes_per_attr,
+    int64_t min_time,
+    int64_t max_time)
+{
+    std::unordered_set<
+        std::pair<int64_t, int64_t>,
+        boost::hash< std::pair<int, int> >
+    > set;
+    read_assoc_set(set, assoc_set_file);
+
+    populate_random_store(
+        store_out,
+        num_edges_to_add,
+        num_nodes,
+        num_atypes,
+        set,
+        attr_file,
+        bytes_per_attr,
+        min_time,
+        max_time);
+
+    GraphSuffixStore gss("EMPTY_NODE", store_out);
+    gss.init(); // TODO: option: write
+}
+
+void GraphFormatter::make_rand_log_store(
+    const std::string& store_out,
+    size_t num_edges_to_add,
+    size_t num_nodes,
+    size_t num_atypes,
+    const std::string& assoc_set_file,
+    const std::string& attr_file,
+    int bytes_per_attr,
+    int64_t min_time,
+    int64_t max_time)
+{
+    std::unordered_set<
+        std::pair<int64_t, int64_t>,
+        boost::hash< std::pair<int, int> >
+    > set;
+    read_assoc_set(set, assoc_set_file);
+
+    populate_random_store(
+        store_out,
+        num_edges_to_add,
+        num_nodes,
+        num_atypes,
+        set,
+        attr_file,
+        bytes_per_attr,
+        min_time,
+        max_time);
+
+    GraphLogStore gls("EMPTY_NODE", store_out);
+    gls.init(); // TODO: option: write
+}
+
+void GraphFormatter::read_assoc_set(std::unordered_set<
+        std::pair<int64_t, int64_t>,
+        boost::hash< std::pair<int, int> >
+    >& set, const std::string& assoc_set_file)
+{
+    std::ifstream ifstream(assoc_set_file);
+    std::string line, token;
+    int64_t src, atype;
+    while (std::getline(ifstream, line)) {
+        std::stringstream ss(line);
+        std::getline(ss, token, ' ');
+        src = std::stoll(token);
+        std::getline(ss, token);
+        atype = std::stoll(token);
+        set.insert(std::make_pair(src, atype));
     }
 }

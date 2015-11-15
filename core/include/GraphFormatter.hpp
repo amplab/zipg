@@ -13,6 +13,12 @@
 
 // Formats input files into Succinct Graph-ready files.
 class GraphFormatter {
+private:
+
+    typedef std::unordered_set<
+                std::pair<int64_t, int64_t>,
+                boost::hash< std::pair<int, int> >> AssocSet;
+
 public:
 
     // node_file: each row contains attributes (bytes) for the node
@@ -174,7 +180,45 @@ public:
     static void build_assoc_map(std::map<std::pair<int64_t, int64_t>,
         std::vector<SuccinctGraph::Assoc>>& assoc_map, const std::string& in);
 
+    static void make_rand_suffix_store(
+        const std::string& store_out,
+        size_t num_edges_to_add,
+        size_t num_nodes,
+        size_t num_atypes,
+        const std::string& assoc_set_file,
+        const std::string& attr_file,
+        int bytes_per_attr,
+        int64_t min_time,
+        int64_t max_time);
+
+    static void make_rand_log_store(
+        const std::string& store_out,
+        size_t num_edges_to_add,
+        size_t num_nodes,
+        size_t num_atypes,
+        const std::string& assoc_set_file,
+        const std::string& attr_file,
+        int bytes_per_attr,
+        int64_t min_time,
+        int64_t max_time);
+
 private:
+
+    static void read_assoc_set(std::unordered_set<
+            std::pair<int64_t, int64_t>,
+            boost::hash< std::pair<int, int> >
+        >& set, const std::string& assoc_set_file);
+
+    static void populate_random_store(
+        const std::string& store_out,
+        size_t num_edges_to_add,
+        size_t num_nodes,
+        size_t num_atypes,
+        AssocSet& set,
+        const std::string& attr_file,
+        int bytes_per_attr,
+        int64_t min_time,
+        int64_t max_time);
 
     static int64_t time_millis() {
         struct timeval now;
