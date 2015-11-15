@@ -161,12 +161,18 @@ for i in `seq 0 $limit`; do
     ##### special cases: if logstore or suffixstore, modify input arguments
     case "$storeMode" in
       logstore )
-        nodeInput="${node_file_raw}.logstore-part${padded_shard_id}of${NUM_LOGSTORE_PARTS}_logstore"
-        edgeInput="${edge_file_raw}.logstore-part${padded_shard_id}of${NUM_LOGSTORE_PARTS}_logstore"
+        nodeInput="${node_file_raw}.logstore-part${padded_shard_id}of${NUM_LOGSTORE_PARTS}"
+        edgeInput="${edge_file_raw}.logstore-part${padded_shard_id}of${NUM_LOGSTORE_PARTS}"
+        if [[ ( ( ! -f "${nodeInput}_logstore" ) || ( ! -f "${edgeInput}_logstore" ) ) ]]; then
+          mode=0
+        fi
         ;;
       suffixstore )
-        nodeInput="${node_file_raw}.suffixstore-part${padded_shard_id}of${NUM_SUFFIXSTORE_PARTS}_suffixstore"
-        edgeInput="${edge_file_raw}.suffixstore-part${padded_shard_id}of${NUM_SUFFIXSTORE_PARTS}_suffixstore"
+        nodeInput="${node_file_raw}.suffixstore-part${padded_shard_id}of${NUM_SUFFIXSTORE_PARTS}"
+        edgeInput="${edge_file_raw}.suffixstore-part${padded_shard_id}of${NUM_SUFFIXSTORE_PARTS}"
+        if [[ ( ( ! -f "${nodeInput}_suffixstore" ) || ( ! -f "${edgeInput}_suffixstore" ) ) ]]; then
+          mode=0
+        fi
         ;;
     esac
 
