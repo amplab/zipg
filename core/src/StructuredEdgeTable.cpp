@@ -42,40 +42,38 @@ void StructuredEdgeTable::init(int option) {
         }
 
         // Serialize
-        if (option == 2) {
-            std::ofstream oa(edge_file_ + "_logstore");
-            size_t num_edges = 0;
-            // boost::archive::text_oarchive boa(oa);
+        std::ofstream oa(edge_file_ + "_logstore");
+        size_t num_edges = 0;
+        // boost::archive::text_oarchive boa(oa);
 
-            // read class state from archive
-            oa << edge_file_ << std::endl;
+        // read class state from archive
+        oa << edge_file_ << std::endl;
 
-            for (auto it = edges.begin(); it != edges.end(); ++it) {
-                int64_t key = it->first;
-                auto& map = it->second;
+        for (auto it = edges.begin(); it != edges.end(); ++it) {
+            int64_t key = it->first;
+            auto& map = it->second;
 
-                oa << key << ' ' << map.size() << std::endl;
+            oa << key << ' ' << map.size() << std::endl;
 
-                for (auto it2 = map.begin(); it2 != map.end(); ++it2) {
-                    key = it2->first; // atype
-                    auto& vec = it2->second;
+            for (auto it2 = map.begin(); it2 != map.end(); ++it2) {
+                key = it2->first; // atype
+                auto& vec = it2->second;
 
-                    oa << key << ' ' << vec.size();
-                    for (auto& edge_data : vec) {
-                        oa << ' ' << edge_data.dst
-                            << ' ' << edge_data.timestamp
-                            << ' ' << edge_data.attr;
-                    }
-                    oa << std::endl;
-
-                    num_edges += vec.size();
+                oa << key << ' ' << vec.size();
+                for (auto& edge_data : vec) {
+                    oa << ' ' << edge_data.dst
+                        << ' ' << edge_data.timestamp
+                        << ' ' << edge_data.attr;
                 }
+                oa << std::endl;
+
+                num_edges += vec.size();
             }
-            LOG_E("StructuredEdgeTable wrote to '%s', %lld edges\n",
-                (edge_file_ + "_logstore").c_str(), num_edges);
         }
+        LOG_E("StructuredEdgeTable wrote to '%s', %lld edges\n",
+            (edge_file_ + "_logstore").c_str(), num_edges);
     } else {
-        // Deserialize
+        // Deserialize from file
         if (file_or_dir_exists((edge_file_ + "_logstore").c_str())) {
             std::string line, key, keysize, dst, timestamp, attr;
             int64_t src, atype;

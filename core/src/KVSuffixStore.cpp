@@ -58,11 +58,9 @@ void KVSuffixStore::init(int option) {
             build_pointers();
         }
 
-        if (option == 2) {
-            writeSuffixStoreToFile((input_file_ + "_suffixstore").c_str());
-            std::cout << "Wrote suffix store to file "
-                << (input_file_ + "_suffixstore").c_str() << std::endl;
-        }
+        writeSuffixStoreToFile((input_file_ + "_suffixstore").c_str());
+        std::cout << "Wrote suffix store to file "
+            << (input_file_ + "_suffixstore").c_str() << std::endl;
     } else {
         // Read from file
         readSuffixStoreFromFile((input_file_ + "_suffixstore").c_str());
