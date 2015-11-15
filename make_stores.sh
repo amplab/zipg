@@ -25,8 +25,8 @@ fi
 # SuffixStores
 
 padWidth=${#num_suff_stores}
-
-for i in $(seq 1 1 ${num_suff_stores}); do
+limit=$(($num_suff_stores - 1))
+for i in $(seq 0 1 ${limit}); do
   p=$(printf "%0*d" ${padWidth} ${i})
   store_out_file="${store_out}.suffixstore-part${p}of${num_suff_stores}"
 
@@ -46,8 +46,8 @@ done
 # LogStores
 
 padWidth=${#num_suff_stores}
-
-for i in $(seq 1 1 ${num_log_stores}); do
+limit=$(($num_log_stores - 1))
+for i in $(seq 0 1 ${limit}); do
   p=$(printf "%0*d" ${padWidth} ${i})
   store_out_file="${store_out}.logstore-part${p}of${num_log_stores}"
 
