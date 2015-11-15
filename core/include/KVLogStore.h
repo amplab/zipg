@@ -103,7 +103,7 @@ private:
     char* data = nullptr;
 
     // Only for log store
-    uint64_t data_pos = 0;
+    uint64_t data_pos = static_cast<uint64_t>(0);
 
     // Index to speed up searches
     // Note: Index only works when logstore data is < 2GB; for larger log
