@@ -8,6 +8,11 @@
 #include <unordered_map>
 #include <vector>
 
+//#include <boost/archive/text_oarchive.hpp>
+//#include <boost/archive/text_iarchive.hpp>
+//#include <boost/serialization/string.hpp>
+//#include <boost/serialization/version.hpp>
+
 class StructuredEdgeTable {
 public:
 
@@ -36,6 +41,27 @@ public:
         int32_t off,
         int32_t len);
 
+//    template<class Archive>
+//    void serialize(Archive & ar, const unsigned int version) {
+//        // read class state from archive
+//        ar & edge_file_;
+//        for (auto it = edges.begin(); it != edges.end(); ++it) {
+//            int64_t key = it->first;
+//            auto& map = it->second;
+//            ar & key;
+//            for (auto it2 = map.begin(); it2 != map.end(); ++it2) {
+//                key = it2->first; // atype
+//                auto& vec = it2->second;
+//                ar & key;
+//                for (auto& edge_data : vec) {
+//                    ar & edge_data.dst;
+//                    ar & edge_data.timestamp;
+//                    ar & edge_data.attr;
+//                }
+//            }
+//        }
+//    }
+
 private:
 
     struct EdgeData {
@@ -49,7 +75,7 @@ private:
     std::unordered_map<
         int64_t, std::unordered_map<int64_t, std::vector<EdgeData> > > edges;
 
-    const std::string edge_file_;
+    std::string edge_file_;
 
     std::mutex mutex_;
 };
