@@ -39,7 +39,9 @@ public:
     // Reads in file and builds ngram index.  If `pointer_file_` is empty
     // string, builds pointers on the fly by scanning the input, with newlines
     // acting as record delimiters.
-    void init(int option = 1);
+    void construct();
+
+    void load();
 
     // Thread-safe for concurrent writes.
     int32_t append(int64_t key, const std::string& value);

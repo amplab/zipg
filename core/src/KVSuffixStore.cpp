@@ -24,47 +24,44 @@ int64_t KVSuffixStore::get_key_pos(const int64_t value_offset) {
     return pos >= keys.size() ? -1 : pos;
 }
 
-void KVSuffixStore::init(int option) {
-    if (option == 1 || option == 2
-        || !file_or_dir_exists((input_file_ + "_suffixstore").c_str()))
-    {
-        std::ifstream ip;
-        ip.open(input_file_.c_str());
-        std::string *str = new std::string((std::istreambuf_iterator<char>(ip)),
-                                            std::istreambuf_iterator<char>());
-        str->append(1, (char)1);
+void KVSuffixStore::construct() {
+    std::ifstream ip;
+    ip.open(input_file_.c_str());
+    std::string *str = new std::string((std::istreambuf_iterator<char>(ip)),
+                                        std::istreambuf_iterator<char>());
+    str->append(1, (char)1);
 
-        sa_n = str->length();
-        ip.close();
-        std::cout << "File read into memory!" << std::endl;
-        bits = intLog2(sa_n + 1);
+    sa_n = str->length();
+    ip.close();
+    std::cout << "File read into memory!" << std::endl;
+    bits = intLog2(sa_n + 1);
 
-        // Construct suffix array
-        long *lSA = new long[sa_n];
-        divsufsortxx::constructSA((const unsigned char *)str->c_str(),
-            ((const unsigned char *)str->c_str()) + sa_n, lSA, lSA + sa_n, 256);
+    // Construct suffix array
+    long *lSA = new long[sa_n];
+    divsufsortxx::constructSA((const unsigned char *)str->c_str(),
+        ((const unsigned char *)str->c_str()) + sa_n, lSA, lSA + sa_n, 256);
 
-        std::cout << "Built SA\n";
-        SA = new SuccinctBase::Bitmap;
-        createBMArray(&SA, lSA, sa_n, bits);
-        delete [] lSA;
-        std::cout << "Compacted SA\n";
+    std::cout << "Built SA\n";
+    SA = new SuccinctBase::Bitmap;
+    createBMArray(&SA, lSA, sa_n, bits);
+    delete [] lSA;
+    std::cout << "Compacted SA\n";
 
-        data = (uint8_t *) str->c_str();
+    data = (uint8_t *) str->c_str();
 
-        if (pointer_file_ != "") {
-            read_pointers(pointer_file_.c_str());
-        } else {
-            build_pointers();
-        }
-
-        writeSuffixStoreToFile((input_file_ + "_suffixstore").c_str());
-        std::cout << "Wrote suffix store to file "
-            << (input_file_ + "_suffixstore").c_str() << std::endl;
+    if (pointer_file_ != "") {
+        read_pointers(pointer_file_.c_str());
     } else {
-        // Read from file
-        readSuffixStoreFromFile((input_file_ + "_suffixstore").c_str());
+        build_pointers();
     }
+
+    writeSuffixStoreToFile((input_file_ + "_suffixstore").c_str());
+    std::cout << "Wrote suffix store to file "
+        << (input_file_ + "_suffixstore").c_str() << std::endl;
+}
+
+void KVSuffixStore::load() {
+    readSuffixStoreFromFile((input_file_ + "_suffixstore").c_str());
 }
 
 void KVSuffixStore::writeSuffixStoreToFile(const char *suffixstore_path) {

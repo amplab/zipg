@@ -55,7 +55,7 @@ void test_kv_log_store() {
     std::set<int64_t> keys;
 
     KVLogStore kv_log_store("tests/vals", "tests/ptrs");
-    kv_log_store.init();
+    kv_log_store.construct();
 
     kv_log_store.get_value(ret, 0);
     assert(ret == "1618");
@@ -80,7 +80,7 @@ void test_kv_log_store() {
 
 void test_kv_suffix_store() {
     KVSuffixStore kv_suffix_store("tests/vals", "tests/ptrs");
-    kv_suffix_store.init();
+    kv_suffix_store.construct();
 
     int key = 0;
     std::string ret;
@@ -109,7 +109,7 @@ void test_graph_log_store() {
     std::string attr;
 
     GraphLogStore graph_log_store("tests/empty", "");
-    graph_log_store.init();
+    graph_log_store.construct();
 
     // append nodes
 
@@ -183,7 +183,7 @@ void test_graph_suffix_store() {
     SuccinctGraph::output_edge_table(edge_file, edge_table_file);
 
     GraphSuffixStore graph_suffix_store(tmp_pathname, edge_table_file);
-    graph_suffix_store.init();
+    graph_suffix_store.construct();
     std::set<int64_t> keys;
     std::string res;
 
@@ -276,7 +276,7 @@ void test_file_suffix_store() {
     std::vector<int64_t> keys;
     std::string str;
 
-    file_suffix_store.init();
+    file_suffix_store.construct();
 
     file_suffix_store.search(
         keys, SuccinctGraph::mk_edge_table_search_key(0, 2));

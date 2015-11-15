@@ -2,29 +2,25 @@
 
 #include <algorithm>
 
-// Option: 1 for initialize; 2 for init and write it out; 3 for read in.
-void KVLogStore::init(int option) {
-    if (option == 1 || option == 2
-        || !file_or_dir_exists((input_file_ + "_logstore").c_str()))
-    {
-        data = new char[MAX_LOG_STORE_SIZE];
-        // just the values
-        read_data(input_file_.c_str());
-        // format: "[key] \t [offset into the value file]"
-        if (pointer_file_ != "") {
-            read_pointers(pointer_file_.c_str());
-        } else {
-            build_pointers();
-        }
-        create_ngram_idx();
-
-        writeLogStoreToFile((input_file_ + "_logstore").c_str());
-        std::cout << "KVLogStore: wrote to file "
-            << (input_file_ + "_logstore").c_str() << std::endl;
+void KVLogStore::construct() {
+    data = new char[MAX_LOG_STORE_SIZE];
+    // just the values
+    read_data(input_file_.c_str());
+    // format: "[key] \t [offset into the value file]"
+    if (pointer_file_ != "") {
+        read_pointers(pointer_file_.c_str());
     } else {
-        // Read from file
-        readLogStoreFromFile((input_file_ + "_logstore").c_str());
+        build_pointers();
     }
+    create_ngram_idx();
+
+    writeLogStoreToFile((input_file_ + "_logstore").c_str());
+    std::cout << "KVLogStore: wrote to file "
+        << (input_file_ + "_logstore").c_str() << std::endl;
+}
+
+void KVLogStore::load() {
+    readLogStoreFromFile((input_file_ + "_logstore").c_str());
 }
 
 void KVLogStore::writeLogStoreToFile(const char* logstore_path) {

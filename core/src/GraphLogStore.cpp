@@ -2,10 +2,16 @@
 
 #include "GraphFormatter.hpp"
 
-void GraphLogStore::init(int option) {
+void GraphLogStore::construct() {
     node_table_ = std::make_shared<KVLogStore>(node_file_);
-    node_table_->init(option);
-    edge_table_.init(option);
+    node_table_->construct();
+    edge_table_.construct();
+}
+
+void GraphLogStore::load() {
+    node_table_ = std::make_shared<KVLogStore>(node_file_);
+    node_table_->load();
+    edge_table_.load();
 }
 
 // Serialize into the "[lengths] [attrs]" format, and call append().

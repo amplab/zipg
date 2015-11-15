@@ -22,7 +22,9 @@ public:
 
     // Reads in the `edge_file_`, convert the data into structured data (i.e.
     // populate the `edges` map).
-    void init(int option);
+    void construct();
+
+    void load();
 
     // Limitation: we assume timestamp for a particular (src, atype) is
     // monotonically increasing for now (think: social network).

@@ -684,8 +684,6 @@ void GraphFormatter::make_rand_suffix_store(
     int64_t min_time,
     int64_t max_time)
 {
-    int init_option = 0; // load
-
     if (!file_or_dir_exists(store_out)) {
         std::unordered_set<
             std::pair<int64_t, int64_t>,
@@ -704,12 +702,10 @@ void GraphFormatter::make_rand_suffix_store(
             bytes_per_attr,
             min_time,
             max_time);
-
-        init_option = 2;
     }
 
     GraphSuffixStore gss("EMPTY_NODE", store_out);
-    gss.init(init_option);
+    gss.construct();
 }
 
 void GraphFormatter::make_rand_log_store(
@@ -723,8 +719,6 @@ void GraphFormatter::make_rand_log_store(
     int64_t min_time,
     int64_t max_time)
 {
-    int init_option = 0; // load
-
     if (!file_or_dir_exists(store_out)) {
         std::unordered_set<
             std::pair<int64_t, int64_t>,
@@ -743,12 +737,10 @@ void GraphFormatter::make_rand_log_store(
             bytes_per_attr,
             min_time,
             max_time);
-
-        init_option = 2; // construct + write out
     }
 
     GraphLogStore gls("EMPTY_NODE", store_out);
-    gls.init(init_option);
+    gls.construct();
 }
 
 void GraphFormatter::read_assoc_set(std::unordered_set<

@@ -6,7 +6,7 @@
 /* Check if n is a power of 2 */
 #define ISPOWOF2(n)     ((n != 0) && ((n & (n - 1)) == 0))
 
-void FileSuffixStore::init(int option) {
+void FileSuffixStore::construct() {
     /* Integer logarithm to the base 2 -- fast */
     auto intLog2 = [](long n) {
         int l = ISPOWOF2(n) ? 0 : 1;
@@ -14,40 +14,37 @@ void FileSuffixStore::init(int option) {
         return l;
     };
 
-    if (option == 1 || option == 2
-        || !file_or_dir_exists((input_file_ + "_suffixstore").c_str()))
-    {
-        std::ifstream ip;
-        ip.open(input_file_.c_str());
-        std::string *str = new std::string((std::istreambuf_iterator<char>(ip)),
-                                            std::istreambuf_iterator<char>());
-        str->append(1, (char)1);
+    std::ifstream ip;
+    ip.open(input_file_.c_str());
+    std::string *str = new std::string((std::istreambuf_iterator<char>(ip)),
+                                        std::istreambuf_iterator<char>());
+    str->append(1, (char)1);
 
-        sa_n = str->length();
-        ip.close();
-        std::cout << "File read into memory!" << std::endl;
-        bits = intLog2(sa_n + 1);
+    sa_n = str->length();
+    ip.close();
+    std::cout << "File read into memory!" << std::endl;
+    bits = intLog2(sa_n + 1);
 
-        // Construct suffix array
-        long *lSA = new long[sa_n];
-        divsufsortxx::constructSA((const unsigned char *)str->c_str(),
-            ((const unsigned char *)str->c_str()) + sa_n, lSA, lSA + sa_n, 256);
+    // Construct suffix array
+    long *lSA = new long[sa_n];
+    divsufsortxx::constructSA((const unsigned char *)str->c_str(),
+        ((const unsigned char *)str->c_str()) + sa_n, lSA, lSA + sa_n, 256);
 
-        std::cout << "Built SA\n";
-        SA = new SuccinctBase::Bitmap;
-        createBMArray(&SA, lSA, sa_n, bits);
-        delete [] lSA;
-        std::cout << "Compacted SA\n";
+    std::cout << "Built SA\n";
+    SA = new SuccinctBase::Bitmap;
+    createBMArray(&SA, lSA, sa_n, bits);
+    delete [] lSA;
+    std::cout << "Compacted SA\n";
 
-        data = (uint8_t *) str->c_str();
+    data = (uint8_t *) str->c_str();
 
-        writeSuffixStoreToFile((input_file_ + "_suffixstore").c_str());
-        std::cout << "Wrote suffix store to file "
-            << (input_file_ + "_suffixstore").c_str() << std::endl;
-    } else {
-        // Read from file
-        readSuffixStoreFromFile((input_file_ + "_suffixstore").c_str());
-    }
+    writeSuffixStoreToFile((input_file_ + "_suffixstore").c_str());
+    std::cout << "Wrote suffix store to file "
+        << (input_file_ + "_suffixstore").c_str() << std::endl;
+}
+
+void FileSuffixStore::load() {
+    readSuffixStoreFromFile((input_file_ + "_suffixstore").c_str());
 }
 
 void FileSuffixStore::writeSuffixStoreToFile(const char *suffixstore_path) {

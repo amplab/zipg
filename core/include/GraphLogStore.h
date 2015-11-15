@@ -30,7 +30,8 @@ public:
           edge_table_(edge_file)
     { }
 
-    void init(int option = 1);
+    void construct();
+    void load();
 
     // TODO: think about where this key should come from; and locking.
     // Limitation: `node_id` must be larger than all current node_id's managed

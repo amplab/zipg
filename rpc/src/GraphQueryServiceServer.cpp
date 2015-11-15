@@ -54,8 +54,20 @@ public:
             node_table_empty_ = !file_or_dir_exists(node_file);
             edge_table_empty_ = !file_or_dir_exists(edge_file);
         } else {
-            node_table_empty_ = !file_or_dir_exists(node_file + ".succinct");
-            edge_table_empty_ = !file_or_dir_exists(edge_file + ".succinct");
+            std::string suffix;
+            switch (store_mode_) {
+            case StoreMode::SuccinctStore:
+                suffix = ".succinct";
+                break;
+            case StoreMode::SuffixStore:
+                suffix = "_suffixstore";
+                break;
+            case StoreMode::LogStore:
+                suffix = "_logstore";
+                break;
+            }
+            node_table_empty_ = !file_or_dir_exists(node_file + suffix);
+            edge_table_empty_ = !file_or_dir_exists(edge_file + suffix);
         }
 
         LOG_E(
@@ -104,13 +116,21 @@ public:
         case StoreMode::SuffixStore:
             graph_suffix_store_ = shared_ptr<GraphSuffixStore>(
                 new GraphSuffixStore(node_file_, edge_file_));
-            graph_suffix_store_->init();
+            if (construct_) {
+                graph_suffix_store_->construct();
+            } else {
+                graph_suffix_store_->load();
+            }
             break;
 
         case StoreMode::LogStore:
             graph_log_store_ = shared_ptr<GraphLogStore>(new GraphLogStore(
                 node_file_, edge_file_));
-            graph_log_store_->init();
+            if (construct_) {
+                graph_log_store_->construct();
+            } else {
+                graph_log_store_->load();
+            }
             break;
 
         default:

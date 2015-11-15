@@ -34,7 +34,9 @@ public:
     }
 
     // 1 for initialize SA, 2 for also write it out. Otherwise, read from file.
-    void init(int option = 1);
+    void construct();
+
+    void load();
 
     void search(std::set<int64_t> &_return, const std::string& substring);
 

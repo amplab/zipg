@@ -3,23 +3,30 @@
 #include "GraphFormatter.hpp"
 #include "SuccinctGraphSerde.hpp"
 
-void GraphSuffixStore::init(
+void GraphSuffixStore::construct(
     const std::string& node_file,
-    const std::string& edge_file,
-    int option)
+    const std::string& edge_file)
 {
     node_file_ = node_file;
     edge_file_ = edge_file;
 
     node_table_ = std::make_shared<KVSuffixStore>(node_file);
-    node_table_->init(option);
+    node_table_->construct();
 
     edge_table_ = std::make_shared<FileSuffixStore>(edge_file);
-    edge_table_->init(option);
+    edge_table_->construct();
 }
 
-void GraphSuffixStore::init(int option) {
-    init(node_file_, edge_file_, option);
+void GraphSuffixStore::construct() {
+    construct(node_file_, edge_file_);
+}
+
+void GraphSuffixStore::load() {
+    node_table_ = std::make_shared<KVSuffixStore>(node_file_);
+    node_table_->load();
+
+    edge_table_ = std::make_shared<FileSuffixStore>(edge_file_);
+    edge_table_->load();
 }
 
 void GraphSuffixStore::get_attribute(
