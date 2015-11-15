@@ -58,7 +58,10 @@ void KVLogStore::readLogStoreFromFile(const char* logstore_path) {
         }
 
         std::cout << "Read ngram_idx from file!" << std::endl;
-        assert((num_offsets == 0 && data_pos < ngram_n) || num_offsets == (data_pos - ngram_n));
+        assert((num_offsets == 0 && data_pos < ngram_n)
+            || num_offsets == (data_pos - ngram_n));
+
+        std::cout << "Loaded log store from file!" << std::endl;
     }
 }
 
@@ -124,17 +127,27 @@ void KVLogStore::create_ngram_idx() {
 
 // Option: 1 for initialize; 2 for init and write it out; 3 for read in.
 void KVLogStore::init(int option) {
-	data = new char[MAX_LOG_STORE_SIZE];
-	// just the values
-	read_data(input_file_.c_str());
-	// format: "[key] \t [offset into the value file]"
-	if (pointer_file_ != "") {
-	    read_pointers(pointer_file_.c_str());
-	} else {
-	    build_pointers();
-	}
-	create_ngram_idx();
-    COND_LOG_E("Done ngram index\n");
+    if (option == 1 || option == 2) {
+        data = new char[MAX_LOG_STORE_SIZE];
+        // just the values
+        read_data(input_file_.c_str());
+        // format: "[key] \t [offset into the value file]"
+        if (pointer_file_ != "") {
+            read_pointers(pointer_file_.c_str());
+        } else {
+            build_pointers();
+        }
+        create_ngram_idx();
+
+        if (option == 2) {
+            writeLogStoreToFile((input_file_ + "_logstore").c_str());
+            std::cout << "Wrote log store to file "
+                << (input_file_ + "_suffixstore").c_str() << std::endl;
+        }
+    } else {
+        // Read from file
+        readLogStoreFromFile((input_file_ + "_logstore").c_str());
+    }
 }
 
 int32_t KVLogStore::append(int64_t key, const std::string& value) {
