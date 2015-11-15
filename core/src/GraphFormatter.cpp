@@ -684,26 +684,32 @@ void GraphFormatter::make_rand_suffix_store(
     int64_t min_time,
     int64_t max_time)
 {
-    std::unordered_set<
-        std::pair<int64_t, int64_t>,
-        boost::hash< std::pair<int, int> >
-    > set;
-    read_assoc_set(set, assoc_set_file);
-    LOG_E("read in assoc set, size: %lld\n", set.size());
+    int init_option = 0; // load
 
-    populate_random_store(
-        store_out,
-        num_edges_to_add,
-        num_nodes,
-        num_atypes,
-        set,
-        attr_file,
-        bytes_per_attr,
-        min_time,
-        max_time);
+    if (!file_or_dir_exists(store_out + "_suffixstore")) {
+        std::unordered_set<
+            std::pair<int64_t, int64_t>,
+            boost::hash< std::pair<int, int> >
+        > set;
+        read_assoc_set(set, assoc_set_file);
+        LOG_E("read in assoc set, size: %lld\n", set.size());
+
+        populate_random_store(
+            store_out,
+            num_edges_to_add,
+            num_nodes,
+            num_atypes,
+            set,
+            attr_file,
+            bytes_per_attr,
+            min_time,
+            max_time);
+
+        init_option = 2;
+    }
 
     GraphSuffixStore gss("EMPTY_NODE", store_out);
-    gss.init(2);
+    gss.init(init_option);
 }
 
 void GraphFormatter::make_rand_log_store(
@@ -717,26 +723,32 @@ void GraphFormatter::make_rand_log_store(
     int64_t min_time,
     int64_t max_time)
 {
-    std::unordered_set<
-        std::pair<int64_t, int64_t>,
-        boost::hash< std::pair<int, int> >
-    > set;
-    read_assoc_set(set, assoc_set_file);
-    LOG_E("read in assoc set, size: %lld\n", set.size());
+    int init_option = 0; // load
 
-    populate_random_store(
-        store_out,
-        num_edges_to_add,
-        num_nodes,
-        num_atypes,
-        set,
-        attr_file,
-        bytes_per_attr,
-        min_time,
-        max_time);
+    if (!file_or_dir_exists(store_out + "_logstore")) {
+        std::unordered_set<
+            std::pair<int64_t, int64_t>,
+            boost::hash< std::pair<int, int> >
+        > set;
+        read_assoc_set(set, assoc_set_file);
+        LOG_E("read in assoc set, size: %lld\n", set.size());
+
+        populate_random_store(
+            store_out,
+            num_edges_to_add,
+            num_nodes,
+            num_atypes,
+            set,
+            attr_file,
+            bytes_per_attr,
+            min_time,
+            max_time);
+
+        init_option = 2; // construct + write out
+    }
 
     GraphLogStore gls("EMPTY_NODE", store_out);
-    gls.init(2);
+    gls.init(init_option);
 }
 
 void GraphFormatter::read_assoc_set(std::unordered_set<
