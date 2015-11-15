@@ -47,7 +47,7 @@ inline bool file_or_dir_exists(const std::string& pathname) {
     return (stat(pathname.c_str(), &buffer) == 0);
 }
 
-enum StoreMode {
+enum class StoreMode {
     SuccinctStore,
     SuffixStore,
     LogStore

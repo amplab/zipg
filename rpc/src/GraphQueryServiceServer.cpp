@@ -4,13 +4,18 @@
 #include <thrift/transport/TServerSocket.h>
 #include <thrift/transport/TBufferTransports.h>
 
+#include "GraphFormatter.hpp"
 #include "GraphLogStore.h"
 #include "GraphSuffixStore.h"
 #include "SuccinctGraph.hpp"
 #include "utils.h"
 #include "ports.h"
 
+#include <random>
 #include <unordered_map>
+#include <unordered_set>
+
+#include <boost/functional/hash.hpp>
 
 using namespace ::apache::thrift;
 using namespace ::apache::thrift::protocol;
@@ -20,6 +25,12 @@ using namespace ::apache::thrift::server;
 using boost::shared_ptr;
 
 class GraphQueryServiceHandler : virtual public GraphQueryServiceIf {
+private:
+
+    typedef std::unordered_set<
+                std::pair<int64_t, int64_t>,
+                boost::hash< std::pair<int, int> >> AssocSet;
+
 public:
 
     GraphQueryServiceHandler(
@@ -31,7 +42,7 @@ public:
         int32_t npa_sampling_rate,
         int shard_id,
         int total_num_shards,
-        StoreMode store_mode = SuccinctStore)
+        const StoreMode store_mode = StoreMode::SuccinctStore)
     : shard_id_(shard_id),
       total_num_shards_(total_num_shards),
       node_file_(node_file),
@@ -60,6 +71,60 @@ public:
             sa_sampling_rate, npa_sampling_rate);
     }
 
+    void bulk_add_suffix_store(
+        GraphSuffixStore& store,
+        size_t num_edges_to_add,
+        size_t num_nodes,
+        size_t num_atypes,
+        AssocSet& set,
+        const std::string& attr_file,
+        int bytes_per_attr,
+        int64_t min_time,
+        int64_t max_time)
+    {
+        std::random_device rd;
+        std::mt19937 rng(rd());
+        std::uniform_int_distribution<int64_t> uni_node(0, num_nodes - 1);
+        std::uniform_int_distribution<int> uni_atype(0, num_atypes - 1);
+        std::uniform_int_distribution<int64_t> uni_time(min_time, max_time);
+
+        int64_t src, atype;
+        SuccinctGraph::Assoc assoc;
+        std::ifstream attr_in(attr_file);
+
+        char f[26];
+        sprintf(f, "suffix_store_shard%02d.edge", shard_id_);
+        std::stringstream ss(f);
+
+        for (size_t i = 0; i < num_edges_to_add; ++i) {
+            src = uni_node(rng);
+            atype = uni_atype(rng);
+            auto pair = std::make_pair(src, atype);
+
+            // NOTE: only add edges to existing assoc lists
+            while (set.count(pair) == 0) {
+                src = uni_node(rng);
+                atype = uni_atype(rng);
+                pair = std::make_pair(src, atype);
+            }
+
+            GraphFormatter::make_rand_assoc(
+                assoc, src, atype,
+                attr_file, attr_in, bytes_per_attr,
+                uni_time, uni_node, rng);
+
+            ss << assoc.src_id
+                << ' ' << assoc.dst_id
+                << ' ' << assoc.atype
+                << ' ' << assoc.time
+                << ' ' << assoc.attr << std::endl;
+        }
+        ss.flush();
+
+        // Construct store
+        store.init("EMPTY_NODE", std::string(f));
+    }
+
     // Loads or constructs graph shards.
     int32_t init() {
         if (initialized_) {
@@ -67,9 +132,9 @@ public:
             return 0;
         }
         LOG_E("In shard %d's init()\n", shard_id_);
-        switch (store_mode_) {
 
-        case SuccinctStore:
+        switch (store_mode_) {
+        case StoreMode::SuccinctStore:
             if (construct_) {
                 LOG_E("Construct is set to true:"
                     " starting to construct & encode\n");
@@ -96,15 +161,15 @@ public:
             }
             break;
 
-        case SuffixStore:
-            // TODO
+        case StoreMode::SuffixStore:
+            // TODO: load vs. construct
             graph_suffix_store_ = shared_ptr<GraphSuffixStore>(
                 new GraphSuffixStore(node_file_, edge_file_));
             graph_suffix_store_->init();
             break;
 
-        case LogStore:
-            // TODO
+        case StoreMode::LogStore:
+            // TODO: load vs. construct
             graph_log_store_ = shared_ptr<GraphLogStore>(new GraphLogStore(
                 node_file_, edge_file_));
             graph_log_store_->init();
@@ -336,7 +401,7 @@ public:
 
 private:
 
-    // By default, SuccinctStore
+    // By default, StoreMode::SuccinctStore
     const StoreMode store_mode_;
 
     const int shard_id_;
@@ -381,8 +446,11 @@ int main(int argc, char **argv) {
     // default Succinct Graph level 0
     int sa_sampling_rate = 32, isa_sampling_rate = 64, npa_sampling_rate = 128;
     int shard_id = 0, total_num_shards = 1;
-    while ((c = getopt(argc, argv, "m:p:s:i:n:t:d:")) != -1) {
-        switch(c) {
+    int local_host_id = 0, total_num_hosts = 1;
+    StoreMode store_mode = StoreMode::SuccinctStore; // by default, Succinct
+
+    while ((c = getopt(argc, argv, "m:p:s:i:n:t:d:h:k:")) != -1) {
+        switch (c) {
         case 'm':
             mode = atoi(optarg); // 0 for construct, 1 for load
             break;
@@ -404,6 +472,21 @@ int main(int argc, char **argv) {
         case 'd':
             shard_id = atoi(optarg);
             break;
+        case 'h':
+            local_host_id = atoi(optarg);
+            break;
+        case 'k':
+            total_num_hosts = atoi(optarg);
+            break;
+        }
+    }
+
+    // Hack for multistore setup:
+    if (total_num_hosts >= 3) {
+        if (local_host_id == total_num_hosts - 1) {
+            store_mode = StoreMode::LogStore;
+        } else if (local_host_id == total_num_hosts - 2) {
+            store_mode = StoreMode::SuffixStore;
         }
     }
 
@@ -412,7 +495,6 @@ int main(int argc, char **argv) {
     std::string edge_file = std::string(argv[optind + 1]);
     bool construct = (mode == 0) ? true : false;
 
-    // TODO: take in a StoreMode from CLI
     try {
         shared_ptr<GraphQueryServiceHandler> handler(
             new GraphQueryServiceHandler(
@@ -423,7 +505,8 @@ int main(int argc, char **argv) {
                 isa_sampling_rate,
                 npa_sampling_rate,
                 shard_id,
-                total_num_shards));
+                total_num_shards,
+                store_mode));
 
         shared_ptr<TProcessor> processor(
             new GraphQueryServiceProcessor(handler));
