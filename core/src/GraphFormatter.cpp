@@ -661,7 +661,7 @@ void GraphFormatter::populate_random_store(
         GraphFormatter::make_rand_assoc(
             assoc, src, atype,
             attr_file, attr_in, bytes_per_attr,
-            uni_time, uni_node, rng);
+            uni_node, uni_time, rng);
 
         out << assoc.src_id
             << ' ' << assoc.dst_id
