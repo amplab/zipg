@@ -644,7 +644,7 @@ void GraphFormatter::populate_random_store(
     int64_t src, atype;
     SuccinctGraph::Assoc assoc;
     std::ifstream attr_in(attr_file);
-    std::stringstream ss(store_out);
+    std::ofstream out(store_out);
 
     for (size_t i = 0; i < num_edges_to_add; ++i) {
         src = uni_node(rng);
@@ -663,13 +663,12 @@ void GraphFormatter::populate_random_store(
             attr_file, attr_in, bytes_per_attr,
             uni_time, uni_node, rng);
 
-        ss << assoc.src_id
+        out << assoc.src_id
             << ' ' << assoc.dst_id
             << ' ' << assoc.atype
             << ' ' << assoc.time
             << ' ' << assoc.attr << std::endl;
     }
-    ss.flush();
 }
 
 void GraphFormatter::make_rand_suffix_store(
@@ -688,6 +687,7 @@ void GraphFormatter::make_rand_suffix_store(
         boost::hash< std::pair<int, int> >
     > set;
     read_assoc_set(set, assoc_set_file);
+    LOG_E("read in assoc set, size: %lld\n", set.size());
 
     populate_random_store(
         store_out,
@@ -720,6 +720,7 @@ void GraphFormatter::make_rand_log_store(
         boost::hash< std::pair<int, int> >
     > set;
     read_assoc_set(set, assoc_set_file);
+    LOG_E("read in assoc set, size: %lld\n", set.size());
 
     populate_random_store(
         store_out,

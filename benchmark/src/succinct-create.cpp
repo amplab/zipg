@@ -1099,8 +1099,6 @@ int main(int argc, char **argv) {
                 max_time);
         }
 
-        LOG_E("Store generated: '%s'\n", store_out.c_str());
-
     } else {
         printf("Unsupported command type: '%s'\n", type.c_str());
         assert(1); // not supported
