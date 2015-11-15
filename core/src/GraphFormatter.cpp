@@ -669,6 +669,8 @@ void GraphFormatter::populate_random_store(
             << ' ' << assoc.time
             << ' ' << assoc.attr << std::endl;
     }
+    out.flush();
+    LOG_E("Store input written out to: '%s'\n", store_out.c_str());
 }
 
 void GraphFormatter::make_rand_suffix_store(
@@ -701,7 +703,7 @@ void GraphFormatter::make_rand_suffix_store(
         max_time);
 
     GraphSuffixStore gss("EMPTY_NODE", store_out);
-    gss.init(); // TODO: option: write
+    gss.init(2);
 }
 
 void GraphFormatter::make_rand_log_store(
@@ -734,7 +736,7 @@ void GraphFormatter::make_rand_log_store(
         max_time);
 
     GraphLogStore gls("EMPTY_NODE", store_out);
-    gls.init(); // TODO: option: write
+    gls.init(2);
 }
 
 void GraphFormatter::read_assoc_set(std::unordered_set<
