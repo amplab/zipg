@@ -686,7 +686,7 @@ void GraphFormatter::make_rand_suffix_store(
 {
     int init_option = 0; // load
 
-    if (!file_or_dir_exists(store_out + "_suffixstore")) {
+    if (!file_or_dir_exists(store_out)) {
         std::unordered_set<
             std::pair<int64_t, int64_t>,
             boost::hash< std::pair<int, int> >
@@ -725,7 +725,7 @@ void GraphFormatter::make_rand_log_store(
 {
     int init_option = 0; // load
 
-    if (!file_or_dir_exists(store_out + "_logstore")) {
+    if (!file_or_dir_exists(store_out)) {
         std::unordered_set<
             std::pair<int64_t, int64_t>,
             boost::hash< std::pair<int, int> >
