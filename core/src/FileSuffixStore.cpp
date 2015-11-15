@@ -47,7 +47,6 @@ void FileSuffixStore::init(int option) {
     } else {
         // Read from file
         readSuffixStoreFromFile(input_file_.c_str());
-        std::cout << "Loaded suffix store from file!" << std::endl;
     }
 }
 
@@ -72,25 +71,26 @@ void FileSuffixStore::writeSuffixStoreToFile(const char *suffixstore_path) {
 }
 
 void FileSuffixStore::readSuffixStoreFromFile(const char *suffixstore_path) {
-    std::ifstream suffixstore_file(suffixstore_path);
-    suffixstore_file >> sa_n;
-    suffixstore_file >> bits;
+    if (file_or_dir_exists(suffixstore_path)) {
+        std::ifstream suffixstore_file(suffixstore_path);
+        suffixstore_file >> sa_n;
+        suffixstore_file >> bits;
 
-    suffixstore_file.ignore();
-    data = new uint8_t[sa_n];
+        suffixstore_file.ignore();
+        data = new uint8_t[sa_n];
 
-    // Read char array from file
-    suffixstore_file.read((char*) data, sa_n);
+        // Read char array from file
+        suffixstore_file.read((char*) data, sa_n);
 
-    // Read suffix array from file
-    SA = new SuccinctBase::Bitmap;
-    suffixstore_file >> SA->size;
-    SA->bitmap = new uint64_t[(SA->size / 64) + 1];
-    for(long i = 0; i < (SA->size / 64) + 1; i++) {
-        suffixstore_file >> SA->bitmap[i];
+        // Read suffix array from file
+        SA = new SuccinctBase::Bitmap;
+        suffixstore_file >> SA->size;
+        SA->bitmap = new uint64_t[(SA->size / 64) + 1];
+        for(long i = 0; i < (SA->size / 64) + 1; i++) {
+            suffixstore_file >> SA->bitmap[i];
+        }
+        std::cout << "Loaded suffix store from file!" << std::endl;
     }
-
-    suffixstore_file.close();
 }
 
 /* Creates bitmap array */

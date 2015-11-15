@@ -16,49 +16,50 @@ int64_t KVLogStore::get_key_pos(const int64_t value_offset) {
 }
 
 void KVLogStore::readLogStoreFromFile(const char* logstore_path) {
-    std::ifstream logstore_file(logstore_path);
-    logstore_file >> data_pos;
-    std::cout << "data_pos = " << data_pos << std::endl;
-    logstore_file >> ngram_n;
-    std::cout << "ngram_n = " << ngram_n << std::endl;
+    if (file_or_dir_exists(logstore_path)) {
+        std::ifstream logstore_file(logstore_path);
+        logstore_file >> data_pos;
+        std::cout << "data_pos = " << data_pos << std::endl;
+        logstore_file >> ngram_n;
+        std::cout << "ngram_n = " << ngram_n << std::endl;
 
-    logstore_file.ignore();
+        logstore_file.ignore();
 
-    data = new char[MAX_LOG_STORE_SIZE];
+        data = new char[MAX_LOG_STORE_SIZE];
 
-    // Read char array from file
-    logstore_file.read(data, data_pos);
+        // Read char array from file
+        logstore_file.read(data, data_pos);
 
-    // Read ngram_idx from file
-    size_t ngram_idx_size;
-    logstore_file >> ngram_idx_size;
+        // Read ngram_idx from file
+        size_t ngram_idx_size;
+        logstore_file >> ngram_idx_size;
 
-    std::cout << "ngram index size = " << ngram_idx_size << std::endl;
+        std::cout << "ngram index size = " << ngram_idx_size << std::endl;
 
-    uint64_t num_offsets = 0;
-    for(size_t entry = 0; entry < ngram_idx_size; entry++) {
-        // Read string
-        std::string ngram = "";
-        for(uint32_t i = 0; i < ngram_n; i++) {
-            int c;
-            logstore_file >> c;
-            ngram += ((char)c);
+        uint64_t num_offsets = 0;
+        for(size_t entry = 0; entry < ngram_idx_size; entry++) {
+            // Read string
+            std::string ngram = "";
+            for(uint32_t i = 0; i < ngram_n; i++) {
+                int c;
+                logstore_file >> c;
+                ngram += ((char)c);
+            }
+
+            // Read offsets
+            size_t offsets_size;
+            logstore_file >> offsets_size;
+            for(size_t i = 0; i < offsets_size; i++) {
+                uint32_t offset;
+                logstore_file >> offset;
+                ngram_idx[ngram].push_back(offset);
+                num_offsets++;
+            }
         }
 
-        // Read offsets
-        size_t offsets_size;
-        logstore_file >> offsets_size;
-        for(size_t i = 0; i < offsets_size; i++) {
-            uint32_t offset;
-            logstore_file >> offset;
-            ngram_idx[ngram].push_back(offset);
-            num_offsets++;
-        }
+        std::cout << "Read ngram_idx from file!" << std::endl;
+        assert((num_offsets == 0 && data_pos < ngram_n) || num_offsets == (data_pos - ngram_n));
     }
-
-    std::cout << "Read ngram_idx from file!" << std::endl;
-    assert((num_offsets == 0 && data_pos < ngram_n) || num_offsets == (data_pos - ngram_n));
-    logstore_file.close();
 }
 
 void KVLogStore::writeLogStoreToFile(const char* logstore_path) {
