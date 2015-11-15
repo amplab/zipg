@@ -18,11 +18,9 @@ void KVLogStore::init(int option) {
         }
         create_ngram_idx();
 
-        if (option == 2) {
-            writeLogStoreToFile((input_file_ + "_logstore").c_str());
-            std::cout << "Wrote log store to file "
-                << (input_file_ + "_logstore").c_str() << std::endl;
-        }
+        writeLogStoreToFile((input_file_ + "_logstore").c_str());
+        std::cout << "KVLogStore: wrote to file "
+            << (input_file_ + "_logstore").c_str() << std::endl;
     } else {
         // Read from file
         readLogStoreFromFile((input_file_ + "_logstore").c_str());
@@ -131,7 +129,7 @@ void KVLogStore::read_data(const char *input_file) {
     ip.close();
 
     data_pos = size;
-    LOG_E("Log store read %zu bytes\n", data_pos);
+    COND_LOG_E("Log store read %llu bytes\n", data_pos);
 }
 
 // Log and suffix store initialization functions
@@ -143,7 +141,7 @@ void KVLogStore::create_ngram_idx() {
             ngram += data[i + off];
         }
         ngram_idx[ngram].push_back(i);
-        if(i % 1048576 == 0) {
+        if (i % 1048576 == 0) {
             fprintf(stderr, "Processed %ld bytes of data.\n", i);
         }
     }
