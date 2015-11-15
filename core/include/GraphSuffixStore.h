@@ -21,11 +21,17 @@ public:
         const std::string& node_file,
         const std::string& edge_file)
         : node_file_(node_file),
-          edge_file_(edge_file),
-          edge_table_(edge_file)
+          edge_file_(edge_file)
     { }
 
     void init(int option = 1);
+
+    // Bulk load, assuming init() has not been called.  The new files override
+    // the ones passed in by the constructor.
+    void init(
+        const std::string& node_file,
+        const std::string& edge_file,
+        int option = 1);
 
     // An incomplete and/or modified set of Succinct Graph API below
 
@@ -51,10 +57,10 @@ public:
 
 private:
 
-    const std::string node_file_, edge_file_;
+    std::string node_file_, edge_file_;
 
     std::shared_ptr<KVSuffixStore> node_table_ = nullptr;
-    FileSuffixStore edge_table_;
+    std::shared_ptr<FileSuffixStore> edge_table_ = nullptr;
 
 };
 
