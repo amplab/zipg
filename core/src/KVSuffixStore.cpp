@@ -63,7 +63,7 @@ void KVSuffixStore::init(int option) {
         }
     } else {
         // Read from file
-        readSuffixStoreFromFile(input_file_.c_str());
+        readSuffixStoreFromFile((input_file_ + "_suffixstore").c_str());
     }
 }
 
