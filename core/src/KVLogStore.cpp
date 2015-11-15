@@ -2,6 +2,31 @@
 
 #include <algorithm>
 
+// Option: 1 for initialize; 2 for init and write it out; 3 for read in.
+void KVLogStore::init(int option) {
+    if (option == 1 || option == 2) {
+        data = new char[MAX_LOG_STORE_SIZE];
+        // just the values
+        read_data(input_file_.c_str());
+        // format: "[key] \t [offset into the value file]"
+        if (pointer_file_ != "") {
+            read_pointers(pointer_file_.c_str());
+        } else {
+            build_pointers();
+        }
+        create_ngram_idx();
+
+        if (option == 2) {
+            writeLogStoreToFile((input_file_ + "_logstore").c_str());
+            std::cout << "Wrote log store to file "
+                << (input_file_ + "_logstore").c_str() << std::endl;
+        }
+    } else {
+        // Read from file
+        readLogStoreFromFile((input_file_ + "_logstore").c_str());
+    }
+}
+
 int64_t KVLogStore::get_value_offset_pos(const int64_t key) {
     long pos = std::lower_bound(
         keys.begin(), keys.end(), key) - keys.begin();
@@ -123,31 +148,6 @@ void KVLogStore::create_ngram_idx() {
     std::cout << "Created ngram idx! Size = "
         << ngram_idx.size() * (ngram_n + 8) + data_pos * 4
         << "; num entries = " << ngram_idx.size() << "\n";
-}
-
-// Option: 1 for initialize; 2 for init and write it out; 3 for read in.
-void KVLogStore::init(int option) {
-    if (option == 1 || option == 2) {
-        data = new char[MAX_LOG_STORE_SIZE];
-        // just the values
-        read_data(input_file_.c_str());
-        // format: "[key] \t [offset into the value file]"
-        if (pointer_file_ != "") {
-            read_pointers(pointer_file_.c_str());
-        } else {
-            build_pointers();
-        }
-        create_ngram_idx();
-
-        if (option == 2) {
-            writeLogStoreToFile((input_file_ + "_logstore").c_str());
-            std::cout << "Wrote log store to file "
-                << (input_file_ + "_suffixstore").c_str() << std::endl;
-        }
-    } else {
-        // Read from file
-        readLogStoreFromFile((input_file_ + "_logstore").c_str());
-    }
 }
 
 int32_t KVLogStore::append(int64_t key, const std::string& value) {
