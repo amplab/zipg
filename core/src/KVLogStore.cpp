@@ -75,7 +75,7 @@ void KVLogStore::readLogStoreFromFile(const char* logstore_path) {
         std::cout << "ngram index size = " << ngram_idx_size << std::endl;
 
         uint64_t num_offsets = 0;
-        for(size_t entry = 0; entry < ngram_idx_size; entry++) {
+        for (size_t entry = 0; entry < ngram_idx_size; entry++) {
             // Read string
             std::string ngram = "";
             for(uint32_t i = 0; i < ngram_n; i++) {
@@ -118,18 +118,20 @@ int64_t KVLogStore::get_key_pos(const int64_t value_offset) {
 
 // Reads into `data`, updating `data_pos` correctly.
 void KVLogStore::read_data(const char *input_file) {
-    std::ifstream ip;
-    uint64_t size;
+    if (file_or_dir_exists(input_file)) {
+        std::ifstream ip;
+        uint64_t size;
 
-    ip.open(input_file);
-    ip.seekg(0, std::ios::end);
-    size = ip.tellg();
-    ip.seekg (0, std::ios::beg);
-    ip.read(data, size);
-    ip.close();
+        ip.open(input_file);
+        ip.seekg(0, std::ios::end);
+        size = ip.tellg();
+        ip.seekg (0, std::ios::beg);
+        ip.read(data, size);
+        ip.close();
 
-    data_pos = size;
-    COND_LOG_E("Log store read %llu bytes\n", data_pos);
+        data_pos = size;
+        COND_LOG_E("Log store read %llu bytes\n", data_pos);
+    }
 }
 
 // Log and suffix store initialization functions
