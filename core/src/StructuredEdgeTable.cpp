@@ -5,6 +5,8 @@
 
 #include <algorithm>
 
+constexpr char SERDE_DELIM = '\x02';
+
 void StructuredEdgeTable::construct() {
     std::map<std::pair<int64_t, int64_t>,
         std::vector<SuccinctGraph::Assoc>> assoc_map;
@@ -50,17 +52,17 @@ void StructuredEdgeTable::construct() {
         int64_t key = it->first;
         auto& map = it->second;
 
-        oa << key << ' ' << map.size() << std::endl;
+        oa << key << SERDE_DELIM << map.size() << std::endl;
 
         for (auto it2 = map.begin(); it2 != map.end(); ++it2) {
             key = it2->first; // atype
             auto& vec = it2->second;
 
-            oa << key << ' ' << vec.size();
+            oa << key << SERDE_DELIM << vec.size();
             for (auto& edge_data : vec) {
-                oa << ' ' << edge_data.dst
-                    << ' ' << edge_data.timestamp
-                    << ' ' << edge_data.attr;
+                oa << SERDE_DELIM << edge_data.dst
+                    << SERDE_DELIM << edge_data.timestamp
+                    << SERDE_DELIM << edge_data.attr;
             }
             oa << std::endl;
 
@@ -86,7 +88,7 @@ void StructuredEdgeTable::load() {
 
         while (std::getline(ifs, line)) {
             std::stringstream ss(line);
-            std::getline(ss, key, ' ');
+            std::getline(ss, key, SERDE_DELIM);
             std::getline(ss, keysize);
 
             src = std::stoll(key);
@@ -99,16 +101,16 @@ void StructuredEdgeTable::load() {
 
                 std::getline(ifs, line);
                 std::stringstream ss2(line);
-                std::getline(ss2, key, ' ');
-                std::getline(ss2, keysize, ' ');
+                std::getline(ss2, key, SERDE_DELIM);
+                std::getline(ss2, keysize, SERDE_DELIM);
 
                 atype = std::stol(key);
                 size_t vec_size = std::stol(keysize);
 
                 for (size_t j = 0; j < vec_size; ++j) {
-                    std::getline(ss2, dst, ' ');
-                    std::getline(ss2, timestamp, ' ');
-                    std::getline(ss2, attr, ' ');
+                    std::getline(ss2, dst, SERDE_DELIM);
+                    std::getline(ss2, timestamp, SERDE_DELIM);
+                    std::getline(ss2, attr, SERDE_DELIM);
                     edge_datas.emplace_back(EdgeData{
                         std::stoll(dst), std::stoll(timestamp), attr });
                 }
