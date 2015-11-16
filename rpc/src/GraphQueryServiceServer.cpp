@@ -24,26 +24,25 @@ using namespace ::apache::thrift::server;
 
 using boost::shared_ptr;
 
+// ******************** hacks: we should really make sure these
+// states are not flying around outside of a class.
+// Updates
 
-    // Updates
+// src -> (atype -> [shard id, file offset])
+std::unordered_map<int64_t,
+    std::unordered_map<int64_t, std::vector<ThriftEdgeUpdatePtr>>
+> edge_update_ptrs;
 
-    // src -> (atype -> [shard id, file offset])
-    typedef std::pair<int, int64_t> EdgeUpdatePtr;
+// src -> (shard id, file offset)
+typedef std::pair<int, int64_t> NodeUpdatePtr;
+std::unordered_map<int64_t, NodeUpdatePtr> node_update_ptrs;
 
-    std::unordered_map<int64_t,
-        std::unordered_map<int64_t, std::vector<ThriftEdgeUpdatePtr>>
-    > edge_update_ptrs;
+shared_ptr<GraphLogStore> graph_log_store_ = nullptr;
+shared_ptr<GraphSuffixStore> graph_suffix_store_ = nullptr;
 
-    // src -> (shard id, file offset)
-    typedef std::pair<int, int64_t> NodeUpdatePtr;
-    std::unordered_map<int64_t, NodeUpdatePtr> node_update_ptrs;
-
-    shared_ptr<GraphLogStore> graph_log_store_ = nullptr;
-    shared_ptr<GraphSuffixStore> graph_suffix_store_ = nullptr;
-
-    std::mutex suffix_store_mutex, log_store_mutex;
-    bool suffix_store_initialized = false, log_store_initialized = false;
-
+std::mutex suffix_store_mutex, log_store_mutex;
+bool suffix_store_initialized = false, log_store_initialized = false;
+// ********************************** hacks done
 
 class GraphQueryServiceHandler : virtual public GraphQueryServiceIf {
 public:
