@@ -24,6 +24,26 @@ using namespace ::apache::thrift::server;
 
 using boost::shared_ptr;
 
+
+    // Updates
+
+    // src -> (atype -> [shard id, file offset])
+    typedef std::pair<int, int64_t> EdgeUpdatePtr;
+
+    std::unordered_map<int64_t,
+        std::unordered_map<int64_t, std::vector<ThriftEdgeUpdatePtr>>
+    > edge_update_ptrs;
+
+    // src -> (shard id, file offset)
+    typedef std::pair<int, int64_t> NodeUpdatePtr;
+    std::unordered_map<int64_t, NodeUpdatePtr> node_update_ptrs;
+
+    shared_ptr<GraphLogStore> graph_log_store_ = nullptr;
+    shared_ptr<GraphSuffixStore> graph_suffix_store_ = nullptr;
+
+    std::mutex suffix_store_mutex;
+
+
 class GraphQueryServiceHandler : virtual public GraphQueryServiceIf {
 public:
 
@@ -114,12 +134,15 @@ public:
             break;
 
         case StoreMode::SuffixStore:
-            graph_suffix_store_ = shared_ptr<GraphSuffixStore>(
-                new GraphSuffixStore(node_file_, edge_file_));
-            if (construct_) {
-                graph_suffix_store_->construct();
-            } else {
-                graph_suffix_store_->load();
+            {
+                std::lock_guard<std::mutex> lock(suffix_store_mutex);
+                graph_suffix_store_ = shared_ptr<GraphSuffixStore>(
+                    new GraphSuffixStore(node_file_, edge_file_));
+                if (construct_) {
+                    graph_suffix_store_->construct();
+                } else {
+                    graph_suffix_store_->load();
+                }
             }
             break;
 
@@ -397,27 +420,14 @@ private:
     const bool construct_;
 
     const shared_ptr<SuccinctGraph> graph_;
-    shared_ptr<GraphLogStore> graph_log_store_ = nullptr;
-    shared_ptr<GraphSuffixStore> graph_suffix_store_ = nullptr;
 
     bool initialized_;
 
     bool node_table_empty_ = true;
     bool edge_table_empty_ = true;
 
-    // Updates
-
-    // src -> (atype -> [shard id, file offset])
-    typedef std::pair<int, int64_t> EdgeUpdatePtr;
-
-    std::unordered_map<int64_t,
-        std::unordered_map<int64_t, std::vector<ThriftEdgeUpdatePtr>>
-    > edge_update_ptrs;
-
-    // src -> (shard id, file offset)
-    typedef std::pair<int, int64_t> NodeUpdatePtr;
-    std::unordered_map<int64_t, NodeUpdatePtr> node_update_ptrs;
 };
+
 
 int main(int argc, char **argv) {
     if (argc < 2) {

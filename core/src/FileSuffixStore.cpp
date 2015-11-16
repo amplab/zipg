@@ -73,7 +73,7 @@ void FileSuffixStore::writeSuffixStoreToFile(const char *suffixstore_path) {
 }
 
 void FileSuffixStore::readSuffixStoreFromFile(const char *suffixstore_path) {
-    std::lock_guard<std::mutex> lock(mutex_);
+    // std::lock_guard<std::mutex> lock(mutex_);
     if (initialized_) {
         return;
     }
