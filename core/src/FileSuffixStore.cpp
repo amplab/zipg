@@ -63,7 +63,7 @@ void FileSuffixStore::writeSuffixStoreToFile(const char *suffixstore_path) {
     // Write suffix array to file
     suffixstore_file << SA->size << std::endl;
 
-    for(long i = 0; i < (SA->size / 64) + 1; i++) {
+    for (size_t i = 0; i < (SA->size / 64) + 1; i++) {
         suffixstore_file << SA->bitmap[i] << " ";
     }
     suffixstore_file << std::endl;
@@ -94,8 +94,9 @@ void FileSuffixStore::readSuffixStoreFromFile(const char *suffixstore_path) {
         // Read suffix array from file
         SA = new SuccinctBase::Bitmap;
         suffixstore_file >> SA->size;
+        COND_LOG_E("SA size %lld\n", SA->size);
         SA->bitmap = new uint64_t[(SA->size / 64) + 1];
-        for(long i = 0; i < (SA->size / 64) + 1; i++) {
+        for (size_t i = 0; i < (SA->size / 64) + 1; i++) {
             suffixstore_file >> SA->bitmap[i];
         }
         LOG_E("Loaded suffix store from file!\n");

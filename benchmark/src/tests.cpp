@@ -305,6 +305,58 @@ void test_file_suffix_store() {
     std::remove(edge_table_file.c_str());
 }
 
+void test_file_suffix_store2() {
+    std::string edge_file_content = "0 1 2 41842148 a b\n"
+                                    "0 1618 2 93244 sup\n"
+                                    "0 1 2 9324 suc\n"
+                                    "0 2 0 9324 succinct is cool\n"
+                                    "6 1 1 111111 abcd\n";
+
+    std::string edge_file(
+        GraphFormatter::write_to_temp_file(edge_file_content));
+    std::string edge_table_file(
+        GraphFormatter::write_to_temp_file(""));
+    SuccinctGraph::output_edge_table(edge_file, edge_table_file);
+
+    LOG_E("File: %s\n", edge_table_file.c_str());
+
+    FileSuffixStore fss(edge_table_file);
+    std::vector<int64_t> keys;
+    std::string str;
+    fss.construct();
+
+    // Now use another suffix store
+    FileSuffixStore file_suffix_store(edge_table_file);
+    file_suffix_store.load();
+
+    file_suffix_store.search(
+        keys, SuccinctGraph::mk_edge_table_search_key(0, 2));
+    assert(keys.size() == 1);
+
+    file_suffix_store.search(
+        keys, SuccinctGraph::mk_edge_table_search_key(0, 1));
+    assert(keys.size() == 0);
+
+    file_suffix_store.search(
+        keys, SuccinctGraph::mk_edge_table_search_key(0, 0));
+    assert(keys.size() == 1);
+
+    file_suffix_store.extract(str, keys[0] + 1, 1);
+    assert(str == "0");
+
+    file_suffix_store.extract(str, keys[0] + 3, 1);
+    assert(str == "0");
+
+    file_suffix_store.search(
+        keys, SuccinctGraph::mk_edge_table_search_key(6, 1));
+    file_suffix_store.extract(str, keys[0] + 1, 1);
+    assert(str == "6");
+
+    std::remove(edge_file.c_str());
+    std::remove(edge_table_file.c_str());
+}
+
+
 int main(int argc, char **argv) {
 
     test_kv_log_store();
@@ -316,5 +368,7 @@ int main(int argc, char **argv) {
 
     test_structured_edge_table();
     test_file_suffix_store();
+
+    test_file_suffix_store2();
 
 }
