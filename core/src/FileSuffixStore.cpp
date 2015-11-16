@@ -49,10 +49,6 @@ void FileSuffixStore::construct() {
 }
 
 void FileSuffixStore::load() {
-    std::lock_guard<std::mutex> lk(mutex_);
-    if (initialized_) {
-        return;
-    }
     readSuffixStoreFromFile((input_file_ + "_suffixstore").c_str());
 }
 
@@ -77,6 +73,10 @@ void FileSuffixStore::writeSuffixStoreToFile(const char *suffixstore_path) {
 }
 
 void FileSuffixStore::readSuffixStoreFromFile(const char *suffixstore_path) {
+    std::lock_guard<std::mutex> lock(mutex_);
+    if (initialized_) {
+        return;
+    }
     if (file_or_dir_exists(suffixstore_path)) {
         COND_LOG_E("Loading FileSuffixStore from '%s'\n", suffixstore_path);
 
