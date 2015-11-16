@@ -643,7 +643,7 @@ public:
         }
     }
 
-    // TODO: incomplete impl!
+    // FIXME: the implementation is sequential for now...
     void assoc_range_local(
         std::vector<ThriftAssoc>& _return,
         int32_t shardId,
@@ -652,9 +652,11 @@ public:
         int32_t off,
         int32_t len)
     {
-        int shard_idx = shardId / num_succinctstore_hosts_;
+        // FIXME?
+        int shard_idx = shard_id_to_shard_idx(shardId);
         std::vector<ThriftAssoc> assocs;
         int32_t curr_len = 0;
+        _return.clear();
 
         std::vector<ThriftEdgeUpdatePtr> ptrs;
         local_shards_.at(shard_idx).get_edge_update_ptrs(ptrs, src, atype);
@@ -667,17 +669,25 @@ public:
             // int64_t offset = ptr.offset; // TODO: add optimization
             int next_host_id = host_id_for_shard(ptr.shardId);
             assert(next_host_id != local_host_id_);
+
             aggregators_.at(next_host_id).assoc_range_local(
-                assocs, ptr.shardId, src, atype, off, len - curr_len);
+                assocs,
+                ptr.shardId,
+                src,
+                atype,
+                0, // FIXME: this is hacky and potentially expensive
+                len - curr_len);
+            _return.insert(_return.end(), assocs.begin(), assocs.end());
 
             curr_len += assocs.size();
-
         }
 
-        local_shards_[shardId / total_num_hosts_]
-            .assoc_range(_return, src, atype, off, len);
+        if (_return.size() < len) {
+            local_shards_[shardId / total_num_hosts_] // FIXME?
+                .assoc_range(_return, src, atype, off, len);
+        }
 
-
+        // TODO: return a sublist?
     }
 
     void assoc_count_batched(
@@ -720,23 +730,29 @@ public:
     }
 
     int64_t assoc_count(int64_t src, int64_t atype) {
-        int shard_id = src % total_num_shards_;
-        int host_id = shard_id % num_succinctstore_hosts_;
+        // %'ing with total_num_shards_ means always going to a primary
+        int primary_shard_id = src % total_num_shards_;
+        int host_id = primary_shard_id % num_succinctstore_hosts_;
+
         if (host_id == local_host_id_) {
-            return assoc_count_local(shard_id, src, atype);
+            return assoc_count_local(primary_shard_id, src, atype);
         } else {
             return aggregators_.at(host_id).assoc_count_local(
-                shard_id, src, atype);
+                primary_shard_id, src, atype);
         }
     }
 
+    // This can be called on any Succinct, Suffix, and Log Store machine.
+    // Therefore, shardId can be >= num_succinctstore_shards_.
     int64_t assoc_count_local(
         int32_t shardId, int64_t src, int64_t atype)
     {
-        int shard_idx = shardId / num_succinctstore_hosts_;
+        int shard_idx = shard_id_to_shard_idx(shardId);
 
         std::vector<ThriftEdgeUpdatePtr> ptrs;
         local_shards_.at(shard_idx).get_edge_update_ptrs(ptrs, src, atype);
+
+        // Follow all pointers.  Suffix and Log Stores should not have them.
         for (auto& ptr : ptrs) {
             // int64_t offset = ptr.offset; // TODO: add optimization
             int next_host_id = host_id_for_shard(ptr.shardId);
@@ -745,6 +761,7 @@ public:
                 ptr.shardId, src, atype);
         }
 
+        // Execute locally
         int64_t cnt = local_shards_.at(shard_idx).assoc_count(src, atype);
 
         for (auto& ptr : ptrs) {
@@ -1001,6 +1018,19 @@ private:
         } else {
             return num_succinctstore_hosts_ + 1; // host n - 1
         }
+    }
+
+    // Limitation: this assumes 1 SuffixStore machine and 1 LogStore machine.
+    inline int shard_id_to_shard_idx(int shard_id) {
+        int diff = shard_id - num_succinctstore_shards_
+            - num_suffixstore_shards_;
+        if (diff >= 0) {
+            return diff; // log store
+        }
+        diff = shard_id - num_succinctstore_shards_;
+        return diff >= 0
+            ? diff // suffix store
+            : shard_id / num_succinctstore_hosts_; // succinct st., round-robin
     }
 
     const int total_num_shards_; // total # of logical shards
