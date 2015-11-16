@@ -652,7 +652,6 @@ public:
         int32_t off,
         int32_t len)
     {
-        // FIXME?
         int shard_idx = shard_id_to_shard_idx(shardId);
         std::vector<ThriftAssoc> assocs;
         int32_t curr_len = 0;
@@ -683,11 +682,14 @@ public:
         }
 
         if (_return.size() < len) {
-            local_shards_[shardId / total_num_hosts_] // FIXME?
-                .assoc_range(_return, src, atype, off, len);
+            local_shards_[shard_idx]
+                .assoc_range(assocs, src, atype, off, len);
+            _return.insert(_return.end(), assocs.begin(), assocs.end());
         }
 
-        // TODO: return a sublist?
+        auto start = _return.begin();
+        auto end = _return.begin() + len;
+        _return = std::vector<ThriftAssoc>(start, end);
     }
 
     void assoc_count_batched(
