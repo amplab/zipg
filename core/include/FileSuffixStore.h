@@ -20,7 +20,8 @@ class FileSuffixStore {
 public:
 
     FileSuffixStore(const std::string& input_file)
-        : input_file_(input_file)
+        : input_file_(input_file),
+          initialized_(false)
     { }
 
     ~FileSuffixStore() {
@@ -69,6 +70,7 @@ private:
     uint8_t *data = nullptr;
 
     std::mutex mutex_;
+    bool initialized_;
 
 };
 

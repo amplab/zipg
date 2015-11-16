@@ -7,6 +7,9 @@
 #define ISPOWOF2(n)     ((n != 0) && ((n & (n - 1)) == 0))
 
 void FileSuffixStore::construct() {
+    if (initialized_) {
+        return;
+    }
     /* Integer logarithm to the base 2 -- fast */
     auto intLog2 = [](long n) {
         int l = ISPOWOF2(n) ? 0 : 1;
@@ -41,9 +44,15 @@ void FileSuffixStore::construct() {
     writeSuffixStoreToFile((input_file_ + "_suffixstore").c_str());
     std::cout << "Wrote suffix store to file "
         << (input_file_ + "_suffixstore").c_str() << std::endl;
+
+    initialized_ = true;
 }
 
 void FileSuffixStore::load() {
+    std::lock_guard<std::mutex> lk(mutex_);
+    if (initialized_) {
+        return;
+    }
     readSuffixStoreFromFile((input_file_ + "_suffixstore").c_str());
 }
 
@@ -68,7 +77,6 @@ void FileSuffixStore::writeSuffixStoreToFile(const char *suffixstore_path) {
 }
 
 void FileSuffixStore::readSuffixStoreFromFile(const char *suffixstore_path) {
-    std::lock_guard<std::mutex> lk(mutex_);
     if (file_or_dir_exists(suffixstore_path)) {
         COND_LOG_E("Loading FileSuffixStore from '%s'\n", suffixstore_path);
 
@@ -92,6 +100,7 @@ void FileSuffixStore::readSuffixStoreFromFile(const char *suffixstore_path) {
         }
         LOG_E("Loaded suffix store from file!\n");
     }
+    initialized_ = true;
 }
 
 /* Creates bitmap array */
