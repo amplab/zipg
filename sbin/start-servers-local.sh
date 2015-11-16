@@ -53,7 +53,7 @@ if [[ "$ENABLE_MULTI_STORE" == T ]]; then
   elif [[ $(( $num_hosts - 2 )) = $local_host_id ]]; then
     storeMode=suffixstore
   fi
-  num_succinctstore_hosts=$(( num_hosts - 2 )) 
+  num_succinctstore_hosts=$(( num_hosts - 2 ))
 fi
 
 # ??

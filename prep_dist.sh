@@ -48,24 +48,28 @@ bash ./init.sh
 
 #### Copy the corresponding shard files over
 if [[ -n $copyShardFiles ]]; then
+  num_succinctstore_hosts=$num_hosts
+  if [[ "$ENABLE_MULTI_STORE" == T ]]; then
+    num_succinctstore_hosts=$(( num_hosts - 2 ))
+  fi
+
   limit=$(($TOTAL_NUM_SHARDS - 1))
-  padWidth=${#limit}
-  paddedTotalNumShards=$(printf "%0*d" ${padWidth} ${TOTAL_NUM_SHARDS})
+  padWidth=${#TOTAL_NUM_SHARDS}
   for shard_id in `seq 0 $limit`; do
       # transfer shard id i to an appropriate host
-      host_id=$(($shard_id % num_hosts))
+      host_id=$(($shard_id % num_succinctstore_hosts))
       host=$(sed -n "$(($host_id + 1)){p;q;}" ${currDir}/conf/hosts)
   
       padded_shard_id=$(printf "%0*d" ${padWidth} ${shard_id})
-      node_split="${node_file_raw}-part${padded_shard_id}of${paddedTotalNumShards}"
-      edge_split="${edge_file_raw}-part${padded_shard_id}of${paddedTotalNumShards}"
+      node_split="${node_file_raw}-part${padded_shard_id}of${TOTAL_NUM_SHARDS}"
+      edge_split="${edge_file_raw}-part${padded_shard_id}of${TOTAL_NUM_SHARDS}"
   
       # Encoded succinct dirs
       # Hacky: note this uses internal impl details about namings of encoded tables
       nodeTbl="${node_split}WithPtrs.succinct"
       # This replaces the last 'assoc' by 'edge_table'
       edgeTbl=$(echo -n "${edge_split}.succinct" | sed 's/\(.*\)assoc\(.*\)/\1edge_table\2/')
-  
+
       if [[ ! -d "${nodeTbl}" ]]; then
         echo "dir ${nodeTbl} doesn't exist, exiting"
         exit 1
@@ -82,10 +86,34 @@ if [[ -n $copyShardFiles ]]; then
       rsync -arL ${nodeTbl} ${host}:$d1 &
       rsync -arL ${edgeTbl} ${host}:$d2 &
   done
+
+  if [[ "$ENABLE_MULTI_STORE" == T ]]; then
+    # copy stuff to SuffixStore mc and LogStore mc
+    for i in $(seq 0 "${NUM_SUFFIXSTORE_PARTS}"); do
+      padWidth=${#NUM_SUFFIXSTORE_PARTS}
+      padded_shard_id=$(printf "%0*d" ${padWidth} ${i})
+      nodeTbl="${node_file_raw}.suffixstore-part${padded_shard_id}of${NUM_SUFFIXSTORE_PARTS}_suffixstore"
+      edgeTbl="${edge_file_raw}.suffixstore-part${padded_shard_id}of${NUM_SUFFIXSTORE_PARTS}_suffixstore"
+      d1=$(dirname "${nodeTbl}")
+      d2=$(dirname "${edgeTbl}")
+      rsync -arL ${nodeTbl} ${host}:$d1 &
+      rsync -arL ${edgeTbl} ${host}:$d2 &
+    done
+    for i in $(seq 0 "${NUM_LOGSTORE_PARTS}"); do
+      padWidth=${#NUM_LOGSTORE_PARTS}
+      padded_shard_id=$(printf "%0*d" ${padWidth} ${i})
+      nodeTbl="${node_file_raw}.logstore-part${padded_shard_id}of${NUM_LOGSTORE_PARTS}_logstore"
+      edgeTbl="${edge_file_raw}.logstore-part${padded_shard_id}of${NUM_LOGSTORE_PARTS}_logstore"
+      d1=$(dirname "${nodeTbl}")
+      d2=$(dirname "${edgeTbl}")
+      rsync -arL ${nodeTbl} ${host}:$d1 &
+      rsync -arL ${edgeTbl} ${host}:$d2 &
+    done
+  fi
+
   wait
   echo "Shard files copied to all servers."
 fi
-wait
 
 #### Launch aggregator & shards on all hosts
 
