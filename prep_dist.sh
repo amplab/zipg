@@ -89,7 +89,8 @@ if [[ -n $copyShardFiles ]]; then
 
   if [[ "$ENABLE_MULTI_STORE" == T ]]; then
     # copy stuff to SuffixStore mc and LogStore mc
-    for i in $(seq 0 "${NUM_SUFFIXSTORE_PARTS}"); do
+    limit=$((NUM_SUFFIXSTORE_PARTS - 1))
+    for i in $(seq 0 "${limit}"); do
       padWidth=${#NUM_SUFFIXSTORE_PARTS}
       padded_shard_id=$(printf "%0*d" ${padWidth} ${i})
       nodeTbl="${node_file_raw}.suffixstore-part${padded_shard_id}of${NUM_SUFFIXSTORE_PARTS}_suffixstore"
@@ -99,7 +100,8 @@ if [[ -n $copyShardFiles ]]; then
       rsync -arL ${nodeTbl} ${host}:$d1 &
       rsync -arL ${edgeTbl} ${host}:$d2 &
     done
-    for i in $(seq 0 "${NUM_LOGSTORE_PARTS}"); do
+    limit=$((NUM_LOGSTORE_PARTS - 1))
+    for i in $(seq 0 "${limit}"); do
       padWidth=${#NUM_LOGSTORE_PARTS}
       padded_shard_id=$(printf "%0*d" ${padWidth} ${i})
       nodeTbl="${node_file_raw}.logstore-part${padded_shard_id}of${NUM_LOGSTORE_PARTS}_logstore"
