@@ -124,4 +124,79 @@ void swap(ThriftAssoc &a, ThriftAssoc &b) {
   swap(a.__isset, b.__isset);
 }
 
+const char* ThriftEdgeUpdatePtr::ascii_fingerprint = "F33135321253DAEB67B0E79E416CA831";
+const uint8_t ThriftEdgeUpdatePtr::binary_fingerprint[16] = {0xF3,0x31,0x35,0x32,0x12,0x53,0xDA,0xEB,0x67,0xB0,0xE7,0x9E,0x41,0x6C,0xA8,0x31};
+
+uint32_t ThriftEdgeUpdatePtr::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->shardId);
+          this->__isset.shardId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->offset);
+          this->__isset.offset = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t ThriftEdgeUpdatePtr::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  xfer += oprot->writeStructBegin("ThriftEdgeUpdatePtr");
+
+  xfer += oprot->writeFieldBegin("shardId", ::apache::thrift::protocol::T_I64, 1);
+  xfer += oprot->writeI64(this->shardId);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("offset", ::apache::thrift::protocol::T_I64, 2);
+  xfer += oprot->writeI64(this->offset);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(ThriftEdgeUpdatePtr &a, ThriftEdgeUpdatePtr &b) {
+  using ::std::swap;
+  swap(a.shardId, b.shardId);
+  swap(a.offset, b.offset);
+  swap(a.__isset, b.__isset);
+}
+
 

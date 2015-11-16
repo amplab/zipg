@@ -7,6 +7,11 @@ struct ThriftAssoc {
     5: string attr,
 }
 
+struct ThriftEdgeUpdatePtr {
+    1: i64 shardId,
+    2: i64 offset,
+}
+
 // One per logical shard (there can be multiple shards per physical node).
 service GraphQueryService {
 
@@ -55,6 +60,10 @@ service GraphQueryService {
     list<ThriftAssoc> assoc_time_range(
         1: i64 src, 2: i64 atype,
         3: i64 tLow, 4: i64 tHigh, 5: i32 limit),
+
+    // Multi-store related
+
+    list<ThriftEdgeUpdatePtr> get_edge_update_ptrs(1: i64 src, 2: i64 atype),
 
 }
 

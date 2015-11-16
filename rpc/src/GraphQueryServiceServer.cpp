@@ -357,6 +357,14 @@ public:
         }
     }
 
+    void get_edge_update_ptrs(
+        std::vector<ThriftEdgeUpdatePtr> & _return,
+        const int64_t src,
+        const int64_t atype)
+    {
+        _return = edge_update_ptrs[src][atype];
+    }
+
 private:
 
     // By default, StoreMode::SuccinctStore
@@ -384,7 +392,7 @@ private:
     typedef std::pair<int, int64_t> EdgeUpdatePtr;
 
     std::unordered_map<int64_t,
-        std::unordered_map<int64_t, std::vector<EdgeUpdatePtr>>
+        std::unordered_map<int64_t, std::vector<ThriftEdgeUpdatePtr>>
     > edge_update_ptrs;
 
     // src -> (shard id, file offset)

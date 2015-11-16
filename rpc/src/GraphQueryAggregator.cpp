@@ -28,14 +28,29 @@ public:
         int total_num_shards,
         int local_num_shards,
         int local_host_id,
-        const std::vector<std::string>& hostnames)
+        const std::vector<std::string>& hostnames,
+        bool multistore_enabled = false,
+        int num_succinctstore_shards = 1,
+        int num_suffixstore_shards = 1,
+        int num_logstore_shards = 1)
     : total_num_shards_(total_num_shards),
       local_num_shards_(local_num_shards),
       local_host_id_(local_host_id),
       hostnames_(hostnames),
       total_num_hosts_(hostnames.size()),
-      initiated_(false)
-    { }
+      initiated_(false),
+      multistore_enabled_(multistore_enabled),
+      num_suffixstore_shards_(num_suffixstore_shards),
+      num_logstore_shards_(num_logstore_shards)
+    {
+        num_succinctstore_hosts_ = total_num_hosts_;
+        num_succinctstore_shards_ = total_num_shards_;
+
+        if (multistore_enabled_) {
+            num_succinctstore_hosts_ = total_num_hosts_ - 2;
+            num_succinctstore_shards_ = num_succinctstore_shards;
+        }
+    }
 
     int32_t init() {
         if (initiated_) {
@@ -674,19 +689,38 @@ public:
 
     int64_t assoc_count(int64_t src, int64_t atype) {
         int shard_id = src % total_num_shards_;
-        int host_id = shard_id % total_num_hosts_;
+        int host_id = shard_id % num_succinctstore_hosts_;
         if (host_id == local_host_id_) {
-            return local_shards_[shard_id / total_num_hosts_]
-                .assoc_count(src, atype);
+            return assoc_count_local(shard_id, src, atype);
         } else {
             return aggregators_.at(host_id).assoc_count_local(
                 shard_id, src, atype);
         }
     }
 
-    int64_t assoc_count_local(int32_t shardId, int64_t src, int64_t atype) {
-        return local_shards_[shardId / total_num_hosts_]
-            .assoc_count(src, atype);
+    int64_t assoc_count_local(
+        int32_t shardId, int64_t src, int64_t atype)
+    {
+        int shard_idx = shardId / num_succinctstore_hosts_;
+
+        std::vector<ThriftEdgeUpdatePtr> ptrs;
+        local_shards_.at(shard_idx).get_edge_update_ptrs(ptrs, src, atype);
+        for (auto& ptr : ptrs) {
+            // int64_t offset = ptr.offset; // TODO: add optimization
+            int next_host_id = host_id_for_shard(ptr.shardId);
+            assert(next_host_id != local_host_id_);
+            aggregators_.at(next_host_id).send_assoc_count_local(
+                ptr.shardId, src, atype);
+        }
+
+        int64_t cnt = local_shards_.at(shard_idx).assoc_count(src, atype);
+
+        for (auto& ptr : ptrs) {
+            int next_host_id = host_id_for_shard(ptr.shardId);
+            cnt += aggregators_.at(next_host_id).recv_assoc_count_local();
+        }
+
+        return cnt;
     }
 
     void assoc_get(
@@ -923,6 +957,20 @@ private:
         return (global_node_id - shard_id) / total_num_shards_;
     }
 
+    // Host 0 to n - 3: the SuccinctStores, hash-partitioned
+    // Host n - 2: the SuffixStores
+    // Host n - 1: the LogStores
+    inline int host_id_for_shard(int shard_id) {
+        if (!multistore_enabled_ || shard_id < num_succinctstore_shards_) {
+            return shard_id % num_succinctstore_hosts_;
+        }
+        if (shard_id - num_succinctstore_shards_ < num_suffixstore_shards_) {
+            return num_succinctstore_hosts_; // host n
+        } else {
+            return num_succinctstore_hosts_ + 1; // host n - 1
+        }
+    }
+
     const int total_num_shards_; // total # of logical shards
     const int local_num_shards_;
 
@@ -931,7 +979,13 @@ private:
     // all aggregators in the cluster, hostnames used for opening sockets
     std::vector<std::string> hostnames_;
     const int total_num_hosts_;
-    bool initiated_;
+    bool initiated_, multistore_enabled_;
+
+    int num_succinctstore_hosts_;
+
+    int num_succinctstore_shards_;
+    int num_suffixstore_shards_;
+    int num_logstore_shards_;
 
     std::vector<GraphQueryServiceClient> local_shards_;
 

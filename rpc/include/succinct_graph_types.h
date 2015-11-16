@@ -92,6 +92,57 @@ class ThriftAssoc {
 
 void swap(ThriftAssoc &a, ThriftAssoc &b);
 
+typedef struct _ThriftEdgeUpdatePtr__isset {
+  _ThriftEdgeUpdatePtr__isset() : shardId(false), offset(false) {}
+  bool shardId;
+  bool offset;
+} _ThriftEdgeUpdatePtr__isset;
+
+class ThriftEdgeUpdatePtr {
+ public:
+
+  static const char* ascii_fingerprint; // = "F33135321253DAEB67B0E79E416CA831";
+  static const uint8_t binary_fingerprint[16]; // = {0xF3,0x31,0x35,0x32,0x12,0x53,0xDA,0xEB,0x67,0xB0,0xE7,0x9E,0x41,0x6C,0xA8,0x31};
+
+  ThriftEdgeUpdatePtr() : shardId(0), offset(0) {
+  }
+
+  virtual ~ThriftEdgeUpdatePtr() throw() {}
+
+  int64_t shardId;
+  int64_t offset;
+
+  _ThriftEdgeUpdatePtr__isset __isset;
+
+  void __set_shardId(const int64_t val) {
+    shardId = val;
+  }
+
+  void __set_offset(const int64_t val) {
+    offset = val;
+  }
+
+  bool operator == (const ThriftEdgeUpdatePtr & rhs) const
+  {
+    if (!(shardId == rhs.shardId))
+      return false;
+    if (!(offset == rhs.offset))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftEdgeUpdatePtr &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftEdgeUpdatePtr & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(ThriftEdgeUpdatePtr &a, ThriftEdgeUpdatePtr &b);
+
 
 
 #endif
