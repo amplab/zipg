@@ -48,9 +48,9 @@ npa_sr=${8:-128}
 storeMode=succinctstore
 num_succinctstore_hosts=$num_hosts
 if [[ "$ENABLE_MULTI_STORE" == T ]]; then
-  if [[ $(( num_hosts - 1 == local_host_id )) ]]; then
+  if [[ $(( num_hosts - 1 )) == $local_host_id ]]; then
     storeMode=logstore
-  elif [[ $(( num_hosts - 2 == local_host_id )) ]]; then
+  elif [[ $(( $num_hosts - 2 )) = $local_host_id ]]; then
     storeMode=suffixstore
   fi
   num_succinctstore_hosts=$(( num_hosts - 2 )) 
