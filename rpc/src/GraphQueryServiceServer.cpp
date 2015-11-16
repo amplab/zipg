@@ -41,7 +41,8 @@ using boost::shared_ptr;
     shared_ptr<GraphLogStore> graph_log_store_ = nullptr;
     shared_ptr<GraphSuffixStore> graph_suffix_store_ = nullptr;
 
-    std::mutex suffix_store_mutex;
+    std::mutex suffix_store_mutex, log_store_mutex;
+    bool suffix_store_initialized = false, log_store_initialized = false;
 
 
 class GraphQueryServiceHandler : virtual public GraphQueryServiceIf {
@@ -136,6 +137,9 @@ public:
         case StoreMode::SuffixStore:
             {
                 std::lock_guard<std::mutex> lock(suffix_store_mutex);
+                if (suffix_store_initialized) {
+                    break;
+                }
                 graph_suffix_store_ = shared_ptr<GraphSuffixStore>(
                     new GraphSuffixStore(node_file_, edge_file_));
                 if (construct_) {
@@ -143,16 +147,24 @@ public:
                 } else {
                     graph_suffix_store_->load();
                 }
+                suffix_store_initialized = true;
             }
             break;
 
         case StoreMode::LogStore:
-            graph_log_store_ = shared_ptr<GraphLogStore>(new GraphLogStore(
-                node_file_, edge_file_));
-            if (construct_) {
-                graph_log_store_->construct();
-            } else {
-                graph_log_store_->load();
+            {
+                std::lock_guard<std::mutex> lock(log_store_mutex);
+                if (log_store_initialized)  {
+                    break;
+                }
+                graph_log_store_ = shared_ptr<GraphLogStore>(new GraphLogStore(
+                    node_file_, edge_file_));
+                if (construct_) {
+                    graph_log_store_->construct();
+                } else {
+                    graph_log_store_->load();
+                }
+                log_store_initialized = true;
             }
             break;
 
