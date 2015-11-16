@@ -7,6 +7,7 @@
 
 #include "utils.h"
 
+#include <mutex>
 #include <set>
 #include <string>
 #include <unordered_map>
@@ -66,6 +67,8 @@ private:
 
     // For Log Store and Suffix Store
     uint8_t *data = nullptr;
+
+    std::mutex mutex_;
 
 };
 
