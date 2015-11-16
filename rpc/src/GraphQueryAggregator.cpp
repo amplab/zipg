@@ -30,7 +30,6 @@ public:
         int local_host_id,
         const std::vector<std::string>& hostnames,
         bool multistore_enabled = false,
-        int num_succinctstore_shards = 1,
         int num_suffixstore_shards = 1,
         int num_logstore_shards = 1)
     : total_num_shards_(total_num_shards),
@@ -44,11 +43,10 @@ public:
       num_logstore_shards_(num_logstore_shards)
     {
         num_succinctstore_hosts_ = total_num_hosts_;
-        num_succinctstore_shards_ = total_num_shards_;
+        num_succinctstore_shards_ = total_num_shards_; // synoynyms
 
         if (multistore_enabled_) {
             num_succinctstore_hosts_ = total_num_hosts_ - 2;
-            num_succinctstore_shards_ = num_succinctstore_shards;
         }
     }
 
@@ -589,10 +587,10 @@ public:
     {
         COND_LOG_E("in aggregator assoc_range\n");
         int shard_id = src % total_num_shards_;
-        int host_id = shard_id % total_num_hosts_;
+        int host_id = shard_id % num_succinctstore_hosts_;
+
         if (host_id == local_host_id_) {
-            local_shards_[shard_id / total_num_hosts_]
-                .assoc_range(_return, src, atype, off, len);
+            assoc_range_local(_return, shard_id, src, atype, off, len);
         } else {
             aggregators_.at(host_id).assoc_range_local(
                 _return, shard_id, src, atype, off, len);
@@ -645,6 +643,7 @@ public:
         }
     }
 
+    // TODO: incomplete impl!
     void assoc_range_local(
         std::vector<ThriftAssoc>& _return,
         int32_t shardId,
@@ -653,8 +652,32 @@ public:
         int32_t off,
         int32_t len)
     {
+        int shard_idx = shardId / num_succinctstore_hosts_;
+        std::vector<ThriftAssoc> assocs;
+        int32_t curr_len = 0;
+
+        std::vector<ThriftEdgeUpdatePtr> ptrs;
+        local_shards_.at(shard_idx).get_edge_update_ptrs(ptrs, src, atype);
+        for (auto it = ptrs.rbegin(); it != ptrs.rend(); ++it) {
+            if (curr_len >= len) {
+                return;
+            }
+
+            auto& ptr = *it;
+            // int64_t offset = ptr.offset; // TODO: add optimization
+            int next_host_id = host_id_for_shard(ptr.shardId);
+            assert(next_host_id != local_host_id_);
+            aggregators_.at(next_host_id).assoc_range_local(
+                assocs, ptr.shardId, src, atype, off, len - curr_len);
+
+            curr_len += assocs.size();
+
+        }
+
         local_shards_[shardId / total_num_hosts_]
             .assoc_range(_return, src, atype, off, len);
+
+
     }
 
     void assoc_count_batched(
@@ -1012,17 +1035,29 @@ public:
         int total_num_shards,
         int local_num_shards,
         int local_host_id,
-        const std::vector<std::string>& hostnames)
+        const std::vector<std::string>& hostnames,
+        bool multistore_enabled,
+        int num_suffixstore_shards,
+        int num_logstore_shards)
     : total_num_shards_(total_num_shards),
       local_num_shards_(local_num_shards),
       local_host_id_(local_host_id),
-      hostnames_(hostnames)
+      hostnames_(hostnames),
+      multistore_enabled_(multistore_enabled),
+      num_suffixstore_shards_(num_suffixstore_shards),
+      num_logstore_shards_(num_logstore_shards)
     { }
 
     boost::shared_ptr<TProcessor> getProcessor(const TConnectionInfo&) {
         boost::shared_ptr<GraphQueryAggregatorServiceHandler> handler(
-            new GraphQueryAggregatorServiceHandler(total_num_shards_,
-                local_num_shards_, local_host_id_, hostnames_));
+            new GraphQueryAggregatorServiceHandler(
+                total_num_shards_,
+                local_num_shards_,
+                local_host_id_,
+                hostnames_,
+                multistore_enabled_,
+                num_suffixstore_shards_,
+                num_logstore_shards_));
         boost::shared_ptr<TProcessor> handlerProcessor(
             new GraphQueryAggregatorServiceProcessor(handler));
         return handlerProcessor;
@@ -1032,6 +1067,8 @@ private:
     int local_num_shards_;
     int local_host_id_;
     const std::vector<std::string>& hostnames_;
+    bool multistore_enabled_;
+    int num_suffixstore_shards_, num_logstore_shards_;
 };
 
 void print_usage(char *exec) {
@@ -1042,14 +1079,16 @@ void print_usage(char *exec) {
 }
 
 int main(int argc, char **argv) {
-    if (argc < 2 || argc > 10) {
+    if (argc < 2) {
         print_usage(argv[0]);
         return -1;
     }
 
     int c, total_num_shards, local_num_shards, local_host_id;
+    bool multistore_enabled;
+    int num_suffixstore_shards, num_logstore_shards;
     std::string hostsfile;
-    while ((c = getopt(argc, argv, "t:s:i:h:")) != -1) {
+    while ((c = getopt(argc, argv, "t:s:i:h:f:l:m:")) != -1) {
         switch(c) {
         case 't':
             total_num_shards = atoi(optarg);
@@ -1062,6 +1101,15 @@ int main(int argc, char **argv) {
             break;
         case 'h':
             hostsfile = optarg;
+            break;
+        case 'f':
+            num_suffixstore_shards = atoi(optarg);
+            break;
+        case 'l':
+            num_logstore_shards = atoi(optarg);
+            break;
+        case 'm':
+            multistore_enabled = (std::string(optarg) == "T");
             break;
         default:
             total_num_shards = local_num_shards = 1;
@@ -1084,7 +1132,10 @@ int main(int argc, char **argv) {
                 total_num_shards,
                 local_num_shards,
                 local_host_id,
-                hostnames));
+                hostnames,
+                multistore_enabled,
+                num_suffixstore_shards,
+                num_logstore_shards));
         shared_ptr<TServerTransport> server_transport(new TServerSocket(port));
         shared_ptr<TTransportFactory> transport_factory(
             new TBufferedTransportFactory());
