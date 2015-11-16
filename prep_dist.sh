@@ -90,6 +90,7 @@ if [[ -n $copyShardFiles ]]; then
   if [[ "$ENABLE_MULTI_STORE" == T ]]; then
     # copy stuff to SuffixStore mc and LogStore mc
     limit=$((NUM_SUFFIXSTORE_PARTS - 1))
+    host=$(sed -n "$((num_succinctstore_hosts + 1)){p;q;}" ${currDir}/conf/hosts)
     for i in $(seq 0 "${limit}"); do
       padWidth=${#NUM_SUFFIXSTORE_PARTS}
       padded_shard_id=$(printf "%0*d" ${padWidth} ${i})
@@ -100,7 +101,9 @@ if [[ -n $copyShardFiles ]]; then
       rsync -arL ${nodeTbl} ${host}:$d1 &
       rsync -arL ${edgeTbl} ${host}:$d2 &
     done
+
     limit=$((NUM_LOGSTORE_PARTS - 1))
+    host=$(sed -n "$((num_succinctstore_hosts + 2)){p;q;}" ${currDir}/conf/hosts)
     for i in $(seq 0 "${limit}"); do
       padWidth=${#NUM_LOGSTORE_PARTS}
       padded_shard_id=$(printf "%0*d" ${padWidth} ${i})
