@@ -198,7 +198,16 @@ public:
 private:
 
     int32_t connect_to_local_shards() {
-        for (int i = 0; i < local_num_shards_; ++i) {
+        int num_shards_on_host = local_num_shards_;
+        if (multistore_enabled_) {
+            if (local_host_id_ == total_num_hosts_ - 2) {
+                num_shards_on_host = num_suffixstore_shards_;
+            } else if (local_host_id_ == total_num_hosts_ - 1) {
+                num_shards_on_host = num_logstore_shards_;
+            }
+        }
+
+        for (int i = 0; i < num_shards_on_host; ++i) {
             // Desirable? Hacky way to facilitate benchmark client reconnecting
             // to a healthy cluster of aggregators & shard servers.
             if (i < local_shards_.size()) continue;
