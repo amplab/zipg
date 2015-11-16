@@ -4,10 +4,10 @@ make -j bench
 
 dataset=twitter2010-40attr16each
 
-num_suff_stores=1
+num_suff_stores=0
 num_edges_per_suff_store=1
-num_log_stores=1
-num_edges_per_log_store=1
+num_log_stores=3
+num_edges_per_log_store=3500000
 
 if [[ "$dataset" == "twitter2010-40attr16each" ]]; then
   store_out="${dataset}"
@@ -45,11 +45,11 @@ done
 
 # LogStores
 
-padWidth=${#num_suff_stores}
+padWidth=${#num_log_stores}
 limit=$(($num_log_stores - 1))
 for i in $(seq 0 1 ${limit}); do
   p=$(printf "%0*d" ${padWidth} ${i})
-  store_out_file="${store_out}.logstore-part${p}of${num_log_stores}"
+  store_out_file="twitter2010-npa128sa32isa64.assoc.logstore-part${p}of${num_log_stores}"
 
   ./benchmark/bin/create make-store \
     ${store_out_file} \
