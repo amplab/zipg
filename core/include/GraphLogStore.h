@@ -65,10 +65,33 @@ public:
         int attr2,
         const std::string& search_key2);
 
-    std::vector<SuccinctGraph::Assoc> assoc_range(
+    inline std::vector<SuccinctGraph::Assoc> assoc_range(
         int64_t src,
         int64_t atype,
         int32_t off,
+        int32_t len)
+    {
+        return edge_table_.assoc_range(src, atype, off, len);
+    }
+
+    void obj_get(std::vector<std::string>& result, int64_t obj_id);
+
+    std::vector<SuccinctGraph::Assoc> assoc_get(
+        int64_t src,
+        int64_t atype,
+        const std::set<int64_t>& dst_id_set,
+        int64_t t_low,
+        int64_t t_high);
+
+    inline int64_t assoc_count(int64_t src, int64_t atype) {
+        return edge_table_.assoc_count(src, atype);
+    }
+
+    std::vector<SuccinctGraph::Assoc> assoc_time_range(
+        int64_t src,
+        int64_t atype,
+        int64_t t_low,
+        int64_t t_high,
         int32_t len);
 
 private:

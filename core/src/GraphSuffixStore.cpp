@@ -24,9 +24,11 @@ void GraphSuffixStore::construct() {
 void GraphSuffixStore::load() {
     node_table_ = std::make_shared<KVSuffixStore>(node_file_);
     node_table_->load();
+    COND_LOG_E("GraphSuffixStore: node table loaded\n");
 
     edge_table_ = std::make_shared<FileSuffixStore>(edge_file_);
     edge_table_->load();
+    COND_LOG_E("GraphSuffixStore: edge table loaded\n");
 }
 
 void GraphSuffixStore::get_attribute(
@@ -191,4 +193,43 @@ std::vector<SuccinctGraph::Assoc> GraphSuffixStore::assoc_range(
         }
     }
     return result;
+}
+
+int64_t GraphSuffixStore::assoc_count(int64_t src, int64_t atype) {
+    std::vector<int64_t> offs;
+    edge_table_->search(
+        offs, SuccinctGraph::mk_edge_table_search_key(src, atype));
+    assert(offs.size() <= 1);
+    if (offs.size() == 0) {
+        return 0;
+    }
+
+    int32_t edge_width, dst_id_width, timestamp_width;
+    int64_t cnt;
+    std::string str;
+    std::vector<SuccinctGraph::Assoc> result;
+
+    int64_t curr_off = offs[0];
+
+    // skip after src, atype
+    curr_off = edge_table_->skip_until(
+        curr_off, SuccinctGraph::TIMESTAMP_WIDTH_DELIM);
+
+    edge_table_->extract(str,
+        curr_off, SuccinctGraphSerde::WIDTH_TIMESTAMP_WIDTH_PADDED);
+    COND_LOG_E("extracted timestamp width = '%s'\n", str.c_str());
+    timestamp_width = std::stoi(str);
+    curr_off += SuccinctGraphSerde::WIDTH_TIMESTAMP_WIDTH_PADDED;
+
+    edge_table_->extract(str,
+        curr_off,
+        SuccinctGraphSerde::WIDTH_DST_ID_WIDTH_PADDED);
+    COND_LOG_E("extracted dst id width = '%s'\n", str.c_str());
+    dst_id_width = std::stoi(str);
+
+    curr_off += SuccinctGraphSerde::WIDTH_DST_ID_WIDTH_PADDED;
+    curr_off = edge_table_->extract_until(
+        str, curr_off, SuccinctGraph::EDGE_WIDTH_DELIM);
+    COND_LOG_E("extracted cnt = '%s'\n", str.c_str());
+    return std::stoll(str);
 }

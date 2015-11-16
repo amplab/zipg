@@ -69,9 +69,12 @@ void FileSuffixStore::writeSuffixStoreToFile(const char *suffixstore_path) {
 
 void FileSuffixStore::readSuffixStoreFromFile(const char *suffixstore_path) {
     if (file_or_dir_exists(suffixstore_path)) {
+        COND_LOG_E("Loading FileSuffixStore from '%s'\n", suffixstore_path);
+
         std::ifstream suffixstore_file(suffixstore_path);
         suffixstore_file >> sa_n;
         suffixstore_file >> bits;
+        COND_LOG_E("sa_n %ld, bits %d\n", sa_n, bits);
 
         suffixstore_file.ignore();
         data = new uint8_t[sa_n];
@@ -86,7 +89,7 @@ void FileSuffixStore::readSuffixStoreFromFile(const char *suffixstore_path) {
         for(long i = 0; i < (SA->size / 64) + 1; i++) {
             suffixstore_file >> SA->bitmap[i];
         }
-        std::cout << "Loaded suffix store from file!" << std::endl;
+        LOG_E("Loaded suffix store from file!\n");
     }
 }
 

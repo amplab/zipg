@@ -104,7 +104,7 @@ void KVSuffixStore::readSuffixStoreFromFile(const char *suffixstore_path) {
             suffixstore_file >> SA->bitmap[i];
         }
 
-        std::cout << "Loaded suffix store from file!" << std::endl;
+        std::cout << "Loaded KV suffix store from file!" << std::endl;
     }
 }
 

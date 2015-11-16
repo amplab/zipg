@@ -43,6 +43,10 @@ public:
         int32_t off,
         int32_t len);
 
+    inline int64_t assoc_count(int64_t src, int64_t atype) {
+        return edges[src][atype].size();
+    }
+
 //    template<class Archive>
 //    void serialize(Archive & ar, const unsigned int version) {
 //        // read class state from archive

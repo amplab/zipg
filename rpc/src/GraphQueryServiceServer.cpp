@@ -274,8 +274,20 @@ public:
         int32_t off,
         int32_t len)
     {
-        std::vector<SuccinctGraph::Assoc> vec(
-            std::move(graph_->assoc_range(src, atype, off, len)));
+        std::vector<SuccinctGraph::Assoc> vec;
+        switch (store_mode_) {
+        case StoreMode::SuccinctStore:
+            vec = std::move(graph_->assoc_range(src, atype, off, len));
+            break;
+        case StoreMode::SuffixStore:
+            vec = std::move(
+                graph_suffix_store_->assoc_range(src, atype, off, len));
+            break;
+        case StoreMode::LogStore:
+            vec = std::move(
+                graph_log_store_->assoc_range(src, atype, off, len));
+            break;
+        }
 
         // TODO: any better way?
         // NB: the fields are Thrift-generated, so this may not be portable.
@@ -294,7 +306,14 @@ public:
     }
 
     int64_t assoc_count(int64_t src, int64_t atype) {
-        return graph_->assoc_count(src, atype);
+        switch (store_mode_) {
+        case StoreMode::SuccinctStore:
+            return graph_->assoc_count(src, atype);
+        case StoreMode::SuffixStore:
+            return graph_suffix_store_->assoc_count(src, atype);
+        case StoreMode::LogStore:
+            return graph_log_store_->assoc_count(src, atype);
+        }
     }
 
     void assoc_get(
