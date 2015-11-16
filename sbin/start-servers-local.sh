@@ -163,14 +163,16 @@ for i in `seq 0 $limit`; do
       logstore )
         nodeInput="${node_file_raw}.logstore-part${padded_shard_id}of${NUM_LOGSTORE_PARTS}"
         edgeInput="${edge_file_raw}.logstore-part${padded_shard_id}of${NUM_LOGSTORE_PARTS}"
-        if [[ ( ( ! -f "${nodeInput}_logstore" ) || ( ! -f "${edgeInput}_logstore" ) ) ]]; then
+        #if [[ ( ( ! -f "${nodeInput}_logstore" ) || ( ! -f "${edgeInput}_logstore" ) ) ]]; then
+        if [[ ! -f "${edgeInput}_logstore" ]]; then # TODO: ignore node for now
           mode=0
         fi
         ;;
       suffixstore )
         nodeInput="${node_file_raw}.suffixstore-part${padded_shard_id}of${NUM_SUFFIXSTORE_PARTS}"
         edgeInput="${edge_file_raw}.suffixstore-part${padded_shard_id}of${NUM_SUFFIXSTORE_PARTS}"
-        if [[ ( ( ! -f "${nodeInput}_suffixstore" ) || ( ! -f "${edgeInput}_suffixstore" ) ) ]]; then
+        #if [[ ( ( ! -f "${nodeInput}_suffixstore" ) || ( ! -f "${edgeInput}_suffixstore" ) ) ]]; then
+        if [[ ! -f "${edgeInput}_suffixstore" ]]; then # TODO: ignore node for now
           mode=0
         fi
         ;;
