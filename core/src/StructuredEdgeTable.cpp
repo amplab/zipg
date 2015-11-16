@@ -81,6 +81,9 @@ void StructuredEdgeTable::load() {
         std::ifstream ifs(edge_file_ + "_logstore");
         std::getline(ifs, edge_file_); // edge_file_
 
+        COND_LOG_E("StructuredEdgeTable: loading from '%s'\n",
+            (edge_file_ + "_logstore").c_str());
+
         while (std::getline(ifs, line)) {
             std::stringstream ss(line);
             std::getline(ss, key, ' ');
@@ -103,7 +106,6 @@ void StructuredEdgeTable::load() {
                 size_t vec_size = std::stol(keysize);
 
                 for (size_t j = 0; j < vec_size; ++j) {
-                    EdgeData edge;
                     std::getline(ss2, dst, ' ');
                     std::getline(ss2, timestamp, ' ');
                     std::getline(ss2, attr, ' ');
