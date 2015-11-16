@@ -401,8 +401,10 @@ private:
 };
 
 int main(int argc, char **argv) {
-    if (argc < 2 || argc > 16)
+    if (argc < 2) {
+        LOG_E("Exiting due to argc < 2\n");
         return -1;
+    }
     LOG_E("Command line: ");
     for (int i = 0; i < argc; i++) LOG_E("%s ", argv[i]);
     LOG_E("\n");
