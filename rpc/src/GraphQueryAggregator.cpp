@@ -864,7 +864,7 @@ public:
         }
     }
 
-    // FIXME: multistore logic
+    // FIXME: it currently goes to all shards in parallel, due to lack of times.
     void assoc_get_local(
         std::vector<ThriftAssoc>& _return,
         const int32_t shardId,
@@ -875,12 +875,43 @@ public:
         const int64_t tHigh)
     {
         int shard_idx = shard_id_to_shard_idx(shardId);
+
         COND_LOG_E("assoc_get_local(src %lld, atype %lld) "
             "; shardId %d on host %d, shard idx %d\n",
             src, atype, shardId, local_host_id_, shard_idx);
+
+        std::vector<ThriftEdgeUpdatePtr> ptrs;
+        local_shards_.at(shard_idx).get_edge_update_ptrs(ptrs, src, atype);
+
+        COND_LOG_E("# update ptrs: %d\n", ptrs.size());
+
+        for (auto it = ptrs.rbegin(); it != ptrs.rend(); ++it) {
+            // int64_t offset = ptr.offset; // TODO: add optimization
+            int next_host_id = host_id_for_shard(it->shardId);
+            assert(next_host_id != local_host_id_ && "next host is myself!");
+
+            aggregators_.at(next_host_id).send_assoc_get_local(
+                it->shardId, src, atype, dstIdSet, tLow, tHigh);
+        }
+
         local_shards_.at(shard_idx)
-            .assoc_get(_return, src, atype, dstIdSet, tLow, tHigh);
-        COND_LOG_E("assoc_get_local returned!");
+            .send_assoc_get(src, atype, dstIdSet, tLow, tHigh);
+
+        std::vector<ThriftAssoc> assocs;
+        _return.clear();
+
+        for (auto it = ptrs.rbegin(); it != ptrs.rend(); ++it) {
+            // int64_t offset = ptr.offset; // TODO: add optimization
+            int next_host_id = host_id_for_shard(it->shardId);
+            aggregators_.at(next_host_id).recv_assoc_get_local(assocs);
+            _return.insert(_return.end(), assocs.begin(), assocs.end());
+        }
+
+        local_shards_.at(shard_idx).recv_assoc_get(assocs);
+        _return.insert(_return.end(), assocs.begin(), assocs.end());
+
+        COND_LOG_E("assoc_get_local done, returning %d assocs!\n",
+            _return.size());
     }
 
     void obj_get(std::vector<std::string>& _return, const int64_t nodeId) {
