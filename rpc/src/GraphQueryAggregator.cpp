@@ -648,6 +648,7 @@ public:
     }
 
     // FIXME: the implementation is sequential for now...
+    // FIXME: the logic is simply incorrect if off != 0.
     void assoc_range_local(
         std::vector<ThriftAssoc>& _return,
         int32_t shardId,
@@ -669,7 +670,7 @@ public:
         COND_LOG_E("# update ptrs: %d\n", ptrs.size());
         for (auto it = ptrs.rbegin(); it != ptrs.rend(); ++it) {
             if (curr_len >= len) {
-                return;
+                break;
             }
 
             auto& ptr = *it;
@@ -1107,7 +1108,7 @@ private:
             return shard_id % num_succinctstore_hosts_;
         }
         if (shard_id - num_succinctstore_shards_ < num_suffixstore_shards_) {
-            return num_succinctstore_hosts_; // host n
+            return num_succinctstore_hosts_; // host n - 2
         } else {
             return num_succinctstore_hosts_ + 1; // host n - 1
         }
