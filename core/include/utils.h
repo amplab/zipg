@@ -11,12 +11,12 @@
 #include <inttypes.h>
 
 #ifndef LOG_E
-#define LOG_E(fmt, ...) fprintf(stderr, fmt, ##__VA_ARGS__)
+#define LOG_E(fmt, ...) fprintf(stderr, fmt, ##__VA_ARGS__); fflush(stderr)
 #endif
 
 #ifndef COND_LOG_E
 #ifdef LOG_DEBUG
-#define COND_LOG_E(fmt, ...) fprintf(stderr, fmt, ##__VA_ARGS__)
+#define COND_LOG_E(fmt, ...) fprintf(stderr, fmt, ##__VA_ARGS__); fflush(stderr)
 #else
 #define COND_LOG_E(fmt, ...) /* no-op */
 #endif

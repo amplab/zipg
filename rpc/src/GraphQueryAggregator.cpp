@@ -62,8 +62,9 @@ public:
         }
 
         int status = init_local_shards();
-        LOG_E("Initialization failed at shard, status = %d\n", status);
-        if (!status) {
+        if (status) {
+            LOG_E("Initialization failed at shard, status = %d\n", status);
+        } else {
             local_shards_data_initiated = true;
         }
 

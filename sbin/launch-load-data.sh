@@ -18,4 +18,4 @@ bin="`cd "$bin"; pwd`"
 export LD_LIBRARY_PATH=$SUCCINCT_HOME/lib
 
 nohup "$bin/../rpc/bin/load_data" \
-  2>&1 >"$SUCCINCT_LOG_PATH/load_data.log"
+  2>"$SUCCINCT_LOG_PATH/load_data.log" >/dev/null &
