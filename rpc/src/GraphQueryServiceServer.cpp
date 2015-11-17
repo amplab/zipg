@@ -26,6 +26,14 @@ using boost::shared_ptr;
 
 // ******************** hacks: we should really make sure these
 // states are not flying around outside of a class.
+
+std::mutex succinct_store_mutex;
+shared_ptr<SuccinctGraph> graph_(new SuccinctGraph(""));
+bool succinct_store_initialized = false;
+
+std::mutex global_init_mutex;
+bool initialized_ = false;
+
 // Updates
 
 // src -> (atype -> [shard id, file offset])
@@ -62,13 +70,14 @@ public:
       node_file_(node_file),
       edge_file_(edge_file),
       construct_(construct),
-      graph_(new SuccinctGraph("")), // just no-op object alloc
-      initialized_(false),
       store_mode_(store_mode)
     {
-        graph_->set_npa_sampling_rate(npa_sampling_rate);
-        graph_->set_sa_sampling_rate(sa_sampling_rate);
-        graph_->set_isa_sampling_rate(isa_sampling_rate);
+        {
+            std::lock_guard<std::mutex> lk(succinct_store_mutex);
+            graph_->set_npa_sampling_rate(npa_sampling_rate);
+            graph_->set_sa_sampling_rate(sa_sampling_rate);
+            graph_->set_isa_sampling_rate(isa_sampling_rate);
+        }
 
         if (construct) {
             node_table_empty_ = !file_or_dir_exists(node_file);
@@ -100,6 +109,7 @@ public:
 
     // Loads or constructs graph shards.
     int32_t init() {
+        std::lock_guard<std::mutex> lk(global_init_mutex);
         if (initialized_) {
             LOG_E("Already initialized\n");
             return 0;
@@ -108,29 +118,36 @@ public:
 
         switch (store_mode_) {
         case StoreMode::SuccinctStore:
-            if (construct_) {
-                LOG_E("Construct is set to true:"
-                    " starting to construct & encode\n");
-                if (!node_table_empty_ && !edge_table_empty_) {
-                    graph_->construct(node_file_, edge_file_); // in parallel
-                } else if (!node_table_empty_) {
-                    graph_->construct_node_table(node_file_);
-                } else if (!edge_table_empty_) {
-                    graph_->construct_edge_table(edge_file_);
-                } else {
-                    assert(false && "Neither node file nor edge file exists!");
+            {
+                std::lock_guard<std::mutex> lock(succinct_store_mutex);
+                if (succinct_store_initialized) {
+                    break;
                 }
-            } else {
-                LOG_E("Construct is set to false: starting to load\n");
-                if (!node_table_empty_ && !edge_table_empty_) {
-                    graph_->load(node_file_, edge_file_);
-                } else if (!node_table_empty_) {
-                    graph_->load_node_table(node_file_);
-                } else if (!edge_table_empty_) {
-                    graph_->load_edge_table(edge_file_);
+                if (construct_) {
+                    LOG_E("Construct is set to true:"
+                        " starting to construct & encode\n");
+                    if (!node_table_empty_ && !edge_table_empty_) {
+                        graph_->construct(node_file_, edge_file_); // in parallel
+                    } else if (!node_table_empty_) {
+                        graph_->construct_node_table(node_file_);
+                    } else if (!edge_table_empty_) {
+                        graph_->construct_edge_table(edge_file_);
+                    } else {
+                        assert(false && "Neither node file nor edge file exists!");
+                    }
                 } else {
-                    assert(false && "Neither node file nor edge file exists!");
+                    LOG_E("Construct is set to false: starting to load\n");
+                    if (!node_table_empty_ && !edge_table_empty_) {
+                        graph_->load(node_file_, edge_file_);
+                    } else if (!node_table_empty_) {
+                        graph_->load_node_table(node_file_);
+                    } else if (!edge_table_empty_) {
+                        graph_->load_edge_table(edge_file_);
+                    } else {
+                        assert(false && "Neither node file nor edge file exists!");
+                    }
                 }
+                succinct_store_initialized = true;
             }
             break;
 
@@ -475,10 +492,6 @@ private:
     const std::string node_file_;
     const std::string edge_file_;
     const bool construct_;
-
-    const shared_ptr<SuccinctGraph> graph_;
-
-    bool initialized_;
 
     bool node_table_empty_ = true;
     bool edge_table_empty_ = true;
