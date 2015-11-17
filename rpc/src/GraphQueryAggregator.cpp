@@ -1,6 +1,7 @@
 #include "GraphQueryAggregatorService.h"
 
 #include <fstream>
+#include <mutex>
 #include <unordered_map>
 
 #include <thrift/protocol/TBinaryProtocol.h>
