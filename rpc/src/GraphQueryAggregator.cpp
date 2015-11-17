@@ -1080,14 +1080,26 @@ public:
             // int64_t offset = ptr.offset; // TODO: add optimization
             int next_host_id = host_id_for_shard(it->shardId);
             aggregators_.at(next_host_id).recv_assoc_time_range_local(assocs);
-            _return.insert(_return.end(), assocs.begin(), assocs.end());
+
+            if (_return.size() + assocs.size() <= limit) {
+                _return.insert(_return.end(), assocs.begin(), assocs.end());
+            } else {
+                _return.insert(_return.end(), assocs.begin(),
+                    assocs.begin() + (limit - _return.size()));
+            }
         }
 
         local_shards_.at(shard_idx).recv_assoc_time_range(assocs);
-        _return.insert(_return.end(), assocs.begin(), assocs.end());
 
-        COND_LOG_E("assoc_time_range done, returning %d assocs!\n",
-            _return.size());
+        if (_return.size() + assocs.size() <= limit) {
+            _return.insert(_return.end(), assocs.begin(), assocs.end());
+        } else {
+            _return.insert(_return.end(), assocs.begin(),
+                assocs.begin() + (limit - _return.size()));
+        }
+
+        COND_LOG_E("assoc_time_range done, returning %d assocs (limit %d)!\n",
+            _return.size(), limit);
     }
 
 private:
