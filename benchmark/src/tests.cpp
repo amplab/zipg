@@ -50,6 +50,18 @@ void assert_eq(
     assert_eq(vec, expected);
 }
 
+void assert_eq(
+    const std::vector<std::string>& actual,
+    std::initializer_list<std::string> expected)
+{
+    assert(expected.size() == actual.size());
+    int i = 0;
+    for (const auto& expected_elem : expected) {
+        assert(actual[i] == expected_elem);
+        ++i;
+    }
+}
+
 void test_kv_log_store() {
     std::string ret;
     std::set<int64_t> keys;
@@ -152,13 +164,99 @@ void test_graph_log_store() {
 
     // append edges
 
-    graph_log_store.append_edge(0, 0, 2, 1618, "I am Edge");
+    graph_log_store.append_edge(0, 2, 0, 1618, "I am Edge");
     assert_eq(graph_log_store.assoc_range(0, 0, 0, 1),
-        { { 0, 0, 2, 1618, "I am Edge" } });
+        { { 0, 2, 0, 1618, "I am Edge" } });
 
-    graph_log_store.append_edge(0, 0, 2, 1619, "I am Edge2");
+    graph_log_store.append_edge(0, 2, 0, 1619, "I am Edge2");
     assert_eq(graph_log_store.assoc_range(0, 0, 0, 1),
-        { { 0, 0, 2, 1619, "I am Edge2" } });
+        { { 0, 2, 0, 1619, "I am Edge2" } });
+}
+
+void test_graph_log_store2() {
+    std::string node_file_content = GraphFormatter::to_node_table_format(
+        { { "Winter", "is", "coming" },
+          { "is", "Winter", "here" },
+          { "George", "R", "R", "Martin", "writes", "too", "damn", "slow" }
+        });
+    std::string tmp_pathname(
+        GraphFormatter::write_to_temp_file(node_file_content));
+
+    std::string edge_file_content = "0 1 2 41842148 a b\n"
+                                    "0 1618 2 93244 sup\n"
+                                    "0 1 2 9324 suc\n"
+                                    "0 2 0 9324 succinct is cool\n"
+                                    "6 1 1 111111 abcd\n";
+    std::string edge_file(
+        GraphFormatter::write_to_temp_file(edge_file_content));
+    COND_LOG_E("Edge table wrote out to '%s'\n", edge_file.c_str());
+
+    GraphLogStore graph_log_store(tmp_pathname, edge_file);
+    graph_log_store.construct();
+
+    // TAO
+
+    assert_eq(graph_log_store.assoc_range(0, 0, 100, 1), { });
+
+    assert_eq(graph_log_store.assoc_range(0, 0, 0, 1),
+        { {0, 2, 0, 9324, "succinct is cool"} });
+
+    SuccinctGraph::print_assoc_results(graph_log_store.assoc_range(0, 2, 0, 2));
+    assert_eq(graph_log_store.assoc_range(0, 2, 0, 2),
+        { {0, 1, 2, 41842148, "a b"},
+          {0, 1618, 2, 93244, "sup"} });
+
+    assert_eq(graph_log_store.assoc_range(0, 2, 2, 1),
+        { {0, 1, 2, 9324, "suc"} });
+
+    assert_eq(graph_log_store.assoc_range(6, 1, 0, 1),
+        { {6, 1, 1, 111111, "abcd"} });
+
+
+    assert(graph_log_store.assoc_count(0, 0) == 1);
+    assert(graph_log_store.assoc_count(0, 2) == 3);
+    assert(graph_log_store.assoc_count(6, 1) == 1);
+    assert(graph_log_store.assoc_count(5, 1) == 0);
+
+    // assoc_get() tests
+
+    std::set<int64_t> dst_id_set;
+    dst_id_set.insert(1618);
+
+    assert_eq(graph_log_store.assoc_get(
+        0, 2, dst_id_set, 1435055631064LL,1436667356522LL),
+        {});
+    assert_eq(graph_log_store.assoc_get(
+        0, 2, dst_id_set, 1435055631064,1436667356522),
+        {});
+
+    assert_eq(graph_log_store.assoc_get(0, 2, dst_id_set, 9324, 93245),
+        { {0, 1618, 2, 93244, "sup"} });
+
+    dst_id_set.insert(1);
+    assert_eq(graph_log_store.assoc_get(0, 2, dst_id_set, 9324, 93245),
+        { {0, 1618, 2, 93244, "sup"}, {0, 1, 2, 9324, "suc"} });
+
+    // assoc_time_range() tests
+
+    assert_eq(graph_log_store.assoc_time_range(6, 1, 1, 99999999, 10),
+        { {6, 1, 1, 111111, "abcd"} });
+
+    // nothing
+    assert_eq(graph_log_store.assoc_time_range(0, 0, 0, 1, 10), { });
+
+    SuccinctGraph::print_assoc_results(
+        graph_log_store.assoc_time_range(0, 2, 900, 93244, 2)); // 2 edges
+    assert_eq(graph_log_store.assoc_time_range(0, 2, 900, 93244, 2),
+        { {0, 1618, 2, 93244, "sup"}, {0, 1, 2, 9324, "suc"} });
+
+    SuccinctGraph::print_assoc_results(
+        graph_log_store.assoc_time_range(0, 2, 900, 93244, 1)); // 1 edge
+    assert_eq(graph_log_store.assoc_time_range(0, 2, 900, 93244, 1),
+        { {0, 1618, 2, 93244, "sup"} });
+
+    std::remove(tmp_pathname.c_str());
+    std::remove(edge_file.c_str());
 }
 
 void test_graph_suffix_store() {
@@ -227,6 +325,62 @@ void test_graph_suffix_store() {
     assert_eq(graph_suffix_store.assoc_range(6, 1, 0, 1),
         { {6, 1, 1, 111111, "abcd"} });
 
+
+    assert(graph_suffix_store.assoc_count(0, 0) == 1);
+    assert(graph_suffix_store.assoc_count(0, 2) == 3);
+    assert(graph_suffix_store.assoc_count(6, 1) == 1);
+    assert(graph_suffix_store.assoc_count(5, 1) == 0);
+
+    // assoc_get() tests
+
+    std::set<int64_t> dst_id_set;
+    dst_id_set.insert(1618);
+
+    assert_eq(graph_suffix_store.assoc_get(
+        0, 2, dst_id_set, 1435055631064LL,1436667356522LL),
+        {});
+    assert_eq(graph_suffix_store.assoc_get(
+        0, 2, dst_id_set, 1435055631064,1436667356522),
+        {});
+
+    assert_eq(graph_suffix_store.assoc_get(0, 2, dst_id_set, 9324, 93245),
+        { {0, 1618, 2, 93244, "sup"} });
+
+    dst_id_set.insert(1);
+    assert_eq(graph_suffix_store.assoc_get(0, 2, dst_id_set, 9324, 93245),
+        { {0, 1618, 2, 93244, "sup"}, {0, 1, 2, 9324, "suc"} });
+
+    // assoc_time_range() tests
+
+    assert_eq(graph_suffix_store.assoc_time_range(6, 1, 1, 99999999, 10),
+        { {6, 1, 1, 111111, "abcd"} });
+
+    // nothing
+    assert_eq(graph_suffix_store.assoc_time_range(0, 0, 0, 1, 10), { });
+
+    SuccinctGraph::print_assoc_results(
+        graph_suffix_store.assoc_time_range(0, 2, 900, 93244, 2)); // 2 edges
+    assert_eq(graph_suffix_store.assoc_time_range(0, 2, 900, 93244, 2),
+        { {0, 1618, 2, 93244, "sup"}, {0, 1, 2, 9324, "suc"} });
+
+    SuccinctGraph::print_assoc_results(
+        graph_suffix_store.assoc_time_range(0, 2, 900, 93244, 1)); // 1 edge
+    assert_eq(graph_suffix_store.assoc_time_range(0, 2, 900, 93244, 1),
+        { {0, 1618, 2, 93244, "sup"} });
+
+//    std::vector<std::string> attributes;
+//    graph_suffix_store.obj_get(attributes, 0);
+//    assert_eq(attributes, { "Winter", "is", "coming" });
+//    graph_suffix_store.obj_get(attributes, 2);
+//    assert_eq(attributes,
+//        { "George", "R", "R", "Martin", "writes", "too", "damn", "slow" });
+//    graph_suffix_store.obj_get(attributes, 3);
+//    assert_eq(attributes, { });
+//    graph_suffix_store.obj_get(attributes, 1618);
+//    assert_eq(attributes, { });
+
+    // cleanups
+
     std::remove(tmp_pathname.c_str());
     std::remove(edge_file.c_str());
     std::remove(edge_table_file.c_str());
@@ -243,9 +397,10 @@ void test_structured_edge_table() {
     assocs = edge_table.assoc_range(0, 0, 0, 1);
     assert_eq(assocs, { { 0, 0, 0, 0, "" } });
 
-    edge_table.add_assoc(0, 0, 1, 0, "newer");
+    edge_table.add_assoc(0, 1, 0, 0, "newer");
     assocs = edge_table.assoc_range(0, 0, 0, 1);
-    assert_eq(assocs, { { 0, 0, 1, 0, "newer" } });
+    SuccinctGraph::print_assoc_results(assocs);
+    assert_eq(assocs, { { 0, 1, 0, 0, "newer" } });
 
     assocs = edge_table.assoc_range(0, 0, 1, 1);
     assert_eq(assocs, { { 0, 0, 0, 0, "" } });
@@ -254,7 +409,7 @@ void test_structured_edge_table() {
     assert_eq(assocs, { { 0, 0, 0, 0, "" } });
 
     assocs = edge_table.assoc_range(0, 0, 0, 100);
-    assert_eq(assocs, { { 0, 0, 1, 0, "newer" }, { 0, 0, 0, 0, "" } });
+    assert_eq(assocs, { { 0, 1, 0, 0, "newer" }, { 0, 0, 0, 0, "" } });
 }
 
 void test_file_suffix_store() {
@@ -362,13 +517,12 @@ int main(int argc, char **argv) {
     test_kv_log_store();
     test_kv_suffix_store();
 
-    test_graph_log_store();
-    // TODO: incorporate file suffix store
-    test_graph_suffix_store();
-
     test_structured_edge_table();
     test_file_suffix_store();
-
     test_file_suffix_store2();
+
+    test_graph_log_store();
+    test_graph_suffix_store();
+    test_graph_log_store2();
 
 }

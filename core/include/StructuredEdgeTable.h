@@ -32,8 +32,8 @@ public:
     // Thread-safe for concurrent writes.
     void add_assoc(
         int64_t src,
-        int64_t atype,
         int64_t dst,
+        int64_t atype,
         int64_t timestamp,
         const std::string& attr);
 
@@ -84,11 +84,11 @@ public:
 
 private:
 
-    struct EdgeData {
+    typedef struct {
         int64_t dst;
         int64_t timestamp;
         std::string attr;
-    };
+    } EdgeData;
 
     // TODO: how inefficient is this?
     // Assumes the vector<EdgeData>'s are sorted by descending timestamps.

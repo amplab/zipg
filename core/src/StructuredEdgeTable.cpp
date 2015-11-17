@@ -8,9 +8,12 @@
 constexpr char SERDE_DELIM = '\x02';
 
 void StructuredEdgeTable::construct() {
+    COND_LOG_E("In StructuredEdgeTable::construct(), edge file '%s'\n",
+        edge_file_.c_str());
     std::map<std::pair<int64_t, int64_t>,
         std::vector<SuccinctGraph::Assoc>> assoc_map;
     GraphFormatter::build_assoc_map(assoc_map, edge_file_);
+    COND_LOG_E("Done building assoc map\n");
 
     edges.clear();
     for (auto it = assoc_map.begin(); it != assoc_map.end(); ++it) {
@@ -29,7 +32,7 @@ void StructuredEdgeTable::construct() {
     }
 
     auto cmp_by_decreasing_time = [](const EdgeData& e1, const EdgeData& e2) {
-        return e1.timestamp > e2.timestamp;
+        return e1.timestamp < e2.timestamp;
     };
 
     for (auto it = edges.begin(); it != edges.end(); ++it) {
@@ -128,8 +131,8 @@ void StructuredEdgeTable::load() {
 
 void StructuredEdgeTable::add_assoc(
     int64_t src,
-    int64_t atype,
     int64_t dst,
+    int64_t atype,
     int64_t timestamp,
     const std::string& attr)
 {
@@ -143,6 +146,9 @@ std::vector<SuccinctGraph::Assoc> StructuredEdgeTable::assoc_range(
     int32_t off,
     int32_t len)
 {
+    COND_LOG_E("GraphLogStore assoc_range(src = %lld, atype = %lld, off = %d, len = %d)\n",
+        src, atype, off, len);
+
     std::vector<EdgeData> es(edges[src][atype]);
     std::vector<SuccinctGraph::Assoc> assocs;
     if (off >= es.size()) {
@@ -157,8 +163,8 @@ std::vector<SuccinctGraph::Assoc> StructuredEdgeTable::assoc_range(
         assocs.emplace_back();
         assocs.back() = SuccinctGraph::Assoc {
             src,
-            atype,
             es[j].dst,
+            atype,
             es[j].timestamp,
             std::move(es[j].attr)
         };
@@ -174,6 +180,10 @@ std::vector<SuccinctGraph::Assoc> StructuredEdgeTable::assoc_get(
     int64_t t_low,
     int64_t t_high)
 {
+    COND_LOG_E("GraphLogStore assoc_get(src = %" PRId64 ", atype = %" PRId64 ","
+        " dstIdSet = ..., tLow = %" PRId64 ", tHigh = %" PRId64 ")\n",
+        src, atype, t_low, t_high);
+
     std::vector<EdgeData> es(edges[src][atype]);
     std::vector<SuccinctGraph::Assoc> assocs;
 
@@ -186,8 +196,8 @@ std::vector<SuccinctGraph::Assoc> StructuredEdgeTable::assoc_get(
             assocs.emplace_back();
             assocs.back() = SuccinctGraph::Assoc {
                 src,
-                atype,
                 edge_data.dst,
+                atype,
                 edge_data.timestamp,
                 std::move(edge_data.attr)
             };
@@ -204,6 +214,10 @@ std::vector<SuccinctGraph::Assoc> StructuredEdgeTable::assoc_time_range(
     int64_t t_high,
     int32_t len)
 {
+    COND_LOG_E("GraphLogStore assoc_time_range(src = %lld, atype = %lld, tLow = %lld, "
+        "tHigh = %lld, len = %d)\n",
+        src, atype, t_low, t_high, len);
+
     std::vector<SuccinctGraph::Assoc> assocs;
     if (len <= 0) {
         return assocs;
@@ -216,8 +230,8 @@ std::vector<SuccinctGraph::Assoc> StructuredEdgeTable::assoc_time_range(
             assocs.emplace_back();
             assocs.back() = SuccinctGraph::Assoc {
                 src,
-                atype,
                 edge_data.dst,
+                atype,
                 edge_data.timestamp,
                 std::move(edge_data.attr)
             };

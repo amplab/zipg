@@ -44,8 +44,8 @@ public:
     // Thread-safe: internally, a lock is used.
     void append_edge(
         int64_t src,
-        int64_t atype,
         int64_t dst,
+        int64_t atype,
         int64_t timestamp,
         const std::string& attr);
 

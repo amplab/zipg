@@ -5,7 +5,9 @@
 void GraphLogStore::construct() {
     node_table_ = std::make_shared<KVLogStore>(node_file_);
     node_table_->construct();
+    COND_LOG_E("GraphLogStore: Node table constructed\n");
     edge_table_.construct();
+    COND_LOG_E("GraphLogStore: Edge table constructed\n");
 }
 
 void GraphLogStore::load() {
@@ -28,12 +30,12 @@ void GraphLogStore::append_node(
 }
 void GraphLogStore::append_edge(
     int64_t src,
-    int64_t atype,
     int64_t dst,
+    int64_t atype,
     int64_t timestamp,
     const std::string& attr)
 {
-    edge_table_.add_assoc(src, atype, dst, timestamp, attr);
+    edge_table_.add_assoc(src, dst, atype, timestamp, attr);
 }
 
 void GraphLogStore::get_attribute(
