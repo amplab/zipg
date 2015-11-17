@@ -133,6 +133,9 @@ function start_all() {
 
   ${currDir}/sbin/start-handlers.sh 
   sleep 2
+
+  ${currDir}/sbin/load-data.sh
+  sleep 2
 }
 
 function timestamp() {

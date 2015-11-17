@@ -89,8 +89,12 @@ service GraphQueryAggregatorService {
     // should just call init() once and not call this method.
     i32 init_local_shards(),
 
+    i32 local_data_init(),
+
     // Have this aggregator connect to all other aggregators.
     i32 connect_to_aggregators(),
+
+    i32 connect_to_local_shards(),
 
     // Have all aggregators shutdown (1) connections to their own shards, (2)
     // connections to other aggregators.

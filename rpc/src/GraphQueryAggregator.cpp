@@ -20,6 +20,9 @@ using namespace ::apache::thrift::server;
 
 using boost::shared_ptr;
 
+std::mutex local_shards_data_mutex;
+bool local_shards_data_initiated = false;
+
 class GraphQueryAggregatorServiceHandler :
     virtual public GraphQueryAggregatorServiceIf {
 
@@ -50,6 +53,25 @@ public:
         }
     }
 
+    int32_t local_data_init() {
+        std::lock_guard<std::mutex> lk(local_shards_data_mutex);
+        if (local_shards_data_initiated) {
+            LOG_E("Local shard processes have already loaded data!");
+            return 0;
+        }
+
+        int status = init_local_shards();
+        LOG_E("Initialization failed at shard, status = %d\n", status);
+        if (!status) {
+            local_shards_data_initiated = true;
+        }
+
+        disconnect_from_local_shards();
+        return status;
+    }
+
+    // Should just be connection establishment; assumes data loading has already
+    // been done.
     int32_t init() {
         if (initiated_) {
             LOG_E("Cluster already initiated\n");
@@ -61,41 +83,42 @@ public:
             exit(1);
         }
 
-        for (auto& shard : local_shards_) {
-            shard.send_init();
-        }
+//        for (auto& shard : local_shards_) {
+//            shard.send_init();
+//        }
 
         for (int i = 0; i < total_num_hosts_; ++i) {
             if (i == local_host_id_) {
                 continue;
             }
+            aggregators_.at(i).connect_to_local_shards();
             aggregators_.at(i).connect_to_aggregators();
         }
 
-        for (int i = 0; i < total_num_hosts_; ++i) {
-            if (i == local_host_id_) {
-                continue;
-            }
-            aggregators_.at(i).send_init_local_shards();
-        }
+//        for (int i = 0; i < total_num_hosts_; ++i) {
+//            if (i == local_host_id_) {
+//                continue;
+//            }
+//            aggregators_.at(i).send_init_local_shards();
+//        }
 
-        for (auto& shard : local_shards_) {
-            if (shard.recv_init() != 0) {
-                LOG_E("Some shard doesn't init() successfully, exiting\n");
-                exit(1);
-            }
-        }
+//        for (auto& shard : local_shards_) {
+//            if (shard.recv_init() != 0) {
+//                LOG_E("Some shard doesn't init() successfully, exiting\n");
+//                exit(1);
+//            }
+//        }
 
-        for (int i = 0; i < total_num_hosts_; ++i) {
-            if (i == local_host_id_) {
-                continue;
-            }
-            if (aggregators_.at(i).recv_init_local_shards() != 0) {
-                LOG_E("Some aggregator doesn't init_local_shards() successfully"
-                    ", exiting\n");
-                exit(1);
-            }
-        }
+//        for (int i = 0; i < total_num_hosts_; ++i) {
+//            if (i == local_host_id_) {
+//                continue;
+//            }
+//            if (aggregators_.at(i).recv_init_local_shards() != 0) {
+//                LOG_E("Some aggregator doesn't init_local_shards() successfully"
+//                    ", exiting\n");
+//                exit(1);
+//            }
+//        }
         LOG_E("Cluster init() done\n");
         initiated_ = true;
         return 0;
@@ -182,6 +205,7 @@ public:
             }
         }
         shard_transports_.clear();
+        local_shards_.clear();
     }
 
     void disconnect_from_aggregators() {
@@ -192,8 +216,6 @@ public:
         }
         aggregator_transports_.clear();
     }
-
-private:
 
     int32_t connect_to_local_shards() {
         int num_shards_on_host = local_num_shards_;

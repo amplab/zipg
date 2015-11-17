@@ -47,8 +47,10 @@ include_directories(${PROJECT_SOURCE_DIR}/../external/succinct-cpp/core/include)
 
 add_executable(graph_query_server ${SERVER_SOURCES})
 add_executable(graph_query_aggregator ${HANDLER_SOURCES})
+add_executable(load_data ${SOURCES_DIR}/load_data.cpp)
 add_library(succinctgraph-client ${CLIENT_SOURCES})
 
 target_link_libraries(graph_query_server succinctgraph)
 target_link_libraries(graph_query_server ${THRIFT_LIBRARIES})
 target_link_libraries(graph_query_aggregator succinctgraph succinctgraph-client ${THRIFT_LIBRARIES})
+target_link_libraries(load_data succinctgraph-client ${THRIFT_LIBRARIES})
