@@ -114,6 +114,8 @@ void StructuredEdgeTable::load() {
                     std::getline(ss2, dst, SERDE_DELIM);
                     std::getline(ss2, timestamp, SERDE_DELIM);
                     std::getline(ss2, attr, SERDE_DELIM);
+                    COND_LOG_E("dst '%s', timestamp '%s', attr '%s', j %d\n",
+                          dst.c_str(), timestamp.c_str(), attr.c_str(), j);
                     edge_datas.emplace_back(EdgeData{
                         std::stoll(dst), std::stoll(timestamp), attr });
                 }

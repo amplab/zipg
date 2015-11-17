@@ -511,6 +511,7 @@ public:
 
         size_t warmup_size = warmup_neighbor_indices.size();
         size_t measure_size = neighbor_indices.size();
+        COND_LOG_E("warmup size %lld, query size %lld\n", warmup_size, measure_size);
 
         thread_local std::random_device rd;
         thread_local std::mt19937 gen(rd());
@@ -524,6 +525,7 @@ public:
             int64_t i = 0;
             time_t start = get_timestamp();
             while (get_timestamp() - start < WARMUP_MICROSECS) {
+                COND_LOG_E("warmup query %d\n", i);
                 thread_data->client->get_neighbors(
                     result,
                     mod_get(warmup_neighbor_indices, warmup_dis(gen)));
@@ -536,6 +538,7 @@ public:
             int64_t edges = 0;
             start = get_timestamp();
             while (get_timestamp() - start < MEASURE_MICROSECS) {
+                COND_LOG_E("measure query %d\n", i);
                 thread_data->client->get_neighbors(
                     result, mod_get(neighbor_indices, measure_dis(gen)));
                 edges += result.size();
@@ -1153,6 +1156,9 @@ public:
         std::uniform_int_distribution<int> assoc_get_size(
 			0, assoc_get_nodes.size() - 1);
 
+        COND_LOG_E("warmup assoc range: %lld, query %lld\n",
+            warmup_assoc_range_nodes.size(), assoc_range_nodes.size());
+
         std::uniform_real_distribution<double> query_dis(0, 1);
 
         // non-batched
@@ -1288,11 +1294,18 @@ public:
             // Warmup phase
             time_t start = get_timestamp();
             while (get_timestamp() - start < WARMUP_MICROSECS) {
+                COND_LOG_E("warmup query %d\n", i);
 #ifndef BATCH_QUERY
                 query = choose_query(query_dis(gen));
                 switch (query) {
                 case 0:
                     query_idx = warmup_assoc_range_size(gen);
+                    COND_LOG_E("assoc range, query idx %d (%d %d %d %d)\n", 
+                        query_idx,
+                        warmup_assoc_range_nodes.size(),
+                        warmup_assoc_range_atypes.size(),
+                        warmup_assoc_range_offs.size(),
+                        warmup_assoc_range_lens.size());
                     thread_data->client->assoc_range(result,
                         this->warmup_assoc_range_nodes.at(query_idx),
                         this->warmup_assoc_range_atypes.at(query_idx),
@@ -1301,11 +1314,13 @@ public:
                     break;
                 case 1:
                     query_idx = warmup_obj_get_size(gen);
+                    COND_LOG_E("obj_get, query idx %d\n", query_idx);
                     thread_data->client->obj_get(attrs,
                         this->warmup_obj_get_nodes.at(query_idx));
                     break;
                 case 2:
                     query_idx = warmup_assoc_get_size(gen);
+                    COND_LOG_E("assoc_get, query idx %d\n", query_idx);
                     thread_data->client->assoc_get(result,
                         this->warmup_assoc_get_nodes.at(query_idx),
                         this->warmup_assoc_get_atypes.at(query_idx),
@@ -1315,12 +1330,14 @@ public:
                     break;
                 case 3:
                     query_idx = warmup_assoc_count_size(gen);
+                    COND_LOG_E("assoc_count, query idx %d\n", query_idx);
                     thread_data->client->assoc_count(
                         this->warmup_assoc_count_nodes.at(query_idx),
                         this->warmup_assoc_count_atypes.at(query_idx));
                     break;
                 case 4:
                     query_idx = warmup_assoc_time_range_size(gen);
+                    COND_LOG_E("assoc_time_range, query idx %d\n", query_idx);
                     thread_data->client->assoc_time_range(result,
                         this->warmup_assoc_time_range_nodes.at(query_idx),
                         this->warmup_assoc_time_range_atypes.at(query_idx),
