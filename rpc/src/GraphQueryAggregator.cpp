@@ -682,7 +682,7 @@ public:
         }
 
         if (_return.size() < len) {
-            local_shards_[shard_idx]
+            local_shards_.at(shard_idx)
                 .assoc_range(assocs, src, atype, off, len);
             _return.insert(_return.end(), assocs.begin(), assocs.end());
         }
@@ -784,11 +784,12 @@ public:
     {
         COND_LOG_E("in agg. assoc_get()\n");
         int shard_id = src % total_num_shards_;
-        int host_id = shard_id % total_num_hosts_;
+        int host_id = shard_id % num_succinctstore_hosts_;
+
         if (host_id == local_host_id_) {
             COND_LOG_E("sending to shard %d\n", shard_id);
-            local_shards_[shard_id / total_num_hosts_]
-                .assoc_get(_return, src, atype, dstIdSet, tLow, tHigh);
+            assoc_get_local(
+                _return, shard_id, src, atype, dstIdSet, tLow, tHigh);
             COND_LOG_E("done\n");
         } else {
             aggregators_.at(host_id).assoc_get_local(
@@ -849,6 +850,7 @@ public:
         }
     }
 
+    // FIXME: multistore logic
     void assoc_get_local(
         std::vector<ThriftAssoc>& _return,
         const int32_t shardId,
@@ -858,16 +860,17 @@ public:
         const int64_t tLow,
         const int64_t tHigh)
     {
-        local_shards_[shardId / total_num_hosts_]
+        int shard_idx = shard_id_to_shard_idx(shardId);
+        local_shards_.at(shard_idx)
             .assoc_get(_return, src, atype, dstIdSet, tLow, tHigh);
     }
 
     void obj_get(std::vector<std::string>& _return, const int64_t nodeId) {
         int shard_id = nodeId % total_num_shards_;
-        int host_id = shard_id % total_num_hosts_;
+        int host_id = shard_id % num_succinctstore_hosts_;
+
         if (host_id == local_host_id_) {
-            local_shards_[shard_id / total_num_hosts_]
-                .obj_get(_return, global_to_local_node_id(nodeId, shard_id));
+            obj_get_local(_return, shard_id, nodeId);
         } else {
             aggregators_.at(host_id).obj_get_local(_return, shard_id, nodeId);
         }
@@ -910,12 +913,14 @@ public:
         }
     }
 
+    // TODO: multistore logic
     void obj_get_local(
         std::vector<std::string>& _return,
         const int32_t shardId,
         const int64_t nodeId)
     {
-        local_shards_[shardId / total_num_hosts_]
+        int shard_idx = shard_id_to_shard_idx(shardId);
+        local_shards_.at(shard_idx)
             .obj_get(_return, global_to_local_node_id(nodeId, shardId));
     }
 
@@ -928,10 +933,11 @@ public:
         const int32_t limit)
     {
         int shard_id = src % total_num_shards_;
-        int host_id = shard_id % total_num_hosts_;
+        int host_id = shard_id % num_succinctstore_hosts_;
+
         if (host_id == local_host_id_) {
-            local_shards_[shard_id / total_num_hosts_]
-                .assoc_time_range(_return, src, atype, tLow, tHigh, limit);
+            assoc_time_range_local(
+                _return, shard_id, src, atype, tLow, tHigh, limit);
         } else {
             aggregators_.at(host_id).assoc_time_range_local(
                 _return, shard_id, src, atype, tLow, tHigh, limit);
@@ -985,6 +991,7 @@ public:
         }
     }
 
+    // TODO: multistore logic
     void assoc_time_range_local(
         std::vector<ThriftAssoc>& _return,
         const int32_t shardId,
@@ -994,7 +1001,8 @@ public:
         const int64_t tHigh,
         const int32_t limit)
     {
-        local_shards_[shardId / total_num_hosts_]
+        int shard_idx = shard_id_to_shard_idx(shardId);
+        local_shards_.at(shard_idx)
             .assoc_time_range(_return, src, atype, tLow, tHigh, limit);
     }
 
