@@ -676,7 +676,7 @@ public:
             auto& ptr = *it;
             // int64_t offset = ptr.offset; // TODO: add optimization
             int next_host_id = host_id_for_shard(ptr.shardId);
-            assert(next_host_id != local_host_id_);
+            assert(next_host_id != local_host_id_ && "next host is myself!");
 
             aggregators_.at(next_host_id).assoc_range_local(
                 assocs,
@@ -773,7 +773,7 @@ public:
         for (auto& ptr : ptrs) {
             // int64_t offset = ptr.offset; // TODO: add optimization
             int next_host_id = host_id_for_shard(ptr.shardId);
-            assert(next_host_id != local_host_id_);
+            assert(next_host_id != local_host_id_ && "next host is myself!");
             aggregators_.at(next_host_id).send_assoc_count_local(
                 ptr.shardId, src, atype);
         }
