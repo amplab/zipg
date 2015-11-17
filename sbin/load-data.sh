@@ -38,5 +38,8 @@ if [ "$SUCCINCT_SSH_OPTS" = "" ]; then
 fi
 
 for host in `echo "$HOSTLIST"|sed  "s/#.*$//;/^$/d"`; do
-  ssh $SUCCINCT_SSH_OPTS "$host" "nohup $sbin/../rpc/bin/load_data" 2>&1 | sed "s/^/$host: /" &
+  ssh $SUCCINCT_SSH_OPTS "$host" "$sbin/launch-load-data.sh" 2>&1 | sed "s/^/$host: /" &
 done
+echo "Waiting for load data on all machines..."
+wait
+echo "Load data done"
