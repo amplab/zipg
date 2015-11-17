@@ -204,6 +204,8 @@ private:
                 num_shards_on_host = num_logstore_shards_;
             }
         }
+        COND_LOG_E("num shards on this host (id %d): %d\n",
+            local_host_id_, num_shards_on_host);
 
         for (int i = 0; i < num_shards_on_host; ++i) {
             // Desirable? Hacky way to facilitate benchmark client reconnecting

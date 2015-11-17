@@ -502,8 +502,9 @@ int main(int argc, char **argv) {
     int shard_id = 0, total_num_shards = 1;
     int local_host_id = 0, total_num_hosts = 1;
     StoreMode store_mode = StoreMode::SuccinctStore; // by default, Succinct
+    bool multistore_enabled = false;
 
-    while ((c = getopt(argc, argv, "m:p:s:i:n:t:d:h:k:")) != -1) {
+    while ((c = getopt(argc, argv, "m:p:s:i:n:t:d:h:k:b:")) != -1) {
         switch (c) {
         case 'm':
             mode = atoi(optarg); // 0 for construct, 1 for load
@@ -532,11 +533,20 @@ int main(int argc, char **argv) {
         case 'k':
             total_num_hosts = atoi(optarg);
             break;
+        case 'b':
+            LOG_E("multistore_enabled argument: '%s'\n", optarg);
+            multistore_enabled = (std::string(optarg) == "T");
+            break;
         }
+    }
+    if (multistore_enabled) {
+        LOG_E("Multistore enabled!\n");
+    } else {
+        LOG_E("Multistore disabled, default to SuccinctStore\n");
     }
 
     // Hack for multistore setup:
-    if (total_num_hosts >= 3) {
+    if (multistore_enabled && total_num_hosts >= 3) {
         if (local_host_id == total_num_hosts - 1) {
             COND_LOG_E("Setting shard's store mode to LogStore\n");
             store_mode = StoreMode::LogStore;

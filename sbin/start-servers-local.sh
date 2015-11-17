@@ -187,6 +187,7 @@ for i in `seq 0 $limit`; do
       -d ${shard_id} \
       -s${sa_sr} -i${isa_sr} -n${npa_sr} \
       -h ${local_host_id} -k ${num_hosts} \
+      -b ${ENABLE_MULTI_STORE} \
       $nodeInput \
       $edgeInput \
       2>"$SUCCINCT_LOG_PATH/server_${i}.log" &
