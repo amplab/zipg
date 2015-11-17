@@ -76,23 +76,29 @@ public:
 
     void obj_get(std::vector<std::string>& result, int64_t obj_id);
 
-    std::vector<SuccinctGraph::Assoc> assoc_get(
+    inline std::vector<SuccinctGraph::Assoc> assoc_get(
         int64_t src,
         int64_t atype,
         const std::set<int64_t>& dst_id_set,
         int64_t t_low,
-        int64_t t_high);
+        int64_t t_high)
+    {
+        return edge_table_.assoc_get(src, atype, dst_id_set, t_low, t_high);
+    }
 
     inline int64_t assoc_count(int64_t src, int64_t atype) {
         return edge_table_.assoc_count(src, atype);
     }
 
-    std::vector<SuccinctGraph::Assoc> assoc_time_range(
+    inline std::vector<SuccinctGraph::Assoc> assoc_time_range(
         int64_t src,
         int64_t atype,
         int64_t t_low,
         int64_t t_high,
-        int32_t len);
+        int32_t len)
+    {
+        return edge_table_.assoc_time_range(src, atype, t_low, t_high, len);
+    }
 
 private:
     const std::string node_file_, edge_file_;

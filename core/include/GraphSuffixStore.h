@@ -77,6 +77,25 @@ private:
     std::shared_ptr<KVSuffixStore> node_table_ = nullptr;
     std::shared_ptr<FileSuffixStore> edge_table_ = nullptr;
 
+    // Binary search: locates smallest timestamp t, such that t >= t_low.
+    // Upon entry, `curr_off` must point to the start of the timestamps of the
+    // current association list in the edge table, and `cnt` denotes the number
+    // of assocs in this list.  Returns -1 if no such indexes exist.
+    int time_range_binary_search_lower_bound(
+        int64_t t_low,
+        int64_t cnt,
+        int64_t curr_off,
+        std::string& tmp_token,
+        const int32_t timestamp_width);
+
+    // Binary search: locates largest timestamp t, such that t <= t_high.
+    int time_range_binary_search_upper_bound(
+        int64_t t_high,
+        int64_t cnt,
+        int64_t curr_off,
+        std::string& tmp_token,
+        const int32_t timestamp_width);
+
 };
 
 #endif

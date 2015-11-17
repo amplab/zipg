@@ -152,7 +152,7 @@ std::vector<SuccinctGraph::Assoc> StructuredEdgeTable::assoc_range(
         i < std::min(es.size(), static_cast<size_t>(off + len));
         ++i)
     {
-        size_t j = es.size() - 1 - i;
+        size_t j = es.size() - 1 - i; // backwards
 
         assocs.emplace_back();
         assocs.back() = SuccinctGraph::Assoc {
@@ -162,6 +162,69 @@ std::vector<SuccinctGraph::Assoc> StructuredEdgeTable::assoc_range(
             es[j].timestamp,
             std::move(es[j].attr)
         };
+    }
+    return assocs;
+}
+
+// FIXME: scan for now...
+std::vector<SuccinctGraph::Assoc> StructuredEdgeTable::assoc_get(
+    int64_t src,
+    int64_t atype,
+    const std::set<int64_t>& dst_id_set,
+    int64_t t_low,
+    int64_t t_high)
+{
+    std::vector<EdgeData> es(edges[src][atype]);
+    std::vector<SuccinctGraph::Assoc> assocs;
+
+    for (auto it = es.rbegin(); it != es.rend(); ++it) {
+        auto& edge_data = *it;
+        if (edge_data.timestamp >= t_low
+            && edge_data.timestamp <= t_high
+            && dst_id_set.count(edge_data.dst) == 1)
+        {
+            assocs.emplace_back();
+            assocs.back() = SuccinctGraph::Assoc {
+                src,
+                atype,
+                edge_data.dst,
+                edge_data.timestamp,
+                std::move(edge_data.attr)
+            };
+        }
+    }
+    return assocs;
+}
+
+// FIXME: scan for now...
+std::vector<SuccinctGraph::Assoc> StructuredEdgeTable::assoc_time_range(
+    int64_t src,
+    int64_t atype,
+    int64_t t_low,
+    int64_t t_high,
+    int32_t len)
+{
+    std::vector<SuccinctGraph::Assoc> assocs;
+    if (len <= 0) {
+        return assocs;
+    }
+    std::vector<EdgeData> es(edges[src][atype]);
+
+    for (auto it = es.rbegin(); it != es.rend(); ++it) {
+        auto& edge_data = *it;
+        if (edge_data.timestamp >= t_low && edge_data.timestamp <= t_high) {
+            assocs.emplace_back();
+            assocs.back() = SuccinctGraph::Assoc {
+                src,
+                atype,
+                edge_data.dst,
+                edge_data.timestamp,
+                std::move(edge_data.attr)
+            };
+            if (assocs.size() == len) {
+                break;
+            }
+        }
     }
     return assocs;
 }

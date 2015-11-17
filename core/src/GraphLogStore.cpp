@@ -105,3 +105,37 @@ void GraphLogStore::get_nodes(
     std::set_intersection(s1.begin(), s1.end(), s2.begin(), s2.end(),
                           std::inserter(result, result.end()));
 }
+
+void GraphLogStore::obj_get(std::vector<std::string>& result, int64_t obj_id) {
+    LOG_E("obj_get(%lld)\n", obj_id);
+    assert(false && "benchmark should not have routed the query here!");
+//    result.clear();
+//    std::string str;
+//    node_table_->get_value(str, obj_id); // TODO: handle non-existent?
+//
+//    // get the initial dist first
+//    int i = 0, dist = 0;
+//    while (str[i] != SuccinctGraph::NODE_TABLE_HEADER_DELIM) {
+//        dist = dist * 10 + (str[i] - '0');
+//        ++i;
+//    }
+//    ++i;
+//
+//    char next_delim;
+//    int last_non_empty;
+//
+//    dist += i + 1; // pointing to the start of attr1
+//    for (int attr = 0; attr < SuccinctGraph::MAX_NUM_NODE_ATTRS; ++attr) {
+//        next_delim = static_cast<char>(SuccinctGraph::DELIMITERS[attr + 1]);
+//        i = dist;
+//        while (str[i] != next_delim) {
+//            ++i;
+//        }
+//        if (i > dist) {
+//            last_non_empty = attr;
+//        }
+//        assert(i <= str.length());
+//        result.emplace_back(str.substr(dist, i - dist));
+//        dist = i + 1;
+//    }
+}

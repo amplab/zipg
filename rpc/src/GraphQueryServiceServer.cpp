@@ -95,6 +95,7 @@ public:
             " (specified, please check actual)\n",
             shard_id_, total_num_shards_, isa_sampling_rate,
             sa_sampling_rate, npa_sampling_rate);
+        LOG_E("Store mode: %d\n", store_mode);
     }
 
     // Loads or constructs graph shards.
@@ -358,10 +359,26 @@ public:
         const int64_t tLow,
         const int64_t tHigh)
     {
-        COND_LOG_E("in shard assoc_get, about to call graph\n");
-        std::vector<SuccinctGraph::Assoc> vec(
-            std::move(graph_->assoc_get(src, atype, dstIdSet, tLow, tHigh)));
-        COND_LOG_E("done: in shard assoc_get, about to call graph\n");
+        std::vector<SuccinctGraph::Assoc> vec;
+        switch (store_mode_) {
+        case StoreMode::SuccinctStore:
+            COND_LOG_E("in shard assoc_get, about to call graph\n");
+            vec = std::move(
+                graph_->assoc_get(src, atype, dstIdSet, tLow, tHigh));
+            COND_LOG_E("done: in shard assoc_get, about to call graph\n");
+            break;
+
+        case StoreMode::SuffixStore:
+            vec = std::move(
+                graph_suffix_store_->assoc_get(
+                    src, atype, dstIdSet, tLow, tHigh));
+            break;
+
+        case StoreMode::LogStore:
+            vec = std::move(
+                graph_log_store_->assoc_get(src, atype, dstIdSet, tLow, tHigh));
+            break;
+        }
 
         // TODO: any better way?
         // NB: the fields are Thrift-generated, so this may not be portable.
@@ -380,7 +397,19 @@ public:
     }
 
     void obj_get(std::vector<std::string>& _return, const int64_t local_id) {
-        graph_->obj_get(_return, local_id);
+        switch (store_mode_) {
+        case StoreMode::SuccinctStore:
+            graph_->obj_get(_return, local_id);
+            break;
+
+        case StoreMode::SuffixStore:
+            graph_suffix_store_->obj_get(_return, local_id);
+            break;
+
+        case StoreMode::LogStore:
+            graph_log_store_->obj_get(_return, local_id);
+            break;
+        }
     }
 
     void assoc_time_range(
@@ -391,8 +420,25 @@ public:
         const int64_t tHigh,
         const int32_t limit)
     {
-        std::vector<SuccinctGraph::Assoc> vec(std::move(
-            graph_->assoc_time_range(src, atype, tLow, tHigh, limit)));
+        std::vector<SuccinctGraph::Assoc> vec;
+        switch (store_mode_) {
+        case StoreMode::SuccinctStore:
+            vec = std::move(
+                graph_->assoc_time_range(src, atype, tLow, tHigh, limit));
+            break;
+
+        case StoreMode::SuffixStore:
+            vec = std::move(
+                graph_suffix_store_->assoc_time_range(
+                    src, atype, tLow, tHigh, limit));
+            break;
+
+        case StoreMode::LogStore:
+            vec = std::move(
+                graph_log_store_->assoc_time_range(
+                    src, atype, tLow, tHigh, limit));
+            break;
+        }
 
         // TODO: any better way?
         // NB: the fields are Thrift-generated, so this may not be portable.
@@ -492,8 +538,10 @@ int main(int argc, char **argv) {
     // Hack for multistore setup:
     if (total_num_hosts >= 3) {
         if (local_host_id == total_num_hosts - 1) {
+            COND_LOG_E("Setting shard's store mode to LogStore\n");
             store_mode = StoreMode::LogStore;
         } else if (local_host_id == total_num_hosts - 2) {
+            COND_LOG_E("Setting shard's store mode to SuffixStore\n");
             store_mode = StoreMode::SuffixStore;
         }
     }

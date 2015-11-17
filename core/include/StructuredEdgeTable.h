@@ -47,6 +47,20 @@ public:
         return edges[src][atype].size();
     }
 
+    std::vector<SuccinctGraph::Assoc> assoc_get(
+        int64_t src,
+        int64_t atype,
+        const std::set<int64_t>& dst_id_set,
+        int64_t t_low,
+        int64_t t_high);
+
+    std::vector<SuccinctGraph::Assoc> assoc_time_range(
+        int64_t src,
+        int64_t atype,
+        int64_t t_low,
+        int64_t t_high,
+        int32_t len);
+
 //    template<class Archive>
 //    void serialize(Archive & ar, const unsigned int version) {
 //        // read class state from archive
