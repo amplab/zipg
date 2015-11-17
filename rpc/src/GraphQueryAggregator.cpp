@@ -592,6 +592,8 @@ public:
         if (host_id == local_host_id_) {
             assoc_range_local(_return, shard_id, src, atype, off, len);
         } else {
+            COND_LOG_E("assoc_range(src %lld, atype %lld,...) "
+                "route to shard %d on host %d", src, atype, shard_id, host_id);
             aggregators_.at(host_id).assoc_range_local(
                 _return, shard_id, src, atype, off, len);
         }
@@ -653,12 +655,16 @@ public:
         int32_t len)
     {
         int shard_idx = shard_id_to_shard_idx(shardId);
+        COND_LOG_E("assoc_range_local(src %lld, atype %lld, ...) "
+            "shard %d on host %d, shard idx %d",
+            src, atype, shardId, local_host_id_, shard_idx);
         std::vector<ThriftAssoc> assocs;
         int32_t curr_len = 0;
         _return.clear();
 
         std::vector<ThriftEdgeUpdatePtr> ptrs;
         local_shards_.at(shard_idx).get_edge_update_ptrs(ptrs, src, atype);
+        COND_LOG_E("# update ptrs: %d\n", ptrs.size());
         for (auto it = ptrs.rbegin(); it != ptrs.rend(); ++it) {
             if (curr_len >= len) {
                 return;
@@ -739,6 +745,9 @@ public:
         if (host_id == local_host_id_) {
             return assoc_count_local(primary_shard_id, src, atype);
         } else {
+            COND_LOG_E("assoc_count(src %lld, atype %lld) "
+                "route to shard %d on host %d, shard idx",
+                src, atype, primary_shard_id, host_id);
             return aggregators_.at(host_id).assoc_count_local(
                 primary_shard_id, src, atype);
         }
@@ -750,10 +759,13 @@ public:
         int32_t shardId, int64_t src, int64_t atype)
     {
         int shard_idx = shard_id_to_shard_idx(shardId);
+        COND_LOG_E("assoc_count_local(src %lld, atype %lld) "
+            "shard %d on host %d, shard idx %d",
+            src, atype, shardId, local_host_id_, shard_idx);
 
         std::vector<ThriftEdgeUpdatePtr> ptrs;
         local_shards_.at(shard_idx).get_edge_update_ptrs(ptrs, src, atype);
-
+        COND_LOG_E("# update ptrs: %d\n", ptrs.size());
         // Follow all pointers.  Suffix and Log Stores should not have them.
         for (auto& ptr : ptrs) {
             // int64_t offset = ptr.offset; // TODO: add optimization
@@ -782,12 +794,12 @@ public:
         const int64_t tLow,
         const int64_t tHigh)
     {
-        COND_LOG_E("in agg. assoc_get()\n");
+        COND_LOG_E("in agg. assoc_get(src %lld, atype %lld)\n", src, atype);
         int shard_id = src % total_num_shards_;
         int host_id = shard_id % num_succinctstore_hosts_;
 
         if (host_id == local_host_id_) {
-            COND_LOG_E("sending to shard %d\n", shard_id);
+            COND_LOG_E("sending to shard %d on host %d\n", shard_id, host_id);
             assoc_get_local(
                 _return, shard_id, src, atype, dstIdSet, tLow, tHigh);
             COND_LOG_E("done\n");
@@ -861,8 +873,12 @@ public:
         const int64_t tHigh)
     {
         int shard_idx = shard_id_to_shard_idx(shardId);
+        COND_LOG_E("assoc_get_local(src %lld, atype %lld) "
+            "; shardId %d on host %d, shard idx %d\n",
+            src, atype, shardId, local_host_id_, shard_idx);
         local_shards_.at(shard_idx)
             .assoc_get(_return, src, atype, dstIdSet, tLow, tHigh);
+        COND_LOG_E("assoc_get_local returned!");
     }
 
     void obj_get(std::vector<std::string>& _return, const int64_t nodeId) {
