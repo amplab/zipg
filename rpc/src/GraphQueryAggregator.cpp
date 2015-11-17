@@ -1050,6 +1050,9 @@ private:
 
     // Limitation: this assumes 1 SuffixStore machine and 1 LogStore machine.
     inline int shard_id_to_shard_idx(int shard_id) {
+        if (!multistore_enabled_) {
+            return shard_id / total_num_hosts_;
+        }
         int diff = shard_id - num_succinctstore_shards_
             - num_suffixstore_shards_;
         if (diff >= 0) {
