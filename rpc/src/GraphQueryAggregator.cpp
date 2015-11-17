@@ -588,6 +588,10 @@ public:
         int32_t len)
     {
         COND_LOG_E("in aggregator assoc_range\n");
+
+        assert(total_num_shards_ > 0 && "total_num_shards_ <= 0");
+        assert(num_succinctstore_hosts_ > 0 && "num_succinctstore_hosts_ <= 0");
+
         int shard_id = src % total_num_shards_;
         int host_id = shard_id % num_succinctstore_hosts_;
 
@@ -741,6 +745,9 @@ public:
     }
 
     int64_t assoc_count(int64_t src, int64_t atype) {
+        assert(total_num_shards_ > 0 && "total_num_shards_ <= 0");
+        assert(num_succinctstore_hosts_ > 0 && "num_succinctstore_hosts_ <= 0");
+
         // %'ing with total_num_shards_ means always going to a primary
         int primary_shard_id = src % total_num_shards_;
         int host_id = primary_shard_id % num_succinctstore_hosts_;
@@ -798,6 +805,9 @@ public:
         const int64_t tHigh)
     {
         COND_LOG_E("in agg. assoc_get(src %lld, atype %lld)\n", src, atype);
+        assert(total_num_shards_ > 0 && "total_num_shards_ <= 0");
+        assert(num_succinctstore_hosts_ > 0 && "num_succinctstore_hosts_ <= 0");
+
         int shard_id = src % total_num_shards_;
         int host_id = shard_id % num_succinctstore_hosts_;
 
@@ -916,6 +926,9 @@ public:
     }
 
     void obj_get(std::vector<std::string>& _return, const int64_t nodeId) {
+        assert(total_num_shards_ > 0 && "total_num_shards_ <= 0");
+        assert(num_succinctstore_hosts_ > 0 && "num_succinctstore_hosts_ <= 0");
+
         int shard_id = nodeId % total_num_shards_;
         int host_id = shard_id % num_succinctstore_hosts_;
 
@@ -982,6 +995,9 @@ public:
         const int64_t tHigh,
         const int32_t limit)
     {
+        assert(total_num_shards_ > 0 && "total_num_shards_ <= 0");
+        assert(num_succinctstore_hosts_ > 0 && "num_succinctstore_hosts_ <= 0");
+
         int shard_id = src % total_num_shards_;
         int host_id = shard_id % num_succinctstore_hosts_;
 
@@ -1109,6 +1125,7 @@ private:
     inline int64_t global_to_local_node_id(
         int64_t global_node_id, int shard_id)
     {
+        assert(total_num_shards_ > 0 && "total_num_shards_ <= 0");
         return (global_node_id - shard_id) / total_num_shards_;
     }
 
@@ -1117,6 +1134,7 @@ private:
     // Host n - 1: the LogStores
     inline int host_id_for_shard(int shard_id) {
         if (!multistore_enabled_ || shard_id < num_succinctstore_shards_) {
+            assert(num_succinctstore_hosts_ > 0 && "num_succinctstore_hosts_ <= 0");
             return shard_id % num_succinctstore_hosts_;
         }
         if (shard_id - num_succinctstore_shards_ < num_suffixstore_shards_) {
@@ -1129,6 +1147,7 @@ private:
     // Limitation: this assumes 1 SuffixStore machine and 1 LogStore machine.
     inline int shard_id_to_shard_idx(int shard_id) {
         if (!multistore_enabled_) {
+            assert(total_num_hosts_ > 0 && "total_num_hosts_ <= 0");
             return shard_id / total_num_hosts_;
         }
         int diff = shard_id - num_succinctstore_shards_
