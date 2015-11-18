@@ -41,3 +41,4 @@ nohup "${bin}/../rpc/bin/graph_query_aggregator" \
   -f "${NUM_SUFFIXSTORE_PARTS}" \
   -l "${NUM_LOGSTORE_PARTS}" \
   2>&1 > "${SUCCINCT_LOG_PATH}/handler_${2}.log" &
+  #2>"${SUCCINCT_LOG_PATH}/handler_${2}.log" >/dev/null &
