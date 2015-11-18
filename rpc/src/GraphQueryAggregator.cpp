@@ -770,9 +770,9 @@ public:
         size_t from_updates = _return.size();
 
         if (_return.size() < len) {
-            COND_LOG_E("# local shards: %d\n", local_shards_.size());
             local_shards_.at(shard_idx)
                 .assoc_range(assocs, src, atype, off, len);
+            COND_LOG_E("local shard returns %d assocs\n", assocs.size());
             _return.insert(_return.end(), assocs.begin(), assocs.end());
         }
 
@@ -785,7 +785,9 @@ public:
         // Critical to have std::min here, otherwise UB -> segfault
         auto end = _return.begin() +
             std::min(_return.size(), static_cast<size_t>(len));
+        COND_LOG_E("about to return, %d assocs before cutoff, ", _return.size());
         _return = std::vector<ThriftAssoc>(start, end);
+        COND_LOG_E("%d assocs after\n", _return.size());
     }
 
     void assoc_count_batched(
