@@ -28,14 +28,22 @@ void GraphLogStore::append_node(
         exit(-1);
     }
 }
-void GraphLogStore::append_edge(
+
+int GraphLogStore::append_edge(
     int64_t src,
     int64_t dst,
     int64_t atype,
     int64_t timestamp,
     const std::string& attr)
 {
+    if (edge_table_.num_edges() >= max_num_edges_) {
+        LOG_E("append_edge failed: Edge table log store already has %d edges\n",
+            max_num_edges_);
+        return -1;
+    }
+
     edge_table_.add_assoc(src, dst, atype, timestamp, attr);
+    return 0;
 }
 
 void GraphLogStore::get_attribute(

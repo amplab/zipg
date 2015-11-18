@@ -18,7 +18,8 @@ class StructuredEdgeTable {
 public:
 
     StructuredEdgeTable(const std::string edge_file = "")
-        : edge_file_(edge_file)
+        : edge_file_(edge_file),
+          num_edges_(0)
     { }
 
     // Reads in the `edge_file_`, convert the data into structured data (i.e.
@@ -66,6 +67,10 @@ public:
         std::unordered_map<int, GraphFormatter::AssocSet>& edge_updates,
         int num_shards_to_mod);
 
+    inline int num_edges() {
+        return num_edges_;
+    }
+
 //    template<class Archive>
 //    void serialize(Archive & ar, const unsigned int version) {
 //        // read class state from archive
@@ -103,6 +108,8 @@ private:
     std::string edge_file_;
 
     std::mutex mutex_;
+
+    int num_edges_;
 };
 
 #endif

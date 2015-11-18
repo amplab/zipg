@@ -74,6 +74,8 @@ void StructuredEdgeTable::construct() {
     }
     LOG_E("StructuredEdgeTable wrote to '%s', %lld edges\n",
         (edge_file_ + "_logstore").c_str(), num_edges);
+
+    num_edges_ = num_edges;
 }
 
 void StructuredEdgeTable::load() {
@@ -128,6 +130,8 @@ void StructuredEdgeTable::load() {
 
         LOG_E("Loaded StructuredEdgeTable (log store), %lld edges\n",
             num_edges);
+
+        num_edges_ = num_edges;
     }
 }
 
@@ -140,6 +144,7 @@ void StructuredEdgeTable::add_assoc(
 {
     std::lock_guard<std::mutex> lock(mutex_);
     edges[src][atype].emplace_back(EdgeData{ dst, timestamp, attr });
+    ++num_edges_;
 }
 
 std::vector<SuccinctGraph::Assoc> StructuredEdgeTable::assoc_range(

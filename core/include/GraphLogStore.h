@@ -29,7 +29,8 @@ public:
         : node_file_(node_file),
           edge_file_(edge_file),
           node_pointer_file(""), // FIXME?
-          edge_table_(edge_file)
+          edge_table_(edge_file),
+          max_num_edges_(3500000) // FIXME: hard-coded
     { }
 
     void construct();
@@ -44,7 +45,7 @@ public:
     void append_node(int64_t node_id, std::vector<std::string>& attrs);
 
     // Thread-safe: internally, a lock is used.
-    void append_edge(
+    int append_edge(
         int64_t src,
         int64_t dst,
         int64_t atype,
@@ -116,6 +117,8 @@ private:
 
     std::shared_ptr<KVLogStore> node_table_ = nullptr;
     StructuredEdgeTable edge_table_;
+
+    const int max_num_edges_; // bound per log store
 
 };
 
