@@ -21,5 +21,5 @@ if [ "$SUCCINCT_LOG_PATH" = "" ]; then
 	SUCCINCT_LOG_PATH="$SUCCINCT_HOME/log"
 fi
 
-nohup "$bin/../rpc/bin/backfill_updates" \
-  2>"$SUCCINCT_LOG_PATH/backfill_updates.log" >/dev/null &
+"$bin/../rpc/bin/backfill_updates" \
+  2>"$SUCCINCT_LOG_PATH/backfill_updates.log" >/dev/null

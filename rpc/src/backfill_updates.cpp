@@ -28,10 +28,15 @@ int main() {
 
     client_.init();
     LOG_E("init() done, about to backfill\n");
+    time_t t1 = get_timestamp();
 
     int num = client_.backfill_edge_updates();
     // TODO: node to be implemented
-    LOG_E("backfill_edge_updates() done! filled %d updates\n", num);
+    time_t t2 = get_timestamp();
+
+    LOG_E("backfill_edge_updates() done! filled %d updates in %.1f millis\n",
+        num, (static_cast<double>(t2) - t1) / 1e3);
+
 
     client_.shutdown();
     transport_->close();
