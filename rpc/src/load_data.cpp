@@ -25,8 +25,10 @@ int main() {
     transport_->open();
     LOG_E("connected\n");
     GraphQueryAggregatorServiceClient client_(protocol_);
+
     client_.local_data_init();
     LOG_E("local_data_init() done\n");
+
     transport_->close();
     return 0;
 }

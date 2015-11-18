@@ -143,6 +143,57 @@ class ThriftEdgeUpdatePtr {
 
 void swap(ThriftEdgeUpdatePtr &a, ThriftEdgeUpdatePtr &b);
 
+typedef struct _ThriftSrcAtype__isset {
+  _ThriftSrcAtype__isset() : src(false), atype(false) {}
+  bool src;
+  bool atype;
+} _ThriftSrcAtype__isset;
+
+class ThriftSrcAtype {
+ public:
+
+  static const char* ascii_fingerprint; // = "F33135321253DAEB67B0E79E416CA831";
+  static const uint8_t binary_fingerprint[16]; // = {0xF3,0x31,0x35,0x32,0x12,0x53,0xDA,0xEB,0x67,0xB0,0xE7,0x9E,0x41,0x6C,0xA8,0x31};
+
+  ThriftSrcAtype() : src(0), atype(0) {
+  }
+
+  virtual ~ThriftSrcAtype() throw() {}
+
+  int64_t src;
+  int64_t atype;
+
+  _ThriftSrcAtype__isset __isset;
+
+  void __set_src(const int64_t val) {
+    src = val;
+  }
+
+  void __set_atype(const int64_t val) {
+    atype = val;
+  }
+
+  bool operator == (const ThriftSrcAtype & rhs) const
+  {
+    if (!(src == rhs.src))
+      return false;
+    if (!(atype == rhs.atype))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftSrcAtype &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftSrcAtype & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(ThriftSrcAtype &a, ThriftSrcAtype &b);
+
 
 
 #endif

@@ -1,3 +1,6 @@
+//cpp_include "<unordered_map>"
+//cpp_include "<unordered_set>"
+
 // An association. The included fields are the same as SuccinctGraph::Assoc.
 struct ThriftAssoc {
     1: i64 srcId,
@@ -10,6 +13,13 @@ struct ThriftAssoc {
 struct ThriftEdgeUpdatePtr {
     1: i64 shardId,
     2: i64 offset,
+}
+
+// In the IDL we use list<ThriftSrcAtype>, but the implementation makes sure,
+// and relies on, it actually contains no duplicates -- i.e., it is a set.
+struct ThriftSrcAtype {
+    1: i64 src,
+    2: i64 atype,
 }
 
 // One per logical shard (there can be multiple shards per physical node).
@@ -65,6 +75,15 @@ service GraphQueryService {
 
     list<ThriftEdgeUpdatePtr> get_edge_update_ptrs(1: i64 src, 2: i64 atype),
 
+    // This still doesn't quite work,
+//    map cpp_type "std::unordered_map<int32_t, std::unordered_set<ThrfitAssoc>>"
+//    <i32, set cpp_type "std::unordered_set<ThriftSrcAtype>" <ThriftSrcAtype>>
+//    get_edge_updates(),
+
+    map<i32, list<ThriftSrcAtype>> get_edge_updates(),
+
+    void record_edge_updates(1: i32 next_shard, 2: list<ThriftSrcAtype> updates),
+
 }
 
 // One aggregator per machine; handles local aggregation and query routing.
@@ -101,6 +120,14 @@ service GraphQueryAggregatorService {
     void shutdown(),
     void disconnect_from_local_shards(),
     void disconnect_from_aggregators(),
+
+    // Send edge updates, if any.  No-op for SuccinctStore machines.
+    i32 backfill_edge_updates(),
+
+    void record_edge_updates(
+        1: i32 next_shard, // where are these updates located?
+        2: i32 local_shard, // one of this aggregator's shards
+        3: list<ThriftSrcAtype> updates),
 
     // Primitive queries
 

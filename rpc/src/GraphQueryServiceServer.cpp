@@ -12,6 +12,7 @@
 #include "ports.h"
 
 #include <random>
+#include <set>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -40,6 +41,7 @@ bool initialized_ = false;
 std::unordered_map<int64_t,
     std::unordered_map<int64_t, std::vector<ThriftEdgeUpdatePtr>>
 > edge_update_ptrs;
+std::mutex edge_update_ptrs_mutex;
 
 // src -> (shard id, file offset)
 typedef std::pair<int, int64_t> NodeUpdatePtr;
@@ -200,6 +202,39 @@ public:
         initialized_ = true;
         LOG_E("Initialization at this shard: done\n");
         return 0;
+    }
+
+    void get_edge_updates(
+        std::map<int32_t, std::vector<ThriftSrcAtype> >& _return)
+    {
+        _return.clear();
+        ThriftSrcAtype tsa;
+        for (auto it = edge_updates.begin(); it != edge_updates.end(); ++it) {
+            auto& assoc_set = it->second;
+            auto& set = _return[it->first];
+
+            for (auto it2 = assoc_set.begin(); it2 != assoc_set.end(); ++it2) {
+                tsa.src = it2->first;
+                tsa.atype = it2->second;
+                set.push_back(tsa);
+            }
+        }
+    }
+
+    void record_edge_updates(
+        const int32_t next_shard_id, const std::vector<ThriftSrcAtype> & updates)
+    {
+        LOG_E("Recording %lld updates from nextShard %d\n",
+            updates.size(), next_shard_id);
+
+        std::lock_guard<std::mutex> lk(edge_update_ptrs_mutex);
+        ThriftEdgeUpdatePtr ptr;
+
+        for (auto& update : updates) {
+            ptr.shardId = next_shard_id;
+            ptr.offset = -1; // TODO: offset optimization is not implemented yet
+            edge_update_ptrs[update.src][update.atype].push_back(ptr);
+        }
     }
 
     // In principle, nodeId should be in this shard's edge table.
