@@ -239,7 +239,7 @@ public:
     void record_edge_updates(
         const int32_t next_shard_id, const std::vector<ThriftSrcAtype> & updates)
     {
-        LOG_E("Recording %lld updates from nextShard %d\n",
+        COND_LOG_E("Recording %lld updates from nextShard %d\n",
             updates.size(), next_shard_id);
 
         std::lock_guard<std::mutex> lk(edge_update_ptrs_mutex);
@@ -248,7 +248,15 @@ public:
         for (auto& update : updates) {
             ptr.shardId = next_shard_id;
             ptr.offset = -1; // TODO: offset optimization is not implemented yet
-            edge_update_ptrs[update.src][update.atype].push_back(ptr);
+            auto& curr_ptrs = edge_update_ptrs[update.src][update.atype];
+
+            // As random edges accumulate in the LogStore and as it sends
+            // updates back, it could be that there are many updates from
+            // the same store.  If so, record it only once.
+            if (curr_ptrs.empty() || curr_ptrs.back().shardId != next_shard_id)
+            {
+                curr_ptrs.push_back(ptr);
+            }
         }
     }
 
