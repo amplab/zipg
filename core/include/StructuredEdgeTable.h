@@ -1,6 +1,7 @@
 #ifndef STRUCTURED_EDGE_TABLE_H
 #define STRUCTURED_EDGE_TABLE_H
 
+#include "GraphFormatter.hpp"
 #include "SuccinctGraph.hpp"
 
 #include <mutex>
@@ -60,6 +61,10 @@ public:
         int64_t t_low,
         int64_t t_high,
         int32_t len);
+
+    void build_backfill_edge_updates(
+        std::unordered_map<int, GraphFormatter::AssocSet>& edge_updates,
+        int num_shards_to_mod);
 
 //    template<class Archive>
 //    void serialize(Archive & ar, const unsigned int version) {

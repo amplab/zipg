@@ -1,11 +1,13 @@
 #ifndef GRAPH_LOG_STORE_H
 #define GRAPH_LOG_STORE_H
 
+#include "GraphFormatter.hpp"
 #include "KVLogStore.h"
 #include "StructuredEdgeTable.h"
 
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 // A graph that is backed by LogStore and thus supports individual node/edge
@@ -98,6 +100,14 @@ public:
         int32_t len)
     {
         return edge_table_.assoc_time_range(src, atype, t_low, t_high, len);
+    }
+
+    inline void build_backfill_edge_updates(
+        std::unordered_map<int, GraphFormatter::AssocSet>& edge_updates,
+        int num_shards_to_mod)
+    {
+        edge_table_.build_backfill_edge_updates(
+            edge_updates, num_shards_to_mod);
     }
 
 private:

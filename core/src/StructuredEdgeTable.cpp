@@ -244,3 +244,26 @@ std::vector<SuccinctGraph::Assoc> StructuredEdgeTable::assoc_time_range(
     }
     return assocs;
 }
+
+
+void StructuredEdgeTable::build_backfill_edge_updates(
+    std::unordered_map<int, GraphFormatter::AssocSet>& edge_updates,
+    int num_shards_to_mod)
+{
+    edge_updates.clear();
+    for (auto it = edges.begin(); it != edges.end(); ++it) {
+        int64_t src = it->first;
+        auto& atype_to_edges = it->second;
+
+        auto& assoc_set = edge_updates[src % num_shards_to_mod];
+
+        for (auto it2 = atype_to_edges.begin();
+            it2 != atype_to_edges.end();
+            ++it2)
+        {
+            assoc_set.emplace(src, it2->first);
+        }
+    }
+    COND_LOG_E("StructuredEdgeTable::build_backfill_edge_updates: %d shards\n",
+        edge_updates.size());
+}

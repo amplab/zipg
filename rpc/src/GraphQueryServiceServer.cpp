@@ -50,6 +50,9 @@ shared_ptr<GraphSuffixStore> graph_suffix_store_ = nullptr;
 
 std::mutex suffix_store_mutex, log_store_mutex;
 bool suffix_store_initialized = false, log_store_initialized = false;
+
+// old shard id -> set { (src, atype) }
+std::unordered_map<int, GraphFormatter::AssocSet> edge_updates;
 // ********************************** hacks done
 
 class GraphQueryServiceHandler : virtual public GraphQueryServiceIf {
@@ -164,6 +167,8 @@ public:
                 } else {
                     graph_suffix_store_->load();
                 }
+                graph_suffix_store_->build_backfill_edge_updates(
+                    edge_updates, total_num_shards_); // num succinct st. shards
                 suffix_store_initialized = true;
             }
             break;
@@ -181,6 +186,8 @@ public:
                 } else {
                     graph_log_store_->load();
                 }
+                graph_log_store_->build_backfill_edge_updates(
+                    edge_updates, total_num_shards_); // num succinct st. shards
                 log_store_initialized = true;
             }
             break;

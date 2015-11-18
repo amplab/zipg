@@ -1,6 +1,8 @@
 #ifndef FILE_SUFFIX_STORE_H
 #define FILE_SUFFIX_STORE_H
 
+#include "GraphFormatter.hpp"
+
 // Succinct stuff
 #include "utils/definitions.h"
 #include "succinct_base.h"

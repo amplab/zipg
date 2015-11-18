@@ -624,6 +624,34 @@ void GraphFormatter::build_assoc_map(std::map<SuccinctGraph::AssocListKey,
     }
 }
 
+void GraphFormatter::build_edge_updates(
+    std::unordered_map<int, AssocSet>& edge_updates,
+    const std::string& assoc_in,
+    const int num_shards_to_mod)
+{
+    edge_updates.clear();
+    std::ifstream edge_file_stream(assoc_in);
+
+    std::string line, token;
+    SuccinctGraph::AType atype = -1LL;
+    SuccinctGraph::NodeId src_id = -1LL;
+
+    while (std::getline(edge_file_stream, line)) {
+        std::stringstream ss(line);
+
+        std::getline(ss, token, ' ');
+        src_id = std::stoll(token);
+
+        std::getline(ss, token, ' '); // dst id, ignore
+
+        std::getline(ss, token, ' ');
+        atype = std::stoll(token);
+
+        auto& assoc_set = edge_updates[src_id % num_shards_to_mod];
+        assoc_set.emplace(src_id, atype);
+    }
+}
+
 void GraphFormatter::populate_random_store(
     const std::string& store_out,
     size_t num_edges_to_add,

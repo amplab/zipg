@@ -2,6 +2,7 @@
 #define GRAPH_SUFFIX_STORE_H
 
 #include "FileSuffixStore.h"
+#include "GraphFormatter.hpp"
 #include "KVSuffixStore.h"
 #include "SuccinctGraph.hpp"
 
@@ -69,6 +70,10 @@ public:
         int64_t t_low,
         int64_t t_high,
         int32_t len);
+
+    void build_backfill_edge_updates(
+        std::unordered_map<int, GraphFormatter::AssocSet>& edge_updates,
+        int num_shards_to_mod);
 
 private:
 

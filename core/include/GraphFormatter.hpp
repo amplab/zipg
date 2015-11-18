@@ -4,6 +4,7 @@
 #include <fstream>
 #include <random>
 #include <string>
+#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
@@ -13,13 +14,11 @@
 
 // Formats input files into Succinct Graph-ready files.
 class GraphFormatter {
-private:
+public:
 
     typedef std::unordered_set<
                 std::pair<int64_t, int64_t>,
                 boost::hash< std::pair<int, int> >> AssocSet;
-
-public:
 
     // node_file: each row contains attributes (bytes) for the node
     //              whose ID is current row number - 1
@@ -179,6 +178,12 @@ public:
 
     static void build_assoc_map(std::map<std::pair<int64_t, int64_t>,
         std::vector<SuccinctGraph::Assoc>>& assoc_map, const std::string& in);
+
+    // `assoc_in` contains the raw assoc table (i.e. without delimiters, etc.).
+    static void build_edge_updates(
+        std::unordered_map<int, AssocSet>& edge_updates,
+        const std::string& assoc_in,
+        const int num_shards_to_mod);
 
     static void make_rand_suffix_store(
         const std::string& store_out,

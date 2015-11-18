@@ -553,3 +553,14 @@ std::vector<SuccinctGraph::Assoc> GraphSuffixStore::assoc_get(
     }
     return result;
 }
+
+void GraphSuffixStore::build_backfill_edge_updates(
+    std::unordered_map<int, GraphFormatter::AssocSet>& edge_updates,
+    int num_shards_to_mod)
+{
+    GraphFormatter::build_edge_updates(
+        edge_updates, edge_file_, num_shards_to_mod);
+
+    COND_LOG_E("GraphSuffixStore::build_backfill_edge_updates: %d shards\n",
+        edge_updates.size());
+}
