@@ -18,11 +18,17 @@ public:
     // The `node_file` here is just the un-delimited node properties (the
     // values file).  The keys are assumed to be 0-based line numbers; the
     // key-value pointers are computed by using newlines as record delimiters.
+    //
+    // The `edge_file` is the formatted edge table.
+    //
+    // The `assoc_file_` is the unformatted assoc table -- it is used only for
+    // calculating updates, so it is hard-coded.
     GraphSuffixStore(
         const std::string& node_file,
         const std::string& edge_file)
         : node_file_(node_file),
-          edge_file_(edge_file)
+          edge_file_(edge_file),
+          assoc_file_(edge_file + "_assoc")
     { }
 
     void construct();
@@ -77,7 +83,7 @@ public:
 
 private:
 
-    std::string node_file_, edge_file_;
+    std::string node_file_, edge_file_, assoc_file_;
 
     std::shared_ptr<KVSuffixStore> node_table_ = nullptr;
     std::shared_ptr<FileSuffixStore> edge_table_ = nullptr;
