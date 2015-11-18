@@ -777,8 +777,9 @@ public:
         }
 
         if (!ptrs.empty()) {
-            COND_LOG_E("assoc_range_local, %d ptrs, %d assocs from updates\n",
-                ptrs.size(), from_updates);
+            COND_LOG_E("assoc_range_local(%lld, %lld, %d, %d), %d ptrs, "
+                "%d assocs from updates\n",
+                src, atype, off, len, ptrs.size(), from_updates);
         }
 
         auto start = _return.begin();
