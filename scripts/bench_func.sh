@@ -365,6 +365,30 @@ function bench() {
       throughput_tao_mix-npa${npa}sa${sa}isa${isa}-${throughput_threads}clients.txt
   fi
 
+  if [[ -n "$benchTaoMixWithUpdatesThput" ]]; then
+    #sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+
+    ${BIN_DIR}/../benchmark/bin/bench -t tao-mix-with-updates-throughput \
+      -p ${throughput_threads} \
+      -w ${QUERY_DIR}/assocCount_warmup.txt \
+      -q ${QUERY_DIR}/assocCount_query.txt \
+      -a ${QUERY_DIR}/assocRange_warmup.txt \
+      -b ${QUERY_DIR}/assocRange_query.txt \
+      -c ${QUERY_DIR}/objGet_warmup.txt \
+      -d ${QUERY_DIR}/objGet_query.txt \
+      -e ${QUERY_DIR}/assocGet_warmup.txt \
+      -f ${QUERY_DIR}/assocGet_query.txt \
+      -g ${QUERY_DIR}/assocTimeRange_warmup.txt \
+      -l ${QUERY_DIR}/assocTimeRange_query.txt \
+      -m ${masterHostName} \
+      ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
+
+    x=$(cut -d' ' -f1 throughput_taoMixWithUpdates.txt | awk '{sum += $1} END {print sum}')
+    echo $throughput_threads clients, $x aggregated queries/sec >> throughput_taoMixWithUpdates.txt
+    mv throughput_taoMixWithUpdates.txt \
+      throughput_taoMixWithUpdates-npa${npa}sa${sa}isa${isa}-${throughput_threads}clients.txt
+  fi
+
   if [[ $# -eq 0 ]]; then
     if [[ -n "$SHARDED" ]]; then
     	bash ${SCRIPT_DIR}/../sbin/stop-all.sh

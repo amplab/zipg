@@ -21,6 +21,7 @@ edge_file_raw=/vol0/twitter2010-npa128sa32isa64.assoc
 
 threads=( 64 32 )
 benches=(
+  benchTaoMixWithUpdatesThput
   benchTaoMixThput
   benchMixThput
   benchNhbrNodeThput
@@ -159,6 +160,7 @@ sleep 2
 #### Launch benchmark
 declare -A benchMap=(
   ["benchTaoMixThput"]="tao_mix"
+  ["benchTaoMixWithUpdatesThput"]="taoMixWithUpdates"
   ["benchMixThput"]="mix"
   ["benchNodeNodeThput"]="get_nodes2"
   ["benchNhbrNodeThput"]="get_nhbrsNode"
@@ -168,7 +170,7 @@ declare -A benchMap=(
 )
 
 for throughput_threads in ${threads[*]}; do
-    for bench in get_nodes2 get_nhbrsNode get_nhbrsAtype getEdgeAttrs get_nhbrs tao_mix mix; do
+    for bench in get_nodes2 get_nhbrsNode get_nhbrsAtype getEdgeAttrs get_nhbrs tao_mix mix taoMixWithUpdates; do
       bash ${currDir}/sbin/hosts.sh \
         rm -rf throughput_${bench}-npa128sa32isa64-${throughput_threads}clients.txt
     done

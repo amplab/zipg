@@ -221,6 +221,22 @@ int main(int argc, char **argv) {
             warmup_assoc_time_range_file, // assoc_time_range
             query_assoc_time_range_file);
 
+    } else if (type == "tao-mix-with-updates-throughput") {
+
+        bench->benchmark_tao_mix_with_updates_throughput(
+            throughput_threads,
+            master_hostname,
+            warmup_neighbor_file, // assoc_range
+            measure_neighbor_file,
+            warmup_query_file, // assoc_count
+            measure_query_file,
+            warmup_nhbr_node_file, // obj_get
+            nhbr_node_file,
+            warmup_node_file, // assoc_get
+            query_node_file,
+            warmup_assoc_time_range_file, // assoc_time_range
+            query_assoc_time_range_file);
+
     } else if (type == "mix-throughput") {
 
         bench->benchmark_mix_throughput(
