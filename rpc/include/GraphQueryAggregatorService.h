@@ -55,6 +55,7 @@ class GraphQueryAggregatorServiceIf {
   virtual void assoc_time_range(std::vector<ThriftAssoc> & _return, const int64_t src, const int64_t atype, const int64_t tLow, const int64_t tHigh, const int32_t limit) = 0;
   virtual void assoc_time_range_batched(std::vector<std::vector<ThriftAssoc> > & _return, const std::vector<int64_t> & src, const std::vector<int64_t> & atype, const std::vector<int64_t> & tLow, const std::vector<int64_t> & tHigh, const std::vector<int32_t> & limit) = 0;
   virtual void assoc_time_range_local(std::vector<ThriftAssoc> & _return, const int32_t shardId, const int64_t src, const int64_t atype, const int64_t tLow, const int64_t tHigh, const int32_t limit) = 0;
+  virtual int32_t assoc_add(const int64_t src, const int64_t atype, const int64_t dst, const int64_t time, const std::string& attr) = 0;
 };
 
 class GraphQueryAggregatorServiceIfFactory {
@@ -211,6 +212,10 @@ class GraphQueryAggregatorServiceNull : virtual public GraphQueryAggregatorServi
   }
   void assoc_time_range_local(std::vector<ThriftAssoc> & /* _return */, const int32_t /* shardId */, const int64_t /* src */, const int64_t /* atype */, const int64_t /* tLow */, const int64_t /* tHigh */, const int32_t /* limit */) {
     return;
+  }
+  int32_t assoc_add(const int64_t /* src */, const int64_t /* atype */, const int64_t /* dst */, const int64_t /* time */, const std::string& /* attr */) {
+    int32_t _return = 0;
+    return _return;
   }
 };
 
@@ -4940,6 +4945,150 @@ class GraphQueryAggregatorService_assoc_time_range_local_presult {
 
 };
 
+typedef struct _GraphQueryAggregatorService_assoc_add_args__isset {
+  _GraphQueryAggregatorService_assoc_add_args__isset() : src(false), atype(false), dst(false), time(false), attr(false) {}
+  bool src;
+  bool atype;
+  bool dst;
+  bool time;
+  bool attr;
+} _GraphQueryAggregatorService_assoc_add_args__isset;
+
+class GraphQueryAggregatorService_assoc_add_args {
+ public:
+
+  GraphQueryAggregatorService_assoc_add_args() : src(0), atype(0), dst(0), time(0), attr() {
+  }
+
+  virtual ~GraphQueryAggregatorService_assoc_add_args() throw() {}
+
+  int64_t src;
+  int64_t atype;
+  int64_t dst;
+  int64_t time;
+  std::string attr;
+
+  _GraphQueryAggregatorService_assoc_add_args__isset __isset;
+
+  void __set_src(const int64_t val) {
+    src = val;
+  }
+
+  void __set_atype(const int64_t val) {
+    atype = val;
+  }
+
+  void __set_dst(const int64_t val) {
+    dst = val;
+  }
+
+  void __set_time(const int64_t val) {
+    time = val;
+  }
+
+  void __set_attr(const std::string& val) {
+    attr = val;
+  }
+
+  bool operator == (const GraphQueryAggregatorService_assoc_add_args & rhs) const
+  {
+    if (!(src == rhs.src))
+      return false;
+    if (!(atype == rhs.atype))
+      return false;
+    if (!(dst == rhs.dst))
+      return false;
+    if (!(time == rhs.time))
+      return false;
+    if (!(attr == rhs.attr))
+      return false;
+    return true;
+  }
+  bool operator != (const GraphQueryAggregatorService_assoc_add_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GraphQueryAggregatorService_assoc_add_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class GraphQueryAggregatorService_assoc_add_pargs {
+ public:
+
+
+  virtual ~GraphQueryAggregatorService_assoc_add_pargs() throw() {}
+
+  const int64_t* src;
+  const int64_t* atype;
+  const int64_t* dst;
+  const int64_t* time;
+  const std::string* attr;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _GraphQueryAggregatorService_assoc_add_result__isset {
+  _GraphQueryAggregatorService_assoc_add_result__isset() : success(false) {}
+  bool success;
+} _GraphQueryAggregatorService_assoc_add_result__isset;
+
+class GraphQueryAggregatorService_assoc_add_result {
+ public:
+
+  GraphQueryAggregatorService_assoc_add_result() : success(0) {
+  }
+
+  virtual ~GraphQueryAggregatorService_assoc_add_result() throw() {}
+
+  int32_t success;
+
+  _GraphQueryAggregatorService_assoc_add_result__isset __isset;
+
+  void __set_success(const int32_t val) {
+    success = val;
+  }
+
+  bool operator == (const GraphQueryAggregatorService_assoc_add_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    return true;
+  }
+  bool operator != (const GraphQueryAggregatorService_assoc_add_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GraphQueryAggregatorService_assoc_add_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _GraphQueryAggregatorService_assoc_add_presult__isset {
+  _GraphQueryAggregatorService_assoc_add_presult__isset() : success(false) {}
+  bool success;
+} _GraphQueryAggregatorService_assoc_add_presult__isset;
+
+class GraphQueryAggregatorService_assoc_add_presult {
+ public:
+
+
+  virtual ~GraphQueryAggregatorService_assoc_add_presult() throw() {}
+
+  int32_t* success;
+
+  _GraphQueryAggregatorService_assoc_add_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 class GraphQueryAggregatorServiceClient : virtual public GraphQueryAggregatorServiceIf {
  public:
   GraphQueryAggregatorServiceClient(boost::shared_ptr< ::apache::thrift::protocol::TProtocol> prot) :
@@ -5080,6 +5229,9 @@ class GraphQueryAggregatorServiceClient : virtual public GraphQueryAggregatorSer
   void assoc_time_range_local(std::vector<ThriftAssoc> & _return, const int32_t shardId, const int64_t src, const int64_t atype, const int64_t tLow, const int64_t tHigh, const int32_t limit);
   void send_assoc_time_range_local(const int32_t shardId, const int64_t src, const int64_t atype, const int64_t tLow, const int64_t tHigh, const int32_t limit);
   void recv_assoc_time_range_local(std::vector<ThriftAssoc> & _return);
+  int32_t assoc_add(const int64_t src, const int64_t atype, const int64_t dst, const int64_t time, const std::string& attr);
+  void send_assoc_add(const int64_t src, const int64_t atype, const int64_t dst, const int64_t time, const std::string& attr);
+  int32_t recv_assoc_add();
  protected:
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> piprot_;
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> poprot_;
@@ -5135,6 +5287,7 @@ class GraphQueryAggregatorServiceProcessor : public ::apache::thrift::TDispatchP
   void process_assoc_time_range(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_assoc_time_range_batched(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_assoc_time_range_local(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_assoc_add(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
  public:
   GraphQueryAggregatorServiceProcessor(boost::shared_ptr<GraphQueryAggregatorServiceIf> iface) :
     iface_(iface) {
@@ -5178,6 +5331,7 @@ class GraphQueryAggregatorServiceProcessor : public ::apache::thrift::TDispatchP
     processMap_["assoc_time_range"] = &GraphQueryAggregatorServiceProcessor::process_assoc_time_range;
     processMap_["assoc_time_range_batched"] = &GraphQueryAggregatorServiceProcessor::process_assoc_time_range_batched;
     processMap_["assoc_time_range_local"] = &GraphQueryAggregatorServiceProcessor::process_assoc_time_range_local;
+    processMap_["assoc_add"] = &GraphQueryAggregatorServiceProcessor::process_assoc_add;
   }
 
   virtual ~GraphQueryAggregatorServiceProcessor() {}
@@ -5592,6 +5746,15 @@ class GraphQueryAggregatorServiceMultiface : virtual public GraphQueryAggregator
     }
     ifaces_[i]->assoc_time_range_local(_return, shardId, src, atype, tLow, tHigh, limit);
     return;
+  }
+
+  int32_t assoc_add(const int64_t src, const int64_t atype, const int64_t dst, const int64_t time, const std::string& attr) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->assoc_add(src, atype, dst, time, attr);
+    }
+    return ifaces_[i]->assoc_add(src, atype, dst, time, attr);
   }
 
 };

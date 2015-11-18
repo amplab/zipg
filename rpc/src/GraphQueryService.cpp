@@ -3407,6 +3407,232 @@ uint32_t GraphQueryService_record_edge_updates_presult::read(::apache::thrift::p
   return xfer;
 }
 
+uint32_t GraphQueryService_assoc_add_args::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->src);
+          this->__isset.src = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->atype);
+          this->__isset.atype = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->dst);
+          this->__isset.dst = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->time);
+          this->__isset.time = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 5:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->attr);
+          this->__isset.attr = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t GraphQueryService_assoc_add_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  xfer += oprot->writeStructBegin("GraphQueryService_assoc_add_args");
+
+  xfer += oprot->writeFieldBegin("src", ::apache::thrift::protocol::T_I64, 1);
+  xfer += oprot->writeI64(this->src);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("atype", ::apache::thrift::protocol::T_I64, 2);
+  xfer += oprot->writeI64(this->atype);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("dst", ::apache::thrift::protocol::T_I64, 3);
+  xfer += oprot->writeI64(this->dst);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("time", ::apache::thrift::protocol::T_I64, 4);
+  xfer += oprot->writeI64(this->time);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("attr", ::apache::thrift::protocol::T_STRING, 5);
+  xfer += oprot->writeString(this->attr);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+uint32_t GraphQueryService_assoc_add_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  xfer += oprot->writeStructBegin("GraphQueryService_assoc_add_pargs");
+
+  xfer += oprot->writeFieldBegin("src", ::apache::thrift::protocol::T_I64, 1);
+  xfer += oprot->writeI64((*(this->src)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("atype", ::apache::thrift::protocol::T_I64, 2);
+  xfer += oprot->writeI64((*(this->atype)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("dst", ::apache::thrift::protocol::T_I64, 3);
+  xfer += oprot->writeI64((*(this->dst)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("time", ::apache::thrift::protocol::T_I64, 4);
+  xfer += oprot->writeI64((*(this->time)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("attr", ::apache::thrift::protocol::T_STRING, 5);
+  xfer += oprot->writeString((*(this->attr)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+uint32_t GraphQueryService_assoc_add_result::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 0:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->success);
+          this->__isset.success = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t GraphQueryService_assoc_add_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
+
+  uint32_t xfer = 0;
+
+  xfer += oprot->writeStructBegin("GraphQueryService_assoc_add_result");
+
+  if (this->__isset.success) {
+    xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_I32, 0);
+    xfer += oprot->writeI32(this->success);
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+uint32_t GraphQueryService_assoc_add_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 0:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32((*(this->success)));
+          this->__isset.success = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
 int32_t GraphQueryServiceClient::init()
 {
   send_init();
@@ -4351,6 +4577,68 @@ void GraphQueryServiceClient::recv_record_edge_updates()
   return;
 }
 
+int32_t GraphQueryServiceClient::assoc_add(const int64_t src, const int64_t atype, const int64_t dst, const int64_t time, const std::string& attr)
+{
+  send_assoc_add(src, atype, dst, time, attr);
+  return recv_assoc_add();
+}
+
+void GraphQueryServiceClient::send_assoc_add(const int64_t src, const int64_t atype, const int64_t dst, const int64_t time, const std::string& attr)
+{
+  int32_t cseqid = 0;
+  oprot_->writeMessageBegin("assoc_add", ::apache::thrift::protocol::T_CALL, cseqid);
+
+  GraphQueryService_assoc_add_pargs args;
+  args.src = &src;
+  args.atype = &atype;
+  args.dst = &dst;
+  args.time = &time;
+  args.attr = &attr;
+  args.write(oprot_);
+
+  oprot_->writeMessageEnd();
+  oprot_->getTransport()->writeEnd();
+  oprot_->getTransport()->flush();
+}
+
+int32_t GraphQueryServiceClient::recv_assoc_add()
+{
+
+  int32_t rseqid = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TMessageType mtype;
+
+  iprot_->readMessageBegin(fname, mtype, rseqid);
+  if (mtype == ::apache::thrift::protocol::T_EXCEPTION) {
+    ::apache::thrift::TApplicationException x;
+    x.read(iprot_);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+    throw x;
+  }
+  if (mtype != ::apache::thrift::protocol::T_REPLY) {
+    iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+  }
+  if (fname.compare("assoc_add") != 0) {
+    iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+  }
+  int32_t _return;
+  GraphQueryService_assoc_add_presult result;
+  result.success = &_return;
+  result.read(iprot_);
+  iprot_->readMessageEnd();
+  iprot_->getTransport()->readEnd();
+
+  if (result.__isset.success) {
+    return _return;
+  }
+  throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "assoc_add failed: unknown result");
+}
+
 bool GraphQueryServiceProcessor::dispatchCall(::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, const std::string& fname, int32_t seqid, void* callContext) {
   ProcessMap::iterator pfn;
   pfn = processMap_.find(fname);
@@ -5230,6 +5518,60 @@ void GraphQueryServiceProcessor::process_record_edge_updates(int32_t seqid, ::ap
 
   if (this->eventHandler_.get() != NULL) {
     this->eventHandler_->postWrite(ctx, "GraphQueryService.record_edge_updates", bytes);
+  }
+}
+
+void GraphQueryServiceProcessor::process_assoc_add(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
+{
+  void* ctx = NULL;
+  if (this->eventHandler_.get() != NULL) {
+    ctx = this->eventHandler_->getContext("GraphQueryService.assoc_add", callContext);
+  }
+  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "GraphQueryService.assoc_add");
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->preRead(ctx, "GraphQueryService.assoc_add");
+  }
+
+  GraphQueryService_assoc_add_args args;
+  args.read(iprot);
+  iprot->readMessageEnd();
+  uint32_t bytes = iprot->getTransport()->readEnd();
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->postRead(ctx, "GraphQueryService.assoc_add", bytes);
+  }
+
+  GraphQueryService_assoc_add_result result;
+  try {
+    result.success = iface_->assoc_add(args.src, args.atype, args.dst, args.time, args.attr);
+    result.__isset.success = true;
+  } catch (const std::exception& e) {
+    if (this->eventHandler_.get() != NULL) {
+      this->eventHandler_->handlerError(ctx, "GraphQueryService.assoc_add");
+    }
+
+    ::apache::thrift::TApplicationException x(e.what());
+    oprot->writeMessageBegin("assoc_add", ::apache::thrift::protocol::T_EXCEPTION, seqid);
+    x.write(oprot);
+    oprot->writeMessageEnd();
+    oprot->getTransport()->writeEnd();
+    oprot->getTransport()->flush();
+    return;
+  }
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->preWrite(ctx, "GraphQueryService.assoc_add");
+  }
+
+  oprot->writeMessageBegin("assoc_add", ::apache::thrift::protocol::T_REPLY, seqid);
+  result.write(oprot);
+  oprot->writeMessageEnd();
+  bytes = oprot->getTransport()->writeEnd();
+  oprot->getTransport()->flush();
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->postWrite(ctx, "GraphQueryService.assoc_add", bytes);
   }
 }
 

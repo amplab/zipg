@@ -31,6 +31,7 @@ class GraphQueryServiceIf {
   virtual void get_edge_update_ptrs(std::vector<ThriftEdgeUpdatePtr> & _return, const int64_t src, const int64_t atype) = 0;
   virtual void get_edge_updates(std::map<int32_t, std::vector<ThriftSrcAtype> > & _return) = 0;
   virtual void record_edge_updates(const int32_t next_shard, const std::vector<ThriftSrcAtype> & updates) = 0;
+  virtual int32_t assoc_add(const int64_t src, const int64_t atype, const int64_t dst, const int64_t time, const std::string& attr) = 0;
 };
 
 class GraphQueryServiceIfFactory {
@@ -109,6 +110,10 @@ class GraphQueryServiceNull : virtual public GraphQueryServiceIf {
   }
   void record_edge_updates(const int32_t /* next_shard */, const std::vector<ThriftSrcAtype> & /* updates */) {
     return;
+  }
+  int32_t assoc_add(const int64_t /* src */, const int64_t /* atype */, const int64_t /* dst */, const int64_t /* time */, const std::string& /* attr */) {
+    int32_t _return = 0;
+    return _return;
   }
 };
 
@@ -1999,6 +2004,150 @@ class GraphQueryService_record_edge_updates_presult {
 
 };
 
+typedef struct _GraphQueryService_assoc_add_args__isset {
+  _GraphQueryService_assoc_add_args__isset() : src(false), atype(false), dst(false), time(false), attr(false) {}
+  bool src;
+  bool atype;
+  bool dst;
+  bool time;
+  bool attr;
+} _GraphQueryService_assoc_add_args__isset;
+
+class GraphQueryService_assoc_add_args {
+ public:
+
+  GraphQueryService_assoc_add_args() : src(0), atype(0), dst(0), time(0), attr() {
+  }
+
+  virtual ~GraphQueryService_assoc_add_args() throw() {}
+
+  int64_t src;
+  int64_t atype;
+  int64_t dst;
+  int64_t time;
+  std::string attr;
+
+  _GraphQueryService_assoc_add_args__isset __isset;
+
+  void __set_src(const int64_t val) {
+    src = val;
+  }
+
+  void __set_atype(const int64_t val) {
+    atype = val;
+  }
+
+  void __set_dst(const int64_t val) {
+    dst = val;
+  }
+
+  void __set_time(const int64_t val) {
+    time = val;
+  }
+
+  void __set_attr(const std::string& val) {
+    attr = val;
+  }
+
+  bool operator == (const GraphQueryService_assoc_add_args & rhs) const
+  {
+    if (!(src == rhs.src))
+      return false;
+    if (!(atype == rhs.atype))
+      return false;
+    if (!(dst == rhs.dst))
+      return false;
+    if (!(time == rhs.time))
+      return false;
+    if (!(attr == rhs.attr))
+      return false;
+    return true;
+  }
+  bool operator != (const GraphQueryService_assoc_add_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GraphQueryService_assoc_add_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class GraphQueryService_assoc_add_pargs {
+ public:
+
+
+  virtual ~GraphQueryService_assoc_add_pargs() throw() {}
+
+  const int64_t* src;
+  const int64_t* atype;
+  const int64_t* dst;
+  const int64_t* time;
+  const std::string* attr;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _GraphQueryService_assoc_add_result__isset {
+  _GraphQueryService_assoc_add_result__isset() : success(false) {}
+  bool success;
+} _GraphQueryService_assoc_add_result__isset;
+
+class GraphQueryService_assoc_add_result {
+ public:
+
+  GraphQueryService_assoc_add_result() : success(0) {
+  }
+
+  virtual ~GraphQueryService_assoc_add_result() throw() {}
+
+  int32_t success;
+
+  _GraphQueryService_assoc_add_result__isset __isset;
+
+  void __set_success(const int32_t val) {
+    success = val;
+  }
+
+  bool operator == (const GraphQueryService_assoc_add_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    return true;
+  }
+  bool operator != (const GraphQueryService_assoc_add_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GraphQueryService_assoc_add_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _GraphQueryService_assoc_add_presult__isset {
+  _GraphQueryService_assoc_add_presult__isset() : success(false) {}
+  bool success;
+} _GraphQueryService_assoc_add_presult__isset;
+
+class GraphQueryService_assoc_add_presult {
+ public:
+
+
+  virtual ~GraphQueryService_assoc_add_presult() throw() {}
+
+  int32_t* success;
+
+  _GraphQueryService_assoc_add_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 class GraphQueryServiceClient : virtual public GraphQueryServiceIf {
  public:
   GraphQueryServiceClient(boost::shared_ptr< ::apache::thrift::protocol::TProtocol> prot) :
@@ -2067,6 +2216,9 @@ class GraphQueryServiceClient : virtual public GraphQueryServiceIf {
   void record_edge_updates(const int32_t next_shard, const std::vector<ThriftSrcAtype> & updates);
   void send_record_edge_updates(const int32_t next_shard, const std::vector<ThriftSrcAtype> & updates);
   void recv_record_edge_updates();
+  int32_t assoc_add(const int64_t src, const int64_t atype, const int64_t dst, const int64_t time, const std::string& attr);
+  void send_assoc_add(const int64_t src, const int64_t atype, const int64_t dst, const int64_t time, const std::string& attr);
+  int32_t recv_assoc_add();
  protected:
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> piprot_;
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> poprot_;
@@ -2098,6 +2250,7 @@ class GraphQueryServiceProcessor : public ::apache::thrift::TDispatchProcessor {
   void process_get_edge_update_ptrs(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_edge_updates(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_record_edge_updates(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_assoc_add(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
  public:
   GraphQueryServiceProcessor(boost::shared_ptr<GraphQueryServiceIf> iface) :
     iface_(iface) {
@@ -2117,6 +2270,7 @@ class GraphQueryServiceProcessor : public ::apache::thrift::TDispatchProcessor {
     processMap_["get_edge_update_ptrs"] = &GraphQueryServiceProcessor::process_get_edge_update_ptrs;
     processMap_["get_edge_updates"] = &GraphQueryServiceProcessor::process_get_edge_updates;
     processMap_["record_edge_updates"] = &GraphQueryServiceProcessor::process_record_edge_updates;
+    processMap_["assoc_add"] = &GraphQueryServiceProcessor::process_assoc_add;
   }
 
   virtual ~GraphQueryServiceProcessor() {}
@@ -2300,6 +2454,15 @@ class GraphQueryServiceMultiface : virtual public GraphQueryServiceIf {
       ifaces_[i]->record_edge_updates(next_shard, updates);
     }
     ifaces_[i]->record_edge_updates(next_shard, updates);
+  }
+
+  int32_t assoc_add(const int64_t src, const int64_t atype, const int64_t dst, const int64_t time, const std::string& attr) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->assoc_add(src, atype, dst, time, attr);
+    }
+    return ifaces_[i]->assoc_add(src, atype, dst, time, attr);
   }
 
 };

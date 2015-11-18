@@ -73,6 +73,7 @@ service GraphQueryService {
 
     // Multi-store related
 
+    // Thread-safe, since it uses a mutex.
     list<ThriftEdgeUpdatePtr> get_edge_update_ptrs(1: i64 src, 2: i64 atype),
 
     // This still doesn't quite work,
@@ -80,9 +81,15 @@ service GraphQueryService {
 //    <i32, set cpp_type "std::unordered_set<ThriftSrcAtype>" <ThriftSrcAtype>>
 //    get_edge_updates(),
 
+    // Called only during initial backfill, so it assumes there are no
+    // concurrent writes.
     map<i32, list<ThriftSrcAtype>> get_edge_updates(),
 
+    // Thread-safe, since it uses a mutex.
     void record_edge_updates(1: i32 next_shard, 2: list<ThriftSrcAtype> updates),
+
+    i32 assoc_add(
+        1: i64 src, 2: i64 atype, 3: i64 dst, 4: i64 time, 5: string attr),
 
 }
 
@@ -223,5 +230,8 @@ service GraphQueryAggregatorService {
     list<ThriftAssoc> assoc_time_range_local(
         1: i32 shardId, 2: i64 src, 3: i64 atype,
         4: i64 tLow, 5: i64 tHigh, 6: i32 limit),
+
+    i32 assoc_add(
+        1: i64 src, 2: i64 atype, 3: i64 dst, 4: i64 time, 5: string attr),
 
 }

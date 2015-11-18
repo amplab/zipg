@@ -1206,6 +1206,50 @@ public:
             _return.size(), limit);
     }
 
+    int assoc_add(
+        const int64_t src,
+        const int64_t atype,
+        const int64_t dst,
+        const int64_t time,
+        const std::string& attr)
+    {
+        assert(multistore_enabled_ &&
+            "multistore not enabled but assoc_add called");
+
+        // NOTE: this hard-codes the knowledge that:
+        // (1) the last machine is LogStore machine, and
+        // (2) its last shard is the append-only store
+        if (local_host_id_ == total_num_hosts_ - 1) {
+            int ret = local_shards_.back()
+                .assoc_add(src, atype, dst, time, attr);
+
+            if (!ret) {
+                int primary_shard_id = src % num_succinctstore_shards_;
+                int primary_host_id = host_id_for_shard(primary_shard_id);
+                assert(local_host_id_ != primary_host_id);
+
+                ThriftSrcAtype src_atype;
+                src_atype.src = src;
+                src_atype.atype = atype;
+
+                COND_LOG_E("Updating host %d, shard %d about (%lld,%d)\n",
+                    primary_host_id, primary_shard_id, src, atype);
+
+                aggregators_.at(primary_host_id).record_edge_updates(
+                    num_succinctstore_shards_ +
+                        num_suffixstore_shards_ +
+                        num_logstore_shards_ - 1,
+                    primary_shard_id,
+                    { src_atype });
+            }
+
+            return ret;
+        } else {
+            return aggregators_.at(total_num_hosts_ - 1)
+                .assoc_add(src, atype, dst, time, attr);
+        }
+    }
+
 private:
 
     // globalKey = localKey * numShards + shardId

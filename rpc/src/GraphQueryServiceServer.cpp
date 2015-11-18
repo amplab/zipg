@@ -537,7 +537,20 @@ public:
         const int64_t src,
         const int64_t atype)
     {
+        std::lock_guard<std::mutex> lk(edge_update_ptrs_mutex);
         _return = edge_update_ptrs[src][atype];
+    }
+
+    int assoc_add(
+        const int64_t src,
+        const int64_t atype,
+        const int64_t dst,
+        const int64_t time,
+        const std::string& attr)
+    {
+        assert(store_mode_ == StoreMode::LogStore);
+        // Note the argument order is switched
+        return graph_log_store_->append_edge(src, dst, atype, time, attr);
     }
 
 private:
