@@ -771,7 +771,7 @@ public:
 
         if (_return.size() < len) {
             local_shards_.at(shard_idx)
-                .assoc_range(assocs, src, atype, off, len);
+                .assoc_range(assocs, src, atype, 0, len - _return.size());
             COND_LOG_E("local shard returns %d assocs\n", assocs.size());
             _return.insert(_return.end(), assocs.begin(), assocs.end());
         }
