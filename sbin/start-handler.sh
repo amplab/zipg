@@ -40,4 +40,4 @@ nohup "${bin}/../rpc/bin/graph_query_aggregator" \
   -m "${ENABLE_MULTI_STORE}" \
   -f "${NUM_SUFFIXSTORE_PARTS}" \
   -l "${NUM_LOGSTORE_PARTS}" \
-  2> >(tee "${SUCCINCT_LOG_PATH}/handler_${2}.log" >&2) &
+  2>&1 > "${SUCCINCT_LOG_PATH}/handler_${2}.log" &
