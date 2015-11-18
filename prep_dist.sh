@@ -100,6 +100,10 @@ if [[ -n $copyShardFiles ]]; then
       d2=$(dirname "${edgeTbl}")
       rsync -arL ${nodeTbl} ${host}:$d1 &
       rsync -arL ${edgeTbl} ${host}:$d2 &
+
+      # also rsync the raw assoc input, useful for calculating updates; TODO: node as well
+      edgeTbl="${edge_file_raw}.suffixstore-part${padded_shard_id}of${NUM_SUFFIXSTORE_PARTS}"
+      rsync -arL ${edgeTbl} ${host}:$d2 &
     done
 
     limit=$((NUM_LOGSTORE_PARTS - 1))
