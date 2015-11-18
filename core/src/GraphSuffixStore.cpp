@@ -13,6 +13,7 @@ void GraphSuffixStore::construct(
     node_table_ = std::make_shared<KVSuffixStore>(node_file);
     node_table_->construct();
 
+    // FIXME: what's the input?
     edge_table_ = std::make_shared<FileSuffixStore>(edge_file);
     edge_table_->construct();
 }
@@ -108,6 +109,7 @@ std::vector<SuccinctGraph::Assoc> GraphSuffixStore::assoc_range(
     std::vector<int64_t> offs;
     edge_table_->search(
         offs, SuccinctGraph::mk_edge_table_search_key(src, atype));
+    COND_LOG_E("src %lld atype %d, %d offsets\n", src, atype, offs.size());
     assert(offs.size() <= 1);
 
     int32_t edge_width, dst_id_width, timestamp_width;
