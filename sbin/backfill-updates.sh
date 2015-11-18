@@ -41,9 +41,12 @@ fi
 # same way as time order. In practice, we rely on the second
 # to last machine having the SuffixStores, the last machine
 # having the LogStores, etc.
+i=0
 for host in `echo "$HOSTLIST"|sed  "s/#.*$//;/^$/d"`; do
-  ssh $SUCCINCT_SSH_OPTS "$host" "$sbin/launch-backfill-updates.sh" 2>&1 | sed "s/^/$host: /" &
+  echo "backfilling updates from host ${i}"
+  # NOTE: this has to be sequential to ensure correctness...
+  ssh $SUCCINCT_SSH_OPTS "$host" "$sbin/launch-backfill-updates.sh" 2>&1 | sed "s/^/$host: /"
+  echo "done"
+  i=$(( $i + 1 ))
 done
-echo "Waiting for backfill updates"
-wait
-echo "backfill updates done"
+echo "backfill updates all done"
