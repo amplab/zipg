@@ -687,9 +687,9 @@ public:
         int32_t len)
     {
         int shard_idx = shard_id_to_shard_idx(shardId);
-        COND_LOG_E("assoc_range_local(src %lld, atype %lld, ...) "
+        COND_LOG_E("assoc_range_local(src %lld, atype %lld, ..., len %d) "
             "shard %d on host %d, shard idx %d",
-            src, atype, shardId, local_host_id_, shard_idx);
+            src, atype, len, shardId, local_host_id_, shard_idx);
         std::vector<ThriftAssoc> assocs;
         int32_t curr_len = 0;
         _return.clear();
@@ -720,13 +720,15 @@ public:
         }
 
         if (_return.size() < len) {
+            COND_LOG_E("# local shards: %d\n", local_shards_.size());
             local_shards_.at(shard_idx)
                 .assoc_range(assocs, src, atype, off, len);
             _return.insert(_return.end(), assocs.begin(), assocs.end());
         }
 
+        COND_LOG_E("about to return\n");
         auto start = _return.begin();
-        auto end = _return.begin() + len;
+        auto end = _return.begin() + std::min(_return.size(), (size_t) len);
         _return = std::vector<ThriftAssoc>(start, end);
     }
 
