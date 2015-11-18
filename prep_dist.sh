@@ -140,6 +140,10 @@ function start_all() {
 
   ${currDir}/sbin/load-data.sh
   sleep 2
+
+  # note: the script launch order is important
+  ${currDir}/sbin/backfill-updates.sh
+  sleep 2
 }
 
 function timestamp() {

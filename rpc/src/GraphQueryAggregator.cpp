@@ -262,12 +262,14 @@ public:
         return 0;
     }
 
+    // The correctness relies on host 0 is called first, then host 1, etc.
     int32_t backfill_edge_updates() {
-        int shard_idx = 0, src_shard_id;
+        int shard_idx = 0, src_shard_id, num_backfilled = 0;
 
         // dst shard id -> { (src, atype) }
         std::map<int32_t, std::vector<ThriftSrcAtype> > update_map;
 
+        // We assume shards are ordered according to time order.
         for (auto& shard: local_shards_) {
             src_shard_id = shard_idx_to_shard_id(shard_idx);
 
@@ -286,11 +288,13 @@ public:
                         dst_shard_id, // src shard contains more recent stuff
                         src_atypes);
                 }
+
+                num_backfilled += src_atypes.size();
             }
             ++shard_idx;
         }
 
-        return 0; // TODO: return # updates?
+        return num_backfilled;
     }
 
     void record_edge_updates(
