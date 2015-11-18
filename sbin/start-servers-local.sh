@@ -101,7 +101,7 @@ case "$storeMode" in
     padWidth=${#NUM_SUFFIXSTORE_PARTS}
     ;;
   logstore )
-    limit=$(( NUM_LOGSTORE_PARTS - 1 ))
+    limit=$(( NUM_LOGSTORE_PARTS )) # NOTE: we launch an "empty" LogStore for appends
     padWidth=${#NUM_LOGSTORE_PARTS}
     ;;
 esac
@@ -184,6 +184,8 @@ for i in `seq 0 $limit`; do
       -m $mode \
       -p $port \
       -t ${TOTAL_NUM_SHARDS} \
+      -a ${NUM_SUFFIXSTORE_PARTS} \
+      -c ${NUM_LOGSTORE_PARTS} \
       -d ${shard_id} \
       -s${sa_sr} -i${isa_sr} -n${npa_sr} \
       -h ${local_host_id} -k ${num_hosts} \

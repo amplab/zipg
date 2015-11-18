@@ -69,13 +69,17 @@ public:
         int32_t npa_sampling_rate,
         int shard_id,
         int total_num_shards,
-        const StoreMode store_mode = StoreMode::SuccinctStore)
+        const StoreMode store_mode,
+        int num_suffixstore_shards,
+        int num_logstore_shards)
     : shard_id_(shard_id),
       total_num_shards_(total_num_shards),
       node_file_(node_file),
       edge_file_(edge_file),
       construct_(construct),
-      store_mode_(store_mode)
+      store_mode_(store_mode),
+      num_suffixstore_shards_(num_suffixstore_shards),
+      num_logstore_shards_(num_logstore_shards)
     {
         {
             std::lock_guard<std::mutex> lk(succinct_store_mutex);
@@ -182,17 +186,28 @@ public:
                 if (log_store_initialized)  {
                     break;
                 }
+
                 graph_log_store_ = shared_ptr<GraphLogStore>(new GraphLogStore(
                     node_file_, edge_file_));
+
+                log_store_initialized = true;
+
+                if (shard_id_ == num_logstore_shards_) {
+                    // This process is the append-only, initially empty store
+                    // the node file and edge file will be ignored, since
+                    // construct() / load() is not called
+                    break;
+                }
+
                 if (construct_) {
                     graph_log_store_->construct();
                 } else {
                     graph_log_store_->load();
                 }
+
                 LOG_E("Calculating backfill edge updates...\n");
                 graph_log_store_->build_backfill_edge_updates(
                     edge_updates, total_num_shards_); // num succinct st. shards
-                log_store_initialized = true;
             }
             break;
 
@@ -540,6 +555,8 @@ private:
     bool node_table_empty_ = true;
     bool edge_table_empty_ = true;
 
+    const int num_suffixstore_shards_, num_logstore_shards_;
+
 };
 
 
@@ -560,8 +577,9 @@ int main(int argc, char **argv) {
     int local_host_id = 0, total_num_hosts = 1;
     StoreMode store_mode = StoreMode::SuccinctStore; // by default, Succinct
     bool multistore_enabled = false;
+    int num_suffixstore_shards = 0, num_logstore_shards = 0;
 
-    while ((c = getopt(argc, argv, "m:p:s:i:n:t:d:h:k:b:")) != -1) {
+    while ((c = getopt(argc, argv, "m:p:s:i:n:t:d:h:k:b:a:c:")) != -1) {
         switch (c) {
         case 'm':
             mode = atoi(optarg); // 0 for construct, 1 for load
@@ -593,6 +611,12 @@ int main(int argc, char **argv) {
         case 'b':
             LOG_E("multistore_enabled argument: '%s'\n", optarg);
             multistore_enabled = (std::string(optarg) == "T");
+            break;
+        case 'a':
+            num_suffixstore_shards = atoi(optarg);
+            break;
+        case 'c':
+            num_logstore_shards = atoi(optarg);
             break;
         }
     }
@@ -629,7 +653,9 @@ int main(int argc, char **argv) {
                 npa_sampling_rate,
                 shard_id,
                 total_num_shards,
-                store_mode));
+                store_mode,
+                num_suffixstore_shards,
+                num_logstore_shards));
 
         shared_ptr<TProcessor> processor(
             new GraphQueryServiceProcessor(handler));
