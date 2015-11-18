@@ -778,7 +778,7 @@ public:
 
         if (!ptrs.empty()) {
             COND_LOG_E("assoc_range_local, %d ptrs, %d assocs from updates\n",
-                ptrs.size(), _return.size() - from_updates);
+                ptrs.size(), from_updates);
         }
 
         auto start = _return.begin();
