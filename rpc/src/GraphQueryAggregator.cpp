@@ -227,7 +227,8 @@ public:
             if (local_host_id_ == total_num_hosts_ - 2) {
                 num_shards_on_host = num_suffixstore_shards_;
             } else if (local_host_id_ == total_num_hosts_ - 1) {
-                num_shards_on_host = num_logstore_shards_;
+                // FIXME: we should configure if there is an empty LogStore
+                num_shards_on_host = num_logstore_shards_ + 1;
             }
         }
         COND_LOG_E("num shards on this host (id %d): %d\n",
