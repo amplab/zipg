@@ -557,8 +557,14 @@ public:
         const std::string& attr)
     {
         assert(store_mode_ == StoreMode::LogStore);
+        COND_LOG_E("Handling assoc_add(%lld,%d,%lld,%lld...)",
+            src, atype, dst, time);
+
         // Note the argument order is switched
-        return graph_log_store_->append_edge(src, dst, atype, time, attr);
+        int ret = graph_log_store_->append_edge(src, dst, atype, time, attr);
+
+        COND_LOG_E("; ret = %d\n", ret);
+        return ret;
     }
 
 private:
