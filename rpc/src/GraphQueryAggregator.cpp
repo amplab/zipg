@@ -726,9 +726,10 @@ public:
             _return.insert(_return.end(), assocs.begin(), assocs.end());
         }
 
-        COND_LOG_E("about to return\n");
         auto start = _return.begin();
-        auto end = _return.begin() + std::min(_return.size(), (size_t) len);
+        // Critical to have std::min here, otherwise UB -> segfault
+        auto end = _return.begin() +
+            std::min(_return.size(), static_cast<size_t>(len));
         _return = std::vector<ThriftAssoc>(start, end);
     }
 
@@ -1128,7 +1129,8 @@ public:
                 _return.insert(_return.end(), assocs.begin(), assocs.end());
             } else {
                 _return.insert(_return.end(), assocs.begin(),
-                    assocs.begin() + (limit - _return.size()));
+                    assocs.begin() + std::min(
+                        assocs.size(), limit - _return.size()));
             }
         }
 
@@ -1138,7 +1140,8 @@ public:
             _return.insert(_return.end(), assocs.begin(), assocs.end());
         } else {
             _return.insert(_return.end(), assocs.begin(),
-                assocs.begin() + (limit - _return.size()));
+                assocs.begin() + std::min(
+                    assocs.size(), limit - _return.size()));
         }
 
         COND_LOG_E("assoc_time_range done, returning %d assocs (limit %d)!\n",
