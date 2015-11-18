@@ -721,7 +721,7 @@ void GraphFormatter::make_rand_suffix_store(
         LOG_E("read in assoc set, size: %lld\n", set.size());
 
         populate_random_store(
-            store_out,
+            store_out + "_edgelist",
             num_edges_to_add,
             num_nodes,
             num_atypes,
@@ -730,6 +730,9 @@ void GraphFormatter::make_rand_suffix_store(
             bytes_per_attr,
             min_time,
             max_time);
+
+        // needs to format into edge table, since suffix store takes flat file
+        SuccinctGraph::output_edge_table(store_out + "_edgelist", store_out);
     }
 
     GraphSuffixStore gss("EMPTY_NODE", store_out);
