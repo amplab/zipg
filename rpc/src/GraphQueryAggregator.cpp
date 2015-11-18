@@ -1215,6 +1215,7 @@ public:
     {
         assert(multistore_enabled_ &&
             "multistore not enabled but assoc_add called");
+        COND_LOG_E("Received assoc_add(%lld,%d,%lld,...)\n", src, atype, dst);
 
         // NOTE: this hard-codes the knowledge that:
         // (1) the last machine is LogStore machine, and

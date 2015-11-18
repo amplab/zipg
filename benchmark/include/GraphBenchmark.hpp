@@ -79,8 +79,10 @@ private:
 
     inline int choose_query_with_updates(double rand_update, double rand_r) {
         if (rand_update < TAO_WRITE_PERC) {
+            assert(false && "finally!");
             return 5; // assoc_add only, for now
         }
+        COND_LOG_E("sampled ratio %.3f\n", rand_update);
         // otherwise, all masses are allocated to reads
         if (rand_r < ASSOC_RANGE_PERC) {
             return 0;
