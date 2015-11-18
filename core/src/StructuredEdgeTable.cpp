@@ -264,6 +264,6 @@ void StructuredEdgeTable::build_backfill_edge_updates(
             assoc_set.emplace(src, it2->first);
         }
     }
-    COND_LOG_E("StructuredEdgeTable::build_backfill_edge_updates: %d shards\n",
+    LOG_E("StructuredEdgeTable::build_backfill_edge_updates: %d shards\n",
         edge_updates.size());
 }

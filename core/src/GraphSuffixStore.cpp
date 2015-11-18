@@ -561,6 +561,6 @@ void GraphSuffixStore::build_backfill_edge_updates(
     GraphFormatter::build_edge_updates(
         edge_updates, edge_file_, num_shards_to_mod);
 
-    COND_LOG_E("GraphSuffixStore::build_backfill_edge_updates: %d shards\n",
+    LOG_E("GraphSuffixStore::build_backfill_edge_updates: %d shards\n",
         edge_updates.size());
 }

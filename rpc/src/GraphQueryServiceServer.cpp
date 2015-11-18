@@ -167,6 +167,7 @@ public:
                 } else {
                     graph_suffix_store_->load();
                 }
+                LOG_E("Calculating backfill edge updates...\n");
                 graph_suffix_store_->build_backfill_edge_updates(
                     edge_updates, total_num_shards_); // num succinct st. shards
                 suffix_store_initialized = true;
@@ -186,6 +187,7 @@ public:
                 } else {
                     graph_log_store_->load();
                 }
+                LOG_E("Calculating backfill edge updates...\n");
                 graph_log_store_->build_backfill_edge_updates(
                     edge_updates, total_num_shards_); // num succinct st. shards
                 log_store_initialized = true;
