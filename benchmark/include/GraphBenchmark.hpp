@@ -79,10 +79,8 @@ private:
 
     inline int choose_query_with_updates(double rand_update, double rand_r) {
         if (rand_update < TAO_WRITE_PERC) {
-            assert(false && "finally!");
             return 5; // assoc_add only, for now
         }
-        COND_LOG_E("sampled ratio %.3f\n", rand_update);
         // otherwise, all masses are allocated to reads
         if (rand_r < ASSOC_RANGE_PERC) {
             return 0;
@@ -1658,6 +1656,8 @@ public:
 
         int64_t i = 0, batches = 0;
         int64_t src, atype, dst;
+        int ret;
+
         try {
             // Warmup phase
             time_t start = get_timestamp();
@@ -1717,14 +1717,15 @@ public:
                     src = dist_node(gen);
                     atype = dist_atype(gen);
                     dst = dist_node(gen);
-                    COND_LOG_E("assoc_add(%lld,atype %d,%lld,...)\n",
+                    COND_LOG_E("assoc_add(%lld,atype %d,%lld,...) ",
                         src, atype, dst);
-                    thread_data->client->assoc_add(
+                    ret = thread_data->client->assoc_add(
                         src,
                         atype,
                         dst,
                         MAX_TIME,
                         ATTR_FOR_NEW_EDGES);
+                    COND_LOG_E("; ret = %d\n", ret);
                     break;
                 default:
                     assert(false);
