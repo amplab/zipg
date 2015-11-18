@@ -26,6 +26,8 @@ function start_all() {
   sleep 2
   bash ${SCRIPT_DIR}/../sbin/start-handlers.sh &
   sleep 2
+  bash ${SCRIPT_DIR}/../sbin/load-data.sh &
+  sleep 2
 }
 
 for num_nodes in ${nodes[@]}
