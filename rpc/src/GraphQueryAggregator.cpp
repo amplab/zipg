@@ -767,11 +767,18 @@ public:
             curr_len += assocs.size();
         }
 
+        size_t from_updates = _return.size();
+
         if (_return.size() < len) {
             COND_LOG_E("# local shards: %d\n", local_shards_.size());
             local_shards_.at(shard_idx)
                 .assoc_range(assocs, src, atype, off, len);
             _return.insert(_return.end(), assocs.begin(), assocs.end());
+        }
+
+        if (!ptrs.empty()) {
+            COND_LOG_E("assoc_range_local, %d ptrs, %d assocs from updates\n",
+                ptrs.size(), _return.size() - from_updates);
         }
 
         auto start = _return.begin();
