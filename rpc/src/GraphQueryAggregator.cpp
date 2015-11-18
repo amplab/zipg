@@ -167,7 +167,8 @@ public:
 
                 // Critical, otherwise this agg. client won't have sockets open
                 // to its own local shard servers.
-                client.init_local_shards();
+                // client.init_local_shards();
+                client.connect_to_local_shards();
 
                 aggregators_.insert(
                     std::pair<int, GraphQueryAggregatorServiceClient>(
