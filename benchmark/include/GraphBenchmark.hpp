@@ -1354,13 +1354,21 @@ public:
                     break;
                 case 1:
                     query_idx = warmup_obj_get_size(gen);
-                    COND_LOG_E("obj_get, query idx %d\n", query_idx);
+                    COND_LOG_E("obj_get, query idx %d (%d)\n",
+                        query_idx, warmup_obj_get_nodes.size());
                     thread_data->client->obj_get(attrs,
                         this->warmup_obj_get_nodes.at(query_idx));
                     break;
                 case 2:
                     query_idx = warmup_assoc_get_size(gen);
-                    COND_LOG_E("assoc_get, query idx %d\n", query_idx);
+                    COND_LOG_E("assoc_get, query idx %d (%d %d %d %d %d)\n",
+                        query_idx,
+                        this->warmup_assoc_get_nodes.size(),
+                        this->warmup_assoc_get_lows.size(),
+                        this->warmup_assoc_get_dst_id_sets.size(),
+                        this->warmup_assoc_get_lows.size(),
+                        this->warmup_assoc_get_highs.size());
+
                     thread_data->client->assoc_get(result,
                         this->warmup_assoc_get_nodes.at(query_idx),
                         this->warmup_assoc_get_atypes.at(query_idx),
@@ -1370,14 +1378,24 @@ public:
                     break;
                 case 3:
                     query_idx = warmup_assoc_count_size(gen);
-                    COND_LOG_E("assoc_count, query idx %d\n", query_idx);
+                    COND_LOG_E("assoc_count, query idx %d (%d %d)\n",
+                        query_idx,
+                         this->warmup_assoc_count_nodes.size(),
+                         this->warmup_assoc_count_atypes.size());
                     thread_data->client->assoc_count(
                         this->warmup_assoc_count_nodes.at(query_idx),
                         this->warmup_assoc_count_atypes.at(query_idx));
                     break;
                 case 4:
                     query_idx = warmup_assoc_time_range_size(gen);
-                    COND_LOG_E("assoc_time_range, query idx %d\n", query_idx);
+                    COND_LOG_E("assoc_time_range, query idx %d (%d %d %d %d %d)\n",
+                        query_idx,
+                        this->warmup_assoc_time_range_nodes.size(),
+                        this->warmup_assoc_time_range_atypes.size(),
+                        this->warmup_assoc_time_range_lows.size(),
+                        this->warmup_assoc_time_range_highs.size(),
+                        this->warmup_assoc_time_range_limits.size());
+
                     thread_data->client->assoc_time_range(result,
                         this->warmup_assoc_time_range_nodes.at(query_idx),
                         this->warmup_assoc_time_range_atypes.at(query_idx),
