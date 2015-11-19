@@ -762,7 +762,10 @@ public:
         int64_t src,
         int64_t atype)
     {
-        // FIXME: use a read/write lock
+        if (!multistore_enabled_) {
+            ptrs.clear();
+            return;
+        }
         boost::shared_lock<boost::shared_mutex> lk(edge_update_ptrs_mutex);
         ptrs = edge_update_ptrs.at(shard_idx)[src][atype];
     }
@@ -1476,16 +1479,18 @@ int main(int argc, char **argv) {
 
     {
         boost::unique_lock<boost::shared_mutex> lk(edge_update_ptrs_mutex);
-        if (local_host_id == hostnames.size() - 1) {
-            // LogStore
-            // +1 because of the last, empty shard
-            edge_update_ptrs.resize(num_logstore_shards + 1);
-        } else if (local_host_id == hostnames.size() - 2) {
-            // Suf.
-            edge_update_ptrs.resize(num_suffixstore_shards);
-        } else {
-            // Succ.
-            edge_update_ptrs.resize(total_num_shards);
+        if (multistore_enabled_) {
+            if (local_host_id == hostnames.size() - 1) {
+                // LogStore
+                // +1 because of the last, empty shard
+                edge_update_ptrs.resize(num_logstore_shards + 1);
+            } else if (local_host_id == hostnames.size() - 2) {
+                // Suf.
+                edge_update_ptrs.resize(num_suffixstore_shards);
+            } else {
+                // Succ.
+                edge_update_ptrs.resize(total_num_shards);
+            }
         }
     }
 
