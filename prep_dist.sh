@@ -244,7 +244,7 @@ for benchType in "${benches[@]}"; do
       start_all
 
       # launch the single client from this master
-      $benchType=T bash ${currDir}/scripts/bench_func.sh \
+      $benchType=T ${currDir}/scripts/bench_func.sh \
         $node_file_raw $edge_file_raw $throughput_threads localhost false 2>&1 >run.log
       wait
 
