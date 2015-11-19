@@ -11,6 +11,8 @@
 #include <thrift/transport/TServerSocket.h>
 #include <thrift/transport/TSocket.h>
 
+#include <boost/thread.hpp>
+
 #include "ports.h"
 #include "utils.h"
 #include "GraphQueryService.h"
@@ -30,6 +32,8 @@ std::vector< std::unordered_map<int64_t,
         std::unordered_map<int64_t, std::vector<ThriftEdgeUpdatePtr>>
     > > edge_update_ptrs;
 std::mutex edge_update_ptrs_mutex;
+
+boost::shared_mutex boost_mutex;
 
 class GraphQueryAggregatorServiceHandler :
     virtual public GraphQueryAggregatorServiceIf {

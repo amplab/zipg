@@ -131,7 +131,7 @@ service GraphQueryAggregatorService {
     // Send edge updates, if any.  No-op for SuccinctStore machines.
     i32 backfill_edge_updates(),
 
-    // Thread-safe, since it uses an index.
+    // Thread-safe, since it uses a mutex.
     void record_edge_updates(
         1: i32 next_shard, // where are these updates located?
         2: i32 local_shard, // one of this aggregator's shards
