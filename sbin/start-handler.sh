@@ -40,5 +40,6 @@ nohup "${bin}/../rpc/bin/graph_query_aggregator" \
   -m "${ENABLE_MULTI_STORE}" \
   -f "${NUM_SUFFIXSTORE_PARTS}" \
   -l "${NUM_LOGSTORE_PARTS}" \
-  2>&1 > "${SUCCINCT_LOG_PATH}/handler_${2}.log" &
-  #2>"${SUCCINCT_LOG_PATH}/handler_${2}.log" >/dev/null &
+  2>"${SUCCINCT_LOG_PATH}/handler_${2}.log" >/dev/null &
+  #2>&1 > "${SUCCINCT_LOG_PATH}/handler_${2}.log" &
+  # NOTE: use the /dev/null version to pipe to each worker's local log (which won't be piped back to master)
