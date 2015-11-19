@@ -36,12 +36,12 @@ std::mutex global_init_mutex;
 bool initialized_ = false;
 
 // Updates
-
-// src -> (atype -> [shard id, file offset])
-std::unordered_map<int64_t,
-    std::unordered_map<int64_t, std::vector<ThriftEdgeUpdatePtr>>
-> edge_update_ptrs;
-std::mutex edge_update_ptrs_mutex;
+//
+//// src -> (atype -> [shard id, file offset])
+//std::unordered_map<int64_t,
+//    std::unordered_map<int64_t, std::vector<ThriftEdgeUpdatePtr>>
+//> edge_update_ptrs;
+//std::mutex edge_update_ptrs_mutex;
 
 // src -> (shard id, file offset)
 typedef std::pair<int, int64_t> NodeUpdatePtr;
@@ -236,29 +236,29 @@ public:
         }
     }
 
-    void record_edge_updates(
-        const int32_t next_shard_id, const std::vector<ThriftSrcAtype> & updates)
-    {
-        COND_LOG_E("Recording %lld updates from nextShard %d\n",
-            updates.size(), next_shard_id);
-
-        std::lock_guard<std::mutex> lk(edge_update_ptrs_mutex);
-        ThriftEdgeUpdatePtr ptr;
-
-        for (auto& update : updates) {
-            ptr.shardId = next_shard_id;
-            ptr.offset = -1; // TODO: offset optimization is not implemented yet
-            auto& curr_ptrs = edge_update_ptrs[update.src][update.atype];
-
-            // As random edges accumulate in the LogStore and as it sends
-            // updates back, it could be that there are many updates from
-            // the same store.  If so, record it only once.
-            if (curr_ptrs.empty() || curr_ptrs.back().shardId != next_shard_id)
-            {
-                curr_ptrs.push_back(ptr);
-            }
-        }
-    }
+//    void record_edge_updates(
+//        const int32_t next_shard_id, const std::vector<ThriftSrcAtype> & updates)
+//    {
+//        COND_LOG_E("Recording %lld updates from nextShard %d\n",
+//            updates.size(), next_shard_id);
+//
+//        std::lock_guard<std::mutex> lk(edge_update_ptrs_mutex);
+//        ThriftEdgeUpdatePtr ptr;
+//
+//        for (auto& update : updates) {
+//            ptr.shardId = next_shard_id;
+//            ptr.offset = -1; // TODO: offset optimization is not implemented yet
+//            auto& curr_ptrs = edge_update_ptrs[update.src][update.atype];
+//
+//            // As random edges accumulate in the LogStore and as it sends
+//            // updates back, it could be that there are many updates from
+//            // the same store.  If so, record it only once.
+//            if (curr_ptrs.empty() || curr_ptrs.back().shardId != next_shard_id)
+//            {
+//                curr_ptrs.push_back(ptr);
+//            }
+//        }
+//    }
 
     // In principle, nodeId should be in this shard's edge table.
     void get_neighbors(std::vector<int64_t> & _return, const int64_t nodeId) {
@@ -540,14 +540,14 @@ public:
         }
     }
 
-    void get_edge_update_ptrs(
-        std::vector<ThriftEdgeUpdatePtr> & _return,
-        const int64_t src,
-        const int64_t atype)
-    {
-        std::lock_guard<std::mutex> lk(edge_update_ptrs_mutex);
-        _return = edge_update_ptrs[src][atype];
-    }
+//    void get_edge_update_ptrs(
+//        std::vector<ThriftEdgeUpdatePtr> & _return,
+//        const int64_t src,
+//        const int64_t atype)
+//    {
+//        std::lock_guard<std::mutex> lk(edge_update_ptrs_mutex);
+//        _return = edge_update_ptrs[src][atype];
+//    }
 
     int assoc_add(
         const int64_t src,

@@ -25,6 +25,12 @@ using boost::shared_ptr;
 std::mutex local_shards_data_mutex;
 bool local_shards_data_initiated = false;
 
+// a vector of maps: src -> (atype -> [shard id, file offset])
+std::vector< std::unordered_map<int64_t,
+        std::unordered_map<int64_t, std::vector<ThriftEdgeUpdatePtr>>
+    > > edge_update_ptrs;
+std::mutex edge_update_ptrs_mutex;
+
 class GraphQueryAggregatorServiceHandler :
     virtual public GraphQueryAggregatorServiceIf {
 
@@ -306,8 +312,31 @@ public:
         LOG_E("Recording edge updates for shard %d at host %d, "
             "from shard %d, %lld assoc lists\n",
             local_shard_id, local_host_id_, next_shard_id, updates.size());
-        local_shards_.at(shard_id_to_shard_idx(local_shard_id))
-            .record_edge_updates(next_shard_id, updates);
+
+//        COND_LOG_E("Recording %lld updates from nextShard %d\n",
+//            updates.size(), next_shard_id);
+//
+        std::lock_guard<std::mutex> lk(edge_update_ptrs_mutex);
+        ThriftEdgeUpdatePtr ptr;
+        auto& map_for_shard = edge_update_ptrs.at(
+            shard_id_to_shard_idx(local_shard_id));
+
+        for (auto& update : updates) {
+            ptr.shardId = next_shard_id;
+            ptr.offset = -1; // TODO: offset optimization is not implemented yet
+            auto& curr_ptrs = map_for_shard[update.src][update.atype];
+
+            // As random edges accumulate in the LogStore and as it sends
+            // updates back, it could be that there are many updates from
+            // the same store.  If so, record it only once.
+            if (curr_ptrs.empty() || curr_ptrs.back().shardId != next_shard_id)
+            {
+                curr_ptrs.push_back(ptr);
+            }
+        }
+//
+//        local_shards_.at(shard_id_to_shard_idx(local_shard_id))
+//            .record_edge_updates(next_shard_id, updates);
     }
 
 public:
@@ -725,6 +754,17 @@ public:
         }
     }
 
+    inline void get_edge_update_ptrs(
+        std::vector<ThriftEdgeUpdatePtr>& ptrs,
+        int shard_idx,
+        int64_t src,
+        int64_t atype)
+    {
+        // FIXME: use a read/write lock
+        std::lock_guard<std::mutex> lk(edge_update_ptrs_mutex);
+        ptrs = edge_update_ptrs.at(shard_idx)[src][atype];
+    }
+
     // FIXME: the implementation is sequential for now...
     // FIXME: the logic is simply incorrect if off != 0.
     void assoc_range_local(
@@ -744,7 +784,7 @@ public:
         _return.clear();
 
         std::vector<ThriftEdgeUpdatePtr> ptrs;
-        local_shards_.at(shard_idx).get_edge_update_ptrs(ptrs, src, atype);
+        get_edge_update_ptrs(ptrs, shard_idx, src, atype);
         COND_LOG_E("# update ptrs: %d\n", ptrs.size());
         for (auto it = ptrs.rbegin(); it != ptrs.rend(); ++it) {
             if (curr_len >= len) {
@@ -861,7 +901,7 @@ public:
             src, atype, shardId, local_host_id_, shard_idx);
 
         std::vector<ThriftEdgeUpdatePtr> ptrs;
-        local_shards_.at(shard_idx).get_edge_update_ptrs(ptrs, src, atype);
+        get_edge_update_ptrs(ptrs, shard_idx, src, atype);
         COND_LOG_E("# update ptrs: %d\n", ptrs.size());
         // Follow all pointers.  Suffix and Log Stores should not have them.
         for (auto& ptr : ptrs) {
@@ -979,7 +1019,7 @@ public:
             src, atype, shardId, local_host_id_, shard_idx);
 
         std::vector<ThriftEdgeUpdatePtr> ptrs;
-        local_shards_.at(shard_idx).get_edge_update_ptrs(ptrs, src, atype);
+        get_edge_update_ptrs(ptrs, shard_idx, src, atype);
 
         COND_LOG_E("# update ptrs: %d\n", ptrs.size());
 
@@ -1160,7 +1200,7 @@ public:
             src, atype, shardId, local_host_id_, shard_idx);
 
         std::vector<ThriftEdgeUpdatePtr> ptrs;
-        local_shards_.at(shard_idx).get_edge_update_ptrs(ptrs, src, atype);
+        get_edge_update_ptrs(ptrs, shard_idx, src, atype);
 
         COND_LOG_E("# update ptrs: %d\n", ptrs.size());
 
@@ -1430,6 +1470,21 @@ int main(int argc, char **argv) {
     std::vector<std::string> hostnames;
     while (std::getline(hosts, host)) {
         hostnames.push_back(host);
+    }
+
+    {
+        std::lock_guard<std::mutex> lk(edge_update_ptrs_mutex);
+        if (local_host_id == hostnames.size() - 1) {
+            // LogStore
+            // +1 because of the last, empty shard
+            edge_update_ptrs.resize(num_logstore_shards + 1);
+        } else if (local_host_id == hostnames.size() - 2) {
+            // Suf.
+            edge_update_ptrs.resize(num_suffixstore_shards);
+        } else {
+            // Succ.
+            edge_update_ptrs.resize(total_num_shards);
+        }
     }
 
     int port = QUERY_HANDLER_PORT;
