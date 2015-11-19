@@ -53,6 +53,15 @@ add_library(succinctgraph-client ${CLIENT_SOURCES})
 
 target_link_libraries(graph_query_server succinctgraph)
 target_link_libraries(graph_query_server ${THRIFT_LIBRARIES})
-target_link_libraries(graph_query_aggregator succinctgraph succinctgraph-client ${THRIFT_LIBRARIES} pthread boost_thread boost_system)
+
+IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+   # Mac OS X specific code: has to have -mt
+  target_link_libraries(graph_query_aggregator succinctgraph succinctgraph-client ${THRIFT_LIBRARIES} pthread boost_thread-mt boost_system-mt)
+ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+  # On EC2, can't have -mt
+  target_link_libraries(graph_query_aggregator succinctgraph succinctgraph-client ${THRIFT_LIBRARIES} pthread boost_thread boost_system)
+ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+
 target_link_libraries(load_data succinctgraph-client ${THRIFT_LIBRARIES})
 target_link_libraries(backfill_updates succinctgraph-client ${THRIFT_LIBRARIES})
