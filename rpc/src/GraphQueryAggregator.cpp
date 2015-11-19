@@ -313,7 +313,7 @@ public:
         const int32_t local_shard_id,
         const std::vector<ThriftSrcAtype> & updates)
     {
-        LOG_E("Recording edge updates for shard %d at host %d, "
+        COND_LOG_E("Recording edge updates for shard %d at host %d, "
             "from shard %d, %lld assoc lists\n",
             local_shard_id, local_host_id_, next_shard_id, updates.size());
 
