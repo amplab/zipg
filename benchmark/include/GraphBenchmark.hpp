@@ -32,7 +32,7 @@ private:
     constexpr static int64_t MAX_TIME = 1441905687237;
     const std::string ATTR_FOR_NEW_EDGES = std::string(128, '|');
 
-    const static int MAX_NUM_NEW_EDGES = 3500000; // 3.5M for a LogStore
+    const static int MAX_NUM_NEW_EDGES = 200000; // 3.5M takes too long to run
 
     // Timings for throughput benchmarks.
     constexpr static int64_t WARMUP_MICROSECS = 300 * 1000 * 1000;

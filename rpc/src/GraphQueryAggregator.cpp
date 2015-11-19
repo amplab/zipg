@@ -33,8 +33,6 @@ std::vector< std::unordered_map<int64_t,
     > > edge_update_ptrs;
 boost::shared_mutex edge_update_ptrs_mutex;
 
-boost::shared_mutex boost_mutex;
-
 class GraphQueryAggregatorServiceHandler :
     virtual public GraphQueryAggregatorServiceIf {
 
