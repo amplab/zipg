@@ -243,7 +243,7 @@ public:
 
         if (graph_ == nullptr) {
             // sharded bench
-            // init_sharded_benchmark(master_hostname);
+            init_sharded_benchmark(master_hostname);
 
             get_neighbors_f_ = [this](std::vector<int64_t>& nhbrs, int64_t id) {
                 aggregator_->get_neighbors(nhbrs, id);
