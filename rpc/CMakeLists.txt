@@ -53,6 +53,6 @@ add_library(succinctgraph-client ${CLIENT_SOURCES})
 
 target_link_libraries(graph_query_server succinctgraph)
 target_link_libraries(graph_query_server ${THRIFT_LIBRARIES})
-target_link_libraries(graph_query_aggregator succinctgraph succinctgraph-client ${THRIFT_LIBRARIES} pthread boost_thread-mt boost_system-mt)
+target_link_libraries(graph_query_aggregator succinctgraph succinctgraph-client ${THRIFT_LIBRARIES} pthread boost_thread boost_system)
 target_link_libraries(load_data succinctgraph-client ${THRIFT_LIBRARIES})
 target_link_libraries(backfill_updates succinctgraph-client ${THRIFT_LIBRARIES})
