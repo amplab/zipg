@@ -11,25 +11,25 @@ set -ex
 # 5. Set the desired settings in rates-bench.sh
 
 npa=128; sa=32; isa=64 # L0, by default
-#copyShardFiles=T
+copyShardFiles=T
 
-node_file_raw=/vol1/uk-2007-05-40attr16each-tpch-npa128sa32isa64.node
-edge_file_raw=/vol1/uk-2007-05-40attr16each-npa128sa32isa64.assoc
-
+node_file_raw=/vol0/uk-2007-05-40attr16each-tpch-npa128sa32isa64.node
+edge_file_raw=/vol0/uk-2007-05-40attr16each-npa128sa32isa64.assoc
 node_file_raw=/vol0/twitter2010-40attr16each-tpch.node
 edge_file_raw=/vol0/twitter2010-npa128sa32isa64.assoc
 
-threads=( 64 32 )
+threads=( 64 )
 benches=(
-  benchTaoUpdates # latency
-  benchTaoMixWithUpdatesThput
-  benchTaoMixThput
-  benchMixThput
-  benchNhbrNodeThput
-  benchNeighborThput
-  benchNhbrAtypeThput
-  benchNodeNodeThput
-  benchEdgeAttrsThput
+  benchTaoMix
+  #benchTaoUpdates # latency
+  #benchTaoMixWithUpdatesThput
+#  benchTaoMixThput
+#  benchMixThput
+#  benchNhbrNodeThput
+#  benchNeighborThput
+#  benchNhbrAtypeThput
+#  benchNodeNodeThput
+#  benchEdgeAttrsThput
 )
 
 # NOTE: settings here only affects this master killing all
@@ -100,8 +100,8 @@ if [[ -n $copyShardFiles ]]; then
       edgeTbl="${edge_file_raw}.suffixstore-part${padded_shard_id}of${NUM_SUFFIXSTORE_PARTS}_suffixstore"
       d1=$(dirname "${nodeTbl}")
       d2=$(dirname "${edgeTbl}")
-      rsync -arL ${nodeTbl} ${host}:$d1 &
-      rsync -arL ${edgeTbl} ${host}:$d2 &
+      #rsync -arL ${nodeTbl} ${host}:$d1 &
+      #rsync -arL ${edgeTbl} ${host}:$d2 &
 
       # also rsync the raw assoc input, useful for calculating updates; TODO: node as well
       edgeTbl="${edge_file_raw}.suffixstore-part${padded_shard_id}of${NUM_SUFFIXSTORE_PARTS}"
@@ -244,7 +244,7 @@ for benchType in "${benches[@]}"; do
       start_all
 
       # launch the single client from this master
-      $benchType=T ${currDir}/scripts/bench_func.sh \
+      export $benchType=T && bash ${currDir}/scripts/bench_func.sh \
         $node_file_raw $edge_file_raw $throughput_threads localhost false 2>&1 >run.log
       wait
 
