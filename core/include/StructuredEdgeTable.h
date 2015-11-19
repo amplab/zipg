@@ -9,6 +9,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include "boost/thread.hpp"
+
 //#include <boost/archive/text_oarchive.hpp>
 //#include <boost/archive/text_iarchive.hpp>
 //#include <boost/serialization/string.hpp>
@@ -45,7 +47,8 @@ public:
         int32_t off,
         int32_t len);
 
-    inline int64_t assoc_count(int64_t src, int64_t atype) {
+    int64_t assoc_count(int64_t src, int64_t atype) {
+        boost::shared_lock<boost::shared_mutex> lk(mutex_);
         return edges[src][atype].size();
     }
 
@@ -67,7 +70,8 @@ public:
         std::unordered_map<int, GraphFormatter::AssocSet>& edge_updates,
         int num_shards_to_mod);
 
-    inline int num_edges() {
+    int num_edges() {
+        boost::shared_lock<boost::shared_mutex> lk(mutex_);
         return num_edges_;
     }
 
@@ -107,7 +111,8 @@ private:
 
     std::string edge_file_;
 
-    std::mutex mutex_;
+    // Protects `edges` and `num_edges_`.
+    boost::shared_mutex mutex_;
 
     int num_edges_;
 };

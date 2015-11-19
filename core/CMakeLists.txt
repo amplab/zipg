@@ -31,8 +31,16 @@ include_directories(${PROJECT_SOURCE_DIR}/../external/succinct-cpp/core/include/
 
 add_library(succinctgraph STATIC ${SOURCE_FILES})
 target_link_libraries(succinctgraph ${CMAKE_THREAD_LIBS_INIT})
-target_link_libraries(succinctgraph succinct)
 set_target_properties(succinctgraph PROPERTIES LINKER_LANGUAGE CXX)
+
+IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+   # Mac OS X specific code: has to have -mt
+  target_link_libraries(succinctgraph succinct pthread boost_thread-mt boost_system-mt)
+ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+  # On EC2, can't have -mt
+  target_link_libraries(succinctgraph succinct pthread boost_thread boost_system)
+ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 add_executable(graph-partitioner src/partitioners.cpp)
 

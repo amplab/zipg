@@ -8,6 +8,8 @@
 constexpr char SERDE_DELIM = '\x02';
 
 void StructuredEdgeTable::construct() {
+    boost::shared_lock<boost::shared_mutex> lk(mutex_);
+
     COND_LOG_E("In StructuredEdgeTable::construct(), edge file '%s'\n",
         edge_file_.c_str());
     std::map<std::pair<int64_t, int64_t>,
@@ -79,6 +81,8 @@ void StructuredEdgeTable::construct() {
 }
 
 void StructuredEdgeTable::load() {
+    boost::shared_lock<boost::shared_mutex> lk(mutex_);
+
     if (file_or_dir_exists((edge_file_ + "_logstore").c_str())) {
         std::string line, key, keysize, dst, timestamp, attr;
         int64_t src, atype;
@@ -142,7 +146,7 @@ void StructuredEdgeTable::add_assoc(
     int64_t timestamp,
     const std::string& attr)
 {
-    std::lock_guard<std::mutex> lock(mutex_);
+    boost::unique_lock<boost::shared_mutex> lock(mutex_);
     edges[src][atype].emplace_back(EdgeData{ dst, timestamp, attr });
     ++num_edges_;
 }
@@ -156,7 +160,11 @@ std::vector<SuccinctGraph::Assoc> StructuredEdgeTable::assoc_range(
     COND_LOG_E("GraphLogStore assoc_range(src = %lld, atype = %lld, off = %d, len = %d)\n",
         src, atype, off, len);
 
-    std::vector<EdgeData> es(edges[src][atype]);
+    std::vector<EdgeData> es;
+    {
+        boost::shared_lock<boost::shared_mutex> lk(mutex_);
+        es = edges[src][atype];
+    }
     std::vector<SuccinctGraph::Assoc> assocs;
     if (off >= es.size()) {
         return assocs;
@@ -191,7 +199,11 @@ std::vector<SuccinctGraph::Assoc> StructuredEdgeTable::assoc_get(
         " dstIdSet = ..., tLow = %" PRId64 ", tHigh = %" PRId64 ")\n",
         src, atype, t_low, t_high);
 
-    std::vector<EdgeData> es(edges[src][atype]);
+    std::vector<EdgeData> es;
+    {
+        boost::shared_lock<boost::shared_mutex> lk(mutex_);
+        es = edges[src][atype];
+    }
     std::vector<SuccinctGraph::Assoc> assocs;
 
     for (auto it = es.rbegin(); it != es.rend(); ++it) {
@@ -229,7 +241,11 @@ std::vector<SuccinctGraph::Assoc> StructuredEdgeTable::assoc_time_range(
     if (len <= 0) {
         return assocs;
     }
-    std::vector<EdgeData> es(edges[src][atype]);
+    std::vector<EdgeData> es;
+    {
+        boost::shared_lock<boost::shared_mutex> lk(mutex_);
+        es = edges[src][atype];
+    }
 
     for (auto it = es.rbegin(); it != es.rend(); ++it) {
         auto& edge_data = *it;
@@ -255,6 +271,8 @@ void StructuredEdgeTable::build_backfill_edge_updates(
     std::unordered_map<int, GraphFormatter::AssocSet>& edge_updates,
     int num_shards_to_mod)
 {
+    boost::shared_lock<boost::shared_mutex> lk(mutex_);
+
     edge_updates.clear();
     for (auto it = edges.begin(); it != edges.end(); ++it) {
         int64_t src = it->first;
