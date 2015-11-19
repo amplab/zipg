@@ -32,6 +32,8 @@ private:
     constexpr static int64_t MAX_TIME = 1441905687237;
     const std::string ATTR_FOR_NEW_EDGES = std::string(128, '|');
 
+    const static int MAX_NUM_NEW_EDGES = 3500000; // 3.5M for a LogStore
+
     // Timings for throughput benchmarks.
     constexpr static int64_t WARMUP_MICROSECS = 300 * 1000 * 1000;
     constexpr static int64_t MEASURE_MICROSECS = 900 * 1000 * 1000;
@@ -2157,6 +2159,55 @@ public:
                 default:
                     assert(false);
                 }
+            }
+            LOG_E("Measure complete.\n");
+        } catch (std::exception &e) {
+            LOG_E("Exception: %s\n", e.what());
+        }
+    }
+
+    void benchmark_tao_updates_latency(
+        const std::string& assoc_add_res_file,
+        int max_num_new_edges = MAX_NUM_NEW_EDGES)
+    {
+        assert(max_num_new_edges <= MAX_NUM_NEW_EDGES);
+
+        std::ofstream assoc_add_res(assoc_add_res_file);
+        std::mt19937 gen(1618);
+        std::uniform_int_distribution<int64_t> dist_node(0, NUM_NODES - 1);
+        std::uniform_int_distribution<int64_t> dist_atype(0, NUM_ATYPES - 1);
+
+        time_t t0, t1;
+
+        LOG_E("Benchmarking TAO assoc_add latency\n");
+        int warmup_n = max_num_new_edges / 10;
+        int measure_n = max_num_new_edges - warmup_n;
+        int ret;
+        int64_t src, atype, dst;
+
+        try {
+            LOG_E("Warming up for %d queries...\n", warmup_n);
+            for (int i = 0; i < warmup_n; ++i) {
+                src = dist_node(gen);
+                atype = dist_atype(gen);
+                dst = dist_node(gen);
+                aggregator_->assoc_add(
+                    src, atype, dst, MAX_TIME, ATTR_FOR_NEW_EDGES);
+            }
+            LOG_E("Warmup complete.\n");
+
+            // Measure phase
+            LOG_E("Measuring for %d queries...\n", measure_n);
+            for (int i = 0; i < measure_n; ++i) {
+                src = dist_node(gen);
+                atype = dist_atype(gen);
+                dst = dist_node(gen);
+
+                t0 = get_timestamp();
+                ret = aggregator_->assoc_add(
+                    src, atype, dst, MAX_TIME, ATTR_FOR_NEW_EDGES);
+                t1 = get_timestamp();
+                assoc_add_res << ret << "," << t1 - t0 << "\n";
             }
             LOG_E("Measure complete.\n");
         } catch (std::exception &e) {

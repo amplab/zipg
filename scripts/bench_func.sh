@@ -341,6 +341,15 @@ function bench() {
       ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
   fi
 
+  if [[ -n "$benchTaoUpdates" ]]; then
+    #sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+
+    ${BIN_DIR}/../benchmark/bin/bench -t tao-updates-latency \
+      -o ${HOME_DIR}/taoUpdates_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+      -m ${masterHostName} \
+      ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
+  fi
+
   if [[ -n "$benchTaoMixThput" ]]; then
     #sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
 

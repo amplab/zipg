@@ -376,6 +376,10 @@ int main(int argc, char **argv) {
             warmup_assoc_time_range_file, // assoc_time_range
             query_assoc_time_range_file);
 
+    } else if (type == "tao-updates-latency") {
+        // Messy: some arguments are reused...
+        bench->benchmark_tao_updates_latency(result_file_name); // assoc_add
+
     } else if (type == "graph-format") {
 
         GraphFormatter::format_node_file(node_file);

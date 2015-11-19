@@ -21,6 +21,7 @@ edge_file_raw=/vol0/twitter2010-npa128sa32isa64.assoc
 
 threads=( 64 32 )
 benches=(
+  benchTaoUpdates # latency
   benchTaoMixWithUpdatesThput
   benchTaoMixThput
   benchMixThput
@@ -161,6 +162,7 @@ sleep 2
 declare -A benchMap=(
   ["benchTaoMixThput"]="tao_mix"
   ["benchTaoMixWithUpdatesThput"]="taoMixWithUpdates"
+  ["benchTaoUpdates"]="taoUpdates"
   ["benchMixThput"]="mix"
   ["benchNodeNodeThput"]="get_nodes2"
   ["benchNhbrNodeThput"]="get_nhbrsNode"
@@ -177,62 +179,77 @@ for throughput_threads in ${threads[*]}; do
 done
 
 for benchType in "${benches[@]}"; do
-  for throughput_threads in ${threads[*]}; do
+  case $benchType in
+    *Thput)
+      for throughput_threads in ${threads[*]}; do
+          start_all
+
+          launcherStart=$(date +"%s")
+          bash ${currDir}/sbin/hosts-noStderr.sh \
+            $benchType=T bash ${currDir}/scripts/bench_func.sh \
+            $node_file_raw $edge_file_raw $throughput_threads localhost true 2>&1 >run.log
+          wait
+          launcherEnd=$(date +"%s")
+          
+          # assign aggregator in a round-robin fashion
+          # For now, assume #clientHosts == #serverHosts
+    #      for i in $(seq 1 $num_hosts); do
+    #        clientHost=$(sed -n "${i}{p;q;}" ~/spark-ec2/slaves | sed 's/\n//g')
+    #        clusterHost=$(sed -n "${i}{p;q;}" ${currDir}/conf/hosts.clus | sed 's/\n//g')
+    #        ssh -o StrictHostKeyChecking=no $clientHost \
+    #          "$benchType=T bash ${currDir}/scripts/bench_func.sh \
+    #            $node_file_raw $edge_file_raw $throughput_threads $clusterHost false 2>&1 >run.log" &
+    #      done
+    #      wait
+
+    #      sleep 120 # buffer times (for reading queries, etc.)
+    #      echo "Master starts timing..."
+    #      thputSumTime=$(($thputWarm + $thputMeasure + $thputCool))
+    #      sleep $thputSumTime
+    #      echo "Killing all from master..."
+    #      stop_all
+    #      echo "Killed everyone, collecting logs"
+    #      sleep 5
+
+          bench="${benchMap["$benchType"]}"
+          rm -rf thput
+          bash ${currDir}/sbin/hosts.sh \
+            tail -n1 throughput_${bench}-npa128sa32isa64-${throughput_threads}clients.txt | \
+            cut -d',' -f2 | \
+            cut -d' ' -f2 >>thput
+          sum=$(awk '{ sum += $1 } END { print sum }' thput)
+          #if [[ 1 -eq "$(echo "${sum} == 0" | bc)" ]]; then
+          #  # some bench is not run
+          #  continue
+          #fi
+
+          f="thput-${bench}-${throughput_threads}clients.txt"
+          t=$(timestamp)
+          echo "$t,$bench" >>${f}
+          sanity=$(${currDir}/sbin/hosts.sh tail -n1 run.log)
+          echo $sanity >> ${f}
+          echo "Measured from master: $((launcherEnd - launcherStart)) secs" >> ${f}
+          cat thput >> ${f}
+
+          entry="$t,$bench,${throughput_threads}*10,$sum"
+          echo $entry
+          echo $entry >> thput-summary
+
+          stop_all
+
+      done
+      ;;
+    *)
+      echo "Running latency benchmark, ${benchType}"
       start_all
 
-      launcherStart=$(date +"%s")
-      bash ${currDir}/sbin/hosts-noStderr.sh \
-        $benchType=T bash ${currDir}/scripts/bench_func.sh \
-        $node_file_raw $edge_file_raw $throughput_threads localhost true 2>&1 >run.log
+      # launch the single client from this master
+      $benchType=T bash ${currDir}/scripts/bench_func.sh \
+        $node_file_raw $edge_file_raw $throughput_threads localhost false 2>&1 >run.log
       wait
-      launcherEnd=$(date +"%s")
-      
-      # assign aggregator in a round-robin fashion
-      # For now, assume #clientHosts == #serverHosts
-#      for i in $(seq 1 $num_hosts); do
-#        clientHost=$(sed -n "${i}{p;q;}" ~/spark-ec2/slaves | sed 's/\n//g')
-#        clusterHost=$(sed -n "${i}{p;q;}" ${currDir}/conf/hosts.clus | sed 's/\n//g')
-#        ssh -o StrictHostKeyChecking=no $clientHost \
-#          "$benchType=T bash ${currDir}/scripts/bench_func.sh \
-#            $node_file_raw $edge_file_raw $throughput_threads $clusterHost false 2>&1 >run.log" &
-#      done
-#      wait
-
-#      sleep 120 # buffer times (for reading queries, etc.)
-#      echo "Master starts timing..."
-#      thputSumTime=$(($thputWarm + $thputMeasure + $thputCool))
-#      sleep $thputSumTime
-#      echo "Killing all from master..."
-#      stop_all
-#      echo "Killed everyone, collecting logs"
-#      sleep 5
-
-      bench="${benchMap["$benchType"]}"
-      rm -rf thput
-      bash ${currDir}/sbin/hosts.sh \
-        tail -n1 throughput_${bench}-npa128sa32isa64-${throughput_threads}clients.txt | \
-        cut -d',' -f2 | \
-        cut -d' ' -f2 >>thput
-      sum=$(awk '{ sum += $1 } END { print sum }' thput)
-      #if [[ 1 -eq "$(echo "${sum} == 0" | bc)" ]]; then
-      #  # some bench is not run
-      #  continue
-      #fi
-
-      f="thput-${bench}-${throughput_threads}clients.txt"
-      t=$(timestamp)
-      echo "$t,$bench" >>${f}
-      sanity=$(${currDir}/sbin/hosts.sh tail -n1 run.log)
-      echo $sanity >> ${f}
-      echo "Measured from master: $((launcherEnd - launcherStart)) secs" >> ${f}
-      cat thput >> ${f}
-
-      entry="$t,$bench,${throughput_threads}*10,$sum"
-      echo $entry
-      echo $entry >> thput-summary
 
       stop_all
-
-  done
+      ;;
+  esac
 done
 #start_all
