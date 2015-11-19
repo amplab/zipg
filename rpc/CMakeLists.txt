@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 project(succinct-graph-rpc CXX)
 
-LINK_DIRECTORIES(/usr/local/lib /usr/lib)
-
 include(CheckCXXCompilerFlag)
 CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
 if(COMPILER_SUPPORTS_CXX11)
@@ -53,8 +51,8 @@ add_executable(load_data ${SOURCES_DIR}/load_data.cpp)
 add_executable(backfill_updates ${SOURCES_DIR}/backfill_updates.cpp)
 add_library(succinctgraph-client ${CLIENT_SOURCES})
 
-target_link_libraries(graph_query_server succinctgraph pthread boost_thread-mt)
-target_link_libraries(graph_query_server ${THRIFT_LIBRARIES} pthread boost_thread-mt)
-target_link_libraries(graph_query_aggregator succinctgraph succinctgraph-client ${THRIFT_LIBRARIES} pthread boost_thread-mt)
+target_link_libraries(graph_query_server succinctgraph)
+target_link_libraries(graph_query_server ${THRIFT_LIBRARIES})
+target_link_libraries(graph_query_aggregator succinctgraph succinctgraph-client ${THRIFT_LIBRARIES} pthread boost_thread-mt boost_system-mt)
 target_link_libraries(load_data succinctgraph-client ${THRIFT_LIBRARIES})
 target_link_libraries(backfill_updates succinctgraph-client ${THRIFT_LIBRARIES})
