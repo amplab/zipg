@@ -24,14 +24,14 @@ using namespace ::apache::thrift::server;
 
 using boost::shared_ptr;
 
-std::mutex local_shards_data_mutex;
+boost::shared_mutex local_shards_data_mutex;
 bool local_shards_data_initiated = false;
 
 // a vector of maps: src -> (atype -> [shard id, file offset])
 std::vector< std::unordered_map<int64_t,
         std::unordered_map<int64_t, std::vector<ThriftEdgeUpdatePtr>>
     > > edge_update_ptrs;
-std::mutex edge_update_ptrs_mutex;
+boost::shared_mutex edge_update_ptrs_mutex;
 
 boost::shared_mutex boost_mutex;
 
@@ -66,7 +66,7 @@ public:
     }
 
     int32_t local_data_init() {
-        std::lock_guard<std::mutex> lk(local_shards_data_mutex);
+        boost::shared_lock<boost::shared_mutex> lk(local_shards_data_mutex);
         if (local_shards_data_initiated) {
             LOG_E("Local shard processes have already loaded data!");
             return 0;
@@ -320,7 +320,7 @@ public:
 //        COND_LOG_E("Recording %lld updates from nextShard %d\n",
 //            updates.size(), next_shard_id);
 //
-        std::lock_guard<std::mutex> lk(edge_update_ptrs_mutex);
+        boost::unique_lock<boost::shared_mutex> lk(edge_update_ptrs_mutex);
         ThriftEdgeUpdatePtr ptr;
         auto& map_for_shard = edge_update_ptrs.at(
             shard_id_to_shard_idx(local_shard_id));
@@ -765,7 +765,7 @@ public:
         int64_t atype)
     {
         // FIXME: use a read/write lock
-        std::lock_guard<std::mutex> lk(edge_update_ptrs_mutex);
+        boost::shared_lock<boost::shared_mutex> lk(edge_update_ptrs_mutex);
         ptrs = edge_update_ptrs.at(shard_idx)[src][atype];
     }
 
@@ -1477,7 +1477,7 @@ int main(int argc, char **argv) {
     }
 
     {
-        std::lock_guard<std::mutex> lk(edge_update_ptrs_mutex);
+        boost::unique_lock<boost::shared_mutex> lk(edge_update_ptrs_mutex);
         if (local_host_id == hostnames.size() - 1) {
             // LogStore
             // +1 because of the last, empty shard
