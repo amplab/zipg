@@ -13,6 +13,8 @@ To build the RPC component (which depends on Thrift), do `make rpc`. This target
 
 To disable assertions, pass in `SGFLAGS=-DNDEBUG` (supported by g++).
 
+_Notes for OSX 10.11 El Capitan_: once upgraded to this version of Mac OSX, do [this](http://stackoverflow.com/a/32929012/1165051) in order to make the system setup able to find Thrift in the usual `/usr/local` path.
+
 # Quickstart: API
 TODO: docs
 
