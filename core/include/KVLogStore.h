@@ -13,8 +13,6 @@
 #include <unordered_map>
 #include <vector>
 
-constexpr int MAX_LOG_STORE_SIZE = 131072000; // 125MB
-
 // LogStore with a key-value interface.
 // FIXME: search() has the prefix-match bug.
 class KVLogStore {
@@ -53,6 +51,8 @@ public:
     void get_value(std::string &value, uint64_t key);
 
 private:
+
+    constexpr static int MAX_LOG_STORE_SIZE = 131072000; // 125MB
 
     void read_pointers(const char *ptrs_file) {
         std::ifstream ip;

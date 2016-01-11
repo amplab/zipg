@@ -162,8 +162,8 @@ int32_t KVLogStore::append(int64_t key, const std::string& value) {
 
     // Update the index
 
-    // min with 0, since data_pos can be small (or zero) initially
-    for(uint64_t i = std::min(data_pos - ngram_n, static_cast<uint64_t>(0));
+    // max with 0, since data_pos can be small (or zero) initially
+    for (int64_t i = std::max(0LL, static_cast<int64_t>(data_pos - ngram_n));
         i < data_pos + val.length() - ngram_n; i++)
     {
         std::string ngram;
