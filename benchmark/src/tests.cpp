@@ -1,3 +1,4 @@
+#include "FileLogStore.h"
 #include "FileSuffixStore.h"
 #include "GraphFormatter.hpp"
 #include "GraphLogStore.h"
@@ -511,6 +512,72 @@ void test_file_suffix_store2() {
     std::remove(edge_table_file.c_str());
 }
 
+void test_file_log_store() {
+    std::string edge_file_content = "0 1 2 41842148 a b\n"
+                                    "0 1618 2 93244 sup\n"
+                                    "0 1 2 9324 suc\n"
+                                    "0 2 0 9324 succinct is cool\n"
+                                    "6 1 1 111111 abcd\n";
+
+    std::string edge_file(
+        GraphFormatter::write_to_temp_file(edge_file_content));
+    std::string edge_table_file(
+        GraphFormatter::write_to_temp_file(""));
+    SuccinctGraph::output_edge_table(edge_file, edge_table_file);
+
+    FileLogStore fls(edge_table_file);
+    fls.construct();
+
+    std::vector<int64_t> keys;
+    std::string str;
+
+    fls.search(keys, SuccinctGraph::mk_edge_table_search_key(0, 2));
+    assert(keys.size() == 1);
+
+    fls.search(keys, SuccinctGraph::mk_edge_table_search_key(0, 1));
+    assert(keys.size() == 0);
+
+    fls.search(keys, SuccinctGraph::mk_edge_table_search_key(0, 0));
+    assert(keys.size() == 1);
+
+    fls.extract(str, keys[0] + 1, 1);
+    assert(str == "0");
+
+    fls.extract(str, keys[0] + 3, 1);
+    assert(str == "0");
+
+    fls.search(keys, SuccinctGraph::mk_edge_table_search_key(6, 1));
+    fls.extract(str, keys[0] + 1, 1);
+    assert(str == "6");
+
+    std::remove(edge_file.c_str());
+    std::remove(edge_table_file.c_str());
+
+    // Appends, initially empty
+
+    FileLogStore fls2("");
+    fls2.construct();
+
+    fls2.search(keys, "kkk");
+    assert_eq(keys, { });
+
+    fls2.append("sup");
+    fls2.extract(str, 0, 3);
+    assert(str == "sup");
+
+    fls2.append("1618");
+    fls2.search(keys, "1618");
+    assert_eq(keys, { 3 });
+
+    fls2.append("1618");
+    fls2.search(keys, "1618");
+    assert_eq(keys, { 3, 7 });
+
+    fls2.extract(str, 0, 2);
+    assert(str == "su");
+    fls2.extract(str, 7, 100);
+    assert(str == "1618");
+}
 
 int main(int argc, char **argv) {
 
@@ -524,5 +591,7 @@ int main(int argc, char **argv) {
     test_graph_log_store();
     test_graph_suffix_store();
     test_graph_log_store2();
+
+    test_file_log_store();
 
 }
