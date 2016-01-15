@@ -76,11 +76,43 @@ public:
     size_t storage_size();
     size_t serialize();
 
+    /**************** Internal formats ****************/
+    // C.f. the LinkBench paper, Sigmoid 2013
+
+    typedef int64_t NodeId;
+    typedef int64_t Timestamp;
+    typedef int64_t AType;
+
+    typedef std::pair<NodeId, AType> AssocListKey;
+
+    struct Assoc {
+        NodeId src_id; // 8 bytes
+        NodeId dst_id; // 8 bytes
+        AType atype; // 8 bytes
+        Timestamp time; // 8 bytes
+        std::string attr; // variable bytes
+    };
+
+    static bool cmp_assoc_by_decreasing_time(const Assoc &a, const Assoc &b) {
+        return a.time > b.time;
+    }
+
     /**************** Helper methods ****************/
 
     static std::string mk_edge_table_search_key(int64_t src, int64_t atype);
 
+    static void output_formatted_edge_list(
+        int64_t src,
+        int64_t atype,
+        const std::vector<Assoc>& assoc_list,
+        std::ofstream& edge_file_out);
+
     static void output_edge_table(
+        const std::string& edge_file,
+        const std::string& out_file);
+
+    // Doesn't perform edge grouping, but still does sorting.
+    static void output_edge_table_singleton(
         const std::string& edge_file,
         const std::string& out_file);
 
@@ -102,27 +134,6 @@ public:
            ++digits;
        }
        return digits;
-    }
-
-    /**************** Internal formats ****************/
-    // C.f. the LinkBench paper, Sigmoid 2013
-
-    typedef int64_t NodeId;
-    typedef int64_t Timestamp;
-    typedef int64_t AType;
-
-    typedef std::pair<NodeId, AType> AssocListKey;
-
-    struct Assoc {
-        NodeId src_id; // 8 bytes
-        NodeId dst_id; // 8 bytes
-        AType atype; // 8 bytes
-        Timestamp time; // 8 bytes
-        std::string attr; // variable bytes
-    };
-
-    static bool cmp_assoc_by_decreasing_time(const Assoc &a, const Assoc &b) {
-        return a.time > b.time;
     }
 
     /**************** Primitive APIs ****************/
