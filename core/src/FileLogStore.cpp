@@ -185,7 +185,27 @@ void FileLogStore::extract(std::string& result, uint64_t offset, uint64_t len) {
     int64_t end = offset + len < data_pos ? offset + len : data_pos;
     size_t l = end - start;
     result.resize(l);
+    COND_LOG_E("start = %lld, end = %lld\n", start, end);
     for (size_t i = 0; i < l; ++i) {
+        COND_LOG_E("i = %lld\n", i);
         result[i] = data[start + i];
     }
+}
+
+int64_t FileLogStore::skip_until(int64_t off, unsigned char delim) {
+    while (delim != data[off]) {
+        ++off;
+    }
+    return off + 1;
+}
+
+int64_t FileLogStore::extract_until(
+    std::string& ret, int64_t off, unsigned char delim)
+{
+    ret.clear();
+    while (delim != data[off]) {
+        ret += data[off];
+        ++off;
+    }
+    return off + 1;
 }

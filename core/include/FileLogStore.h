@@ -33,6 +33,11 @@ public:
     // acting as record delimiters.
     void construct();
 
+    inline void construct(const std::string& override_input_file) {
+        input_file_ = override_input_file;
+        construct();
+    };
+
     void load();
 
     // Thread-safe for concurrent writes.
@@ -42,6 +47,15 @@ public:
     void search(std::vector<int64_t> &_return, const std::string& substring);
 
     void extract(std::string& result, uint64_t offset, uint64_t len);
+
+    // Returns the offset after delim.
+    int64_t skip_until(int64_t off, unsigned char delim);
+
+    int64_t extract_until(std::string& ret, int64_t off, unsigned char delim);
+
+    inline bool full() {
+        return data_pos >= MAX_LOG_STORE_SIZE;
+    }
 
 private:
 
@@ -53,7 +67,7 @@ private:
     void read_data(const char *input_file);
     void create_ngram_idx();
 
-    const std::string input_file_, pointer_file_;
+    std::string input_file_, pointer_file_;
 
     // For Log Store and Suffix Store
     // shared_ptr<char*> data = nullptr;

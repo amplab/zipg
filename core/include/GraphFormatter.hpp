@@ -207,6 +207,15 @@ public:
         int64_t min_time,
         int64_t max_time);
 
+    // Formats a single assoc as a singleton assoc list.  Output is in a format
+    // suitable to be appended onto an edge table (e.g. LogStore).
+    static std::string format_assoc_single(
+        int64_t src,
+        int64_t dst,
+        int64_t atype,
+        int64_t timestamp,
+        const std::string& attr);
+
 private:
 
     static void read_assoc_set(std::unordered_set<
