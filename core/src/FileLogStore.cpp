@@ -1,29 +1,24 @@
-#include "KVLogStore.h"
+#include "FileLogStore.h"
 
 #include <algorithm>
 
-void KVLogStore::construct() {
+void FileLogStore::construct() {
     data = new char[MAX_LOG_STORE_SIZE];
     // just the values
     read_data(input_file_.c_str());
-    // format: "[key] \t [offset into the value file]"
-    if (pointer_file_ != "") {
-        read_pointers(pointer_file_.c_str());
-    } else {
-        build_pointers();
-    }
+
     create_ngram_idx();
 
     writeLogStoreToFile((input_file_ + "_logstore").c_str());
-    std::cout << "KVLogStore: wrote to file "
+    std::cout << "FileLogStore: wrote to file "
         << (input_file_ + "_logstore").c_str() << std::endl;
 }
 
-void KVLogStore::load() {
+void FileLogStore::load() {
     readLogStoreFromFile((input_file_ + "_logstore").c_str());
 }
 
-void KVLogStore::writeLogStoreToFile(const char* logstore_path) {
+void FileLogStore::writeLogStoreToFile(const char* logstore_path) {
     std::ofstream logstore_file(logstore_path);
     logstore_file << data_pos << std::endl;
     logstore_file << ngram_n << std::endl;
@@ -49,7 +44,7 @@ void KVLogStore::writeLogStoreToFile(const char* logstore_path) {
     logstore_file.close();
 }
 
-void KVLogStore::readLogStoreFromFile(const char* logstore_path) {
+void FileLogStore::readLogStoreFromFile(const char* logstore_path) {
     if (file_or_dir_exists(logstore_path)) {
         std::ifstream logstore_file(logstore_path);
         logstore_file >> data_pos;
@@ -99,21 +94,8 @@ void KVLogStore::readLogStoreFromFile(const char* logstore_path) {
     }
 }
 
-int64_t KVLogStore::get_value_offset_pos(const int64_t key) {
-    long pos = std::lower_bound(
-        keys.begin(), keys.end(), key) - keys.begin();
-    COND_LOG_E("pos = %d, keys.size = %d\n", pos, keys.size());
-    return (keys[pos] != key || pos >= keys.size()) ? -1 : pos;
-}
-
-int64_t KVLogStore::get_key_pos(const int64_t value_offset) {
-    long pos = std::prev(std::upper_bound(value_offsets.begin(),
-        value_offsets.end(), value_offset)) - value_offsets.begin();
-    return pos >= keys.size() ? -1 : pos;
-}
-
 // Reads into `data`, updating `data_pos` correctly.
-void KVLogStore::read_data(const char *input_file) {
+void FileLogStore::read_data(const char *input_file) {
     if (file_or_dir_exists(input_file)) {
         std::ifstream ip;
         uint64_t size;
@@ -131,7 +113,7 @@ void KVLogStore::read_data(const char *input_file) {
 }
 
 // Log and suffix store initialization functions
-void KVLogStore::create_ngram_idx() {
+void FileLogStore::create_ngram_idx() {
     for(long i = 0; i < (long)data_pos - (long)ngram_n; i++) {
         std::string ngram = "";
         for(uint32_t off = 0; off < ngram_n; off++) {
@@ -148,23 +130,19 @@ void KVLogStore::create_ngram_idx() {
         << "; num entries = " << ngram_idx.size() << "\n";
 }
 
-int32_t KVLogStore::append(int64_t key, const std::string& value) {
+int32_t FileLogStore::append(const std::string& value) {
     std::lock_guard<std::mutex> lock(mutex_);
 
     if (data_pos + value.length() > MAX_LOG_STORE_SIZE) {
         return -1;   // Data exceeds max chunk size
     }
-    std::string val(value);
-    keys.push_back(key);
-    value_offsets.push_back(data_pos);
-    val += delim;
-    strncpy(data + data_pos, val.c_str(), val.length());
+    strncpy(data + data_pos, value.c_str(), value.length());
 
     // Update the index
 
     // max with 0, since data_pos can be small (or zero) initially
     for (int64_t i = std::max(0LL, static_cast<int64_t>(data_pos - ngram_n));
-        i < data_pos + val.length() - ngram_n; i++)
+        i <= data_pos + value.length() - ngram_n; i++)
     {
         std::string ngram;
         for(uint32_t off = 0; off < ngram_n; off++) {
@@ -172,12 +150,12 @@ int32_t KVLogStore::append(int64_t key, const std::string& value) {
         }
         ngram_idx[ngram].push_back(i);
     }
-    data_pos += val.length();
+    data_pos += value.length();
     return 0;
 }
 
-void KVLogStore::search(
-    std::set<int64_t> &_return, const std::string& substring)
+void FileLogStore::search(
+    std::vector<int64_t> &_return, const std::string& substring)
 {
     _return.clear();
     COND_LOG_E("search string '%s' (size %d)\n",
@@ -191,30 +169,43 @@ void KVLogStore::search(
     char *substr = (char *)substring.c_str();
     char *suffix = substr + ngram_n;
 
-    for(uint32_t i = 0; i < idx_offsets.size(); i++) {
-        if(strncmp(data + idx_offsets[i] + ngram_n, suffix, substring.length() - ngram_n) == 0) {
-            int64_t pos = get_key_pos(idx_offsets[i]);
-            if(pos >= 0)
-                _return.insert(keys[pos]);
+    for (uint32_t i = 0; i < idx_offsets.size(); i++) {
+        if (strncmp(data + idx_offsets[i] + ngram_n,
+                    suffix,
+                    substring.length() - ngram_n) == 0)
+        {
+            _return.push_back(idx_offsets[i]);
         }
     }
 }
 
-void KVLogStore::get_value(std::string &value, uint64_t key) {
-    value.clear();
-    int64_t pos = get_value_offset_pos(key);
-    COND_LOG_E("get_value_offset_pos done: %lld; key %lld, "
-        "value_offsets.size %d\n",
-        pos, key, value_offsets.size());
-    if (pos < 0) {
-        return;
+void FileLogStore::extract(std::string& result, uint64_t offset, uint64_t len) {
+    result.clear();
+    int64_t start = offset;
+    int64_t end = offset + len < data_pos ? offset + len : data_pos;
+    size_t l = end - start;
+    result.resize(l);
+    COND_LOG_E("start = %lld, end = %lld\n", start, end);
+    for (size_t i = 0; i < l; ++i) {
+        COND_LOG_E("i = %lld\n", i);
+        result[i] = data[start + i];
     }
-    int64_t start = value_offsets[pos];
-    int64_t end = (pos + 1 < value_offsets.size())
-        ? value_offsets[pos + 1] : data_pos;
-    size_t len = end - start - 1; // -1 for ignoring the delim
-    value.resize(len);
-    for (size_t i = 0; i < len; ++i) {
-        value[i] = data[start + i];
+}
+
+int64_t FileLogStore::skip_until(int64_t off, unsigned char delim) {
+    while (delim != data[off]) {
+        ++off;
     }
+    return off + 1;
+}
+
+int64_t FileLogStore::extract_until(
+    std::string& ret, int64_t off, unsigned char delim)
+{
+    ret.clear();
+    while (delim != data[off]) {
+        ret += data[off];
+        ++off;
+    }
+    return off + 1;
 }

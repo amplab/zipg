@@ -1,6 +1,7 @@
 #ifndef GRAPH_LOG_STORE_H
 #define GRAPH_LOG_STORE_H
 
+#include "FileLogStoreEdgeTable.h"
 #include "GraphFormatter.hpp"
 #include "KVLogStore.h"
 #include "StructuredEdgeTable.h"
@@ -116,7 +117,8 @@ private:
     std::string node_pointer_file;
 
     std::shared_ptr<KVLogStore> node_table_ = nullptr;
-    StructuredEdgeTable edge_table_;
+    FileLogStoreEdgeTable edge_table_;
+//    StructuredEdgeTable edge_table_;
 
     const int max_num_edges_; // bound per log store
 

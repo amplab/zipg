@@ -153,6 +153,97 @@ void SuccinctGraph::construct_node_table(std::string node_file) {
     system(cmd);
 }
 
+void SuccinctGraph::output_formatted_edge_list(
+    int64_t src,
+    int64_t atype,
+    const std::vector<Assoc>& assoc_list,
+    std::ofstream& edge_file_out)
+{
+    int64_t max_dst_id = -1, max_timestamp = -1;
+
+    edge_file_out << NODE_ID_DELIM << src;
+
+    edge_file_out << ATYPE_DELIM << atype;
+
+    for (auto it2 = assoc_list.begin(); it2 != assoc_list.end(); ++it2)
+    {
+        max_dst_id = std::max(max_dst_id, it2->dst_id);
+        max_timestamp = std::max(max_timestamp, it2->time);
+    }
+
+    int32_t dst_id_width = num_digits(max_dst_id);
+    int32_t edge_width = assoc_list.begin()->attr.length();
+    int32_t timestamp_width = num_digits(max_timestamp);
+
+    // output the metadata block:
+    // [padded timestamp width; padded dst id width; cnt; edge width]
+    edge_file_out
+        << TIMESTAMP_WIDTH_DELIM
+        << SuccinctGraphSerde::pad_timestamp_width(
+            timestamp_width) // padded
+        << SuccinctGraphSerde::pad_dst_id_width(dst_id_width) // padded
+        << assoc_list.size() // not padded: so width unbounded
+        << EDGE_WIDTH_DELIM
+        << std::to_string(edge_width) // not padded: so width unbounded
+        << METADATA_DELIM;
+
+    COND_LOG_E("timestamp width = %d, max timestamp = %lld\n",
+        timestamp_width, max_timestamp);
+
+    // timestamps
+    for (auto it2 = assoc_list.begin(); it2 != assoc_list.end(); ++it2)
+    {
+        std::string encoded(SuccinctGraphSerde::encode_timestamp(
+            it2->time, timestamp_width));
+        COND_LOG_E("encoded = '%s'\n", encoded.c_str());
+
+        if (SuccinctGraphSerde::decode_timestamp(encoded) != it2->time)
+        {
+            LOG_E(
+                "Failed: time = [%lld], encoded = [%s], decoded = "
+                "[%lld]\n",
+                it2->time, encoded.c_str(),
+                SuccinctGraphSerde::decode_timestamp(encoded));
+            exit(1);
+        }
+
+        edge_file_out << encoded;
+    }
+    // dst node ids
+    for (auto it2 = assoc_list.begin(); it2 != assoc_list.end(); ++it2)
+    {
+        std::string encoded = SuccinctGraphSerde::encode_node_id(
+            it2->dst_id, dst_id_width);
+
+        if (SuccinctGraphSerde::decode_node_id(encoded) != it2->dst_id)
+        {
+            LOG_E(
+                "Failed: dst id = [%lld], encoded = [%s], "
+                "decoded = [%lld]\n",
+                it2->dst_id, encoded.c_str(),
+                SuccinctGraphSerde::decode_timestamp(encoded));
+            exit(1);
+        }
+
+        edge_file_out << encoded;
+    }
+    // edge attributes
+    for (auto it2 = assoc_list.begin(); it2 != assoc_list.end(); ++it2)
+    {
+        std::string attr = it2->attr; // note: no encoding
+        if (attr.length() != static_cast<size_t>(edge_width)) {
+            LOG_E(
+                "Failed: assumption that the edge attr width for each "
+                "assoc list is broken: src = %lld, atype = %lld, edge "
+                "width = %d, but found attr '%s' (length %d)\n",
+                it2->src_id, it2->atype, edge_width, attr.c_str(),
+                attr.length());
+            exit(1);
+        }
+        edge_file_out << attr;
+    }
+}
+
 void SuccinctGraph::output_edge_table(
     const std::string& edge_file,
     const std::string& out_file)
@@ -161,96 +252,38 @@ void SuccinctGraph::output_edge_table(
     GraphFormatter::build_assoc_map(assoc_map, edge_file);
 
     std::ofstream edge_file_out(out_file);
-    int64_t max_dst_id = -1, max_timestamp = -1;
 
     for (auto it = assoc_map.begin(); it != assoc_map.end(); ++it) {
         auto src_id_and_atype = it->first;
+        SuccinctGraph::output_formatted_edge_list(
+            src_id_and_atype.first,
+            src_id_and_atype.second,
+            it->second,
+            edge_file_out);
+    }
+     // FIXME: without this, SuccinctCore ctor segfaults
+    edge_file_out << "\n";
+}
 
-        edge_file_out << NODE_ID_DELIM
-            << src_id_and_atype.first;
+void SuccinctGraph::output_edge_table_singleton(
+    const std::string& edge_file,
+    const std::string& out_file)
+{
+    std::map<std::pair<int64_t, int64_t>, std::vector<Assoc>> assoc_map;
+    GraphFormatter::build_assoc_map(assoc_map, edge_file);
 
-        edge_file_out << ATYPE_DELIM
-            << src_id_and_atype.second;
+    std::ofstream edge_file_out(out_file);
 
-        std::vector<Assoc> assoc_list = it->second;
-
-        max_dst_id = max_timestamp = -1;
-        for (auto it2 = assoc_list.begin(); it2 != assoc_list.end(); ++it2)
+    for (auto it = assoc_map.begin(); it != assoc_map.end(); ++it) {
+        auto src_id_and_atype = it->first;
+        auto& sorted_assocs = it->second;
+        for (auto it = sorted_assocs.rbegin(); it != sorted_assocs.rend(); ++it)
         {
-            max_dst_id = std::max(max_dst_id, it2->dst_id);
-            max_timestamp = std::max(max_timestamp, it2->time);
-        }
-
-        int32_t dst_id_width = num_digits(max_dst_id);
-        int32_t edge_width = assoc_list.begin()->attr.length();
-        int32_t timestamp_width = num_digits(max_timestamp);
-
-        // output the metadata block:
-        // [padded timestamp width; padded dst id width; cnt; edge width]
-        edge_file_out
-            << TIMESTAMP_WIDTH_DELIM
-            << SuccinctGraphSerde::pad_timestamp_width(
-                timestamp_width) // padded
-            << SuccinctGraphSerde::pad_dst_id_width(dst_id_width) // padded
-            << assoc_list.size() // not padded: so width unbounded
-            << EDGE_WIDTH_DELIM
-            << std::to_string(edge_width) // not padded: so width unbounded
-            << METADATA_DELIM;
-
-        COND_LOG_E("timestamp width = %d, max timestamp = %lld\n",
-            timestamp_width, max_timestamp);
-
-        // timestamps
-        for (auto it2 = assoc_list.begin(); it2 != assoc_list.end(); ++it2)
-        {
-            std::string encoded(SuccinctGraphSerde::encode_timestamp(
-                it2->time, timestamp_width));
-            COND_LOG_E("encoded = '%s'\n", encoded.c_str());
-
-            if (SuccinctGraphSerde::decode_timestamp(encoded) != it2->time)
-            {
-                LOG_E(
-                    "Failed: time = [%lld], encoded = [%s], decoded = "
-                    "[%lld]\n",
-                    it2->time, encoded.c_str(),
-                    SuccinctGraphSerde::decode_timestamp(encoded));
-                exit(1);
-            }
-
-            edge_file_out << encoded;
-        }
-        // dst node ids
-        for (auto it2 = assoc_list.begin(); it2 != assoc_list.end(); ++it2)
-        {
-            std::string encoded = SuccinctGraphSerde::encode_node_id(
-                it2->dst_id, dst_id_width);
-
-            if (SuccinctGraphSerde::decode_node_id(encoded) != it2->dst_id)
-            {
-                LOG_E(
-                    "Failed: dst id = [%lld], encoded = [%s], "
-                    "decoded = [%lld]\n",
-                    it2->dst_id, encoded.c_str(),
-                    SuccinctGraphSerde::decode_timestamp(encoded));
-                exit(1);
-            }
-
-            edge_file_out << encoded;
-        }
-        // edge attributes
-        for (auto it2 = assoc_list.begin(); it2 != assoc_list.end(); ++it2)
-        {
-            std::string attr = it2->attr; // note: no encoding
-            if (attr.length() != static_cast<size_t>(edge_width)) {
-                LOG_E(
-                    "Failed: assumption that the edge attr width for each "
-                    "assoc list is broken: src = %lld, atype = %lld, edge "
-                    "width = %d, but found attr '%s' (length %d)\n",
-                    it2->src_id, it2->atype, edge_width, attr.c_str(),
-                    attr.length());
-                exit(1);
-            }
-            edge_file_out << attr;
+            SuccinctGraph::output_formatted_edge_list(
+                src_id_and_atype.first,
+                src_id_and_atype.second,
+                { *it }, // singleton
+                edge_file_out);
         }
     }
      // FIXME: without this, SuccinctCore ctor segfaults

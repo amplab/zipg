@@ -1,3 +1,4 @@
+#include "FileLogStore.h"
 #include "FileSuffixStore.h"
 #include "GraphFormatter.hpp"
 #include "GraphLogStore.h"
@@ -189,7 +190,7 @@ void test_graph_log_store2() {
                                     "6 1 1 111111 abcd\n";
     std::string edge_file(
         GraphFormatter::write_to_temp_file(edge_file_content));
-    COND_LOG_E("Edge table wrote out to '%s'\n", edge_file.c_str());
+    COND_LOG_E("Edge list written out to '%s'\n", edge_file.c_str());
 
     GraphLogStore graph_log_store(tmp_pathname, edge_file);
     graph_log_store.construct();
@@ -237,6 +238,9 @@ void test_graph_log_store2() {
     assert_eq(graph_log_store.assoc_get(0, 2, dst_id_set, 9324, 93245),
         { {0, 1618, 2, 93244, "sup"}, {0, 1, 2, 9324, "suc"} });
 
+    assert_eq(graph_log_store.assoc_get(0, 2, dst_id_set, 93245, 0),
+        { });
+
     // assoc_time_range() tests
 
     assert_eq(graph_log_store.assoc_time_range(6, 1, 1, 99999999, 10),
@@ -254,6 +258,9 @@ void test_graph_log_store2() {
         graph_log_store.assoc_time_range(0, 2, 900, 93244, 1)); // 1 edge
     assert_eq(graph_log_store.assoc_time_range(0, 2, 900, 93244, 1),
         { {0, 1618, 2, 93244, "sup"} });
+
+    assert_eq(graph_log_store.assoc_time_range(0, 2, 999, 0, 1),
+        { });
 
     std::remove(tmp_pathname.c_str());
     std::remove(edge_file.c_str());
@@ -511,6 +518,113 @@ void test_file_suffix_store2() {
     std::remove(edge_table_file.c_str());
 }
 
+void test_file_log_store() {
+    std::string edge_file_content = "0 1 2 41842148 a b\n"
+                                    "0 1618 2 93244 sup\n"
+                                    "0 1 2 9324 suc\n"
+                                    "0 2 0 9324 succinct is cool\n"
+                                    "6 1 1 111111 abcd\n";
+
+    std::string edge_file(
+        GraphFormatter::write_to_temp_file(edge_file_content));
+    std::string edge_table_file(
+        GraphFormatter::write_to_temp_file(""));
+    SuccinctGraph::output_edge_table(edge_file, edge_table_file);
+
+    FileLogStore fls(edge_table_file);
+    fls.construct();
+
+    std::vector<int64_t> keys;
+    std::string str;
+
+    fls.search(keys, SuccinctGraph::mk_edge_table_search_key(0, 2));
+    assert(keys.size() == 1);
+
+    fls.search(keys, SuccinctGraph::mk_edge_table_search_key(0, 1));
+    assert(keys.size() == 0);
+
+    fls.search(keys, SuccinctGraph::mk_edge_table_search_key(0, 0));
+    assert(keys.size() == 1);
+
+    fls.extract(str, keys[0] + 1, 1);
+    assert(str == "0");
+
+    fls.extract(str, keys[0] + 3, 1);
+    assert(str == "0");
+
+    fls.search(keys, SuccinctGraph::mk_edge_table_search_key(6, 1));
+    fls.extract(str, keys[0] + 1, 1);
+    assert(str == "6");
+
+    std::remove(edge_file.c_str());
+    std::remove(edge_table_file.c_str());
+
+    // Appends, initially empty
+
+    FileLogStore fls2("");
+    fls2.construct();
+
+    fls2.search(keys, "kkk");
+    assert_eq(keys, { });
+
+    fls2.append("sup");
+    fls2.extract(str, 0, 3);
+    assert(str == "sup");
+
+    fls2.append("1618");
+    fls2.search(keys, "1618");
+    assert_eq(keys, { 3 });
+
+    fls2.append("1618");
+    fls2.search(keys, "1618");
+    assert_eq(keys, { 3, 7 });
+
+    fls2.extract(str, 0, 2);
+    assert(str == "su");
+    fls2.extract(str, 7, 100);
+    assert(str == "1618");
+}
+
+void test_file_log_store_edge_table() {
+    std::string edge_file_content = "0 1 2 41842148 a b\n"
+                                    "0 1618 2 93244 sup\n"
+                                    "0 1 2 9324 suc\n"
+                                    "0 2 0 9324 succinct is cool\n"
+                                    "6 1 1 111111 abcd\n";
+
+    std::string edge_file(
+        GraphFormatter::write_to_temp_file(edge_file_content));
+
+    FileLogStoreEdgeTable flset(edge_file);
+    flset.construct();
+
+    assert(flset.assoc_count(0, 0) == 1);
+    assert(flset.assoc_count(0, 100) == 0);
+
+    std::remove(edge_file.c_str());
+}
+
+void test_file_log_store_edge_table2() {
+
+    FileLogStoreEdgeTable flset("tests/empty");
+    flset.construct();
+
+    assert(flset.assoc_count(0, 0) == 0);
+    assert(flset.assoc_count(0, 100) == 0);
+
+    flset.add_assoc(0, 0, 1, 1618, "1618");
+    assert(flset.assoc_count(0, 0) == 0);
+    assert(flset.assoc_count(0, 1) == 1);
+
+    flset.add_assoc(0, 0, 1, 1619, "1619");
+    assert(flset.assoc_count(0, 1) == 2);
+
+    flset.add_assoc(1619, 0, 0, 1, "1619");
+    assert(flset.assoc_count(1619, 0) == 1);
+    assert(flset.assoc_count(1619, 1) == 0);
+    assert(flset.assoc_count(0, 1619) == 0);
+
+}
 
 int main(int argc, char **argv) {
 
@@ -524,5 +638,9 @@ int main(int argc, char **argv) {
     test_graph_log_store();
     test_graph_suffix_store();
     test_graph_log_store2();
+
+    test_file_log_store();
+    test_file_log_store_edge_table();
+    test_file_log_store_edge_table2();
 
 }

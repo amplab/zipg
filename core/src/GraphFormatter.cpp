@@ -791,3 +791,46 @@ void GraphFormatter::read_assoc_set(std::unordered_set<
         set.insert(std::make_pair(src, atype));
     }
 }
+
+std::string GraphFormatter::format_assoc_single(
+    int64_t src,
+    int64_t dst,
+    int64_t atype,
+    int64_t timestamp,
+    const std::string& attr)
+{
+    COND_LOG_E("src %lld, dst %lld, atype %lld\n", src, dst, atype);
+    std::stringstream ss;
+
+    // src and atype
+    ss << SuccinctGraph::NODE_ID_DELIM << src;
+    ss << SuccinctGraph::ATYPE_DELIM << atype;
+
+    // metadata block
+    int32_t dst_id_width = num_digits(dst);
+    int32_t edge_width = attr.length();
+    int32_t timestamp_width = num_digits(timestamp);
+
+    ss << SuccinctGraph::TIMESTAMP_WIDTH_DELIM
+       << SuccinctGraphSerde::pad_timestamp_width(timestamp_width) // padded
+       << SuccinctGraphSerde::pad_dst_id_width(dst_id_width) // padded
+       << 1 // not padded: so width unbounded
+       << SuccinctGraph::EDGE_WIDTH_DELIM
+       << std::to_string(edge_width) // not padded: so width unbounded
+       << SuccinctGraph::METADATA_DELIM;
+
+    // timestamp
+    ss << SuccinctGraphSerde::encode_timestamp(timestamp, timestamp_width);
+    COND_LOG_E("encoded timestamp '%s'\n",
+        SuccinctGraphSerde::encode_timestamp(timestamp, timestamp_width).c_str());
+
+    // dst id
+    ss << SuccinctGraphSerde::encode_node_id(dst, dst_id_width);
+    COND_LOG_E("encoded node id '%s'\n",
+        SuccinctGraphSerde::encode_node_id(dst, dst_id_width).c_str());
+
+    // edge attr
+    ss << attr;
+
+    return ss.str();
+}
