@@ -97,7 +97,13 @@ public:
         std::unordered_map<int, GraphFormatter::AssocSet>& edge_updates,
         int num_shards_to_mod)
     {
-        assert(false);
+        GraphFormatter::build_edge_updates(
+            edge_updates,
+            edge_file_, // the unformatted edge list (each line is an assoc)
+            num_shards_to_mod);
+
+        LOG_E("FileLogStoreEdgeTable::build_backfill_edge_updates: %d shards\n",
+            edge_updates.size());
     }
 
 private:

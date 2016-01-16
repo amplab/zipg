@@ -24,6 +24,8 @@ public:
     // The `node_file` here is just the un-delimited node properties (the
     // values file).  The keys are assumed to be 0-based line numbers; the
     // key-value pointers are computed by using newlines as record delimiters.
+    //
+    // The `edge_file` is the unformatted edge list.
     GraphLogStore(
         const std::string& node_file,
         const std::string& edge_file)
