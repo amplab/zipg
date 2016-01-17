@@ -18,6 +18,9 @@
 // Limitation: it relies on an ngram index to perform search on the node
 // properties.  By default, n = 3, and therefore we can't search along an empty
 // search string (we could if n is smaller).
+//
+// Locking is not done here and only delegated to the underlying Succinct
+// classes.
 class GraphLogStore {
 public:
 

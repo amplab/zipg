@@ -131,7 +131,7 @@ void FileLogStore::create_ngram_idx() {
 }
 
 int32_t FileLogStore::append(const std::string& value) {
-    std::lock_guard<std::mutex> lock(mutex_);
+    boost::unique_lock<boost::shared_mutex> lk(mutex_);
 
     if (data_pos + value.length() > MAX_LOG_STORE_SIZE) {
         return -1;   // Data exceeds max chunk size
@@ -160,14 +160,17 @@ void FileLogStore::search(
     _return.clear();
     COND_LOG_E("search string '%s' (size %d)\n",
         substring.c_str(), substring.length());
+
     std::string substring_ngram = substring.substr(0, ngram_n);
+    char *substr = (char *)substring.c_str();
+    char *suffix = substr + ngram_n;
+
+    boost::unique_lock<boost::shared_mutex> lk(mutex_);
+
     std::vector<uint32_t> idx_offsets = ngram_idx[substring_ngram];
 
     COND_LOG_E("idx sizes: %d, substring '%s'\n", idx_offsets.size(),
         substring_ngram.c_str());
-
-    char *substr = (char *)substring.c_str();
-    char *suffix = substr + ngram_n;
 
     for (uint32_t i = 0; i < idx_offsets.size(); i++) {
         if (strncmp(data + idx_offsets[i] + ngram_n,
@@ -182,6 +185,9 @@ void FileLogStore::search(
 void FileLogStore::extract(std::string& result, uint64_t offset, uint64_t len) {
     result.clear();
     int64_t start = offset;
+
+    boost::unique_lock<boost::shared_mutex> lk(mutex_);
+
     int64_t end = offset + len < data_pos ? offset + len : data_pos;
     size_t l = end - start;
     result.resize(l);
@@ -193,6 +199,7 @@ void FileLogStore::extract(std::string& result, uint64_t offset, uint64_t len) {
 }
 
 int64_t FileLogStore::skip_until(int64_t off, unsigned char delim) {
+    boost::unique_lock<boost::shared_mutex> lk(mutex_);
     while (delim != data[off]) {
         ++off;
     }
@@ -203,6 +210,7 @@ int64_t FileLogStore::extract_until(
     std::string& ret, int64_t off, unsigned char delim)
 {
     ret.clear();
+    boost::unique_lock<boost::shared_mutex> lk(mutex_);
     while (delim != data[off]) {
         ret += data[off];
         ++off;

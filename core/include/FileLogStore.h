@@ -7,11 +7,12 @@
 
 #include "utils.h"
 
-#include <mutex>
 #include <set>
 #include <string>
 #include <unordered_map>
 #include <vector>
+
+#include <boost/thread.hpp>
 
 // LogStore with a flat file interface.
 // FIXME: search() has the prefix-match bug?
@@ -84,7 +85,9 @@ private:
 
     static constexpr char delim = '\n';
 
-    std::mutex mutex_;
+    // Protects `data`, `data_pos`, and `ngram_idx` during serving.
+    boost::shared_mutex mutex_;
+
 };
 
 #endif

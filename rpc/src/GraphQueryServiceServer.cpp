@@ -28,6 +28,7 @@ using boost::shared_ptr;
 // ******************** hacks: we should really make sure these
 // states are not flying around outside of a class.
 
+// These two mutexes are only used during init, not during serving.
 std::mutex succinct_store_mutex;
 shared_ptr<SuccinctGraph> graph_(new SuccinctGraph(""));
 bool succinct_store_initialized = false;
