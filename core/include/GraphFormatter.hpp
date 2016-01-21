@@ -16,6 +16,7 @@
 class GraphFormatter {
 public:
 
+    // A set of (src, atype) pairs.
     typedef std::unordered_set<
                 std::pair<int64_t, int64_t>,
                 boost::hash< std::pair<int, int> >> AssocSet;

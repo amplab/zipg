@@ -77,6 +77,7 @@ public:
         int64_t t_high,
         int32_t len);
 
+    // Scans through all assocs in this store, and groups them by dstShardId.
     void build_backfill_edge_updates(
         std::unordered_map<int, GraphFormatter::AssocSet>& edge_updates,
         int num_shards_to_mod);

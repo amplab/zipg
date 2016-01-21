@@ -94,10 +94,6 @@ public:
             exit(1);
         }
 
-//        for (auto& shard : local_shards_) {
-//            shard.send_init();
-//        }
-
         for (int i = 0; i < total_num_hosts_; ++i) {
             if (i == local_host_id_) {
                 continue;
@@ -106,30 +102,6 @@ public:
             aggregators_.at(i).connect_to_aggregators();
         }
 
-//        for (int i = 0; i < total_num_hosts_; ++i) {
-//            if (i == local_host_id_) {
-//                continue;
-//            }
-//            aggregators_.at(i).send_init_local_shards();
-//        }
-
-//        for (auto& shard : local_shards_) {
-//            if (shard.recv_init() != 0) {
-//                LOG_E("Some shard doesn't init() successfully, exiting\n");
-//                exit(1);
-//            }
-//        }
-
-//        for (int i = 0; i < total_num_hosts_; ++i) {
-//            if (i == local_host_id_) {
-//                continue;
-//            }
-//            if (aggregators_.at(i).recv_init_local_shards() != 0) {
-//                LOG_E("Some aggregator doesn't init_local_shards() successfully"
-//                    ", exiting\n");
-//                exit(1);
-//            }
-//        }
         LOG_E("Cluster init() done\n");
         initiated_ = true;
         return 0;
@@ -336,9 +308,6 @@ public:
                 curr_ptrs.push_back(ptr);
             }
         }
-//
-//        local_shards_.at(shard_id_to_shard_idx(local_shard_id))
-//            .record_edge_updates(next_shard_id, updates);
     }
 
 public:
