@@ -48,7 +48,7 @@ public:
     // that these id's are local keys.
     //
     // Thread-safe: internally, a lock is used.
-    void append_node(int64_t node_id, std::vector<std::string>& attrs);
+    int append_node(int64_t node_id, const std::vector<std::string>& attrs);
 
     // Thread-safe: internally, a lock is used.
     int append_edge(
@@ -115,6 +115,10 @@ public:
     {
         edge_table_.build_backfill_edge_updates(
             edge_updates, num_shards_to_mod);
+    }
+
+    inline int64_t num_nodes() {
+        return node_table_->get_num_keys();
     }
 
 private:

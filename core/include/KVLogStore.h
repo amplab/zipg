@@ -50,6 +50,10 @@ public:
     // Clears `value` for caller.
     void get_value(std::string &value, uint64_t key);
 
+    inline int64_t get_num_keys() {
+        return keys.size();
+    }
+
 private:
 
     constexpr static int MAX_LOG_STORE_SIZE = 131072000; // 125MB

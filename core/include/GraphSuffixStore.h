@@ -82,6 +82,10 @@ public:
         std::unordered_map<int, GraphFormatter::AssocSet>& edge_updates,
         int num_shards_to_mod);
 
+    inline int64_t num_nodes() {
+        return node_table_->get_num_keys();
+    }
+
 private:
 
     std::string node_file_, edge_file_, assoc_file_;

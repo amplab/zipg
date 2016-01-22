@@ -28,6 +28,9 @@ service GraphQueryService {
     // Loads or constructs graph shards.
     i32 init(),
 
+    // Number of nodes in this shard.
+    i64 num_nodes_local(),
+
     list<i64> get_neighbors(1: i64 nodeId),
 
     list<i64> get_neighbors_atype(1: i64 nodeId, 2: i64 atype),
@@ -91,6 +94,9 @@ service GraphQueryService {
     i32 assoc_add(
         1: i64 src, 2: i64 atype, 3: i64 dst, 4: i64 time, 5: string attr),
 
+    // Meaningful only for the LogStore shard handling appends.
+    i32 obj_add(1: list<string> attributes, 2: i64 nodeId),
+
 }
 
 // One aggregator per machine; handles local aggregation and query routing.
@@ -136,6 +142,11 @@ service GraphQueryAggregatorService {
         1: i32 next_shard, // where are these updates located?
         2: i32 local_shard, // one of this aggregator's shards
         3: list<ThriftSrcAtype> updates),
+
+    // Globally across the cluster, number of nodes in graph.
+    i64 num_nodes(),
+    // Number of nodes under this machine.
+    i64 num_nodes_local(),
 
     // Primitive queries
 
@@ -185,7 +196,7 @@ service GraphQueryAggregatorService {
     list<string> get_edge_attrs_local(
         1: i32 shardId, 2: i64 nodeId, 3: i64 atype),
 
-    // TAO queries
+    // TAO read queries
 
     list<ThriftAssoc> assoc_range(
         1: i64 src, 2: i64 atype, 3: i32 off, 4: i32 len),
@@ -232,7 +243,12 @@ service GraphQueryAggregatorService {
         1: i32 shardId, 2: i64 src, 3: i64 atype,
         4: i64 tLow, 5: i64 tHigh, 6: i32 limit),
 
+    // TAO write queries
+
     i32 assoc_add(
         1: i64 src, 2: i64 atype, 3: i64 dst, 4: i64 time, 5: string attr),
+
+    // On success, returns a non-negative long as the new node's ID.
+    i64 obj_add(1: list<string> attributes),
 
 }

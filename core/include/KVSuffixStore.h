@@ -42,6 +42,10 @@ public:
 
     void get_value(std::string &value, uint64_t key);
 
+    inline int64_t get_num_keys() {
+        return keys.size();
+    }
+
 private:
 
     SuccinctBase::Bitmap *SA = nullptr;

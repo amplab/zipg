@@ -24,14 +24,22 @@ using namespace ::apache::thrift::server;
 
 using boost::shared_ptr;
 
+// Used only in data initialization, not during serving.
 boost::shared_mutex local_shards_data_mutex;
 bool local_shards_data_initiated = false;
 
-// a vector of maps: src -> (atype -> [shard id, file offset])
+// A vector of maps: src -> (atype -> [shard id, file offset]).
+// Each element (i.e. a map of the above type) corresponds to each shard
+// hosted by this machine.
 std::vector< std::unordered_map<int64_t,
         std::unordered_map<int64_t, std::vector<ThriftEdgeUpdatePtr>>
     > > edge_update_ptrs;
 boost::shared_mutex edge_update_ptrs_mutex;
+
+// Running count: number of nodes in graph (across all machines).
+int64_t curr_num_nodes = -1;
+// Protects the above count, as well as node appends.
+boost::shared_mutex curr_num_nodes_mutex;
 
 class GraphQueryAggregatorServiceHandler :
     virtual public GraphQueryAggregatorServiceIf {
@@ -243,7 +251,7 @@ public:
         return 0;
     }
 
-    // The correctness relies on host 0 is called first, then host 1, etc.
+    // The correctness relies on host 0 being called first, then host 1, etc.
     int32_t backfill_edge_updates() {
         int shard_idx = 0, src_shard_id, num_backfilled = 0;
 
@@ -1221,6 +1229,30 @@ public:
             _return.size(), limit);
     }
 
+    int64_t num_nodes() {
+        if (curr_num_nodes != -1) {
+            return curr_num_nodes;
+        }
+
+        curr_num_nodes = 0;
+        for (int i = 0; i < total_num_hosts_; ++i) {
+            if (i == local_host_id_) {
+                curr_num_nodes += num_nodes_local();
+            } else {
+                curr_num_nodes += aggregators_.at(i).num_nodes_local();
+            }
+        }
+        return curr_num_nodes;
+    }
+
+    int64_t num_nodes_local() {
+        int64_t num = 0;
+        for (auto& shard : local_shards_) {
+            num += shard.num_nodes_local();
+        }
+        return num;
+    }
+
     int assoc_add(
         const int64_t src,
         const int64_t atype,
@@ -1263,6 +1295,56 @@ public:
         } else {
             return aggregators_.at(total_num_hosts_ - 1)
                 .assoc_add(src, atype, dst, time, attr);
+        }
+    }
+
+    int64_t obj_add(const std::vector<std::string>& attributes) {
+        assert(multistore_enabled_ &&
+            "multistore not enabled but obj_add called");
+        COND_LOG_E("Received obj_add(...)\n");
+
+        // NOTE: this hard-codes the knowledge that:
+        // (1) the last machine is LogStore machine, and
+        // (2) its last shard is the append-only store
+        if (local_host_id_ == total_num_hosts_ - 1) {
+            boost::shared_lock<boost::shared_mutex> lk(curr_num_nodes_mutex);
+            int64_t next_node_id = num_nodes();
+
+            int ret = local_shards_.back().obj_add(attributes, next_node_id);
+
+            if (ret) {
+                return -1;
+            } else {
+                // TODO: record node update pointers
+
+                ++curr_num_nodes;
+                return next_node_id;
+            }
+
+//            if (!ret) {
+//                int primary_shard_id = src % num_succinctstore_shards_;
+//                int primary_host_id = host_id_for_shard(primary_shard_id);
+//                assert(local_host_id_ != primary_host_id);
+//
+//                ThriftSrcAtype src_atype;
+//                src_atype.src = src;
+//                src_atype.atype = atype;
+//
+//                COND_LOG_E("Updating host %d, shard %d about (%lld,%d)\n",
+//                    primary_host_id, primary_shard_id, src, atype);
+//
+//                aggregators_.at(primary_host_id).record_edge_updates(
+//                    num_succinctstore_shards_ +
+//                        num_suffixstore_shards_ +
+//                        num_logstore_shards_ - 1,
+//                    primary_shard_id,
+//                    { src_atype });
+//            }
+//
+//            return ret;
+        } else {
+            return aggregators_.at(total_num_hosts_ - 1)
+                .obj_add(attributes);
         }
     }
 

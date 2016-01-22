@@ -25,6 +25,8 @@ class GraphQueryAggregatorServiceIf {
   virtual void disconnect_from_aggregators() = 0;
   virtual int32_t backfill_edge_updates() = 0;
   virtual void record_edge_updates(const int32_t next_shard, const int32_t local_shard, const std::vector<ThriftSrcAtype> & updates) = 0;
+  virtual int64_t num_nodes() = 0;
+  virtual int64_t num_nodes_local() = 0;
   virtual void get_attribute(std::string& _return, const int64_t nodeId, const int32_t attrId) = 0;
   virtual void get_attribute_local(std::string& _return, const int64_t shardId, const int64_t nodeId, const int32_t attrId) = 0;
   virtual void get_neighbors(std::vector<int64_t> & _return, const int64_t nodeId) = 0;
@@ -56,6 +58,7 @@ class GraphQueryAggregatorServiceIf {
   virtual void assoc_time_range_batched(std::vector<std::vector<ThriftAssoc> > & _return, const std::vector<int64_t> & src, const std::vector<int64_t> & atype, const std::vector<int64_t> & tLow, const std::vector<int64_t> & tHigh, const std::vector<int32_t> & limit) = 0;
   virtual void assoc_time_range_local(std::vector<ThriftAssoc> & _return, const int32_t shardId, const int64_t src, const int64_t atype, const int64_t tLow, const int64_t tHigh, const int32_t limit) = 0;
   virtual int32_t assoc_add(const int64_t src, const int64_t atype, const int64_t dst, const int64_t time, const std::string& attr) = 0;
+  virtual int64_t obj_add(const std::vector<std::string> & attributes) = 0;
 };
 
 class GraphQueryAggregatorServiceIfFactory {
@@ -120,6 +123,14 @@ class GraphQueryAggregatorServiceNull : virtual public GraphQueryAggregatorServi
   }
   void record_edge_updates(const int32_t /* next_shard */, const int32_t /* local_shard */, const std::vector<ThriftSrcAtype> & /* updates */) {
     return;
+  }
+  int64_t num_nodes() {
+    int64_t _return = 0;
+    return _return;
+  }
+  int64_t num_nodes_local() {
+    int64_t _return = 0;
+    return _return;
   }
   void get_attribute(std::string& /* _return */, const int64_t /* nodeId */, const int32_t /* attrId */) {
     return;
@@ -215,6 +226,10 @@ class GraphQueryAggregatorServiceNull : virtual public GraphQueryAggregatorServi
   }
   int32_t assoc_add(const int64_t /* src */, const int64_t /* atype */, const int64_t /* dst */, const int64_t /* time */, const std::string& /* attr */) {
     int32_t _return = 0;
+    return _return;
+  }
+  int64_t obj_add(const std::vector<std::string> & /* attributes */) {
+    int64_t _return = 0;
     return _return;
   }
 };
@@ -1106,6 +1121,194 @@ class GraphQueryAggregatorService_record_edge_updates_presult {
 
   virtual ~GraphQueryAggregatorService_record_edge_updates_presult() throw() {}
 
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+
+class GraphQueryAggregatorService_num_nodes_args {
+ public:
+
+  GraphQueryAggregatorService_num_nodes_args() {
+  }
+
+  virtual ~GraphQueryAggregatorService_num_nodes_args() throw() {}
+
+
+  bool operator == (const GraphQueryAggregatorService_num_nodes_args & /* rhs */) const
+  {
+    return true;
+  }
+  bool operator != (const GraphQueryAggregatorService_num_nodes_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GraphQueryAggregatorService_num_nodes_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class GraphQueryAggregatorService_num_nodes_pargs {
+ public:
+
+
+  virtual ~GraphQueryAggregatorService_num_nodes_pargs() throw() {}
+
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _GraphQueryAggregatorService_num_nodes_result__isset {
+  _GraphQueryAggregatorService_num_nodes_result__isset() : success(false) {}
+  bool success;
+} _GraphQueryAggregatorService_num_nodes_result__isset;
+
+class GraphQueryAggregatorService_num_nodes_result {
+ public:
+
+  GraphQueryAggregatorService_num_nodes_result() : success(0) {
+  }
+
+  virtual ~GraphQueryAggregatorService_num_nodes_result() throw() {}
+
+  int64_t success;
+
+  _GraphQueryAggregatorService_num_nodes_result__isset __isset;
+
+  void __set_success(const int64_t val) {
+    success = val;
+  }
+
+  bool operator == (const GraphQueryAggregatorService_num_nodes_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    return true;
+  }
+  bool operator != (const GraphQueryAggregatorService_num_nodes_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GraphQueryAggregatorService_num_nodes_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _GraphQueryAggregatorService_num_nodes_presult__isset {
+  _GraphQueryAggregatorService_num_nodes_presult__isset() : success(false) {}
+  bool success;
+} _GraphQueryAggregatorService_num_nodes_presult__isset;
+
+class GraphQueryAggregatorService_num_nodes_presult {
+ public:
+
+
+  virtual ~GraphQueryAggregatorService_num_nodes_presult() throw() {}
+
+  int64_t* success;
+
+  _GraphQueryAggregatorService_num_nodes_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+
+class GraphQueryAggregatorService_num_nodes_local_args {
+ public:
+
+  GraphQueryAggregatorService_num_nodes_local_args() {
+  }
+
+  virtual ~GraphQueryAggregatorService_num_nodes_local_args() throw() {}
+
+
+  bool operator == (const GraphQueryAggregatorService_num_nodes_local_args & /* rhs */) const
+  {
+    return true;
+  }
+  bool operator != (const GraphQueryAggregatorService_num_nodes_local_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GraphQueryAggregatorService_num_nodes_local_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class GraphQueryAggregatorService_num_nodes_local_pargs {
+ public:
+
+
+  virtual ~GraphQueryAggregatorService_num_nodes_local_pargs() throw() {}
+
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _GraphQueryAggregatorService_num_nodes_local_result__isset {
+  _GraphQueryAggregatorService_num_nodes_local_result__isset() : success(false) {}
+  bool success;
+} _GraphQueryAggregatorService_num_nodes_local_result__isset;
+
+class GraphQueryAggregatorService_num_nodes_local_result {
+ public:
+
+  GraphQueryAggregatorService_num_nodes_local_result() : success(0) {
+  }
+
+  virtual ~GraphQueryAggregatorService_num_nodes_local_result() throw() {}
+
+  int64_t success;
+
+  _GraphQueryAggregatorService_num_nodes_local_result__isset __isset;
+
+  void __set_success(const int64_t val) {
+    success = val;
+  }
+
+  bool operator == (const GraphQueryAggregatorService_num_nodes_local_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    return true;
+  }
+  bool operator != (const GraphQueryAggregatorService_num_nodes_local_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GraphQueryAggregatorService_num_nodes_local_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _GraphQueryAggregatorService_num_nodes_local_presult__isset {
+  _GraphQueryAggregatorService_num_nodes_local_presult__isset() : success(false) {}
+  bool success;
+} _GraphQueryAggregatorService_num_nodes_local_presult__isset;
+
+class GraphQueryAggregatorService_num_nodes_local_presult {
+ public:
+
+
+  virtual ~GraphQueryAggregatorService_num_nodes_local_presult() throw() {}
+
+  int64_t* success;
+
+  _GraphQueryAggregatorService_num_nodes_local_presult__isset __isset;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
 
@@ -5089,6 +5292,114 @@ class GraphQueryAggregatorService_assoc_add_presult {
 
 };
 
+typedef struct _GraphQueryAggregatorService_obj_add_args__isset {
+  _GraphQueryAggregatorService_obj_add_args__isset() : attributes(false) {}
+  bool attributes;
+} _GraphQueryAggregatorService_obj_add_args__isset;
+
+class GraphQueryAggregatorService_obj_add_args {
+ public:
+
+  GraphQueryAggregatorService_obj_add_args() {
+  }
+
+  virtual ~GraphQueryAggregatorService_obj_add_args() throw() {}
+
+  std::vector<std::string>  attributes;
+
+  _GraphQueryAggregatorService_obj_add_args__isset __isset;
+
+  void __set_attributes(const std::vector<std::string> & val) {
+    attributes = val;
+  }
+
+  bool operator == (const GraphQueryAggregatorService_obj_add_args & rhs) const
+  {
+    if (!(attributes == rhs.attributes))
+      return false;
+    return true;
+  }
+  bool operator != (const GraphQueryAggregatorService_obj_add_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GraphQueryAggregatorService_obj_add_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class GraphQueryAggregatorService_obj_add_pargs {
+ public:
+
+
+  virtual ~GraphQueryAggregatorService_obj_add_pargs() throw() {}
+
+  const std::vector<std::string> * attributes;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _GraphQueryAggregatorService_obj_add_result__isset {
+  _GraphQueryAggregatorService_obj_add_result__isset() : success(false) {}
+  bool success;
+} _GraphQueryAggregatorService_obj_add_result__isset;
+
+class GraphQueryAggregatorService_obj_add_result {
+ public:
+
+  GraphQueryAggregatorService_obj_add_result() : success(0) {
+  }
+
+  virtual ~GraphQueryAggregatorService_obj_add_result() throw() {}
+
+  int64_t success;
+
+  _GraphQueryAggregatorService_obj_add_result__isset __isset;
+
+  void __set_success(const int64_t val) {
+    success = val;
+  }
+
+  bool operator == (const GraphQueryAggregatorService_obj_add_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    return true;
+  }
+  bool operator != (const GraphQueryAggregatorService_obj_add_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GraphQueryAggregatorService_obj_add_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _GraphQueryAggregatorService_obj_add_presult__isset {
+  _GraphQueryAggregatorService_obj_add_presult__isset() : success(false) {}
+  bool success;
+} _GraphQueryAggregatorService_obj_add_presult__isset;
+
+class GraphQueryAggregatorService_obj_add_presult {
+ public:
+
+
+  virtual ~GraphQueryAggregatorService_obj_add_presult() throw() {}
+
+  int64_t* success;
+
+  _GraphQueryAggregatorService_obj_add_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 class GraphQueryAggregatorServiceClient : virtual public GraphQueryAggregatorServiceIf {
  public:
   GraphQueryAggregatorServiceClient(boost::shared_ptr< ::apache::thrift::protocol::TProtocol> prot) :
@@ -5139,6 +5450,12 @@ class GraphQueryAggregatorServiceClient : virtual public GraphQueryAggregatorSer
   void record_edge_updates(const int32_t next_shard, const int32_t local_shard, const std::vector<ThriftSrcAtype> & updates);
   void send_record_edge_updates(const int32_t next_shard, const int32_t local_shard, const std::vector<ThriftSrcAtype> & updates);
   void recv_record_edge_updates();
+  int64_t num_nodes();
+  void send_num_nodes();
+  int64_t recv_num_nodes();
+  int64_t num_nodes_local();
+  void send_num_nodes_local();
+  int64_t recv_num_nodes_local();
   void get_attribute(std::string& _return, const int64_t nodeId, const int32_t attrId);
   void send_get_attribute(const int64_t nodeId, const int32_t attrId);
   void recv_get_attribute(std::string& _return);
@@ -5232,6 +5549,9 @@ class GraphQueryAggregatorServiceClient : virtual public GraphQueryAggregatorSer
   int32_t assoc_add(const int64_t src, const int64_t atype, const int64_t dst, const int64_t time, const std::string& attr);
   void send_assoc_add(const int64_t src, const int64_t atype, const int64_t dst, const int64_t time, const std::string& attr);
   int32_t recv_assoc_add();
+  int64_t obj_add(const std::vector<std::string> & attributes);
+  void send_obj_add(const std::vector<std::string> & attributes);
+  int64_t recv_obj_add();
  protected:
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> piprot_;
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> poprot_;
@@ -5257,6 +5577,8 @@ class GraphQueryAggregatorServiceProcessor : public ::apache::thrift::TDispatchP
   void process_disconnect_from_aggregators(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_backfill_edge_updates(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_record_edge_updates(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_num_nodes(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_num_nodes_local(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_attribute(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_attribute_local(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_neighbors(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -5288,6 +5610,7 @@ class GraphQueryAggregatorServiceProcessor : public ::apache::thrift::TDispatchP
   void process_assoc_time_range_batched(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_assoc_time_range_local(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_assoc_add(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_obj_add(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
  public:
   GraphQueryAggregatorServiceProcessor(boost::shared_ptr<GraphQueryAggregatorServiceIf> iface) :
     iface_(iface) {
@@ -5301,6 +5624,8 @@ class GraphQueryAggregatorServiceProcessor : public ::apache::thrift::TDispatchP
     processMap_["disconnect_from_aggregators"] = &GraphQueryAggregatorServiceProcessor::process_disconnect_from_aggregators;
     processMap_["backfill_edge_updates"] = &GraphQueryAggregatorServiceProcessor::process_backfill_edge_updates;
     processMap_["record_edge_updates"] = &GraphQueryAggregatorServiceProcessor::process_record_edge_updates;
+    processMap_["num_nodes"] = &GraphQueryAggregatorServiceProcessor::process_num_nodes;
+    processMap_["num_nodes_local"] = &GraphQueryAggregatorServiceProcessor::process_num_nodes_local;
     processMap_["get_attribute"] = &GraphQueryAggregatorServiceProcessor::process_get_attribute;
     processMap_["get_attribute_local"] = &GraphQueryAggregatorServiceProcessor::process_get_attribute_local;
     processMap_["get_neighbors"] = &GraphQueryAggregatorServiceProcessor::process_get_neighbors;
@@ -5332,6 +5657,7 @@ class GraphQueryAggregatorServiceProcessor : public ::apache::thrift::TDispatchP
     processMap_["assoc_time_range_batched"] = &GraphQueryAggregatorServiceProcessor::process_assoc_time_range_batched;
     processMap_["assoc_time_range_local"] = &GraphQueryAggregatorServiceProcessor::process_assoc_time_range_local;
     processMap_["assoc_add"] = &GraphQueryAggregatorServiceProcessor::process_assoc_add;
+    processMap_["obj_add"] = &GraphQueryAggregatorServiceProcessor::process_obj_add;
   }
 
   virtual ~GraphQueryAggregatorServiceProcessor() {}
@@ -5448,6 +5774,24 @@ class GraphQueryAggregatorServiceMultiface : virtual public GraphQueryAggregator
       ifaces_[i]->record_edge_updates(next_shard, local_shard, updates);
     }
     ifaces_[i]->record_edge_updates(next_shard, local_shard, updates);
+  }
+
+  int64_t num_nodes() {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->num_nodes();
+    }
+    return ifaces_[i]->num_nodes();
+  }
+
+  int64_t num_nodes_local() {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->num_nodes_local();
+    }
+    return ifaces_[i]->num_nodes_local();
   }
 
   void get_attribute(std::string& _return, const int64_t nodeId, const int32_t attrId) {
@@ -5755,6 +6099,15 @@ class GraphQueryAggregatorServiceMultiface : virtual public GraphQueryAggregator
       ifaces_[i]->assoc_add(src, atype, dst, time, attr);
     }
     return ifaces_[i]->assoc_add(src, atype, dst, time, attr);
+  }
+
+  int64_t obj_add(const std::vector<std::string> & attributes) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->obj_add(attributes);
+    }
+    return ifaces_[i]->obj_add(attributes);
   }
 
 };

@@ -225,6 +225,36 @@ public:
         }
     }
 
+    int64_t num_nodes_local() {
+        switch (store_mode_) {
+        case StoreMode::SuccinctStore:
+            return graph_->num_nodes();
+        case StoreMode::SuffixStore:
+            return graph_suffix_store_->num_nodes();
+        case StoreMode::LogStore:
+            return graph_log_store_->num_nodes();
+        }
+    }
+
+    int32_t obj_add(
+        const std::vector<std::string>& attributes,
+        int64_t node_id)
+    {
+        switch (store_mode_) {
+        case StoreMode::SuccinctStore:
+            assert(false && "obj_add() called on SuccinctStore shard");
+            return -1;
+        case StoreMode::SuffixStore:
+            assert(false && "obj_add() called on SuffixStore shard");
+            return -1;
+
+        case StoreMode::LogStore:
+            // TODO: convert node_id to local?
+            return graph_log_store_->append_node(node_id, attributes);
+        }
+
+    }
+
     // In principle, nodeId should be in this shard's edge table.
     void get_neighbors(std::vector<int64_t> & _return, const int64_t nodeId) {
         // Your implementation goes here
