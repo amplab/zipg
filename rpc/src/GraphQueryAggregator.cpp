@@ -290,7 +290,7 @@ public:
 //        COND_LOG_E("Recording %lld updates from nextShard %d\n",
 //            updates.size(), next_shard_id);
 //
-        boost::unique_lock<boost::shared_mutex> lk(edge_update_ptrs_mutex);
+        boost::shared_lock<boost::shared_mutex> lk(edge_update_ptrs_mutex);
         ThriftEdgeUpdatePtr ptr;
         auto& map_for_shard = edge_update_ptrs.at(
             shard_id_to_shard_idx(local_shard_id));
@@ -1447,7 +1447,7 @@ int main(int argc, char **argv) {
     }
 
     {
-        boost::unique_lock<boost::shared_mutex> lk(edge_update_ptrs_mutex);
+        boost::shared_lock<boost::shared_mutex> lk(edge_update_ptrs_mutex);
         if (local_host_id == hostnames.size() - 1) {
             // LogStore
             // +1 because of the last, empty shard

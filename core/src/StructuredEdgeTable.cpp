@@ -146,7 +146,7 @@ void StructuredEdgeTable::add_assoc(
     int64_t timestamp,
     const std::string& attr)
 {
-    boost::unique_lock<boost::shared_mutex> lock(mutex_);
+    boost::shared_lock<boost::shared_mutex> lock(mutex_);
     edges[src][atype].emplace_back(EdgeData{ dst, timestamp, attr });
     ++num_edges_;
 }
