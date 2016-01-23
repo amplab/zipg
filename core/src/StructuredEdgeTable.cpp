@@ -8,7 +8,7 @@
 constexpr char SERDE_DELIM = '\x02';
 
 void StructuredEdgeTable::construct() {
-    boost::shared_lock<boost::shared_mutex> lk(mutex_);
+    boost::unique_lock<boost::shared_mutex> lk(mutex_);
 
     COND_LOG_E("In StructuredEdgeTable::construct(), edge file '%s'\n",
         edge_file_.c_str());
@@ -81,7 +81,7 @@ void StructuredEdgeTable::construct() {
 }
 
 void StructuredEdgeTable::load() {
-    boost::shared_lock<boost::shared_mutex> lk(mutex_);
+    boost::unique_lock<boost::shared_mutex> lk(mutex_);
 
     if (file_or_dir_exists((edge_file_ + "_logstore").c_str())) {
         std::string line, key, keysize, dst, timestamp, attr;
@@ -146,7 +146,7 @@ void StructuredEdgeTable::add_assoc(
     int64_t timestamp,
     const std::string& attr)
 {
-    boost::shared_lock<boost::shared_mutex> lock(mutex_);
+    boost::unique_lock<boost::shared_mutex> lock(mutex_);
     edges[src][atype].emplace_back(EdgeData{ dst, timestamp, attr });
     ++num_edges_;
 }

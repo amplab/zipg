@@ -131,7 +131,7 @@ void FileLogStore::create_ngram_idx() {
 }
 
 int32_t FileLogStore::append(const std::string& value) {
-    boost::shared_lock<boost::shared_mutex> lk(mutex_);
+    boost::unique_lock<boost::shared_mutex> lk(mutex_);
 
     if (data_pos + value.length() > MAX_LOG_STORE_SIZE) {
         return -1;   // Data exceeds max chunk size

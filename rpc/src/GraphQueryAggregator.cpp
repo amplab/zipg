@@ -64,7 +64,7 @@ public:
     }
 
     int32_t local_data_init() {
-        boost::shared_lock<boost::shared_mutex> lk(local_shards_data_mutex);
+        boost::unique_lock<boost::shared_mutex> lk(local_shards_data_mutex);
         if (local_shards_data_initiated) {
             LOG_E("Local shard processes have already loaded data!");
             return 0;
@@ -290,8 +290,8 @@ public:
 //        COND_LOG_E("Recording %lld updates from nextShard %d\n",
 //            updates.size(), next_shard_id);
 //
-        boost::shared_lock<boost::shared_mutex> lk(edge_update_ptrs_mutex);
         ThriftEdgeUpdatePtr ptr;
+        boost::unique_lock<boost::shared_mutex> lk(edge_update_ptrs_mutex);
         auto& map_for_shard = edge_update_ptrs.at(
             shard_id_to_shard_idx(local_shard_id));
 
@@ -1447,7 +1447,7 @@ int main(int argc, char **argv) {
     }
 
     {
-        boost::shared_lock<boost::shared_mutex> lk(edge_update_ptrs_mutex);
+        boost::unique_lock<boost::shared_mutex> lk(edge_update_ptrs_mutex);
         if (local_host_id == hostnames.size() - 1) {
             // LogStore
             // +1 because of the last, empty shard
