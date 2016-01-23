@@ -58,6 +58,7 @@ public:
     void get_value(std::string &value, uint64_t key);
 
     inline int64_t get_num_keys() {
+        boost::shared_lock<boost::shared_mutex> lk(mutex_);
         return keys.size();
     }
 
