@@ -94,7 +94,9 @@ service GraphQueryService {
     i32 assoc_add(
         1: i64 src, 2: i64 atype, 3: i64 dst, 4: i64 time, 5: string attr),
 
-    // Meaningful only for the LogStore shard handling appends.
+    // Meaningful only for the LogStore shard handling appends.  Assumes there
+    // will be no concurrent calls of this API (since a mutex will
+    // be held on the aggregator caller, prior to entry to this function).
     i32 obj_add(1: list<string> attributes, 2: i64 nodeId),
 
 }
@@ -249,6 +251,8 @@ service GraphQueryAggregatorService {
         1: i64 src, 2: i64 atype, 3: i64 dst, 4: i64 time, 5: string attr),
 
     // On success, returns a non-negative long as the new node's ID.
+    // Internally, it uses a mutex to serialize all obj_add calls on the
+    // LogStore machine.
     i64 obj_add(1: list<string> attributes),
 
 }

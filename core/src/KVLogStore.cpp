@@ -186,7 +186,9 @@ void KVLogStore::create_ngram_idx() {
         << "; num entries = " << ngram_idx.size() << "\n";
 }
 
-int32_t KVLogStore::append_unlocked(int64_t key, const std::string& value) {
+int32_t KVLogStore::append(int64_t key, const std::string& value) {
+    boost::unique_lock<boost::shared_mutex> lk(mutex_);
+
     if (data_pos + value.length() > MAX_LOG_STORE_SIZE) {
         return -1;   // Data exceeds max chunk size
     }

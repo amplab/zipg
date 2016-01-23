@@ -39,7 +39,7 @@ boost::shared_mutex edge_update_ptrs_mutex;
 // Running count: number of nodes in graph (across all machines).
 int64_t curr_num_nodes = -1;
 // Protects the above count, as well as node appends.
-boost::shared_mutex curr_num_nodes_mutex;
+std::mutex curr_num_nodes_mutex;
 
 class GraphQueryAggregatorServiceHandler :
     virtual public GraphQueryAggregatorServiceIf {
@@ -1298,6 +1298,8 @@ public:
         }
     }
 
+    // Uses a mutex to serialize calls of this API; this only means that at any
+    // time, there could be at most one obj_add() being processed.
     int64_t obj_add(const std::vector<std::string>& attributes) {
         assert(multistore_enabled_ &&
             "multistore not enabled but obj_add called");
@@ -1307,7 +1309,8 @@ public:
         // (1) the last machine is LogStore machine, and
         // (2) its last shard is the append-only store
         if (local_host_id_ == total_num_hosts_ - 1) {
-            boost::shared_lock<boost::shared_mutex> lk(curr_num_nodes_mutex);
+            // Used only here, so just use a standard mutex/lock_guard
+            std::lock_guard<std::mutex> lk(curr_num_nodes_mutex);
             int64_t next_node_id = num_nodes();
 
             int ret = local_shards_.back().obj_add(attributes, next_node_id);

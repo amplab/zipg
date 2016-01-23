@@ -42,12 +42,16 @@ public:
     void construct();
     void load();
 
-    // TODO: think about where this key should come from; and locking.
+    // TODO: think about where this key should come from.
     // Limitation: `node_id` must be larger than all current node_id's managed
     // by the current GraphLogStore (because insertion sort is not done).  Note
     // that these id's are local keys.
     //
-    // Thread-safe: internally, a lock is used.
+    // The underlying node table class uses (or should use) locking to protect
+    // concurrent reads and writes to its data.  There will be no concurrent
+    // node appends being serviced throughout the cluster, since the LogStore
+    // aggregator already holds a global mutex; this function implicitly relies
+    // on this assumption since it takes in a nextNodeId argument.
     int append_node(int64_t node_id, const std::vector<std::string>& attrs);
 
     // Thread-safe: internally, a lock is used.

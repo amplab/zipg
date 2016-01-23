@@ -14,7 +14,8 @@
 
 #include <boost/thread.hpp>
 
-// LogStore with a key-value interface.
+// LogStore with a key-value interface.  Safe for concurrent reads and writes by
+// using a shared lock.
 // FIXME: search() has the prefix-match bug.
 class KVLogStore {
 public:
@@ -42,14 +43,8 @@ public:
 
     void load();
 
-    // Thread-safe for concurrent writes.
-    inline int32_t append(int64_t key, const std::string& value) {
-        boost::unique_lock<boost::shared_mutex> lk(mutex_);
-        return append_unlocked(key, value);
-    }
-
-    // No locking is done, so not safe to have concurrent calls.
-    int32_t append_unlocked(int64_t key, const std::string& value);
+    // Internally uses a mutex (shared lock).
+    int32_t append(int64_t key, const std::string& value);
 
     // Clears `_return` for caller.
     void search(std::set<int64_t> &_return, const std::string& substring);

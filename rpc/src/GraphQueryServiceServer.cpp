@@ -252,7 +252,6 @@ public:
             // TODO: convert node_id to local?
             return graph_log_store_->append_node(node_id, attributes);
         }
-
     }
 
     // In principle, nodeId should be in this shard's edge table.
