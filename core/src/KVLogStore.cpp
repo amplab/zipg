@@ -3,6 +3,8 @@
 #include <algorithm>
 
 void KVLogStore::construct() {
+    boost::unique_lock<boost::shared_mutex> lk(mutex_);
+
     data = new char[MAX_LOG_STORE_SIZE];
     // just the values
     read_data(input_file_.c_str());
@@ -84,6 +86,8 @@ void KVLogStore::writeLogStoreToFile(const char* logstore_path) {
 }
 
 void KVLogStore::readLogStoreFromFile(const char* logstore_path) {
+    boost::unique_lock<boost::shared_mutex> lk(mutex_);
+
     if (file_or_dir_exists(logstore_path)) {
         std::ifstream logstore_file(logstore_path);
         logstore_file >> data_pos;
@@ -182,9 +186,7 @@ void KVLogStore::create_ngram_idx() {
         << "; num entries = " << ngram_idx.size() << "\n";
 }
 
-int32_t KVLogStore::append(int64_t key, const std::string& value) {
-    std::lock_guard<std::mutex> lock(mutex_);
-
+int32_t KVLogStore::append_unlocked(int64_t key, const std::string& value) {
     if (data_pos + value.length() > MAX_LOG_STORE_SIZE) {
         return -1;   // Data exceeds max chunk size
     }
@@ -217,13 +219,12 @@ void KVLogStore::search(
     COND_LOG_E("search string '%s' (size %d)\n",
         substring.c_str(), substring.length());
     std::string substring_ngram = substring.substr(0, ngram_n);
-    std::vector<uint32_t> idx_offsets = ngram_idx[substring_ngram];
-
-    COND_LOG_E("idx sizes: %d, substring '%s'\n", idx_offsets.size(),
-        substring_ngram.c_str());
 
     char *substr = (char *)substring.c_str();
     char *suffix = substr + ngram_n;
+
+    boost::shared_lock<boost::shared_mutex> lk(mutex_);
+    std::vector<uint32_t> idx_offsets = ngram_idx[substring_ngram];
 
     for(uint32_t i = 0; i < idx_offsets.size(); i++) {
         if(strncmp(data + idx_offsets[i] + ngram_n, suffix, substring.length() - ngram_n) == 0) {
@@ -236,6 +237,7 @@ void KVLogStore::search(
 
 void KVLogStore::get_value(std::string &value, uint64_t key) {
     value.clear();
+    boost::shared_lock<boost::shared_mutex> lk(mutex_);
     int64_t pos = get_value_offset_pos(key);
     COND_LOG_E("get_value_offset_pos done: %lld; key %lld, "
         "value_offsets.size %d\n",
