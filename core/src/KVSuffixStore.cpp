@@ -24,6 +24,40 @@ int64_t KVSuffixStore::get_key_pos(const int64_t value_offset) {
     return pos >= keys.size() ? -1 : pos;
 }
 
+void KVSuffixStore::read_pointers(const char *ptrs_file) {
+    std::ifstream ip;
+    ip.open(ptrs_file);
+    std::string line;
+    std::string key, value;
+    while (std::getline(ip, line)) {
+        uint32_t kv_split_index = line.find_first_of('\t');
+        key = line.substr(0, kv_split_index);
+        value = line.substr(kv_split_index + 1);
+        keys.push_back(std::stoll(key));
+        value_offsets.push_back(atol(value.c_str()));
+    }
+    LOG_E("Read %lld KV pointers.\n", keys.size());
+}
+
+// Builds pointers by scanning the input.  Uses line numbers (0-based)
+// as keys, and newlines as record delims.
+void KVSuffixStore::build_pointers() {
+    keys.clear();
+    value_offsets.clear();
+
+    std::ifstream ifstream(input_file_);
+    std::string line;
+    size_t curr_len = 0, i = 0;
+    // treating newlines as record delim, and
+    // line numbers as keys
+    while (std::getline(ifstream, line)) {
+        keys.push_back(i);
+        value_offsets.push_back(curr_len);
+        curr_len += line.length() + 1; // +1 for stripped newline
+        ++i;
+    }
+}
+
 void KVSuffixStore::construct() {
     std::ifstream ip;
     ip.open(input_file_.c_str());

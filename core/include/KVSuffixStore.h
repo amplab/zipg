@@ -44,47 +44,14 @@ public:
 
 private:
 
-    void read_pointers(const char *ptrs_file) {
-        std::ifstream ip;
-        ip.open(ptrs_file);
-        std::string line;
-        std::string key, value;
-        long line_num = 0;
-        while (std::getline(ip, line)) {
-            uint32_t kv_split_index = line.find_first_of('\t');
-            key = line.substr(0, kv_split_index);
-            value = line.substr(kv_split_index + 1);
-            keys.push_back(std::stoll(key));
-            value_offsets.push_back(atol(value.c_str()));
-            line_num++;
-        }
-        LOG_E("Read %lld KV pointers.\n", keys.size());
-    }
-
-    // Builds pointers by scanning the input.  Uses line numbers (0-based)
-    // as keys, and newlines as record delims.
-    void build_pointers() {
-        keys.clear();
-        value_offsets.clear();
-
-        std::ifstream ifstream(input_file_);
-        std::string line;
-        size_t curr_len = 0, i = 0;
-        // treating newlines as record delim, and
-        // line numbers as keys
-        while (std::getline(ifstream, line)) {
-            keys.push_back(i);
-            value_offsets.push_back(curr_len);
-            curr_len += line.length() + 1; // +1 for stripped newline
-            ++i;
-        }
-    }
-
     SuccinctBase::Bitmap *SA = nullptr;
     long sa_n;
     int bits;
 
     const std::string input_file_, pointer_file_;
+
+    void read_pointers(const char *ptrs_file);
+    void build_pointers();
 
     // Common for SuffixStore and LogStore
     int64_t get_value_offset_pos(const int64_t key);
