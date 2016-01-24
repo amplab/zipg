@@ -76,9 +76,6 @@ service GraphQueryService {
 
     // Multi-store related
 
-    // Thread-safe, since it uses a mutex.
-//    list<ThriftEdgeUpdatePtr> get_edge_update_ptrs(1: i64 src, 2: i64 atype),
-
     // This still doesn't quite work,
 //    map cpp_type "std::unordered_map<int32_t, std::unordered_set<ThrfitAssoc>>"
 //    <i32, set cpp_type "std::unordered_set<ThriftSrcAtype>" <ThriftSrcAtype>>
@@ -87,9 +84,6 @@ service GraphQueryService {
     // Called only during initial backfill, so it assumes there are no
     // concurrent writes.
     map<i32, list<ThriftSrcAtype>> get_edge_updates(),
-
-    // Thread-safe, since it uses a mutex.
-//    void record_edge_updates(1: i32 next_shard, 2: list<ThriftSrcAtype> updates),
 
     i32 assoc_add(
         1: i64 src, 2: i64 atype, 3: i64 dst, 4: i64 time, 5: string attr),
@@ -144,6 +138,11 @@ service GraphQueryAggregatorService {
         1: i32 next_shard, // where are these updates located?
         2: i32 local_shard, // one of this aggregator's shards
         3: list<ThriftSrcAtype> updates),
+
+    void record_node_updates(
+        1: i32 next_shard,
+        2: i32 local_shard,
+        3: list<i64> updated_node_ids),
 
     // Globally across the cluster, number of nodes in graph.
     i64 num_nodes(),

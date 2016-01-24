@@ -36,7 +36,12 @@ std::vector< std::unordered_map<int64_t,
     > > edge_update_ptrs;
 boost::shared_mutex edge_update_ptrs_mutex;
 
-// Running count: number of nodes in graph (across all machines).
+// A vector of maps: nodeId -> shard id with the latest data.
+std::vector< std::unordered_map<int64_t, int64_t> > node_update_ptrs;
+boost::shared_mutex node_update_ptrs_mutex;
+
+// Running count: number of nodes in graph (across all machines).  This number
+// is calculated the first time when num_nodes() is called.
 int64_t curr_num_nodes = -1;
 // Protects the above count, as well as node appends.
 std::mutex curr_num_nodes_mutex;
@@ -315,6 +320,25 @@ public:
             {
                 curr_ptrs.push_back(ptr);
             }
+        }
+    }
+
+    void record_node_updates(
+        const int32_t next_shard_id,
+        const int32_t local_shard_id,
+        const std::vector<int64_t>& updated_node_ids)
+    {
+        COND_LOG_E("Recording node updates for shard %d at host %d, "
+            "from shard %d, updated node id %lld\n",
+            local_shard_id, local_host_id_, next_shard_id, updated_node_id);
+
+        boost::lock_guard<boost::shared_mutex> lk(node_update_ptrs_mutex);
+        auto& map_for_shard = node_update_ptrs.at(
+            shard_id_to_shard_idx(local_shard_id));
+
+        for (int64_t updated_id : updated_node_ids) {
+            // insert or overwrite, since we need only the latest shard
+            map_for_shard[updated_id] = next_shard_id;
         }
     }
 
@@ -1318,33 +1342,23 @@ public:
             if (ret) {
                 return -1;
             } else {
-                // TODO: record node update pointers
+                int primary_shard_id = next_node_id % num_succinctstore_shards_;
+                int primary_host_id = host_id_for_shard(primary_shard_id);
+                assert(local_host_id_ != primary_host_id);
+
+                COND_LOG_E("Updating host %d, shard %d about node %lld\n",
+                    primary_host_id, primary_shard_id, src);
+
+                aggregators_.at(primary_host_id).record_node_updates(
+                    num_succinctstore_shards_ +
+                        num_suffixstore_shards_ +
+                        num_logstore_shards_ - 1,
+                    primary_shard_id,
+                    { next_node_id });
 
                 ++curr_num_nodes;
                 return next_node_id;
             }
-
-//            if (!ret) {
-//                int primary_shard_id = src % num_succinctstore_shards_;
-//                int primary_host_id = host_id_for_shard(primary_shard_id);
-//                assert(local_host_id_ != primary_host_id);
-//
-//                ThriftSrcAtype src_atype;
-//                src_atype.src = src;
-//                src_atype.atype = atype;
-//
-//                COND_LOG_E("Updating host %d, shard %d about (%lld,%d)\n",
-//                    primary_host_id, primary_shard_id, src, atype);
-//
-//                aggregators_.at(primary_host_id).record_edge_updates(
-//                    num_succinctstore_shards_ +
-//                        num_suffixstore_shards_ +
-//                        num_logstore_shards_ - 1,
-//                    primary_shard_id,
-//                    { src_atype });
-//            }
-//
-//            return ret;
         } else {
             return aggregators_.at(total_num_hosts_ - 1)
                 .obj_add(attributes);
@@ -1531,8 +1545,10 @@ int main(int argc, char **argv) {
         hostnames.push_back(host);
     }
 
+    // Init the update ptrs
     {
-        boost::unique_lock<boost::shared_mutex> lk(edge_update_ptrs_mutex);
+        boost::lock_guard<boost::shared_mutex> lk(edge_update_ptrs_mutex);
+        boost::lock_guard<boost::shared_mutex> lk2(node_update_ptrs_mutex);
         if (local_host_id == hostnames.size() - 1) {
             // LogStore
             // +1 because of the last, empty shard
@@ -1544,6 +1560,7 @@ int main(int argc, char **argv) {
             // Succ.
             edge_update_ptrs.resize(total_num_shards);
         }
+        node_update_ptrs.resize(edge_update_ptrs.size());
     }
 
     int port = QUERY_HANDLER_PORT;
