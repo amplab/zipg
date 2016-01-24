@@ -699,7 +699,7 @@ public:
         assert(num_succinctstore_hosts_ > 0 && "num_succinctstore_hosts_ <= 0");
 
         int shard_id = src % total_num_shards_;
-        int host_id = shard_id % num_succinctstore_hosts_;
+        int host_id = host_id_for_shard(shard_id);
 
         if (host_id == local_host_id_) {
             assoc_range_local(_return, shard_id, src, atype, off, len);
@@ -883,7 +883,7 @@ public:
 
         // %'ing with total_num_shards_ means always going to a primary
         int primary_shard_id = src % total_num_shards_;
-        int host_id = primary_shard_id % num_succinctstore_hosts_;
+        int host_id = host_id_for_shard(primary_shard_id);
 
         if (host_id == local_host_id_) {
             return assoc_count_local(primary_shard_id, src, atype);
@@ -942,7 +942,7 @@ public:
         assert(num_succinctstore_hosts_ > 0 && "num_succinctstore_hosts_ <= 0");
 
         int shard_id = src % total_num_shards_;
-        int host_id = shard_id % num_succinctstore_hosts_;
+        int host_id = host_id_for_shard(shard_id);
 
         if (host_id == local_host_id_) {
             COND_LOG_E("sending to shard %d on host %d\n", shard_id, host_id);
@@ -1063,7 +1063,7 @@ public:
         assert(num_succinctstore_hosts_ > 0 && "num_succinctstore_hosts_ <= 0");
 
         int shard_id = nodeId % total_num_shards_;
-        int host_id = shard_id % num_succinctstore_hosts_;
+        int host_id = host_id_for_shard(shard_id);
 
         if (host_id == local_host_id_) {
             obj_get_local(_return, shard_id, nodeId);
@@ -1132,7 +1132,7 @@ public:
         assert(num_succinctstore_hosts_ > 0 && "num_succinctstore_hosts_ <= 0");
 
         int shard_id = src % total_num_shards_;
-        int host_id = shard_id % num_succinctstore_hosts_;
+        int host_id = host_id_for_shard(shard_id);
 
         if (host_id == local_host_id_) {
             assoc_time_range_local(
