@@ -344,6 +344,7 @@ public:
 
 public:
 
+    // TODO: multistore
     void get_attribute(
         std::string& _return,
         const int64_t nodeId,
@@ -371,6 +372,7 @@ public:
             _return, node_id, attrId);
     }
 
+    // TODO: multistore
     void get_neighbors(std::vector<int64_t> & _return, const int64_t nodeId) {
         int shard_id = nodeId % total_num_shards_;
         int host_id = shard_id % total_num_hosts_;
@@ -408,6 +410,7 @@ public:
             .get_neighbors(_return, nodeId);
     }
 
+    // TODO: multistore
     void get_neighbors_atype(
         std::vector<int64_t> & _return,
         const int64_t nodeId,
@@ -444,6 +447,7 @@ public:
             .get_neighbors_atype(_return, nodeId, atype);
     }
 
+    // TODO: multistore
     void get_edge_attrs(
         std::vector<std::string> & _return,
         const int64_t nodeId,
@@ -470,6 +474,7 @@ public:
             .get_edge_attrs(_return, nodeId, atype);
     }
 
+    // TODO: multistore
     void get_neighbors_attr(
         std::vector<int64_t> & _return,
         const int64_t nodeId,
@@ -551,6 +556,7 @@ public:
         }
     }
 
+    // TODO: multistore
     void filter_nodes_local(
         std::vector<int64_t>& _return,
         const std::vector<int64_t>& nodeIds,
@@ -596,6 +602,7 @@ public:
         }
     }
 
+    // TODO: multistore
     void get_nodes(
         std::set<int64_t> & _return,
         const int32_t attrId,
@@ -638,6 +645,7 @@ public:
         }
     }
 
+    // TODO: multistore
     void get_nodes2(
         std::set<int64_t> & _return,
         const int32_t attrId1,

@@ -236,23 +236,6 @@ public:
         }
     }
 
-    int32_t obj_add(
-        const std::vector<std::string>& attributes,
-        int64_t node_id)
-    {
-        switch (store_mode_) {
-        case StoreMode::SuccinctStore:
-            assert(false && "obj_add() called on SuccinctStore shard");
-            return -1;
-        case StoreMode::SuffixStore:
-            assert(false && "obj_add() called on SuffixStore shard");
-            return -1;
-
-        case StoreMode::LogStore:
-            return graph_log_store_->append_node(node_id, attributes);
-        }
-    }
-
     // TODO: multistore
     // In principle, nodeId should be in this shard's edge table.
     void get_neighbors(std::vector<int64_t> & _return, const int64_t nodeId) {
@@ -471,11 +454,9 @@ public:
         case StoreMode::SuccinctStore:
             graph_->obj_get(_return, node_id);
             break;
-
         case StoreMode::SuffixStore:
             graph_suffix_store_->obj_get(_return, node_id);
             break;
-
         case StoreMode::LogStore:
             graph_log_store_->obj_get(_return, node_id);
             break;
@@ -533,7 +514,8 @@ public:
         const int64_t time,
         const std::string& attr)
     {
-        assert(store_mode_ == StoreMode::LogStore);
+        assert(store_mode_ == StoreMode::LogStore &&
+            "assoc_add() called on non-LogStore?");
         COND_LOG_E("Handling assoc_add(%lld,%d,%lld,%lld...)",
             src, atype, dst, time);
 
@@ -542,6 +524,15 @@ public:
 
         COND_LOG_E("; ret = %d\n", ret);
         return ret;
+    }
+
+    int32_t obj_add(
+        const std::vector<std::string>& attributes,
+        int64_t node_id)
+    {
+        assert(store_mode_ == StoreMode::LogStore &&
+            "obj_add() called on non-LogStore?");
+        return graph_log_store_->append_node(node_id, attributes);
     }
 
 private:
