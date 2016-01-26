@@ -332,7 +332,7 @@ public:
             "from shard %d, updated node id %lld\n",
             local_shard_id, local_host_id_, next_shard_id, updated_node_id);
 
-        boost::lock_guard<boost::shared_mutex> lk(node_update_ptrs_mutex);
+        boost::unique_lock<boost::shared_mutex> lk(node_update_ptrs_mutex);
         auto& map_for_shard = node_update_ptrs.at(
             shard_id_to_shard_idx(local_shard_id));
 
