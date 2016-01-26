@@ -695,7 +695,6 @@ public:
         COND_LOG_E("in aggregator assoc_range\n");
 
         assert(total_num_shards_ > 0 && "total_num_shards_ <= 0");
-        assert(num_succinctstore_hosts_ > 0 && "num_succinctstore_hosts_ <= 0");
 
         int shard_id = src % total_num_shards_;
         int host_id = host_id_for_shard(shard_id);
@@ -754,20 +753,6 @@ public:
                     _return[i]);
             }
         }
-    }
-
-    inline void get_edge_update_ptrs(
-        std::vector<ThriftEdgeUpdatePtr>& ptrs,
-        int shard_idx,
-        int64_t src,
-        int64_t atype)
-    {
-        if (!multistore_enabled_) {
-            ptrs.clear();
-            return;
-        }
-        boost::shared_lock<boost::shared_mutex> lk(edge_update_ptrs_mutex);
-        ptrs = edge_update_ptrs.at(shard_idx)[src][atype];
     }
 
     // FIXME: the implementation is sequential for now...
@@ -878,7 +863,6 @@ public:
 
     int64_t assoc_count(int64_t src, int64_t atype) {
         assert(total_num_shards_ > 0 && "total_num_shards_ <= 0");
-        assert(num_succinctstore_hosts_ > 0 && "num_succinctstore_hosts_ <= 0");
 
         // %'ing with total_num_shards_ means always going to a primary
         int primary_shard_id = src % total_num_shards_;
@@ -938,7 +922,6 @@ public:
     {
         COND_LOG_E("in agg. assoc_get(src %lld, atype %lld)\n", src, atype);
         assert(total_num_shards_ > 0 && "total_num_shards_ <= 0");
-        assert(num_succinctstore_hosts_ > 0 && "num_succinctstore_hosts_ <= 0");
 
         int shard_id = src % total_num_shards_;
         int host_id = host_id_for_shard(shard_id);
@@ -1059,16 +1042,38 @@ public:
 
     void obj_get(std::vector<std::string>& _return, const int64_t nodeId) {
         assert(total_num_shards_ > 0 && "total_num_shards_ <= 0");
-        assert(num_succinctstore_hosts_ > 0 && "num_succinctstore_hosts_ <= 0");
 
         int shard_id = nodeId % total_num_shards_;
         int host_id = host_id_for_shard(shard_id);
 
         if (host_id == local_host_id_) {
-            obj_get_local(_return, shard_id, nodeId);
+            int latest_shard_id = get_node_update_ptr(
+                shard_id_to_shard_idx(shard_id), nodeId);
+
+            if (latest_shard_id != -1) {
+                // found
+                int next_host_id = host_id_for_shard(latest_shard_id);
+                assert(next_host_id != local_host_id_ &&
+                    "next host is myself!");
+                aggregators_.at(next_host_id)
+                    .obj_get_local(_return, latest_shard_id, nodeId);
+            } else {
+                // either non-existent, or managed by myself
+                obj_get_local(_return, shard_id, nodeId);
+            }
+
         } else {
-            aggregators_.at(host_id).obj_get_local(_return, shard_id, nodeId);
+            aggregators_.at(host_id).obj_get(_return, nodeId);
         }
+    }
+
+    void obj_get_local(
+        std::vector<std::string>& _return,
+        const int32_t shardId,
+        const int64_t nodeId)
+    {
+        local_shards_.at(shard_id_to_shard_idx(shardId))
+            .obj_get(_return, nodeId);
     }
 
     void obj_get_batched(
@@ -1108,17 +1113,6 @@ public:
         }
     }
 
-    // TODO: multistore logic
-    void obj_get_local(
-        std::vector<std::string>& _return,
-        const int32_t shardId,
-        const int64_t nodeId)
-    {
-        int shard_idx = shard_id_to_shard_idx(shardId);
-        local_shards_.at(shard_idx)
-            .obj_get(_return, nodeId);
-    }
-
     void assoc_time_range(
         std::vector<ThriftAssoc>& _return,
         const int64_t src,
@@ -1128,7 +1122,6 @@ public:
         const int32_t limit)
     {
         assert(total_num_shards_ > 0 && "total_num_shards_ <= 0");
-        assert(num_succinctstore_hosts_ > 0 && "num_succinctstore_hosts_ <= 0");
 
         int shard_id = src % total_num_shards_;
         int host_id = host_id_for_shard(shard_id);
@@ -1422,6 +1415,33 @@ private:
             return shard_idx +
                 num_succinctstore_shards_ + num_suffixstore_shards_;
         }
+    }
+
+    // Returns the latest shard ID holding data for `node_id`, or -1 if the
+    // node is either (1) non-existent, or (2) stored in the specified shard
+    // already.
+    inline int get_node_update_ptr(int shard_idx, int64_t node_id) {
+        if (!multistore_enabled_) {
+            return -1;
+        }
+        boost::shared_lock<boost::shared_mutex> lk(node_update_ptrs_mutex);
+        auto& shard_map = node_update_ptrs.at(shard_idx);
+        auto it = shard_map.find(node_id);
+        return it == shard_map.end() ? -1 : it->second;
+    }
+
+    inline void get_edge_update_ptrs(
+        std::vector<ThriftEdgeUpdatePtr>& ptrs,
+        int shard_idx,
+        int64_t src,
+        int64_t atype)
+    {
+        if (!multistore_enabled_) {
+            ptrs.clear();
+            return;
+        }
+        boost::shared_lock<boost::shared_mutex> lk(edge_update_ptrs_mutex);
+        ptrs = edge_update_ptrs.at(shard_idx)[src][atype];
     }
 
     const int total_num_shards_; // total # of logical shards
