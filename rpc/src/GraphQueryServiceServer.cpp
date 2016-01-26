@@ -249,11 +249,11 @@ public:
             return -1;
 
         case StoreMode::LogStore:
-            // TODO: convert node_id to local?
             return graph_log_store_->append_node(node_id, attributes);
         }
     }
 
+    // TODO: multistore
     // In principle, nodeId should be in this shard's edge table.
     void get_neighbors(std::vector<int64_t> & _return, const int64_t nodeId) {
         // Your implementation goes here
@@ -277,6 +277,7 @@ public:
 #endif
     }
 
+    // TODO: multistore
     void get_neighbors_atype(
         std::vector<int64_t> & _return,
         const int64_t nodeId,
@@ -302,6 +303,7 @@ public:
 #endif
     }
 
+    // TODO: multistore
     void get_edge_attrs(
         std::vector<std::string> & _return,
         const int64_t nodeId,
@@ -316,6 +318,7 @@ public:
         graph_->get_edge_attrs(_return, nodeId, atype);
     }
 
+    // TODO: multistore
     void get_nodes(
         std::set<int64_t> & _return,
         const int32_t attrId,
@@ -328,16 +331,10 @@ public:
             return;
         }
 
-        std::set<int64_t> local_keys;
-        graph_->get_nodes(local_keys, attrId, attrKey);
-
-        // TODO: this assumes a particular form of hash partitioning
-        auto it = _return.begin();
-        for (int64_t local_key : local_keys) {
-            it = _return.insert(it, local_key * total_num_shards_ + shard_id_);
-        }
+        graph_->get_nodes(_return, attrId, attrKey);
     }
 
+    // TODO: multistore
     void get_nodes2(
         std::set<int64_t> & _return,
         const int32_t attrId1,
@@ -352,16 +349,10 @@ public:
             return;
         }
 
-        std::set<int64_t> local_keys;
-        graph_->get_nodes(local_keys, attrId1, attrKey1, attrId2, attrKey2);
-
-        // TODO: this assumes a particular form of hash partitioning
-        auto it = _return.begin();
-        for (int64_t local_key : local_keys) {
-            it = _return.insert(it, local_key * total_num_shards_ + shard_id_);
-        }
+        graph_->get_nodes(_return, attrId1, attrKey1, attrId2, attrKey2);
     }
 
+    // TODO: multistore
     void get_attribute_local(
         std::string& _return,
         const int64_t nodeId,
@@ -370,6 +361,7 @@ public:
         graph_->get_attribute(_return, nodeId, attrId);
     }
 
+    // TODO: multistore
     void filter_nodes(
         std::vector<int64_t> & _return,
         const std::vector<int64_t> & nodeIds,
@@ -474,18 +466,18 @@ public:
         }
     }
 
-    void obj_get(std::vector<std::string>& _return, const int64_t local_id) {
+    void obj_get(std::vector<std::string>& _return, const int64_t node_id) {
         switch (store_mode_) {
         case StoreMode::SuccinctStore:
-            graph_->obj_get(_return, local_id);
+            graph_->obj_get(_return, node_id);
             break;
 
         case StoreMode::SuffixStore:
-            graph_suffix_store_->obj_get(_return, local_id);
+            graph_suffix_store_->obj_get(_return, node_id);
             break;
 
         case StoreMode::LogStore:
-            graph_log_store_->obj_get(_return, local_id);
+            graph_log_store_->obj_get(_return, node_id);
             break;
         }
     }

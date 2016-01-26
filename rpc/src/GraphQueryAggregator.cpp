@@ -368,7 +368,7 @@ public:
         const int32_t attrId)
     {
         local_shards_.at(shard_id_to_shard_idx(shard_id)).get_attribute_local(
-            _return, global_to_local_node_id(node_id, shard_id), attrId);
+            _return, node_id, attrId);
     }
 
     void get_neighbors(std::vector<int64_t> & _return, const int64_t nodeId) {
@@ -565,8 +565,7 @@ public:
 
         for (int64_t nhbr_id : nodeIds) {
             shard_id = nhbr_id % total_num_shards_;
-            splits_by_keys[shard_id].push_back(
-                global_to_local_node_id(nhbr_id, shard_id)); // to local
+            splits_by_keys[shard_id].push_back(nhbr_id);
         }
 
         for (auto it = splits_by_keys.begin(); it != splits_by_keys.end(); ++it)
@@ -1087,7 +1086,7 @@ public:
             host_id = shard_id % total_num_hosts_;
             if (host_id == local_host_id_) {
                 local_shards_.at(shard_id_to_shard_idx(shard_id)).send_obj_get(
-                    global_to_local_node_id(nodeId, shard_id));
+                    nodeId);
             } else {
                 aggregators_.at(host_id).send_obj_get_local(
                     shard_id, nodeId);
@@ -1117,7 +1116,7 @@ public:
     {
         int shard_idx = shard_id_to_shard_idx(shardId);
         local_shards_.at(shard_idx)
-            .obj_get(_return, global_to_local_node_id(nodeId, shardId));
+            .obj_get(_return, nodeId);
     }
 
     void assoc_time_range(
@@ -1369,12 +1368,14 @@ private:
 
     // globalKey = localKey * numShards + shardId
     // localKey = (globalKey - shardId) / numShards
-    inline int64_t global_to_local_node_id(
-        int64_t global_node_id, int shard_id)
-    {
-        assert(total_num_shards_ > 0 && "total_num_shards_ <= 0");
-        return (global_node_id - shard_id) / total_num_shards_;
-    }
+    // DEPRECATED: see handling-updates.md.  Now all KV impls of all stores
+    // contain actual, "global keys".
+//    inline int64_t global_to_local_node_id(
+//        int64_t global_node_id, int shard_id)
+//    {
+//        assert(total_num_shards_ > 0 && "total_num_shards_ <= 0");
+//        return (global_node_id - shard_id) / total_num_shards_;
+//    }
 
     // Host 0 to n - 3: the SuccinctStores, hash-partitioned
     // Host n - 2: the SuffixStores

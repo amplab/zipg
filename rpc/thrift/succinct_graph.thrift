@@ -43,15 +43,11 @@ service GraphQueryService {
         3: i32 attrId2,
         4: string attrKey2),
 
-    // The `nodeId` is a local key, and is guaranteed to belong to this
-    // current shard.
+    // The `nodeId` is guaranteed to belong to this current shard.
     string get_attribute_local(1: i64 nodeId, 2: i32 attrId),
 
     // Filter the nodeIds by checking whether they contain the specified
-    // attribute.  Contracts:
-    // (1) This shard will only check its own local node table.
-    // (2) `nodeIds` contains "local keys".
-    // (3) On return, the result contains "local keys" as well.
+    // attribute.  This shard will only check its own local node table.
     list<i64> filter_nodes(
         1: list<i64> nodeIds,
         2: i32 attrId,
@@ -186,8 +182,8 @@ service GraphQueryAggregatorService {
         3: i32 attrId2,
         4: string attrKey2),
 
-    // The passed-in `nodeIds` are global keys that are guaranteed to only
-    // belong to shards under this aggregator.  On return, the keys are global.
+    // The passed-in `nodeIds` are guaranteed to all belong to shards under
+    // this aggregator.
     list<i64> filter_nodes_local(
         1: list<i64> nodeIds,
         2: i32 attrId,
