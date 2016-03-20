@@ -6,7 +6,6 @@ dataset="orkut-40attr16each"
 
 assocShardDir=/vol0/
 numShards=8
-numDigitsOfNumShards=1
 encodeType=0 # 0 for edge table
 
 num_nodes=41652230 # TODO
@@ -33,6 +32,8 @@ if [ "$encodeType" == "0" ]; then
   #echo "Coalescing generation done"
 elif [ "$encodeType" == "1" ]; then
   echo "Encoding node table shards"
+  # `create`: samples from attr file, create a single file using zipf per column
+  # `graph-partitioner`: given a single node file, partition it into numShards by line number
   ./benchmark/bin/create create-nodeTable \
     ${attr_file} ${node_out_file} ${num_nodes} ${num_node_attr} \
     ${zipf_corpus_size} ${node_attr_size_each}
@@ -54,7 +55,7 @@ for i in $(seq 0 1 $numShards); do
 
   j=$((i + 1))
   hostname=$(sed -n "${j}{p;q;}" ~/spark-ec2/slaves | sed 's/\n//g')
-  p=$(printf "%0*d" $numDigitsOfNumShards $i)
+  p=$(printf "%0*d" ${#numShards} $i)
   
   targetFile="${assocShardDir}/${dataset}-npa128sa32isa64.assoc-part${p}of${numShards}"
   encoded=$(echo -n "${targetFile}.succinct" | sed 's/\(.*\)assoc\(.*\)/\1edge_table\2/')
@@ -65,7 +66,7 @@ for i in $(seq 0 1 $numShards); do
     encoded="${targetFile}WithPtrs.succinct"
   fi
 
-  rsync -avr --progress ${targetFile} root@${hostname}:${assocShardDir} &
+  rsync -avrL --progress ${targetFile} root@${hostname}:${assocShardDir} &
 
   cat >/vol0/succinct-graph/etl_tmp.sh <<EOL
 #!/bin/bash
