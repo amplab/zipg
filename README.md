@@ -6,7 +6,9 @@ To build the benchmark driver `bin/bench`, do:
 ```
 sudo bash scripts/ec2-prereqs.sh # needed on EC2
 git submodule update --init
-make clean && SGFLAGS=-DNDEBUG make -j && SGFLAGS=-DNDEBUG make rpc bench
+bash ./build_thrift.sh
+cmake .
+SGFLAGS=-DNDEBUG make -j && SGFLAGS=-DNDEBUG make rpc bench
 ```
 
 To build the RPC component (which depends on Thrift), do `make rpc`. This target is not yet correctly set up for parallel build. The major hassle here is to successfully install the Thrift compiler for the first time; if errors occur, try to fix them manually (e.g. don't run the `autoreconf --force --install` command in Succinct's `build-thrift` target).
