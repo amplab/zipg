@@ -141,8 +141,9 @@ int32_t FileLogStore::append(const std::string& value) {
     // Update the index
 
     // max with 0, since data_pos can be small (or zero) initially
-    for (int64_t i = std::max(0LL, static_cast<int64_t>(data_pos - ngram_n));
-        i <= data_pos + value.length() - ngram_n; i++)
+    for (int64_t i = std::max(static_cast<int64_t>(0),
+                static_cast<int64_t>(data_pos - ngram_n)); i <= data_pos +
+            value.length() - ngram_n; i++)
     {
         std::string ngram;
         for(uint32_t off = 0; off < ngram_n; off++) {
