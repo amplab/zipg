@@ -48,3 +48,5 @@ The Neo4j benchmark is written in Java and can be built and started as follows:
 sbt/sbt assembly
 bash scripts/bench_neo4j.sh
 ```
+
+For distributed benchmarks, see `prep_dist.sh`, which contains some more setup instructions (e.g. installing dependencies on all worker machines).
