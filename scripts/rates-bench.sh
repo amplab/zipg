@@ -6,23 +6,8 @@ source ${SCRIPT_DIR}/../conf/succinct-env.sh
 
 num_nodes=100000 # hack
 
-minDeg="-minDeg45"
-minDeg="-minDeg60"
-minDeg="-minDeg30"
-minDeg=""
-dataset="-liveJournal${minDeg}"
-#dataset="-20attr35each"
-#dataset="-40attr16each"
-#dataset="-2attr350each"
 dataset="orkut-40attr16each"
-dataset="twitter2010-40attr16each"
-
-minDegs=('-minDeg60')
-minDegs=('' '-minDeg30')
-minDegs=('-minDeg30')
-minDegs=('-minDeg30WithTsAttr')
-minDegs=('' '-minDeg30WithTsAttr')
-minDegs=('')
+#dataset="twitter2010-40attr16each"
 
 # NOTE: comment this out for non-sharded bench
 SHARDED=T
@@ -30,23 +15,17 @@ if [[ -z "$SHARDED" ]]; then
   TOTAL_NUM_SHARDS=no
 fi
 
-# NOTE: binary format has changed due to rebasing
-#EDGE_FILE="data/higgs-social_network.opts-npa${npa}sa${sa}isa${isa}.edge_table"
-#NODE_FILE="data/higgs${dataset}-tpch-npa${npa}sa${sa}isa${isa}.nodeWithPtrs"
-#EDGE_FILE="/mnt2T/data/liveJournal${augOpt}${minDeg}-npa${npa}sa${sa}isa${isa}.assoc"
-#NODE_FILE="/mnt2T/data/liveJournal-40attr16each-tpch-npa${npa}sa${sa}isa${isa}.node"
+sa=32; isa=64; npa=128;
 
-NODE_FILE=${1:-/mnt/twitter2010-40attr16each-tpch-npa${npa}sa${sa}isa${isa}.node}
-EDGE_FILE=${2:-/mnt2T/twitter2010-npa${npa}sa${sa}isa${isa}.assoc}
+NODE_FILE=${1:-/mnt2T/orkut-40attr16each/succinct/orkut-40attr16each-tpch-npa${npa}sa${sa}isa${isa}.node}
+EDGE_FILE=${2:-/mnt2T/orkut-40attr16each/succinct/orkut-40attr16each-npa${npa}sa${sa}isa${isa}.edge_table}
 throughput_threads=${3:-""}
-
-NODE_FILE=/vol0/twitter2010-40attr16each-tpch.node
-EDGE_FILE=/vol0/twitter2010-npa128sa32isa64.assoc
 
 # hostname of the master aggregator that bench client connects to
 # if desirable to put client on 1 host, and agg. on the other, change this
-masterHostName="localhost"
-masterHostName="ec2-52-88-170-99.us-west-2.compute.amazonaws.com"
+
+# masterHostName="localhost"
+# masterHostName="ec2-52-88-170-99.us-west-2.compute.amazonaws.com"
 masterHostName=${4:-"localhost"}
 
 #benchNeighbor=T
@@ -77,22 +56,22 @@ benchTaoMixThput=T
 
 augOpt="-augOpts"
 
-if [[ "$dataset" == "orkut-40attr16each"* ]]; then
-  pushd ${QUERY_DIR} >/dev/null
-  yes | cp -rf orkut-40attr16each-queries/*txt ./
-  popd >/dev/null
-elif [[ "$dataset" == "twitter2010-40attr16each"* ]]; then
-  pushd ${QUERY_DIR} >/dev/null
-  yes | cp -rf twitter2010-40attr16each-queries/*txt ./
-  popd >/dev/null
-elif [[ "$dataset" == "-liveJournal"* ]]; then
-  pushd ${QUERY_DIR} >/dev/null
-  yes | cp -rf liveJournal-40attr16each${minDeg}-queries/*txt ./
-  popd >/dev/null
-else
-  echo implement query copying for me! dataset: '${dataset}'
-  exit 1
-fi
+#if [[ "$dataset" == "orkut-40attr16each"* ]]; then
+#  pushd ${QUERY_DIR} >/dev/null
+#  yes | cp -rf orkut-40attr16each-queries/*txt ./
+#  popd >/dev/null
+#elif [[ "$dataset" == "twitter2010-40attr16each"* ]]; then
+#  pushd ${QUERY_DIR} >/dev/null
+#  yes | cp -rf twitter2010-40attr16each-queries/*txt ./
+#  popd >/dev/null
+#elif [[ "$dataset" == "-liveJournal"* ]]; then
+#  pushd ${QUERY_DIR} >/dev/null
+#  yes | cp -rf liveJournal-40attr16each${minDeg}-queries/*txt ./
+#  popd >/dev/null
+#else
+#  echo implement query copying for me! dataset: '${dataset}'
+#  exit 1
+#fi
 
 function bench() {
 
@@ -108,8 +87,15 @@ function bench() {
     
       bash ${SCRIPT_DIR}/../sbin/start-handlers.sh &
       sleep 2
+
+      bash ${SCRIPT_DIR}/../sbin/load-data.sh &
+      wait
+     
+      echo "Initialized setup"
     fi
   fi
+
+  echo "Query directory: $QUERY_DIR"
 
   if [[ -n "$benchNode" ]]; then
     sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
@@ -220,6 +206,7 @@ function bench() {
 
   if [[ -n "$benchEdgeAttrsThput" ]]; then
       # sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+      
       ${BIN_DIR}/../benchmark/bin/bench -t edge-attrs-throughput -x ${warmup_edgeAttrs} \
       -p ${throughput_threads} \
       -y ${measure_edgeAttrs} -w ${QUERY_DIR}/neighborAtype_warmup_${num_nodes}.txt \
@@ -234,8 +221,9 @@ function bench() {
       throughput_getEdgeAttrs-npa${npa}sa${sa}isa${isa}-${throughput_threads}clients.txt
   fi
 
-  if [[ -n "$benchNeighbor" ]]; then
+  if [[ -n "$benchNeighbor" ]]; then 
     #sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+
     ${BIN_DIR}/../benchmark/bin/bench -t neighbor-latency -x ${warmup_neighbor} \
     -y ${measure_neighbor} -w ${QUERY_DIR}/neighbor_warmup_${num_nodes}.txt \
     -q ${QUERY_DIR}/neighbor_query_${num_nodes}.txt \
@@ -246,6 +234,7 @@ function bench() {
 
   if [[ -n "$benchMix" ]]; then
     #sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+    echo "Benchmarking mix latency"
 
     ${BIN_DIR}/../benchmark/bin/bench -t mix-latency \
       -x ${warmup_mix} -y ${measure_mix} \
@@ -268,6 +257,7 @@ function bench() {
 
   if [[ -n "$benchMixThput" ]]; then
     #sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+    echo "Benchmarking mix throughput"
 
     ${BIN_DIR}/../benchmark/bin/bench -t mix-throughput \
       -p ${throughput_threads} \
@@ -388,6 +378,7 @@ function bench() {
 
   if [[ -n "$benchTaoMixThput" ]]; then
     #sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+    echo "Benchmarking TAO Mix Throughput"
 
     ${BIN_DIR}/../benchmark/bin/bench -t tao-mix-throughput \
       -p ${throughput_threads} \
@@ -410,21 +401,16 @@ function bench() {
       throughput_tao_mix-npa${npa}sa${sa}isa${isa}-${throughput_threads}clients.txt
   fi
 
-  if [[ $# -eq 0 ]]; then
-    if [[ -n "$SHARDED" ]]; then
-    	bash ${SCRIPT_DIR}/../sbin/stop-all.sh
-    fi
-  fi
+  #if [[ $# -eq 0 ]]; then
+  #  if [[ -n "$SHARDED" ]]; then
+  #  	bash ${SCRIPT_DIR}/../sbin/stop-all.sh
+  #  fi
+  #fi
 }
 
 if [[ "$throughput_threads" == "" ]]; then
-  for throughput_threads in 64 128 256 512; do
-  #for minDeg in "${minDegs[@]}"; do
-    #dataset="-liveJournal${minDeg}"
+  for throughput_threads in 1; do
     sa=32; isa=64; npa=128; bench "$@"
-    #sa=8; isa=64; npa=64; bench
-    #sa=4; isa=16; npa=16; bench
-  #done
   done
 else
     sa=32; isa=64; npa=128; bench "$@" 2>&1
