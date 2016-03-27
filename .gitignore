@@ -51,7 +51,9 @@ external/neo4j*/data/
 # experiment traces
 *latency*txt*
 
+# directories
 data/
+log/
 
 # CMake
 **/CMakeFiles
