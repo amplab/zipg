@@ -17,12 +17,10 @@ minDegs=('')
 
 for minDeg in "${minDegs[@]}"; do
 
-DATASET=higgs-twitter-40attr16each
-DATASET=higgs-twitter-20attr35each
-DATASET=liveJournal-40attr16each${minDeg}
-DATASET=twitter2010-40attr16each
+DATASET=orkut-40attr16each
+#DATASET=twitter2010-40attr16each
 
-NEO4J_DIR=/mnt2T/data/neo4j
+NEO4J_DIR=/mnt2T/$DATASET/neo4j
 ############# NOTE: beware of setting the parameters here
 numNodes=0
 numAtypes=0
@@ -30,21 +28,15 @@ minTime=0
 maxTime=0
 
 if [[ "$DATASET" == "twitter2010-40attr16each"* ]]; then
-  NEO4J_DIR=/mnt3/neo4j
-  pushd ${QUERY_DIR} >/dev/null
-  yes | cp -rf twitter2010-40attr16each-queries/*txt ./
-  popd >/dev/null
+  NEO4J_DIR=/mnt2T/
   numNodes=41652230
   numAtypes=5
   minTime=1439721981221
   maxTime=1441905687237
-elif [[ "$DATASET" == "liveJournal-40attr16each"* ]]; then
-  pushd ${QUERY_DIR} >/dev/null
-  yes | cp -rf liveJournal-40attr16each${minDeg}-queries/*txt ./
-  popd >/dev/null
-  numNodes=4847571
-  numAtypes=6 # due to off-by-one error
-  minTime=1439721981221 # from twitter-2010
+elif [[ "$DATASET" == "orkut-40attr16each"* ]]; then
+  numNodes=3072627
+  numAtypes=5
+  minTime=1439721981221
   maxTime=1441905687237
 elif [[ "$DATASET" == "higgs-twitter-20attr35each" ]]; then
   pushd ${QUERY_DIR} >/dev/null
@@ -72,14 +64,14 @@ for tuned in true; do
 
 #benchNhbrThput=T
 #benchNeighborAtypeThput=T
-benchEdgeAttrsThput=T
+#benchEdgeAttrsThput=T
 #benchNhbrNodeThput=T
 #benchNodeThput=T
 #benchNodeNodeThput=T
 #benchMixThput=T
-#benchTaoMixThput=T
+benchTaoMixThput=T
 
-benchAssocRange=T
+#benchAssocRange=T
 #benchObjGet=T
 #benchAssocGet=T
 #benchAssocCount=T
@@ -87,10 +79,10 @@ benchAssocRange=T
 #benchTAOMix=T
 
 pageCacheForNodes=8543m # works, has tradeoff
-pageCacheForNodes=72g
+#pageCacheForNodes=72g
 pageCacheIgnoreIndexes=72g
 
-#for thputThreads in 32 64; do
+for thputThreads in 32 64; do
 #for pageCacheForNodes in 9574m 9370m; do
 for JVM_HEAP in 6900; do
   # "use more": #`echo "0.75 * ($TOTAL_MEM - $JVM_HEAP)" | bc | awk '{printf("%d", $1)}'` #`echo "$AVAIL_MEM - $JVM_HEAP" | bc | awk '{printf("%d", $1)}'`
@@ -541,4 +533,4 @@ for JVM_HEAP in 6900; do
   done
 done
 done
-#done
+done
