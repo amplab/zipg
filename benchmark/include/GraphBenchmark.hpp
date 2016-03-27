@@ -51,6 +51,7 @@ private:
                 thread_data->transport = transport;
 
                 thread_datas.push_back(thread_data);
+                LOG_E("Done initializing client %d\n", i);
 
             } catch (std::exception& e) {
                 LOG_E("Exception opening clients: %s\n", e.what());
