@@ -1269,12 +1269,17 @@ public:
                 switch (query) {
                 case 0:
                     query_idx = warmup_assoc_range_size(gen);
-                    COND_LOG_E("assoc range, query idx %d (%d %d %d %d)\n",
+                    COND_LOG_E("assoc range, query idx %d (%d %d %d %d) : (%d %d %d %d)\n",
                         query_idx,
                         warmup_assoc_range_nodes.size(),
                         warmup_assoc_range_atypes.size(),
                         warmup_assoc_range_offs.size(),
-                        warmup_assoc_range_lens.size());
+                        warmup_assoc_range_lens.size(),
+			this->warmup_assoc_range_nodes.at(query_idx),
+                        this->warmup_assoc_range_atypes.at(query_idx),
+                        this->warmup_assoc_range_offs.at(query_idx),
+                        this->warmup_assoc_range_lens.at(query_idx)
+			);
                     thread_data->client->assoc_range(result,
                         this->warmup_assoc_range_nodes.at(query_idx),
                         this->warmup_assoc_range_atypes.at(query_idx),
