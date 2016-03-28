@@ -17,7 +17,7 @@ if [[ "$dataset" == "uk-2007-05" ]]; then
   input_edgelists=(/vol1/uk*assoc*of40)
 elif [[ "$dataset" == "orkut-40attr16each" ]]; then
   output_file_prefix=/vol0/orkut-40attr16each-npa128sa32isa64.assoc
-  num_shards=8
+  num_shards=16
   attr_file=/vol0/data_0
   edge_attr_size=128
   inner_delim='	' # tab
