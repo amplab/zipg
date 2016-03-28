@@ -30,6 +30,9 @@
 *.out
 *.app
 
+# Thrift build directory
+succinct_graph
+
 # Misc
 *.succinct
 *.graph
@@ -38,9 +41,13 @@
 *.sw*
 .DS_STORE
 
+# IDE Files
 .idea/
 .idea_modules/
+.project
+.cproject
 
+# Neo4j build files
 project/target/
 project/project/
 target/
