@@ -35,12 +35,12 @@ private:
     const static int MAX_NUM_NEW_EDGES = 200000; // 3.5M takes too long to run
 
     // Timings for throughput benchmarks.
-    constexpr static int64_t WARMUP_MICROSECS = 300 * 1000 * 1000;
-    constexpr static int64_t MEASURE_MICROSECS = 900 * 1000 * 1000;
-    constexpr static int64_t COOLDOWN_MICROSECS = 450 * 1000 * 1000;
-    //constexpr static int64_t WARMUP_MICROSECS = 60 * 1000 * 1000;
-    //constexpr static int64_t MEASURE_MICROSECS = 120 * 1000 * 1000;
-    //constexpr static int64_t COOLDOWN_MICROSECS = 30 * 1000 * 1000;
+    // constexpr static int64_t WARMUP_MICROSECS = 300 * 1000 * 1000;
+    // constexpr static int64_t MEASURE_MICROSECS = 900 * 1000 * 1000;
+    // constexpr static int64_t COOLDOWN_MICROSECS = 450 * 1000 * 1000;
+    constexpr static int64_t WARMUP_MICROSECS = 30 * 1000 * 1000;
+    constexpr static int64_t MEASURE_MICROSECS = 120 * 1000 * 1000;
+    constexpr static int64_t COOLDOWN_MICROSECS = 30 * 1000 * 1000;
 
     constexpr static int query_batch_size = 100;
 
@@ -121,6 +121,7 @@ private:
                 thread_data->client = client;
                 thread_data->client_id = i;
                 thread_data->transport = transport;
+                thread_data->master_hostname = master_hostname;
 
                 thread_datas.push_back(thread_data);
 
@@ -233,6 +234,7 @@ private:
     typedef struct {
         shared_ptr<GraphQueryAggregatorServiceClient> client;
         shared_ptr<TTransport> transport;
+        std::string master_hostname;
         int client_id; // for seeding
     } benchmark_thread_data_t;
 
@@ -1685,6 +1687,7 @@ public:
                 COND_LOG_E("warmup query %d\n", i);
                 query = choose_query_with_updates(
                     query_dis(gen), query_dis(gen));
+                try {
                 switch (query) {
                 case 0:
                     query_idx = warmup_assoc_range_size(gen);
@@ -1752,6 +1755,23 @@ public:
                 }
 
                 ++i;
+                } catch (std::exception& e) {
+                  fprintf(stderr, "Query failed: type = %d, err = %d", query, e.what());
+                  thread_data->client.reset();
+                  thread_data->transport.reset();
+                  shared_ptr<TSocket> socket(
+                      new TSocket(thread_data->master_hostname, QUERY_HANDLER_PORT));
+                  shared_ptr<TTransport> transport(
+                      new TBufferedTransport(socket));
+                  shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
+                  shared_ptr<GraphQueryAggregatorServiceClient> client(
+                      new GraphQueryAggregatorServiceClient(protocol));
+                  transport->open();
+                  client->init();
+
+                  thread_data->client = client;
+                  thread_data->transport = transport;
+                }
             }
             COND_LOG_E("Warmup done: served %" PRId64 " queries/batches\n", i);
 
@@ -1811,8 +1831,25 @@ public:
                 } \
                 edges += result.size(); \
                 ++i;
+                try {
+                  RUN_TAO_MIX_WITH_UPDATES_THPUT_BODY // actually run
+                } catch (std::exception& e) {
+                  fprintf(stderr, "Query failed: type = %d, err = %d", query, e.what());
+                  thread_data->client.reset();
+                  thread_data->transport.reset();
+                  shared_ptr<TSocket> socket(
+                      new TSocket(thread_data->master_hostname, QUERY_HANDLER_PORT));
+                  shared_ptr<TTransport> transport(
+                      new TBufferedTransport(socket));
+                  shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
+                  shared_ptr<GraphQueryAggregatorServiceClient> client(
+                      new GraphQueryAggregatorServiceClient(protocol));
+                  transport->open();
+                  client->init();
 
-                RUN_TAO_MIX_WITH_UPDATES_THPUT_BODY // actually run
+                  thread_data->client = client;
+                  thread_data->transport = transport;
+                }
             }
             time_t end = get_timestamp();
             double total_secs = (end - start) * 1. / 1e6;
@@ -1828,7 +1865,25 @@ public:
             // Cooldown
             time_t cooldown_start = get_timestamp();
             while (get_timestamp() - cooldown_start < COOLDOWN_MICROSECS) {
+              try {
                 RUN_TAO_MIX_WITH_UPDATES_THPUT_BODY
+              } catch(std::exception& e) {
+                fprintf(stderr, "Query failed: type = %d, err = %d", query, e.what());
+                thread_data->client.reset();
+                thread_data->transport.reset();
+                shared_ptr<TSocket> socket(
+                    new TSocket(thread_data->master_hostname, QUERY_HANDLER_PORT));
+                shared_ptr<TTransport> transport(
+                    new TBufferedTransport(socket));
+                shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
+                shared_ptr<GraphQueryAggregatorServiceClient> client(
+                    new GraphQueryAggregatorServiceClient(protocol));
+                transport->open();
+                client->init();
+
+                thread_data->client = client;
+                thread_data->transport = transport;
+              }
             }
         } catch (std::exception &e) {
             LOG_E("Throughput test ends...: '%s'\n", e.what());
