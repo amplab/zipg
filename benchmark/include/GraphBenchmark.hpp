@@ -1339,6 +1339,7 @@ public:
                 COND_LOG_E("warmup query %d\n", i);
 #ifndef BATCH_QUERY
                 query = choose_query(query_dis(gen));
+                try {
                 switch (query) {
                 case 0:
                     query_idx = warmup_assoc_range_size(gen);
@@ -1407,6 +1408,23 @@ public:
                     break;
                 default:
                     assert(false);
+                }
+                } catch (std::exception& e) {
+                  fprintf(stderr, "Query failed: type = %d, err = %d", query, e.what());
+                  thread_data->client.reset();
+                  thread_data->transport.reset();
+                  shared_ptr<TSocket> socket(
+                      new TSocket(thread_data->master_hostname, QUERY_HANDLER_PORT));
+                  shared_ptr<TTransport> transport(
+                      new TBufferedTransport(socket));
+                  shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
+                  shared_ptr<GraphQueryAggregatorServiceClient> client(
+                      new GraphQueryAggregatorServiceClient(protocol));
+                  transport->open();
+                  client->init();
+
+                  thread_data->client = client;
+                  thread_data->transport = transport;
                 }
 #else
                 clear_batches();
@@ -1593,7 +1611,25 @@ public:
 #endif // BATCH_QUERY
 
 #ifndef BATCH_QUERY
+                try {
                 RUN_TAO_MIX_THPUT_BODY // actually run
+                } catch (std::exception& e) {
+                  fprintf(stderr, "Query failed: type = %d, err = %d", query, e.what());
+                  thread_data->client.reset();
+                  thread_data->transport.reset();
+                  shared_ptr<TSocket> socket(
+                      new TSocket(thread_data->master_hostname, QUERY_HANDLER_PORT));
+                  shared_ptr<TTransport> transport(
+                      new TBufferedTransport(socket));
+                  shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
+                  shared_ptr<GraphQueryAggregatorServiceClient> client(
+                      new GraphQueryAggregatorServiceClient(protocol));
+                  transport->open();
+                  client->init();
+
+                  thread_data->client = client;
+                  thread_data->transport = transport;
+                }
 #else
                 RUN_TAO_MIX_THPUT_BODY_BATCHED // run the batched version
 #endif
@@ -1619,7 +1655,25 @@ public:
             time_t cooldown_start = get_timestamp();
             while (get_timestamp() - cooldown_start < COOLDOWN_MICROSECS) {
 #ifndef BATCH_QUERY
+              try {
                 RUN_TAO_MIX_THPUT_BODY
+              } catch (std::exception& e) {
+                fprintf(stderr, "Query failed: type = %d, err = %d", query, e.what());
+                thread_data->client.reset();
+                thread_data->transport.reset();
+                shared_ptr<TSocket> socket(
+                    new TSocket(thread_data->master_hostname, QUERY_HANDLER_PORT));
+                shared_ptr<TTransport> transport(
+                    new TBufferedTransport(socket));
+                shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
+                shared_ptr<GraphQueryAggregatorServiceClient> client(
+                    new GraphQueryAggregatorServiceClient(protocol));
+                transport->open();
+                client->init();
+
+                thread_data->client = client;
+                thread_data->transport = transport;
+              }
 #else
                 RUN_TAO_MIX_THPUT_BODY_BATCHED
 #endif
