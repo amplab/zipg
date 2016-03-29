@@ -6,6 +6,7 @@
 #include <sstream>
 #include <thread>
 #include <vector>
+#include <stdlib.h>
 
 #include <thrift/protocol/TBinaryProtocol.h>
 #include <thrift/transport/TBufferTransports.h>
@@ -1207,7 +1208,7 @@ public:
                   ++i;
                 } catch(std::exception& e) {
                   fprintf(stderr, "Query failed; Type = %d, Reason = %s\n", query, e.what());
-                  exit -1;
+                  exit(EXIT_FAILURE);
                 }
             }
             COND_LOG_E("Warmup done: served %" PRId64 " queries/batches\n", i);
@@ -1295,7 +1296,7 @@ public:
                   ++i;
                 } catch (std::exception& e) {
                   fprintf(stderr, "Query failed; Type = %d, Reason = %s\n", query, e.what());
-                  exit -1;
+                  exit(EXIT_FAILURE);
                 }
             }
             time_t end = get_timestamp();
@@ -1390,7 +1391,7 @@ public:
                   ++i;
                 } catch (std::exception& e) {
                   fprintf(stderr, "Query failed; Type = %d, Reason = %s\n", query, e.what());
-                  exit -1;
+                  exit(EXIT_FAILURE);
                 }
             }
         } catch (std::exception &e) {
