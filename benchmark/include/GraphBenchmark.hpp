@@ -1207,6 +1207,7 @@ public:
                   ++i;
                 } catch(std::exception& e) {
                   fprintf(stderr, "Query failed; Type = %d, Reason = %s\n", query, e.what());
+                  exit -1;
                 }
             }
             COND_LOG_E("Warmup done: served %" PRId64 " queries/batches\n", i);
@@ -1294,6 +1295,7 @@ public:
                   ++i;
                 } catch (std::exception& e) {
                   fprintf(stderr, "Query failed; Type = %d, Reason = %s\n", query, e.what());
+                  exit -1;
                 }
             }
             time_t end = get_timestamp();
@@ -1388,6 +1390,7 @@ public:
                   ++i;
                 } catch (std::exception& e) {
                   fprintf(stderr, "Query failed; Type = %d, Reason = %s\n", query, e.what());
+                  exit -1;
                 }
             }
         } catch (std::exception &e) {
