@@ -4,7 +4,7 @@ HOME_DIR=${SCRIPT_DIR}/..
 
 BIN_DIR=${HOME_DIR}/bin
 BENCH_BIN_DIR=${HOME_DIR}/benchmark/bin
-DATA_DIR=${HOME_DIR}/data
+DATA_DIR=/mnt2
 
 NODE_DIR=${DATA_DIR}/nodes
 EDGE_DIR=${DATA_DIR}/edges

@@ -8,8 +8,13 @@ source ${SCRIPT_DIR}/config.sh
 source ${SCRIPT_DIR}/../conf/succinct-env.sh
 npa=128; sa=32; isa=64
 
-NODE_FILE=${1:-/mnt/twitter2010-40attr16each-tpch-npa${npa}sa${sa}isa${isa}.node}
-EDGE_FILE=${2:-/mnt2T/twitter2010-npa${npa}sa${sa}isa${isa}.assoc}
+NODE_FILE=${1:-/mnt2/twitter2010-40attr16each-tpch-npa${npa}sa${sa}isa${isa}.node}
+EDGE_FILE=${2:-/mnt2/twitter2010-npa${npa}sa${sa}isa${isa}.assoc}
+
+echo "Node File: $NODE_FILE"
+echo "Edge File: $EDGE_FILE"
+echo "Query Path: $QUERY_DIR"
+
 throughput_threads=${3:-""}
 # hostname of the master aggregator that bench client connects to
 # if desirable to put client on 1 host, and agg. on the other, change this
@@ -19,7 +24,6 @@ copyQueries=${5:-"true"}
 num_nodes=100000 # hack
 augOpt="-augOpts"
 
-dataset="orkut-40attr16each"
 dataset="twitter2010-40attr16each"
 
 # NOTE: comment this out for non-sharded bench
@@ -32,16 +36,12 @@ fi
 
 if [[ "$copyQueries" == "true" ]]; then
   if [[ "$dataset" == "orkut-40attr16each"* ]]; then
-    pushd ${QUERY_DIR} >/dev/null
+    pushd ${qUERY_DIR} >/dev/null
     yes | cp -rf orkut-40attr16each-queries/*txt ./
     popd >/dev/null
   elif [[ "$dataset" == "twitter2010-40attr16each"* ]]; then
     pushd ${QUERY_DIR} >/dev/null
     yes | cp -rf twitter2010-40attr16each-queries/*txt ./
-    popd >/dev/null
-  elif [[ "$dataset" == "-liveJournal"* ]]; then
-    pushd ${QUERY_DIR} >/dev/null
-    yes | cp -rf liveJournal-40attr16each${minDeg}-queries/*txt ./
     popd >/dev/null
   else
     echo implement query copying for me! dataset: '${dataset}'
