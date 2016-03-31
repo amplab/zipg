@@ -11,10 +11,10 @@ set -ex
 # 5. Set the desired settings in rates-bench.sh
 
 npa=128; sa=32; isa=64 # L0, by default
-# copyShardFiles=T
+copyShardFiles=T
 
-#node_file_raw=/vol0/uk-2007-05-40attr16each-tpch-npa128sa32isa64.node
-#edge_file_raw=/vol0/uk-2007-05-40attr16each-npa128sa32isa64.assoc
+#node_file_raw=/mnt2/uk-2007-05-40attr16each-tpch-npa128sa32isa64.node
+#edge_file_raw=/mnt2/uk-2007-05-40attr16each-npa128sa32isa64.assoc
 node_file_raw=/mnt2/twitter2010-40attr16each-tpch.node
 edge_file_raw=/mnt2/twitter2010-npa128sa32isa64.assoc
 
@@ -43,16 +43,13 @@ benches=(
 #### Initial setup
 
 currDir=$(cd $(dirname $0); pwd)
-. "${currDir}/sbin/succinct-config.sh"
-. "${currDir}/sbin/load-succinct-env.sh"
+. "${currDir}/../sbin/succinct-config.sh"
+. "${currDir}/../sbin/load-succinct-env.sh"
 
 #### Copy the corresponding shard files over
 if [[ -n $copyShardFiles ]]; then
   echo "Copying shard files..."
   num_succinctstore_hosts=$num_hosts
-  if [[ "$ENABLE_MULTI_STORE" == T ]]; then
-    num_succinctstore_hosts=$(( num_hosts - 2 ))
-  fi
 
   limit=$(($TOTAL_NUM_SHARDS - 1))
   padWidth=${#TOTAL_NUM_SHARDS}
@@ -66,7 +63,7 @@ if [[ -n $copyShardFiles ]]; then
   for shard_id in `seq 0 $limit`; do
       # transfer shard id i to an appropriate host
       host_id=$(($shard_id % num_succinctstore_hosts))
-      host=$(sed -n "$(($host_id + 1)){p;q;}" ${currDir}/conf/hosts)
+      host=$(sed -n "$(($host_id + 1)){p;q;}" ${currDir}/../conf/hosts)
   
       padded_shard_id=$(printf "%0*d" ${padWidth} ${shard_id})
       node_split="${node_file_raw}-part${padded_shard_id}of${TOTAL_NUM_SHARDS}"
@@ -96,26 +93,10 @@ if [[ -n $copyShardFiles ]]; then
   done
 
   if [[ "$ENABLE_MULTI_STORE" == T ]]; then
-    # copy stuff to SuffixStore mc and LogStore mc
-    limit=$((NUM_SUFFIXSTORE_PARTS - 1))
-    host=$(sed -n "$((num_succinctstore_hosts + 1)){p;q;}" ${currDir}/conf/hosts)
-    for i in $(seq 0 "${limit}"); do
-      padWidth=${#NUM_SUFFIXSTORE_PARTS}
-      padded_shard_id=$(printf "%0*d" ${padWidth} ${i})
-      nodeTbl="${node_file_raw}.suffixstore-part${padded_shard_id}of${NUM_SUFFIXSTORE_PARTS}_suffixstore"
-      edgeTbl="${edge_file_raw}.suffixstore-part${padded_shard_id}of${NUM_SUFFIXSTORE_PARTS}_suffixstore"
-      d1=$(dirname "${nodeTbl}")
-      d2=$(dirname "${edgeTbl}")
-      #rsync -arL ${nodeTbl} ${host}:$d1 &
-      #rsync -arL ${edgeTbl} ${host}:$d2 &
-
-      # also rsync the raw assoc input, useful for calculating updates; TODO: node as well
-      edgeTbl="${edge_file_raw}.suffixstore-part${padded_shard_id}of${NUM_SUFFIXSTORE_PARTS}"
-      rsync -arL ${edgeTbl} ${host}:$d2 &
-    done
-
+    # copy logstore data
     limit=$((NUM_LOGSTORE_PARTS - 1))
-    host=$(sed -n "$((num_succinctstore_hosts + 2)){p;q;}" ${currDir}/conf/hosts)
+    # Copy to last succinct store server
+    host=$(sed -n "$((num_succinctstore_hosts)){p;q;}" ${currDir}/../conf/hosts)
     for i in $(seq 0 "${limit}"); do
       padWidth=${#NUM_LOGSTORE_PARTS}
       padded_shard_id=$(printf "%0*d" ${padWidth} ${i})
@@ -123,8 +104,17 @@ if [[ -n $copyShardFiles ]]; then
       edgeTbl="${edge_file_raw}.logstore-part${padded_shard_id}of${NUM_LOGSTORE_PARTS}_logstore"
       d1=$(dirname "${nodeTbl}")
       d2=$(dirname "${edgeTbl}")
-      rsync -arL ${nodeTbl} ${host}:$d1 &
-      rsync -arL ${edgeTbl} ${host}:$d2 &
+      if [ -e "$nodeTbl" ]; then
+        rsync -arL ${nodeTbl} ${host}:$d1 &
+      else
+        echo "WARNING: LogStore node table not found"
+      fi
+
+      if [ -e "$edgeTbl" ]; then
+        rsync -arL ${edgeTbl} ${host}:$d2 &
+      else
+        echo "WARNING: LogStore edge table not found"
+      fi
     done
   fi
 
@@ -135,22 +125,22 @@ fi
 #### Launch aggregator & shards on all hosts
 
 function stop_all() {
-  bash ${currDir}/sbin/stop-all.sh 
+  bash ${currDir}/../sbin/stop-all.sh 
   sleep 2
 }
 
 function start_all() {
-  ${currDir}/sbin/start-servers.sh $node_file_raw $edge_file_raw $sa $isa $npa
+  ${currDir}/../sbin/start-servers.sh $node_file_raw $edge_file_raw $sa $isa $npa
   sleep 2
 
-  ${currDir}/sbin/start-handlers.sh 
+  ${currDir}/../sbin/start-handlers.sh 
   sleep 2
 
-  ${currDir}/sbin/load-data.sh
+  ${currDir}/../sbin/load-data.sh
   sleep 2
 
   # note: the script launch order is important
-  ${currDir}/sbin/backfill-updates.sh
+  ${currDir}/../sbin/backfill-updates.sh
   sleep 2
 }
 
@@ -160,8 +150,8 @@ function timestamp() {
 
 stop_all
 
-bash ${currDir}/sbin/hosts.sh source "${currDir}/sbin/succinct-config.sh"
-bash ${currDir}/sbin/hosts.sh source "${currDir}/sbin/load-succinct-env.sh"
+bash ${currDir}/../sbin/hosts.sh source "${currDir}/sbin/succinct-config.sh"
+bash ${currDir}/../sbin/hosts.sh source "${currDir}/sbin/load-succinct-env.sh"
 sleep 2
 
 #### Launch benchmark
@@ -179,7 +169,7 @@ declare -A benchMap=(
 
 for throughput_threads in ${threads[*]}; do
     for bench in get_nodes2 get_nhbrsNode get_nhbrsAtype getEdgeAttrs get_nhbrs tao_mix mix taoMixWithUpdates; do
-      bash ${currDir}/sbin/hosts.sh \
+      bash ${currDir}/../sbin/hosts.sh \
         rm -rf throughput_${bench}-npa128sa32isa64-${throughput_threads}clients.txt
     done
 done
@@ -191,48 +181,24 @@ for benchType in "${benches[@]}"; do
           start_all
 
           launcherStart=$(date +"%s")
-          bash ${currDir}/sbin/hosts-noStderr.sh \
-            $benchType=T bash ${currDir}/scripts/bench_func.sh \
+          bash ${currDir}/../sbin/hosts-noStderr.sh \
+            $benchType=T bash ${currDir}/bench_func.sh \
             $node_file_raw $edge_file_raw $throughput_threads localhost true 2>&1 >run.log
           wait
           launcherEnd=$(date +"%s")
           
-          # assign aggregator in a round-robin fashion
-          # For now, assume #clientHosts == #serverHosts
-    #      for i in $(seq 1 $num_hosts); do
-    #        clientHost=$(sed -n "${i}{p;q;}" ~/spark-ec2/slaves | sed 's/\n//g')
-    #        clusterHost=$(sed -n "${i}{p;q;}" ${currDir}/conf/hosts.clus | sed 's/\n//g')
-    #        ssh -o StrictHostKeyChecking=no $clientHost \
-    #          "$benchType=T bash ${currDir}/scripts/bench_func.sh \
-    #            $node_file_raw $edge_file_raw $throughput_threads $clusterHost false 2>&1 >run.log" &
-    #      done
-    #      wait
-
-    #      sleep 120 # buffer times (for reading queries, etc.)
-    #      echo "Master starts timing..."
-    #      thputSumTime=$(($thputWarm + $thputMeasure + $thputCool))
-    #      sleep $thputSumTime
-    #      echo "Killing all from master..."
-    #      stop_all
-    #      echo "Killed everyone, collecting logs"
-    #      sleep 5
-
           bench="${benchMap["$benchType"]}"
           rm -rf thput
-          bash ${currDir}/sbin/hosts.sh \
+          bash ${currDir}/../sbin/hosts.sh \
             tail -n1 throughput_${bench}-npa128sa32isa64-${throughput_threads}clients.txt | \
             cut -d',' -f2 | \
             cut -d' ' -f2 >>thput
           sum=$(awk '{ sum += $1 } END { print sum }' thput)
-          #if [[ 1 -eq "$(echo "${sum} == 0" | bc)" ]]; then
-          #  # some bench is not run
-          #  continue
-          #fi
 
           f="thput-${bench}-${throughput_threads}clients.txt"
           t=$(timestamp)
           echo "$t,$bench" >>${f}
-          sanity=$(${currDir}/sbin/hosts.sh tail -n1 run.log)
+          sanity=$(${currDir}/../sbin/hosts.sh tail -n1 run.log)
           echo $sanity >> ${f}
           echo "Measured from master: $((launcherEnd - launcherStart)) secs" >> ${f}
           cat thput >> ${f}
@@ -242,7 +208,6 @@ for benchType in "${benches[@]}"; do
           echo $entry >> thput-summary
 
           stop_all
-
       done
       ;;
     *)
@@ -250,12 +215,11 @@ for benchType in "${benches[@]}"; do
       start_all
 
       # launch the single client from this master
-      export $benchType=T && bash ${currDir}/scripts/bench_func.sh \
+      export $benchType=T && bash ${currDir}/bench_func.sh \
         $node_file_raw $edge_file_raw $throughput_threads localhost false 2>&1 >run.log
       wait
 
-      # stop_all
+      stop_all
       ;;
   esac
 done
-#start_all
