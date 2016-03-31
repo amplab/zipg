@@ -11,25 +11,25 @@ set -ex
 # 5. Set the desired settings in rates-bench.sh
 
 npa=128; sa=32; isa=64 # L0, by default
-copyShardFiles=T
+# copyShardFiles=T
 
-node_file_raw=/vol0/uk-2007-05-40attr16each-tpch-npa128sa32isa64.node
-edge_file_raw=/vol0/uk-2007-05-40attr16each-npa128sa32isa64.assoc
-node_file_raw=/vol0/twitter2010-40attr16each-tpch.node
-edge_file_raw=/vol0/twitter2010-npa128sa32isa64.assoc
+#node_file_raw=/vol0/uk-2007-05-40attr16each-tpch-npa128sa32isa64.node
+#edge_file_raw=/vol0/uk-2007-05-40attr16each-npa128sa32isa64.assoc
+node_file_raw=/mnt2/twitter2010-40attr16each-tpch.node
+edge_file_raw=/mnt2/twitter2010-npa128sa32isa64.assoc
 
 threads=( 64 )
 benches=(
-  benchTaoMix
+  #benchTaoMix
   #benchTaoUpdates # latency
-  #benchTaoMixWithUpdatesThput
-#  benchTaoMixThput
-#  benchMixThput
-#  benchNhbrNodeThput
-#  benchNeighborThput
-#  benchNhbrAtypeThput
-#  benchNodeNodeThput
-#  benchEdgeAttrsThput
+  benchTaoMixThput
+  benchTaoMixWithUpdatesThput
+  #benchMixThput
+  #benchNhbrNodeThput
+  #benchNeighborThput
+  #benchNhbrAtypeThput
+  #benchNodeNodeThput
+  #benchEdgeAttrsThput
 )
 
 # NOTE: settings here only affects this master killing all
@@ -46,10 +46,9 @@ currDir=$(cd $(dirname $0); pwd)
 . "${currDir}/sbin/succinct-config.sh"
 . "${currDir}/sbin/load-succinct-env.sh"
 
-bash ./init.sh
-
 #### Copy the corresponding shard files over
 if [[ -n $copyShardFiles ]]; then
+  echo "Copying shard files..."
   num_succinctstore_hosts=$num_hosts
   if [[ "$ENABLE_MULTI_STORE" == T ]]; then
     num_succinctstore_hosts=$(( num_hosts - 2 ))
@@ -57,6 +56,13 @@ if [[ -n $copyShardFiles ]]; then
 
   limit=$(($TOTAL_NUM_SHARDS - 1))
   padWidth=${#TOTAL_NUM_SHARDS}
+
+  echo "Shard id range 0-$limit"
+  echo "Number of Succinct Store Hosts: $num_succinctstore_hosts"
+  
+  echo "Beginning to copy in 10s..."
+  sleep 10
+
   for shard_id in `seq 0 $limit`; do
       # transfer shard id i to an appropriate host
       host_id=$(($shard_id % num_succinctstore_hosts))
@@ -248,7 +254,7 @@ for benchType in "${benches[@]}"; do
         $node_file_raw $edge_file_raw $throughput_threads localhost false 2>&1 >run.log
       wait
 
-      stop_all
+      # stop_all
       ;;
   esac
 done
