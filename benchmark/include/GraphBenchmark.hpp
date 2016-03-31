@@ -35,12 +35,12 @@ private:
     const static int MAX_NUM_NEW_EDGES = 200000; // 3.5M takes too long to run
 
     // Timings for throughput benchmarks.
-    // constexpr static int64_t WARMUP_MICROSECS = 300 * 1000 * 1000;
-    // constexpr static int64_t MEASURE_MICROSECS = 900 * 1000 * 1000;
-    // constexpr static int64_t COOLDOWN_MICROSECS = 450 * 1000 * 1000;
-    constexpr static int64_t WARMUP_MICROSECS = 30 * 1000 * 1000;
-    constexpr static int64_t MEASURE_MICROSECS = 120 * 1000 * 1000;
-    constexpr static int64_t COOLDOWN_MICROSECS = 30 * 1000 * 1000;
+    constexpr static int64_t WARMUP_MICROSECS = 300 * 1000 * 1000;
+    constexpr static int64_t MEASURE_MICROSECS = 900 * 1000 * 1000;
+    constexpr static int64_t COOLDOWN_MICROSECS = 450 * 1000 * 1000;
+    // constexpr static int64_t WARMUP_MICROSECS = 30 * 1000 * 1000;
+    // constexpr static int64_t MEASURE_MICROSECS = 120 * 1000 * 1000;
+    // constexpr static int64_t COOLDOWN_MICROSECS = 30 * 1000 * 1000;
 
     constexpr static int query_batch_size = 100;
 
