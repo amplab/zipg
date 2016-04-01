@@ -38,6 +38,10 @@
 *.sw*
 .DS_STORE
 
+# Eclipse files
+.cproject
+.project
+
 .idea/
 .idea_modules/
 
