@@ -33,6 +33,20 @@ std::vector< std::unordered_map<int64_t,
     > > edge_update_ptrs;
 boost::shared_mutex edge_update_ptrs_mutex;
 
+// anuragk: What we want is per shard control over whether
+// the shard is a SuccinctStore shard, SuffixStore shard, or
+// a LogStore shard. Right now, for much of the code it is assumed
+// that there are dedicated servers for LogStore and SuffixStore,
+// although much of it carries forward from Succinct's hardcoded
+// NSDI15 implementation.
+//
+// Ideally, we want to define the number of succict store shards (n_s),
+// the number of suffix store shards (n_ss), and the number of log store
+// shards (n_ls). Given that the shards are sequentially allocated to different
+// hosts, a shard with shard_id would be a succinct store shard if its shard id
+// lies between (0, n_s - 1), suffix store if it lies between (n_s, n_s + n_ss - 1),
+// etc.
+
 class GraphQueryAggregatorServiceHandler :
     virtual public GraphQueryAggregatorServiceIf {
 
@@ -59,6 +73,8 @@ public:
         num_succinctstore_shards_ = total_num_shards_; // synoynyms
 
         if (multistore_enabled_) {
+            // anuragk: This is one such location where the code assumes
+            // dedicated SuffixStore/LogStore servers.
             num_succinctstore_hosts_ = total_num_hosts_ - 2;
         }
     }
@@ -94,10 +110,6 @@ public:
             exit(1);
         }
 
-//        for (auto& shard : local_shards_) {
-//            shard.send_init();
-//        }
-
         for (int i = 0; i < total_num_hosts_; ++i) {
             if (i == local_host_id_) {
                 continue;
@@ -106,30 +118,6 @@ public:
             aggregators_.at(i).connect_to_aggregators();
         }
 
-//        for (int i = 0; i < total_num_hosts_; ++i) {
-//            if (i == local_host_id_) {
-//                continue;
-//            }
-//            aggregators_.at(i).send_init_local_shards();
-//        }
-
-//        for (auto& shard : local_shards_) {
-//            if (shard.recv_init() != 0) {
-//                LOG_E("Some shard doesn't init() successfully, exiting\n");
-//                exit(1);
-//            }
-//        }
-
-//        for (int i = 0; i < total_num_hosts_; ++i) {
-//            if (i == local_host_id_) {
-//                continue;
-//            }
-//            if (aggregators_.at(i).recv_init_local_shards() != 0) {
-//                LOG_E("Some aggregator doesn't init_local_shards() successfully"
-//                    ", exiting\n");
-//                exit(1);
-//            }
-//        }
         LOG_E("Cluster init() done\n");
         initiated_ = true;
         return 0;
@@ -315,9 +303,6 @@ public:
             "from shard %d, %lld assoc lists\n",
             local_shard_id, local_host_id_, next_shard_id, updates.size());
 
-//        COND_LOG_E("Recording %lld updates from nextShard %d\n",
-//            updates.size(), next_shard_id);
-//
         boost::unique_lock<boost::shared_mutex> lk(edge_update_ptrs_mutex);
         ThriftEdgeUpdatePtr ptr;
         auto& map_for_shard = edge_update_ptrs.at(
@@ -1483,12 +1468,15 @@ int main(int argc, char **argv) {
             // LogStore
             // +1 because of the last, empty shard
             edge_update_ptrs.resize(num_logstore_shards + 1);
+            LOG_E("[LOGSTORE] Have %zu update pointer tables.", edge_update_ptrs.size());
         } else if (local_host_id == hostnames.size() - 2) {
             // Suf.
             edge_update_ptrs.resize(num_suffixstore_shards);
+            LOG_E("[SUFFIXSTORE] Have %zu update pointer tables.", edge_update_ptrs.size());
         } else {
             // Succ.
             edge_update_ptrs.resize(total_num_shards);
+            LOG_E("[SUCCINCT] Have %zu update pointer tables.", edge_update_ptrs.size());
         }
     }
 
