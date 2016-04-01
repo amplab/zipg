@@ -2,6 +2,7 @@
 #include <fstream>
 #include <iostream>
 #include <unistd.h>
+#include <initializer_list>
 
 #include "GraphFormatter.hpp"
 #include "SuccinctGraph.hpp"
@@ -751,6 +752,22 @@ int main(int argc, char **argv) {
         printf("Loaded SuccinctGraph from files.\n\n");
         // Demo code
 
+    } else if (type == "debug") {
+        while (true) {
+            char cmd_line[500];
+            std::cout << "shell> ";
+            std::cin.getline(cmd_line, sizeof(cmd_line));
+
+            std::istringstream iss(cmd_line);
+            int query_type, query_idx;
+
+            if (!(iss >> query_type >> query_idx) && (query_type != "exit" || query_type != "quit")) {
+              std::cerr << "Could not parse command: " << cmd_line << "\n";
+              continue;
+            }
+
+            bench->test_tao_query(query_type, query_idx);
+        }
     } else {
         LOG_E("-t bench type: '%s'\n", type.c_str());
         assert(false && "Unknown bench type (-t)");

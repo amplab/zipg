@@ -416,6 +416,94 @@ public:
         }
     }
 
+    void test_tao_query(int query_type, int query_idx) {
+        shared_ptr<TSocket> socket(
+            new TSocket("localhost", QUERY_HANDLER_PORT));
+        shared_ptr<TTransport> transport(
+            new TBufferedTransport(socket));
+        shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
+        shared_ptr<GraphQueryAggregatorServiceClient> client(
+            new GraphQueryAggregatorServiceClient(protocol));
+        transport->open();
+        client->init();
+
+        std::vector<ThriftAssoc> result;
+        std::vector<std::string> attrs;
+
+        shared_ptr<benchmark_thread_data_t> thread_data(
+            new benchmark_thread_data_t);
+        try {
+        switch (query_type) {
+            case 0:
+                LOG_E("assoc range, query idx %d (%d %d %d %d)\n",
+                    query_idx,
+                    warmup_assoc_range_nodes.size(),
+                    warmup_assoc_range_atypes.size(),
+                    warmup_assoc_range_offs.size(),
+                    warmup_assoc_range_lens.size());
+                client->assoc_range(result,
+                    this->warmup_assoc_range_nodes.at(query_idx),
+                    this->warmup_assoc_range_atypes.at(query_idx),
+                    this->warmup_assoc_range_offs.at(query_idx),
+                    this->warmup_assoc_range_lens.at(query_idx));
+                break;
+            case 1:
+                LOG_E("obj_get, query idx %d (%d)\n",
+                    query_idx, warmup_obj_get_nodes.size());
+                client->obj_get(attrs,
+                    this->warmup_obj_get_nodes.at(query_idx));
+                break;
+            case 2:
+                LOG_E("assoc_get, query idx %d (%d %d %d %d %d)\n",
+                    query_idx,
+                    this->warmup_assoc_get_nodes.size(),
+                    this->warmup_assoc_get_lows.size(),
+                    this->warmup_assoc_get_dst_id_sets.size(),
+                    this->warmup_assoc_get_lows.size(),
+                    this->warmup_assoc_get_highs.size());
+
+                client->assoc_get(result,
+                    this->warmup_assoc_get_nodes.at(query_idx),
+                    this->warmup_assoc_get_atypes.at(query_idx),
+                    this->warmup_assoc_get_dst_id_sets.at(query_idx),
+                    this->warmup_assoc_get_lows.at(query_idx),
+                    this->warmup_assoc_get_highs.at(query_idx));
+                break;
+            case 3:
+                LOG_E("assoc_count, query idx %d (%d %d)\n",
+                    query_idx,
+                     this->warmup_assoc_count_nodes.size(),
+                     this->warmup_assoc_count_atypes.size());
+                client->assoc_count(
+                    this->warmup_assoc_count_nodes.at(query_idx),
+                    this->warmup_assoc_count_atypes.at(query_idx));
+                break;
+            case 4:
+                LOG_E("assoc_time_range, query idx %d (%d %d %d %d %d)\n",
+                    query_idx,
+                    this->warmup_assoc_time_range_nodes.size(),
+                    this->warmup_assoc_time_range_atypes.size(),
+                    this->warmup_assoc_time_range_lows.size(),
+                    this->warmup_assoc_time_range_highs.size(),
+                    this->warmup_assoc_time_range_limits.size());
+
+                client->assoc_time_range(result,
+                    this->warmup_assoc_time_range_nodes.at(query_idx),
+                    this->warmup_assoc_time_range_atypes.at(query_idx),
+                    this->warmup_assoc_time_range_lows.at(query_idx),
+                    this->warmup_assoc_time_range_highs.at(query_idx),
+                    this->warmup_assoc_time_range_limits.at(query_idx));
+                break;
+            default:
+                assert(false);
+        }
+        } catch (std::exception& e) {
+          LOG_E("Query failed.\n");
+          return;
+        }
+        transport->close();
+    }
+
     // BENCHMARKING NEIGHBOR QUERIES
     void benchmark_neighbor_latency(
         std::string res_path,
