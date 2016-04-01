@@ -1498,7 +1498,7 @@ public:
                     assert(false);
                 }
                 } catch (std::exception& e) {
-                  fprintf(stderr, "Query failed: type = %d, err = %s\n", query, e.what());
+                  fprintf(stderr, "Query failed: type = %d, idx = %d err = %s\n", query, query_idx, e.what());
                   thread_data->client.reset();
                   thread_data->transport.reset();
                   shared_ptr<TSocket> socket(
@@ -1702,7 +1702,7 @@ public:
                 try {
                 RUN_TAO_MIX_THPUT_BODY // actually run
                 } catch (std::exception& e) {
-                  fprintf(stderr, "Query failed: type = %d, err = %s\n", query, e.what());
+                  fprintf(stderr, "Query failed: type = %d, idx = %d err = %s\n", query, query_idx, e.what());
                   thread_data->client.reset();
                   thread_data->transport.reset();
                   shared_ptr<TSocket> socket(
@@ -1746,7 +1746,7 @@ public:
               try {
                 RUN_TAO_MIX_THPUT_BODY
               } catch (std::exception& e) {
-                fprintf(stderr, "Query failed: type = %d, err = %s\n", query, e.what());
+                fprintf(stderr, "Query failed: type = %d, idx = %d err = %s\n", query, query_idx, e.what());
                 thread_data->client.reset();
                 thread_data->transport.reset();
                 shared_ptr<TSocket> socket(
@@ -1898,7 +1898,7 @@ public:
 
                 ++i;
                 } catch (std::exception& e) {
-                  fprintf(stderr, "Query failed: type = %d, err = %s\n", query, e.what());
+                  fprintf(stderr, "Query failed: type = %d, idx = %d err = %s\n", query, query_idx, e.what());
                   thread_data->client.reset();
                   thread_data->transport.reset();
                   shared_ptr<TSocket> socket(
@@ -1976,7 +1976,7 @@ public:
                 try {
                   RUN_TAO_MIX_WITH_UPDATES_THPUT_BODY // actually run
                 } catch (std::exception& e) {
-                  fprintf(stderr, "Query failed: type = %d, err = %s\n", query, e.what());
+                  fprintf(stderr, "Query failed: type = %d, idx = %d err = %s\n", query, query_idx, e.what());
                   thread_data->client.reset();
                   thread_data->transport.reset();
                   shared_ptr<TSocket> socket(
@@ -2010,7 +2010,7 @@ public:
               try {
                 RUN_TAO_MIX_WITH_UPDATES_THPUT_BODY
               } catch(std::exception& e) {
-                fprintf(stderr, "Query failed: type = %d, err = %s\n", query, e.what());
+                fprintf(stderr, "Query failed: type = %d, idx = %d err = %s\n", query, query_idx, e.what());
                 thread_data->client.reset();
                 thread_data->transport.reset();
                 shared_ptr<TSocket> socket(
