@@ -755,13 +755,13 @@ int main(int argc, char **argv) {
     } else if (type == "debug") {
         while (true) {
             char cmd_line[500];
-            std::cout << "shell> ";
+            std::cout << "debug> ";
             std::cin.getline(cmd_line, sizeof(cmd_line));
 
             std::istringstream iss(cmd_line);
             int query_type, query_idx;
 
-            if (!(iss >> query_type >> query_idx) && (query_type != "exit" || query_type != "quit")) {
+            if (!(iss >> query_type >> query_idx)) {
               std::cerr << "Could not parse command: " << cmd_line << "\n";
               continue;
             }
