@@ -1421,6 +1421,12 @@ int main(int argc, char **argv) {
         return -1;
     }
 
+    LOG_E("Launched aggregator with command line: ");
+    for (int i = 0; i < argc; i++) {
+      LOG_E("%s ", argv[i]);
+    }
+    LOG_E("\n");
+
     int c, total_num_shards, local_num_shards, local_host_id;
     bool multistore_enabled;
     int num_suffixstore_shards, num_logstore_shards;
