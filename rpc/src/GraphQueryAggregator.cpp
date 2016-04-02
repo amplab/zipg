@@ -1105,7 +1105,7 @@ public:
     {
     	COND_LOG_E("Received local request for obj_get nodeId = %lld\n", nodeId);
         int shard_idx = shard_id_to_shard_idx(shardId);
-        COND_LOG_E("Shard index = %d, number of shards on this server = %zu\n", local_shards_.size());
+        COND_LOG_E("Shard index = %d, number of shards on this server = %zu\n", shard_idx, local_shards_.size());
         local_shards_.at(shard_idx)
             .obj_get(_return, global_to_local_node_id(nodeId, shardId));
     }
