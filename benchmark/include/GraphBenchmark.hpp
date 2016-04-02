@@ -1417,7 +1417,7 @@ public:
 			}
 			++i;
 		}
-		COND_LOG_E("Warmup done: served %" PRId64 " queries/batches\n", i);
+		LOG_E("Warmup done: served %" PRId64 " queries\n", i);
 
 		// Measure phase
 		i = 0;
@@ -1496,7 +1496,7 @@ public:
 		query_thput = i * 1. / total_secs;
 		edges_thput = edges * 1. / total_secs;
 
-		COND_LOG_E("Query done: served %" PRId64 " queries\n", i);
+		LOG_E("Measure done: served %" PRId64 " queries\n", i);
 
 		std::ofstream ofs("throughput_tao_mix.txt",
 			std::ofstream::out | std::ofstream::app);
@@ -1504,6 +1504,7 @@ public:
 		ofs.close();
 
 		// Cooldown
+		i = 0;
 		time_t cooldown_start = get_timestamp();
 		while (get_timestamp() - cooldown_start < COOLDOWN_MICROSECS) {
 			try {
@@ -1526,6 +1527,7 @@ public:
 				thread_data->transport = transport;
 			}
 		}
+		LOG_E("Cooldown done: served %" PRId64 " queries\n", i);
         return std::make_pair(query_thput, edges_thput);
     }
 
