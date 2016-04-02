@@ -192,7 +192,7 @@ public:
 
                 log_store_initialized = true;
 
-                if (shard_id_ == num_logstore_shards_) {
+                if (shard_id_ == total_num_shards_) {
                     // This process is the append-only, initially empty store
                     // the node file and edge file will be ignored, since
                     // construct() / load() is not called
@@ -654,13 +654,10 @@ int main(int argc, char **argv) {
     }
 
     // Hack for multistore setup:
-    if (multistore_enabled && total_num_hosts >= 3) {
-        if (local_host_id == total_num_hosts - 1) {
-            COND_LOG_E("Setting shard's store mode to LogStore\n");
+    if (multistore_enabled) {
+        if (local_host_id == total_num_hosts - 1 && total_num_shards == shard_id) {
+            LOG_E("Setting shard's store mode to LogStore\n");
             store_mode = StoreMode::LogStore;
-        } else if (local_host_id == total_num_hosts - 2) {
-            COND_LOG_E("Setting shard's store mode to SuffixStore\n");
-            store_mode = StoreMode::SuffixStore;
         }
     }
 
