@@ -1322,480 +1322,210 @@ public:
         std::vector<ThriftAssoc> result;
         std::vector<std::string> attrs;
 
-#ifdef BATCH_QUERY
-        std::vector<std::vector<ThriftAssoc>> assoc_range_results;
-        std::vector<std::vector<ThriftAssoc>> assoc_get_results;
-        std::vector<std::vector<ThriftAssoc>> assoc_time_range_results;
-        std::vector<int64_t> assoc_count_results;
-        std::vector<std::vector<std::string>> obj_get_results;
+        int64_t i = 0;
+		// Warmup phase
+		time_t start = get_timestamp();
+		while (get_timestamp() - start < WARMUP_MICROSECS) {
+			COND_LOG_E("warmup query %d\n", i);
+			query = choose_query(query_dis(gen));
+			try {
+				switch (query) {
+				case 0:
+					query_idx = warmup_assoc_range_size(gen);
+					COND_LOG_E("assoc range, query idx %d (%d %d %d %d)\n",
+						query_idx,
+						warmup_assoc_range_nodes.size(),
+						warmup_assoc_range_atypes.size(),
+						warmup_assoc_range_offs.size(),
+						warmup_assoc_range_lens.size());
+					thread_data->client->assoc_range(result,
+						this->warmup_assoc_range_nodes.at(query_idx),
+						this->warmup_assoc_range_atypes.at(query_idx),
+						this->warmup_assoc_range_offs.at(query_idx),
+						this->warmup_assoc_range_lens.at(query_idx));
+					break;
+				case 1:
+					query_idx = warmup_obj_get_size(gen);
+					COND_LOG_E("obj_get, query idx %d (%d)\n",
+						query_idx, warmup_obj_get_nodes.size());
+					thread_data->client->obj_get(attrs,
+						this->warmup_obj_get_nodes.at(query_idx));
+					break;
+				case 2:
+					query_idx = warmup_assoc_get_size(gen);
+					COND_LOG_E("assoc_get, query idx %d (%d %d %d %d %d)\n",
+						query_idx,
+						this->warmup_assoc_get_nodes.size(),
+						this->warmup_assoc_get_lows.size(),
+						this->warmup_assoc_get_dst_id_sets.size(),
+						this->warmup_assoc_get_lows.size(),
+						this->warmup_assoc_get_highs.size());
 
-        // Batched queries
-        // assoc_range()
-        std::vector<int64_t> batched_assoc_range_nodes;
-        std::vector<int64_t> batched_assoc_range_atypes;
-        std::vector<int32_t> batched_assoc_range_offs;
-        std::vector<int32_t> batched_assoc_range_lens;
+					thread_data->client->assoc_get(result,
+						this->warmup_assoc_get_nodes.at(query_idx),
+						this->warmup_assoc_get_atypes.at(query_idx),
+						this->warmup_assoc_get_dst_id_sets.at(query_idx),
+						this->warmup_assoc_get_lows.at(query_idx),
+						this->warmup_assoc_get_highs.at(query_idx));
+					break;
+				case 3:
+					query_idx = warmup_assoc_count_size(gen);
+					COND_LOG_E("assoc_count, query idx %d (%d %d)\n",
+						query_idx,
+						 this->warmup_assoc_count_nodes.size(),
+						 this->warmup_assoc_count_atypes.size());
+					thread_data->client->assoc_count(
+						this->warmup_assoc_count_nodes.at(query_idx),
+						this->warmup_assoc_count_atypes.at(query_idx));
+					break;
+				case 4:
+					query_idx = warmup_assoc_time_range_size(gen);
+					COND_LOG_E("assoc_time_range, query idx %d (%d %d %d %d %d)\n",
+						query_idx,
+						this->warmup_assoc_time_range_nodes.size(),
+						this->warmup_assoc_time_range_atypes.size(),
+						this->warmup_assoc_time_range_lows.size(),
+						this->warmup_assoc_time_range_highs.size(),
+						this->warmup_assoc_time_range_limits.size());
 
-        // batched_assoc_count()
-        std::vector<int64_t> batched_assoc_count_nodes;
-        std::vector<int64_t> batched_assoc_count_atypes;
+					thread_data->client->assoc_time_range(result,
+						this->warmup_assoc_time_range_nodes.at(query_idx),
+						this->warmup_assoc_time_range_atypes.at(query_idx),
+						this->warmup_assoc_time_range_lows.at(query_idx),
+						this->warmup_assoc_time_range_highs.at(query_idx),
+						this->warmup_assoc_time_range_limits.at(query_idx));
+					break;
+				default:
+					assert(false);
+				}
+			} catch (std::exception& e) {
+			  fprintf(stderr, "Query failed: type = %d, idx = %d err = %s\n", query, query_idx, e.what());
+			  thread_data->client.reset();
+			  thread_data->transport.reset();
+			  shared_ptr<TSocket> socket(
+				  new TSocket(thread_data->master_hostname, QUERY_HANDLER_PORT));
+			  shared_ptr<TTransport> transport(
+				  new TBufferedTransport(socket));
+			  shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
+			  shared_ptr<GraphQueryAggregatorServiceClient> client(
+				  new GraphQueryAggregatorServiceClient(protocol));
+			  transport->open();
+			  client->init();
 
-        // obj_get
-        std::vector<int64_t> batched_obj_get_nodes;
+			  thread_data->client = client;
+			  thread_data->transport = transport;
+			}
+			++i;
+		}
+		COND_LOG_E("Warmup done: served %" PRId64 " queries/batches\n", i);
 
-        // batched_assoc_get()
-        std::vector<int64_t> batched_assoc_get_nodes;
-        std::vector<int64_t>  batched_assoc_get_atypes;
-        std::vector<std::set<int64_t>> batched_assoc_get_dst_id_sets;
-        std::vector<int64_t> batched_assoc_get_highs;
-        std::vector<int64_t> batched_assoc_get_lows;
+		// Measure phase
+		i = 0;
+		int64_t edges = 0;
+		start = get_timestamp();
+		while (get_timestamp() - start < MEASURE_MICROSECS) {
 
-        // batched_assoc_time_range()
-        std::vector<int64_t> batched_assoc_time_range_nodes;
-        std::vector<int64_t> batched_assoc_time_range_atypes;
-        std::vector<int64_t> batched_assoc_time_range_highs;
-        std::vector<int64_t> batched_assoc_time_range_lows;
-        std::vector<int32_t> batched_assoc_time_range_limits;
-
-        auto clear_batches = [&] {
-            batched_assoc_range_nodes.clear();
-            batched_assoc_range_atypes.clear();
-            batched_assoc_range_offs.clear();
-            batched_assoc_range_lens.clear();
-
-            batched_assoc_count_nodes.clear();
-            batched_assoc_count_atypes.clear();
-
-            batched_obj_get_nodes.clear();
-
-            batched_assoc_get_nodes.clear();
-            batched_assoc_get_atypes.clear();
-            batched_assoc_get_dst_id_sets.clear();
-            batched_assoc_get_highs.clear();
-            batched_assoc_get_lows.clear();
-
-            batched_assoc_time_range_nodes.clear();
-            batched_assoc_time_range_atypes.clear();
-            batched_assoc_time_range_highs.clear();
-            batched_assoc_time_range_lows.clear();
-            batched_assoc_time_range_limits.clear();
-        };
-
-        auto send_batches = [&] {
-            if (!batched_assoc_range_nodes.empty()) {
-                thread_data->client->send_assoc_range_batched(
-                    batched_assoc_range_nodes, batched_assoc_range_atypes,
-                    batched_assoc_range_offs, batched_assoc_range_lens);
-            }
-
-            if (!batched_assoc_time_range_nodes.empty()) {
-                thread_data->client->send_assoc_time_range_batched(
-                    batched_assoc_time_range_nodes,
-                    batched_assoc_time_range_atypes,
-                    batched_assoc_time_range_lows,
-                    batched_assoc_time_range_highs,
-                    batched_assoc_time_range_limits);
-            }
-
-            if (!batched_assoc_get_nodes.empty()) {
-                thread_data->client->send_assoc_get_batched(
-                    batched_assoc_get_nodes,
-                    batched_assoc_get_atypes,
-                    batched_assoc_get_dst_id_sets,
-                    batched_assoc_get_lows,
-                    batched_assoc_get_highs);
-            }
-
-            if (!batched_assoc_count_nodes.empty()) {
-                thread_data->client->send_assoc_count_batched(
-                    batched_assoc_count_nodes, batched_assoc_count_atypes);
-            }
-
-            if (!batched_obj_get_nodes.empty()) {
-                thread_data->client->send_obj_get_batched(
-                    batched_obj_get_nodes);
-            }
-        };
-
-        auto receive_batches = [&] {
-            // Receive -- must be FIFO order
-            if (!batched_assoc_range_nodes.empty()) {
-                thread_data->client->recv_assoc_range_batched(
-                    assoc_range_results);
-            }
-
-            if (!batched_assoc_time_range_nodes.empty()) {
-                thread_data->client->recv_assoc_time_range_batched(
-                    assoc_time_range_results);
-            }
-
-            if (!batched_assoc_get_nodes.empty()) {
-                thread_data->client->recv_assoc_get_batched(
-                    assoc_get_results);
-            }
-
-            if (!batched_assoc_count_nodes.empty()) {
-                thread_data->client->recv_assoc_count_batched(
-                    assoc_count_results);
-            }
-
-            if (!batched_obj_get_nodes.empty()) {
-                thread_data->client->recv_obj_get_batched(
-                    obj_get_results);
-            }
-        };
-#endif
-
-        int64_t i = 0, batches = 0;
-        try {
-            // Warmup phase
-            time_t start = get_timestamp();
-            while (get_timestamp() - start < WARMUP_MICROSECS) {
-                COND_LOG_E("warmup query %d\n", i);
-#ifndef BATCH_QUERY
-                query = choose_query(query_dis(gen));
-                try {
-                switch (query) {
-                case 0:
-                    query_idx = warmup_assoc_range_size(gen);
-                    COND_LOG_E("assoc range, query idx %d (%d %d %d %d)\n",
-                        query_idx,
-                        warmup_assoc_range_nodes.size(),
-                        warmup_assoc_range_atypes.size(),
-                        warmup_assoc_range_offs.size(),
-                        warmup_assoc_range_lens.size());
-                    thread_data->client->assoc_range(result,
-                        this->warmup_assoc_range_nodes.at(query_idx),
-                        this->warmup_assoc_range_atypes.at(query_idx),
-                        this->warmup_assoc_range_offs.at(query_idx),
-                        this->warmup_assoc_range_lens.at(query_idx));
-                    break;
-                case 1:
-                    query_idx = warmup_obj_get_size(gen);
-                    COND_LOG_E("obj_get, query idx %d (%d)\n",
-                        query_idx, warmup_obj_get_nodes.size());
-                    thread_data->client->obj_get(attrs,
-                        this->warmup_obj_get_nodes.at(query_idx));
-                    break;
-                case 2:
-                    query_idx = warmup_assoc_get_size(gen);
-                    COND_LOG_E("assoc_get, query idx %d (%d %d %d %d %d)\n",
-                        query_idx,
-                        this->warmup_assoc_get_nodes.size(),
-                        this->warmup_assoc_get_lows.size(),
-                        this->warmup_assoc_get_dst_id_sets.size(),
-                        this->warmup_assoc_get_lows.size(),
-                        this->warmup_assoc_get_highs.size());
-
-                    thread_data->client->assoc_get(result,
-                        this->warmup_assoc_get_nodes.at(query_idx),
-                        this->warmup_assoc_get_atypes.at(query_idx),
-                        this->warmup_assoc_get_dst_id_sets.at(query_idx),
-                        this->warmup_assoc_get_lows.at(query_idx),
-                        this->warmup_assoc_get_highs.at(query_idx));
-                    break;
-                case 3:
-                    query_idx = warmup_assoc_count_size(gen);
-                    COND_LOG_E("assoc_count, query idx %d (%d %d)\n",
-                        query_idx,
-                         this->warmup_assoc_count_nodes.size(),
-                         this->warmup_assoc_count_atypes.size());
-                    thread_data->client->assoc_count(
-                        this->warmup_assoc_count_nodes.at(query_idx),
-                        this->warmup_assoc_count_atypes.at(query_idx));
-                    break;
-                case 4:
-                    query_idx = warmup_assoc_time_range_size(gen);
-                    COND_LOG_E("assoc_time_range, query idx %d (%d %d %d %d %d)\n",
-                        query_idx,
-                        this->warmup_assoc_time_range_nodes.size(),
-                        this->warmup_assoc_time_range_atypes.size(),
-                        this->warmup_assoc_time_range_lows.size(),
-                        this->warmup_assoc_time_range_highs.size(),
-                        this->warmup_assoc_time_range_limits.size());
-
-                    thread_data->client->assoc_time_range(result,
-                        this->warmup_assoc_time_range_nodes.at(query_idx),
-                        this->warmup_assoc_time_range_atypes.at(query_idx),
-                        this->warmup_assoc_time_range_lows.at(query_idx),
-                        this->warmup_assoc_time_range_highs.at(query_idx),
-                        this->warmup_assoc_time_range_limits.at(query_idx));
-                    break;
-                default:
-                    assert(false);
-                }
-                } catch (std::exception& e) {
-                  fprintf(stderr, "Query failed: type = %d, idx = %d err = %s\n", query, query_idx, e.what());
-                  thread_data->client.reset();
-                  thread_data->transport.reset();
-                  shared_ptr<TSocket> socket(
-                      new TSocket(thread_data->master_hostname, QUERY_HANDLER_PORT));
-                  shared_ptr<TTransport> transport(
-                      new TBufferedTransport(socket));
-                  shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
-                  shared_ptr<GraphQueryAggregatorServiceClient> client(
-                      new GraphQueryAggregatorServiceClient(protocol));
-                  transport->open();
-                  client->init();
-
-                  thread_data->client = client;
-                  thread_data->transport = transport;
-                }
-#else
-                clear_batches();
-                for (int j = 0; j < query_batch_size; ++j) {
-                    query = choose_query(query_dis(gen));
-                    switch (query) {
-                    case 0:
-                        query_idx = warmup_assoc_range_size(gen);
-                        batched_assoc_range_nodes.push_back(
-                            this->warmup_assoc_range_nodes.at(query_idx));
-                        batched_assoc_range_atypes.push_back(
-                            this->warmup_assoc_range_atypes.at(query_idx));
-                        batched_assoc_range_offs.push_back(
-                            this->warmup_assoc_range_offs.at(query_idx));
-                        batched_assoc_range_lens.push_back(
-                            this->warmup_assoc_range_lens.at(query_idx));
-                        break;
-                    case 1:
-                        query_idx = warmup_obj_get_size(gen);
-                        batched_obj_get_nodes.push_back(
-                            this->warmup_obj_get_nodes.at(query_idx));
-                        break;
-                    case 2:
-                        query_idx = warmup_assoc_get_size(gen);
-                        batched_assoc_get_nodes.push_back(
-                            this->warmup_assoc_get_nodes.at(query_idx));
-                        batched_assoc_get_atypes.push_back(
-                            this->warmup_assoc_get_atypes.at(query_idx));
-                        batched_assoc_get_lows.push_back(
-                            this->warmup_assoc_get_lows.at(query_idx));
-                        batched_assoc_get_highs.push_back(
-                            this->warmup_assoc_get_highs.at(query_idx));
-                        batched_assoc_get_dst_id_sets.emplace_back(
-                            std::move(this->warmup_assoc_get_dst_id_sets.at(query_idx)));
-                        break;
-                    case 3:
-                        query_idx = warmup_assoc_count_size(gen);
-                        batched_assoc_count_nodes.push_back(
-                            this->warmup_assoc_count_nodes.at(query_idx));
-                        batched_assoc_count_atypes.push_back(
-                            this->warmup_assoc_count_atypes.at(query_idx));
-                        break;
-                    case 4:
-                        query_idx = warmup_assoc_time_range_size(gen);
-                        batched_assoc_time_range_nodes.push_back(
-                            this->warmup_assoc_time_range_nodes.at(query_idx));
-                        batched_assoc_time_range_atypes.push_back(
-                            this->warmup_assoc_time_range_atypes.at(query_idx));
-                        batched_assoc_time_range_lows.push_back(
-                            this->warmup_assoc_time_range_lows.at(query_idx));
-                        batched_assoc_time_range_highs.push_back(
-                            this->warmup_assoc_time_range_highs.at(query_idx));
-                        batched_assoc_time_range_limits.push_back(
-                            this->warmup_assoc_time_range_limits.at(query_idx));
-                        break;
-                    default:
-                        assert(false);
-                    }
-                }
-                send_batches();
-                receive_batches();
-#endif // batch query
-                ++i;
-            }
-            COND_LOG_E("Warmup done: served %" PRId64 " queries/batches\n", i);
-
-            // Measure phase
-            i = 0;
-            int64_t edges = 0;
-            start = get_timestamp();
-            while (get_timestamp() - start < MEASURE_MICROSECS) {
-#ifndef BATCH_QUERY
 #define RUN_TAO_MIX_THPUT_BODY
-                query = choose_query(query_dis(gen)); \
-                switch (query) { \
-                case 0: \
-                  query_idx = assoc_range_size(gen); \
-                  thread_data->client->assoc_range(result, \
-                      this->assoc_range_nodes.at(query_idx), \
-                      this->assoc_range_atypes.at(query_idx), \
-                      this->assoc_range_offs.at(query_idx), \
-                      this->assoc_range_lens.at(query_idx)); \
-                  break; \
-                case 1: \
-                  query_idx = obj_get_size(gen); \
-                  thread_data->client->obj_get(attrs, \
-                      this->obj_get_nodes.at(query_idx)); \
-                  break; \
-                case 2: \
-                  query_idx = assoc_get_size(gen); \
-                  thread_data->client->assoc_get(result, \
-                      this->assoc_get_nodes.at(query_idx), \
-                      this->assoc_get_atypes.at(query_idx), \
-                      this->assoc_get_dst_id_sets.at(query_idx), \
-                      this->assoc_get_lows.at(query_idx), \
-                      this->assoc_get_highs.at(query_idx)); \
-                  break; \
-                case 3: \
-                  query_idx = assoc_count_size(gen); \
-                  thread_data->client->assoc_count( \
-                      this->assoc_count_nodes.at(query_idx), \
-                      this->assoc_count_atypes.at(query_idx)); \
-                  break; \
-                case 4: \
-                  query_idx = assoc_time_range_size(gen); \
-                  thread_data->client->assoc_time_range(result, \
-                      this->assoc_time_range_nodes.at(query_idx), \
-                      this->assoc_time_range_atypes.at(query_idx), \
-                      this->assoc_time_range_lows.at(query_idx), \
-                      this->assoc_time_range_highs.at(query_idx), \
-                      this->assoc_time_range_limits.at(query_idx)); \
-                  break; \
-                default: \
-                  assert(false); \
-                } \
-                edges += result.size(); \
-                ++i;
-#else // BATCH_QUERY
-#define RUN_TAO_MIX_THPUT_BODY_BATCHED
-               clear_batches(); \
-               for (int j = 0; j < query_batch_size; ++j) { \
-                    query = choose_query(query_dis(gen)); \
-                    switch (query) { \
-                    case 0: \
-                        query_idx = assoc_range_size(gen); \
-                        batched_assoc_range_nodes.push_back( \
-                            this->assoc_range_nodes.at(query_idx)); \
-                        batched_assoc_range_atypes.push_back( \
-                            this->assoc_range_atypes.at(query_idx)); \
-                        batched_assoc_range_offs.push_back( \
-                            this->assoc_range_offs.at(query_idx)); \
-                        batched_assoc_range_lens.push_back( \
-                            this->assoc_range_lens.at(query_idx)); \
-                        break; \
-                    case 1: \
-                        query_idx = obj_get_size(gen); \
-                        batched_obj_get_nodes.push_back( \
-                            this->obj_get_nodes.at(query_idx)); \
-                        break; \
-                    case 2: \
-                        query_idx = assoc_get_size(gen); \
-                        batched_assoc_get_nodes.push_back( \
-                            this->assoc_get_nodes.at(query_idx)); \
-                        batched_assoc_get_atypes.push_back( \
-                            this->assoc_get_atypes.at(query_idx)); \
-                        batched_assoc_get_lows.push_back( \
-                            this->assoc_get_lows.at(query_idx)); \
-                        batched_assoc_get_highs.push_back( \
-                            this->assoc_get_highs.at(query_idx)); \
-                        batched_assoc_get_dst_id_sets.emplace_back( \
-                            std::move(this->assoc_get_dst_id_sets.at(query_idx))); \
-                        break; \
-                    case 3: \
-                        query_idx = assoc_count_size(gen); \
-                        batched_assoc_count_nodes.push_back( \
-                            this->assoc_count_nodes.at(query_idx)); \
-                        batched_assoc_count_atypes.push_back( \
-                            this->assoc_count_atypes.at(query_idx)); \
-                        break; \
-                    case 4: \
-                        query_idx = assoc_time_range_size(gen); \
-                        batched_assoc_time_range_nodes.push_back( \
-                            this->assoc_time_range_nodes.at(query_idx)); \
-                        batched_assoc_time_range_atypes.push_back( \
-                            this->assoc_time_range_atypes.at(query_idx)); \
-                        batched_assoc_time_range_lows.push_back( \
-                            this->assoc_time_range_lows.at(query_idx)); \
-                        batched_assoc_time_range_highs.push_back( \
-                            this->assoc_time_range_highs.at(query_idx)); \
-                        batched_assoc_time_range_limits.push_back( \
-                            this->assoc_time_range_limits.at(query_idx)); \
-                        break; \
-                    default: \
-                        assert(false); \
-                    } \
-                } \
-                send_batches(); \
-                receive_batches(); \
-                edges += assoc_range_results.size() + \
-                    assoc_get_results.size() + \
-                    assoc_time_range_results.size(); \
-                ++batches;
-                i += query_batch_size;
-#endif // BATCH_QUERY
+			query = choose_query(query_dis(gen)); \
+			switch (query) { \
+			case 0: \
+			  query_idx = assoc_range_size(gen); \
+			  thread_data->client->assoc_range(result, \
+				  this->assoc_range_nodes.at(query_idx), \
+				  this->assoc_range_atypes.at(query_idx), \
+				  this->assoc_range_offs.at(query_idx), \
+				  this->assoc_range_lens.at(query_idx)); \
+			  break; \
+			case 1: \
+			  query_idx = obj_get_size(gen); \
+			  thread_data->client->obj_get(attrs, \
+				  this->obj_get_nodes.at(query_idx)); \
+			  break; \
+			case 2: \
+			  query_idx = assoc_get_size(gen); \
+			  thread_data->client->assoc_get(result, \
+				  this->assoc_get_nodes.at(query_idx), \
+				  this->assoc_get_atypes.at(query_idx), \
+				  this->assoc_get_dst_id_sets.at(query_idx), \
+				  this->assoc_get_lows.at(query_idx), \
+				  this->assoc_get_highs.at(query_idx)); \
+			  break; \
+			case 3: \
+			  query_idx = assoc_count_size(gen); \
+			  thread_data->client->assoc_count( \
+				  this->assoc_count_nodes.at(query_idx), \
+				  this->assoc_count_atypes.at(query_idx)); \
+			  break; \
+			case 4: \
+			  query_idx = assoc_time_range_size(gen); \
+			  thread_data->client->assoc_time_range(result, \
+				  this->assoc_time_range_nodes.at(query_idx), \
+				  this->assoc_time_range_atypes.at(query_idx), \
+				  this->assoc_time_range_lows.at(query_idx), \
+				  this->assoc_time_range_highs.at(query_idx), \
+				  this->assoc_time_range_limits.at(query_idx)); \
+			  break; \
+			default: \
+			  assert(false); \
+			} \
+			edges += result.size(); \
+			++i;
 
-#ifndef BATCH_QUERY
-                try {
-                RUN_TAO_MIX_THPUT_BODY // actually run
-                } catch (std::exception& e) {
-                  fprintf(stderr, "Query failed: type = %d, idx = %d err = %s\n", query, query_idx, e.what());
-                  thread_data->client.reset();
-                  thread_data->transport.reset();
-                  shared_ptr<TSocket> socket(
-                      new TSocket(thread_data->master_hostname, QUERY_HANDLER_PORT));
-                  shared_ptr<TTransport> transport(
-                      new TBufferedTransport(socket));
-                  shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
-                  shared_ptr<GraphQueryAggregatorServiceClient> client(
-                      new GraphQueryAggregatorServiceClient(protocol));
-                  transport->open();
-                  client->init();
+			try {
+				RUN_TAO_MIX_THPUT_BODY // actually run
+			} catch (std::exception& e) {
+				fprintf(stderr, "Query failed: type = %d, idx = %d err = %s\n", query, query_idx, e.what());
+				thread_data->client.reset();
+				thread_data->transport.reset();
+				shared_ptr<TSocket> socket(
+				  new TSocket(thread_data->master_hostname, QUERY_HANDLER_PORT));
+				shared_ptr<TTransport> transport(
+				  new TBufferedTransport(socket));
+				shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
+				shared_ptr<GraphQueryAggregatorServiceClient> client(
+				  new GraphQueryAggregatorServiceClient(protocol));
+				transport->open();
+				client->init();
 
-                  thread_data->client = client;
-                  thread_data->transport = transport;
-                }
-#else
-                RUN_TAO_MIX_THPUT_BODY_BATCHED // run the batched version
-#endif
-            }
-            time_t end = get_timestamp();
-            double total_secs = (end - start) * 1. / 1e6;
-            query_thput = i * 1. / total_secs;
-            edges_thput = edges * 1. / total_secs;
-#ifndef BATCH_QUERY
-            COND_LOG_E("Query done: served %" PRId64 " queries\n", i);
-#else
-            COND_LOG_E(
-                "Query done: served %" PRId64 " queries, %lld %d-batches\n",
-                i, batches, query_batch_size);
-#endif
+				thread_data->client = client;
+				thread_data->transport = transport;
+			}
+		}
+		time_t end = get_timestamp();
+		double total_secs = (end - start) * 1. / 1e6;
+		query_thput = i * 1. / total_secs;
+		edges_thput = edges * 1. / total_secs;
 
-            std::ofstream ofs("throughput_tao_mix.txt",
-                std::ofstream::out | std::ofstream::app);
-            ofs << query_thput << " " << edges_thput << std::endl;
-            ofs.close();
+		COND_LOG_E("Query done: served %" PRId64 " queries\n", i);
 
-            // Cooldown
-            time_t cooldown_start = get_timestamp();
-            while (get_timestamp() - cooldown_start < COOLDOWN_MICROSECS) {
-#ifndef BATCH_QUERY
-              try {
-                RUN_TAO_MIX_THPUT_BODY
-              } catch (std::exception& e) {
-                fprintf(stderr, "Query failed: type = %d, idx = %d err = %s\n", query, query_idx, e.what());
-                thread_data->client.reset();
-                thread_data->transport.reset();
-                shared_ptr<TSocket> socket(
-                    new TSocket(thread_data->master_hostname, QUERY_HANDLER_PORT));
-                shared_ptr<TTransport> transport(
-                    new TBufferedTransport(socket));
-                shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
-                shared_ptr<GraphQueryAggregatorServiceClient> client(
-                    new GraphQueryAggregatorServiceClient(protocol));
-                transport->open();
-                client->init();
+		std::ofstream ofs("throughput_tao_mix.txt",
+			std::ofstream::out | std::ofstream::app);
+		ofs << query_thput << " " << edges_thput << std::endl;
+		ofs.close();
 
-                thread_data->client = client;
-                thread_data->transport = transport;
-              }
-#else
-                RUN_TAO_MIX_THPUT_BODY_BATCHED
-#endif
-            }
-        } catch (std::exception &e) {
-            LOG_E("Throughput test ends...: '%s'\n", e.what());
-        }
+		// Cooldown
+		time_t cooldown_start = get_timestamp();
+		while (get_timestamp() - cooldown_start < COOLDOWN_MICROSECS) {
+			try {
+				RUN_TAO_MIX_THPUT_BODY
+			} catch (std::exception& e) {
+				fprintf(stderr, "Query failed: type = %d, idx = %d err = %s\n", query, query_idx, e.what());
+				thread_data->client.reset();
+				thread_data->transport.reset();
+				shared_ptr<TSocket> socket(
+					new TSocket(thread_data->master_hostname, QUERY_HANDLER_PORT));
+				shared_ptr<TTransport> transport(
+					new TBufferedTransport(socket));
+				shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
+				shared_ptr<GraphQueryAggregatorServiceClient> client(
+					new GraphQueryAggregatorServiceClient(protocol));
+				transport->open();
+				client->init();
+
+				thread_data->client = client;
+				thread_data->transport = transport;
+			}
+		}
         return std::make_pair(query_thput, edges_thput);
     }
 
@@ -1845,218 +1575,214 @@ public:
         std::vector<ThriftAssoc> result;
         std::vector<std::string> attrs;
 
-        int64_t i = 0, batches = 0;
+        int64_t i = 0;
         int64_t src, atype, dst;
         int ret;
 
-        try {
-            // Warmup phase
-            time_t start = get_timestamp();
-            while (get_timestamp() - start < WARMUP_MICROSECS) {
-                COND_LOG_E("warmup query %d\n", i);
-                query = choose_query_with_updates(
-                    query_dis(gen), query_dis(gen));
-                try {
-                switch (query) {
-                case 0:
-                    query_idx = warmup_assoc_range_size(gen);
-                    COND_LOG_E("assoc range, query idx %d (%d %d %d %d)\n",
-                        query_idx,
-                        warmup_assoc_range_nodes.size(),
-                        warmup_assoc_range_atypes.size(),
-                        warmup_assoc_range_offs.size(),
-                        warmup_assoc_range_lens.size());
-                    thread_data->client->assoc_range(result,
-                        this->warmup_assoc_range_nodes.at(query_idx),
-                        this->warmup_assoc_range_atypes.at(query_idx),
-                        this->warmup_assoc_range_offs.at(query_idx),
-                        this->warmup_assoc_range_lens.at(query_idx));
-                    break;
-                case 1:
-                    query_idx = warmup_obj_get_size(gen);
-                    COND_LOG_E("obj_get, query idx %d\n", query_idx);
-                    thread_data->client->obj_get(attrs,
-                        this->warmup_obj_get_nodes.at(query_idx));
-                    break;
-                case 2:
-                    query_idx = warmup_assoc_get_size(gen);
-                    COND_LOG_E("assoc_get, query idx %d\n", query_idx);
-                    thread_data->client->assoc_get(result,
-                        this->warmup_assoc_get_nodes.at(query_idx),
-                        this->warmup_assoc_get_atypes.at(query_idx),
-                        this->warmup_assoc_get_dst_id_sets.at(query_idx),
-                        this->warmup_assoc_get_lows.at(query_idx),
-                        this->warmup_assoc_get_highs.at(query_idx));
-                    break;
-                case 3:
-                    query_idx = warmup_assoc_count_size(gen);
-                    COND_LOG_E("assoc_count, query idx %d\n", query_idx);
-                    thread_data->client->assoc_count(
-                        this->warmup_assoc_count_nodes.at(query_idx),
-                        this->warmup_assoc_count_atypes.at(query_idx));
-                    break;
-                case 4:
-                    query_idx = warmup_assoc_time_range_size(gen);
-                    COND_LOG_E("assoc_time_range, query idx %d\n", query_idx);
-                    thread_data->client->assoc_time_range(result,
-                        this->warmup_assoc_time_range_nodes.at(query_idx),
-                        this->warmup_assoc_time_range_atypes.at(query_idx),
-                        this->warmup_assoc_time_range_lows.at(query_idx),
-                        this->warmup_assoc_time_range_highs.at(query_idx),
-                        this->warmup_assoc_time_range_limits.at(query_idx));
-                    break;
-                case 5:
-                    src = dist_node(gen);
-                    atype = dist_atype(gen);
-                    dst = dist_node(gen);
-                    COND_LOG_E("assoc_add(%lld,atype %d,%lld,...) ",
-                        src, atype, dst);
-                    ret = thread_data->client->assoc_add(
-                        src,
-                        atype,
-                        dst,
-                        MAX_TIME,
-                        ATTR_FOR_NEW_EDGES);
-                    COND_LOG_E("; ret = %d\n", ret);
-                    break;
-                default:
-                    assert(false);
-                }
+		// Warmup phase
+		time_t start = get_timestamp();
+		while (get_timestamp() - start < WARMUP_MICROSECS) {
+			COND_LOG_E("warmup query %d\n", i);
+			query = choose_query_with_updates(
+				query_dis(gen), query_dis(gen));
+			try {
+			switch (query) {
+			case 0:
+				query_idx = warmup_assoc_range_size(gen);
+				COND_LOG_E("assoc range, query idx %d (%d %d %d %d)\n",
+					query_idx,
+					warmup_assoc_range_nodes.size(),
+					warmup_assoc_range_atypes.size(),
+					warmup_assoc_range_offs.size(),
+					warmup_assoc_range_lens.size());
+				thread_data->client->assoc_range(result,
+					this->warmup_assoc_range_nodes.at(query_idx),
+					this->warmup_assoc_range_atypes.at(query_idx),
+					this->warmup_assoc_range_offs.at(query_idx),
+					this->warmup_assoc_range_lens.at(query_idx));
+				break;
+			case 1:
+				query_idx = warmup_obj_get_size(gen);
+				COND_LOG_E("obj_get, query idx %d\n", query_idx);
+				thread_data->client->obj_get(attrs,
+					this->warmup_obj_get_nodes.at(query_idx));
+				break;
+			case 2:
+				query_idx = warmup_assoc_get_size(gen);
+				COND_LOG_E("assoc_get, query idx %d\n", query_idx);
+				thread_data->client->assoc_get(result,
+					this->warmup_assoc_get_nodes.at(query_idx),
+					this->warmup_assoc_get_atypes.at(query_idx),
+					this->warmup_assoc_get_dst_id_sets.at(query_idx),
+					this->warmup_assoc_get_lows.at(query_idx),
+					this->warmup_assoc_get_highs.at(query_idx));
+				break;
+			case 3:
+				query_idx = warmup_assoc_count_size(gen);
+				COND_LOG_E("assoc_count, query idx %d\n", query_idx);
+				thread_data->client->assoc_count(
+					this->warmup_assoc_count_nodes.at(query_idx),
+					this->warmup_assoc_count_atypes.at(query_idx));
+				break;
+			case 4:
+				query_idx = warmup_assoc_time_range_size(gen);
+				COND_LOG_E("assoc_time_range, query idx %d\n", query_idx);
+				thread_data->client->assoc_time_range(result,
+					this->warmup_assoc_time_range_nodes.at(query_idx),
+					this->warmup_assoc_time_range_atypes.at(query_idx),
+					this->warmup_assoc_time_range_lows.at(query_idx),
+					this->warmup_assoc_time_range_highs.at(query_idx),
+					this->warmup_assoc_time_range_limits.at(query_idx));
+				break;
+			case 5:
+				src = dist_node(gen);
+				atype = dist_atype(gen);
+				dst = dist_node(gen);
+				COND_LOG_E("assoc_add(%lld,atype %d,%lld,...) ",
+					src, atype, dst);
+				ret = thread_data->client->assoc_add(
+					src,
+					atype,
+					dst,
+					MAX_TIME,
+					ATTR_FOR_NEW_EDGES);
+				COND_LOG_E("; ret = %d\n", ret);
+				break;
+			default:
+				assert(false);
+			}
 
-                ++i;
-                } catch (std::exception& e) {
-                  fprintf(stderr, "Query failed: type = %d, idx = %d err = %s\n", query, query_idx, e.what());
-                  thread_data->client.reset();
-                  thread_data->transport.reset();
-                  shared_ptr<TSocket> socket(
-                      new TSocket(thread_data->master_hostname, QUERY_HANDLER_PORT));
-                  shared_ptr<TTransport> transport(
-                      new TBufferedTransport(socket));
-                  shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
-                  shared_ptr<GraphQueryAggregatorServiceClient> client(
-                      new GraphQueryAggregatorServiceClient(protocol));
-                  transport->open();
-                  client->init();
+			++i;
+			} catch (std::exception& e) {
+			  fprintf(stderr, "Query failed: type = %d, idx = %d err = %s\n", query, query_idx, e.what());
+			  thread_data->client.reset();
+			  thread_data->transport.reset();
+			  shared_ptr<TSocket> socket(
+				  new TSocket(thread_data->master_hostname, QUERY_HANDLER_PORT));
+			  shared_ptr<TTransport> transport(
+				  new TBufferedTransport(socket));
+			  shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
+			  shared_ptr<GraphQueryAggregatorServiceClient> client(
+				  new GraphQueryAggregatorServiceClient(protocol));
+			  transport->open();
+			  client->init();
 
-                  thread_data->client = client;
-                  thread_data->transport = transport;
-                }
-            }
-            COND_LOG_E("Warmup done: served %" PRId64 " queries/batches\n", i);
+			  thread_data->client = client;
+			  thread_data->transport = transport;
+			}
+		}
+		COND_LOG_E("Warmup done: served %" PRId64 " queries/batches\n", i);
 
-            // Measure phase
-            i = 0;
-            int64_t edges = 0;
-            start = get_timestamp();
-            while (get_timestamp() - start < MEASURE_MICROSECS) {
+		// Measure phase
+		i = 0;
+		int64_t edges = 0;
+		start = get_timestamp();
+		while (get_timestamp() - start < MEASURE_MICROSECS) {
 #define RUN_TAO_MIX_WITH_UPDATES_THPUT_BODY
-                query = choose_query_with_updates(query_dis(gen), query_dis(gen)); \
-                switch (query) { \
-                case 0: \
-                  query_idx = assoc_range_size(gen); \
-                  thread_data->client->assoc_range(result, \
-                      this->assoc_range_nodes.at(query_idx), \
-                      this->assoc_range_atypes.at(query_idx), \
-                      this->assoc_range_offs.at(query_idx), \
-                      this->assoc_range_lens.at(query_idx)); \
-                  break; \
-                case 1: \
-                  query_idx = obj_get_size(gen); \
-                  thread_data->client->obj_get(attrs, \
-                      this->obj_get_nodes.at(query_idx)); \
-                  break; \
-                case 2: \
-                  query_idx = assoc_get_size(gen); \
-                  thread_data->client->assoc_get(result, \
-                      this->assoc_get_nodes.at(query_idx), \
-                      this->assoc_get_atypes.at(query_idx), \
-                      this->assoc_get_dst_id_sets.at(query_idx), \
-                      this->assoc_get_lows.at(query_idx), \
-                      this->assoc_get_highs.at(query_idx)); \
-                  break; \
-                case 3: \
-                  query_idx = assoc_count_size(gen); \
-                  thread_data->client->assoc_count( \
-                      this->assoc_count_nodes.at(query_idx), \
-                      this->assoc_count_atypes.at(query_idx)); \
-                  break; \
-                case 4: \
-                  query_idx = assoc_time_range_size(gen); \
-                  thread_data->client->assoc_time_range(result, \
-                      this->assoc_time_range_nodes.at(query_idx), \
-                      this->assoc_time_range_atypes.at(query_idx), \
-                      this->assoc_time_range_lows.at(query_idx), \
-                      this->assoc_time_range_highs.at(query_idx), \
-                      this->assoc_time_range_limits.at(query_idx)); \
-                  break; \
-                case 5: \
-                    src = dist_node(gen); \
-                    atype = dist_atype(gen); \
-                    dst = dist_node(gen); \
-                    thread_data->client->assoc_add(src, atype, dst, MAX_TIME, ATTR_FOR_NEW_EDGES); \
-                    break; \
-                default: \
-                  assert(false); \
-                } \
-                edges += result.size(); \
-                ++i;
-                try {
-                  RUN_TAO_MIX_WITH_UPDATES_THPUT_BODY // actually run
-                } catch (std::exception& e) {
-                  fprintf(stderr, "Query failed: type = %d, idx = %d err = %s\n", query, query_idx, e.what());
-                  thread_data->client.reset();
-                  thread_data->transport.reset();
-                  shared_ptr<TSocket> socket(
-                      new TSocket(thread_data->master_hostname, QUERY_HANDLER_PORT));
-                  shared_ptr<TTransport> transport(
-                      new TBufferedTransport(socket));
-                  shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
-                  shared_ptr<GraphQueryAggregatorServiceClient> client(
-                      new GraphQueryAggregatorServiceClient(protocol));
-                  transport->open();
-                  client->init();
+			query = choose_query_with_updates(query_dis(gen), query_dis(gen)); \
+			switch (query) { \
+			case 0: \
+			  query_idx = assoc_range_size(gen); \
+			  thread_data->client->assoc_range(result, \
+				  this->assoc_range_nodes.at(query_idx), \
+				  this->assoc_range_atypes.at(query_idx), \
+				  this->assoc_range_offs.at(query_idx), \
+				  this->assoc_range_lens.at(query_idx)); \
+			  break; \
+			case 1: \
+			  query_idx = obj_get_size(gen); \
+			  thread_data->client->obj_get(attrs, \
+				  this->obj_get_nodes.at(query_idx)); \
+			  break; \
+			case 2: \
+			  query_idx = assoc_get_size(gen); \
+			  thread_data->client->assoc_get(result, \
+				  this->assoc_get_nodes.at(query_idx), \
+				  this->assoc_get_atypes.at(query_idx), \
+				  this->assoc_get_dst_id_sets.at(query_idx), \
+				  this->assoc_get_lows.at(query_idx), \
+				  this->assoc_get_highs.at(query_idx)); \
+			  break; \
+			case 3: \
+			  query_idx = assoc_count_size(gen); \
+			  thread_data->client->assoc_count( \
+				  this->assoc_count_nodes.at(query_idx), \
+				  this->assoc_count_atypes.at(query_idx)); \
+			  break; \
+			case 4: \
+			  query_idx = assoc_time_range_size(gen); \
+			  thread_data->client->assoc_time_range(result, \
+				  this->assoc_time_range_nodes.at(query_idx), \
+				  this->assoc_time_range_atypes.at(query_idx), \
+				  this->assoc_time_range_lows.at(query_idx), \
+				  this->assoc_time_range_highs.at(query_idx), \
+				  this->assoc_time_range_limits.at(query_idx)); \
+			  break; \
+			case 5: \
+				src = dist_node(gen); \
+				atype = dist_atype(gen); \
+				dst = dist_node(gen); \
+				thread_data->client->assoc_add(src, atype, dst, MAX_TIME, ATTR_FOR_NEW_EDGES); \
+				break; \
+			default: \
+			  assert(false); \
+			} \
+			edges += result.size(); \
+			++i;
+			try {
+			  RUN_TAO_MIX_WITH_UPDATES_THPUT_BODY // actually run
+			} catch (std::exception& e) {
+			  fprintf(stderr, "Query failed: type = %d, idx = %d err = %s\n", query, query_idx, e.what());
+			  thread_data->client.reset();
+			  thread_data->transport.reset();
+			  shared_ptr<TSocket> socket(
+				  new TSocket(thread_data->master_hostname, QUERY_HANDLER_PORT));
+			  shared_ptr<TTransport> transport(
+				  new TBufferedTransport(socket));
+			  shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
+			  shared_ptr<GraphQueryAggregatorServiceClient> client(
+				  new GraphQueryAggregatorServiceClient(protocol));
+			  transport->open();
+			  client->init();
 
-                  thread_data->client = client;
-                  thread_data->transport = transport;
-                }
-            }
-            time_t end = get_timestamp();
-            double total_secs = (end - start) * 1. / 1e6;
-            query_thput = i * 1. / total_secs;
-            edges_thput = edges * 1. / total_secs;
-            COND_LOG_E("Query done: served %" PRId64 " queries\n", i);
+			  thread_data->client = client;
+			  thread_data->transport = transport;
+			}
+		}
+		time_t end = get_timestamp();
+		double total_secs = (end - start) * 1. / 1e6;
+		query_thput = i * 1. / total_secs;
+		edges_thput = edges * 1. / total_secs;
+		COND_LOG_E("Query done: served %" PRId64 " queries\n", i);
 
-            std::ofstream ofs("throughput_taoMixWithUpdates.txt",
-                std::ofstream::out | std::ofstream::app);
-            ofs << query_thput << " " << edges_thput << std::endl;
-            ofs.close();
+		std::ofstream ofs("throughput_taoMixWithUpdates.txt",
+			std::ofstream::out | std::ofstream::app);
+		ofs << query_thput << " " << edges_thput << std::endl;
+		ofs.close();
 
-            // Cooldown
-            time_t cooldown_start = get_timestamp();
-            while (get_timestamp() - cooldown_start < COOLDOWN_MICROSECS) {
-              try {
-                RUN_TAO_MIX_WITH_UPDATES_THPUT_BODY
-              } catch(std::exception& e) {
-                fprintf(stderr, "Query failed: type = %d, idx = %d err = %s\n", query, query_idx, e.what());
-                thread_data->client.reset();
-                thread_data->transport.reset();
-                shared_ptr<TSocket> socket(
-                    new TSocket(thread_data->master_hostname, QUERY_HANDLER_PORT));
-                shared_ptr<TTransport> transport(
-                    new TBufferedTransport(socket));
-                shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
-                shared_ptr<GraphQueryAggregatorServiceClient> client(
-                    new GraphQueryAggregatorServiceClient(protocol));
-                transport->open();
-                client->init();
+		// Cooldown
+		time_t cooldown_start = get_timestamp();
+		while (get_timestamp() - cooldown_start < COOLDOWN_MICROSECS) {
+		  try {
+			RUN_TAO_MIX_WITH_UPDATES_THPUT_BODY
+		  } catch(std::exception& e) {
+			fprintf(stderr, "Query failed: type = %d, idx = %d err = %s\n", query, query_idx, e.what());
+			thread_data->client.reset();
+			thread_data->transport.reset();
+			shared_ptr<TSocket> socket(
+				new TSocket(thread_data->master_hostname, QUERY_HANDLER_PORT));
+			shared_ptr<TTransport> transport(
+				new TBufferedTransport(socket));
+			shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
+			shared_ptr<GraphQueryAggregatorServiceClient> client(
+				new GraphQueryAggregatorServiceClient(protocol));
+			transport->open();
+			client->init();
 
-                thread_data->client = client;
-                thread_data->transport = transport;
-              }
-            }
-        } catch (std::exception &e) {
-            LOG_E("Throughput test ends...: '%s'\n", e.what());
-        }
+			thread_data->client = client;
+			thread_data->transport = transport;
+		  }
+		}
         return std::make_pair(query_thput, edges_thput);
     }
 
