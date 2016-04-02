@@ -47,6 +47,10 @@ boost::shared_mutex edge_update_ptrs_mutex;
 // lies between (0, n_s - 1), suffix store if it lies between (n_s, n_s + n_ss - 1),
 // etc.
 
+// num_succinctstore_shards_ = total_num_shards
+// num_suffixstore_shards_ = 0
+// num_logstore_shards_ = 1
+
 class GraphQueryAggregatorServiceHandler :
     virtual public GraphQueryAggregatorServiceIf {
 
@@ -66,17 +70,11 @@ public:
       total_num_hosts_(hostnames.size()),
       initiated_(false),
       multistore_enabled_(multistore_enabled),
+	  num_succinctstore_shards_(total_num_shards),  // FIXME
       num_suffixstore_shards_(num_suffixstore_shards),
       num_logstore_shards_(num_logstore_shards)
     {
-        num_succinctstore_hosts_ = total_num_hosts_;
-        num_succinctstore_shards_ = total_num_shards_; // synoynyms
-
-        if (multistore_enabled_) {
-            // anuragk: This is one such location where the code assumes
-            // dedicated SuffixStore/LogStore servers.
-            num_succinctstore_hosts_ = total_num_hosts_ - 2;
-        }
+        num_succinctstore_hosts_ = total_num_hosts_; // FIXME
     }
 
     int32_t local_data_init() {
@@ -220,12 +218,20 @@ public:
     int32_t connect_to_local_shards() {
         int num_shards_on_host = local_num_shards_;
         if (multistore_enabled_) {
-            if (local_host_id_ == total_num_hosts_ - 2) {
-                num_shards_on_host = num_suffixstore_shards_;
-            } else if (local_host_id_ == total_num_hosts_ - 1) {
-                // FIXME: we should configure if there is an empty LogStore
-                num_shards_on_host = num_logstore_shards_ + 1;
-            }
+//            if (local_host_id_ == total_num_hosts_ - 2) {
+//                num_shards_on_host = num_suffixstore_shards_;
+//            } else if (local_host_id_ == total_num_hosts_ - 1) {
+//                // FIXME: we should configure if there is an empty LogStore
+//                num_shards_on_host = num_logstore_shards_ + 1;
+//            }
+        	if (local_host_id_ == total_num_hosts_ - 1) {
+        		num_shards_on_host += (num_logstore_shards_ + 1); // FIXME
+        		LOG_E("Server %d has SuccinctStore+LogStore shards: Total = %d\n",
+        				local_host_id_, num_shards_on_host);
+        	} else {
+        		LOG_E("Server %d has only SuccinctStore shards: Total = %d\n",
+        				local_host_id_, num_shards_on_host);
+        	}
         }
         COND_LOG_E("num shards on this host (id %d): %d\n",
             local_host_id_, num_shards_on_host);
@@ -695,52 +701,6 @@ public:
         }
     }
 
-    void assoc_range_batched(
-        std::vector<std::vector<ThriftAssoc>>& _return,
-        const std::vector<int64_t>& srcs,
-        const std::vector<int64_t>& atypes,
-        const std::vector<int32_t>& offs,
-        const std::vector<int32_t>& lens)
-    {
-        COND_LOG_E("in aggregator assoc_range\n");
-
-        const size_t query_len = srcs.size();
-        int64_t src, atype;
-        int32_t off, len;
-        int shard_id, host_id;
-
-        for (size_t i = 0; i < query_len; ++i) {
-            src = srcs.at(i);
-            atype = atypes.at(i);
-            off = offs.at(i);
-            len = lens.at(i);
-
-            shard_id = src % total_num_shards_;
-            host_id = shard_id % total_num_hosts_;
-            if (host_id == local_host_id_) {
-                local_shards_.at(shard_id_to_shard_idx(shard_id))
-                    .send_assoc_range(src, atype, off, len);
-            } else {
-                aggregators_.at(host_id).send_assoc_range_local(
-                    shard_id, src, atype, off, len);
-            }
-        }
-
-        _return.resize(len);
-        for (size_t i = 0; i < query_len; ++i) {
-            src = srcs.at(i);
-            shard_id = src % total_num_shards_;
-            host_id = shard_id % total_num_hosts_;
-            if (host_id == local_host_id_) {
-                local_shards_.at(shard_id_to_shard_idx(shard_id))
-                    .recv_assoc_range(_return[i]);
-            } else {
-                aggregators_.at(host_id).recv_assoc_range_local(
-                    _return[i]);
-            }
-        }
-    }
-
     inline void get_edge_update_ptrs(
         std::vector<ThriftEdgeUpdatePtr>& ptrs,
         int shard_idx,
@@ -822,45 +782,6 @@ public:
         COND_LOG_E("%d assocs after\n", _return.size());
     }
 
-    void assoc_count_batched(
-        std::vector<int64_t>& _return,
-        const std::vector<int64_t>& srcs,
-        const std::vector<int64_t>& atypes)
-    {
-        const size_t query_len = srcs.size();
-        int64_t src, atype;
-        int shard_id, host_id;
-
-        for (size_t i = 0; i < query_len; ++i) {
-            src = srcs.at(i);
-            atype = atypes.at(i);
-
-            shard_id = src % total_num_shards_;
-            host_id = shard_id % total_num_hosts_;
-            if (host_id == local_host_id_) {
-                local_shards_.at(shard_id_to_shard_idx(shard_id))
-                    .send_assoc_count(src, atype);
-            } else {
-                aggregators_.at(host_id).send_assoc_count_local(
-                    shard_id, src, atype);
-            }
-        }
-
-        _return.resize(query_len);
-        for (size_t i = 0; i < query_len; ++i) {
-            src = srcs.at(i);
-
-            shard_id = src % total_num_shards_;
-            host_id = shard_id % total_num_hosts_;
-            if (host_id == local_host_id_) {
-                _return[i] = local_shards_.at(shard_id_to_shard_idx(shard_id))
-                    .recv_assoc_count();
-            } else {
-                _return[i] = aggregators_.at(host_id).recv_assoc_count_local();
-            }
-        }
-    }
-
     int64_t assoc_count(int64_t src, int64_t atype) {
         assert(total_num_shards_ > 0 && "total_num_shards_ <= 0");
         assert(num_succinctstore_hosts_ > 0 && "num_succinctstore_hosts_ <= 0");
@@ -939,59 +860,6 @@ public:
         }
     }
 
-    void assoc_get_batched(
-        std::vector<std::vector<ThriftAssoc>>& _return,
-        const std::vector<int64_t>& srcs,
-        const std::vector<int64_t>& atypes,
-        const std::vector<std::set<int64_t>>& dstIdSets,
-        const std::vector<int64_t>& tLows,
-        const std::vector<int64_t>& tHighs)
-    {
-        COND_LOG_E("in agg. assoc_get()\n");
-
-        const size_t query_len = srcs.size();
-        int64_t src, atype, tLow, tHigh;
-        int shard_id, host_id;
-
-        for (size_t i = 0; i < query_len; ++i) {
-            src = srcs.at(i);
-            atype = atypes.at(i);
-            const auto& dstIdSet = dstIdSets.at(i);
-            tLow = tLows.at(i);
-            tHigh = tHighs.at(i);
-
-            shard_id = src % total_num_shards_;
-            host_id = shard_id % total_num_hosts_;
-            if (host_id == local_host_id_) {
-                COND_LOG_E("sending to shard %d\n", shard_id);
-                local_shards_.at(shard_id_to_shard_idx(shard_id))
-                    .send_assoc_get(src, atype, dstIdSet, tLow, tHigh);
-                COND_LOG_E("done\n");
-            } else {
-                aggregators_.at(host_id).send_assoc_get_local(
-                    shard_id, src, atype, dstIdSet, tLow, tHigh);
-            }
-        }
-
-        _return.resize(query_len);
-        for (size_t i = 0; i < query_len; ++i) {
-            src = srcs.at(i);
-
-            shard_id = src % total_num_shards_;
-            host_id = shard_id % total_num_hosts_;
-
-            if (host_id == local_host_id_) {
-                COND_LOG_E("sending to shard %d\n", shard_id);
-                local_shards_.at(shard_id_to_shard_idx(shard_id))
-                    .recv_assoc_get(_return[i]);
-                COND_LOG_E("done\n");
-            } else {
-                aggregators_.at(host_id).recv_assoc_get_local(
-                    _return[i]);
-            }
-        }
-    }
-
     // FIXME: it currently goes to all shards in parallel, due to lack of times.
     void assoc_get_local(
         std::vector<ThriftAssoc>& _return,
@@ -1060,43 +928,6 @@ public:
         }
     }
 
-    void obj_get_batched(
-        std::vector<std::vector<std::string>>& _return,
-        const std::vector<int64_t>& nodeIds)
-    {
-        const size_t query_len = nodeIds.size();
-        int64_t nodeId;
-        int shard_id, host_id;
-
-        for (size_t i = 0; i < query_len; ++i) {
-            nodeId = nodeIds.at(i);
-
-            shard_id = nodeId % total_num_shards_;
-            host_id = shard_id % total_num_hosts_;
-            if (host_id == local_host_id_) {
-                local_shards_.at(shard_id_to_shard_idx(shard_id)).send_obj_get(
-                    global_to_local_node_id(nodeId, shard_id));
-            } else {
-                aggregators_.at(host_id).send_obj_get_local(
-                    shard_id, nodeId);
-            }
-        }
-
-        _return.resize(query_len);
-        for (size_t i = 0; i < query_len; ++i) {
-            nodeId = nodeIds.at(i);
-
-            shard_id = nodeId % total_num_shards_;
-            host_id = shard_id % total_num_hosts_;
-            if (host_id == local_host_id_) {
-                local_shards_.at(shard_id_to_shard_idx(shard_id)).recv_obj_get(
-                    _return[i]);
-            } else {
-                aggregators_.at(host_id).recv_obj_get_local(_return[i]);
-            }
-        }
-    }
-
     // TODO: multistore logic
     void obj_get_local(
         std::vector<std::string>& _return,
@@ -1130,53 +961,6 @@ public:
         } else {
             aggregators_.at(host_id).assoc_time_range_local(
                 _return, shard_id, src, atype, tLow, tHigh, limit);
-        }
-    }
-
-    void assoc_time_range_batched(
-        std::vector<std::vector<ThriftAssoc>>& _return,
-        const std::vector<int64_t>& srcs,
-        const std::vector<int64_t>& atypes,
-        const std::vector<int64_t>& tLows,
-        const std::vector<int64_t>& tHighs,
-        const std::vector<int32_t>& limits)
-    {
-        const size_t query_len = srcs.size();
-        int64_t src, atype, tLow, tHigh;
-        int32_t limit;
-        int shard_id, host_id;
-
-        for (size_t i = 0; i < query_len; ++i) {
-            src = srcs.at(i);
-            atype = atypes.at(i);
-            tLow = tLows.at(i);
-            tHigh = tHighs.at(i);
-            limit = limits.at(i);
-
-            shard_id = src % total_num_shards_;
-            host_id = shard_id % total_num_hosts_;
-            if (host_id == local_host_id_) {
-                local_shards_.at(shard_id_to_shard_idx(shard_id))
-                    .send_assoc_time_range(src, atype, tLow, tHigh, limit);
-            } else {
-                aggregators_.at(host_id).send_assoc_time_range_local(
-                    shard_id, src, atype, tLow, tHigh, limit);
-            }
-        }
-
-        _return.resize(query_len);
-        for (size_t i = 0; i < query_len; ++i) {
-            src = srcs.at(i);
-
-            shard_id = src % total_num_shards_;
-            host_id = shard_id % total_num_hosts_;
-            if (host_id == local_host_id_) {
-                local_shards_.at(shard_id_to_shard_idx(shard_id))
-                    .recv_assoc_time_range(_return[i]);
-            } else {
-                aggregators_.at(host_id).recv_assoc_time_range_local(
-                    _return[i]);
-            }
         }
     }
 
@@ -1299,19 +1083,21 @@ private:
         return (global_node_id - shard_id) / total_num_shards_;
     }
 
-    // Host 0 to n - 3: the SuccinctStores, hash-partitioned
-    // Host n - 2: the SuffixStores
-    // Host n - 1: the LogStores
+    // Host 0 to n 1: the SuccinctStores, hash-partitioned
+    // Host n - 1: the empty LogStore
     inline int host_id_for_shard(int shard_id) {
         if (!multistore_enabled_ || shard_id < num_succinctstore_shards_) {
             assert(num_succinctstore_hosts_ > 0 && "num_succinctstore_hosts_ <= 0");
             return shard_id % num_succinctstore_hosts_;
         }
-        if (shard_id - num_succinctstore_shards_ < num_suffixstore_shards_) {
-            return num_succinctstore_hosts_; // host n - 2
-        } else {
-            return num_succinctstore_hosts_ + 1; // host n - 1
-        }
+//        if (shard_id - num_succinctstore_shards_ < num_suffixstore_shards_) {
+//            return num_succinctstore_hosts_; // host n - 2
+//        } else {
+//            return num_succinctstore_hosts_ + 1; // host n - 1
+//        }
+        // FIXME
+        COND_LOG_E("LogStore shard %d resides on host %d\n", shard_id, num_succinctstore_hosts_ - 1);
+        return num_succinctstore_hosts_ - 1;
     }
 
     // Limitation: this assumes 1 SuffixStore machine and 1 LogStore machine.
@@ -1325,25 +1111,34 @@ private:
         if (diff >= 0) {
             return diff; // log store
         }
-        diff = shard_id - num_succinctstore_shards_;
-        return diff >= 0
-            ? diff // suffix store
-            : shard_id / num_succinctstore_hosts_; // succinct st., round-robin
+//        diff = shard_id - num_succinctstore_shards_;
+//        return diff >= 0
+//            ? diff // suffix store
+//            : shard_id / num_succinctstore_hosts_; // succinct st., round-robin
+        return shard_id / num_succinctstore_hosts_; // succinct st., round-robin
     }
 
     // Limitation: this assumes 1 SuffixStore machine and 1 LogStore machine.
     inline int shard_idx_to_shard_id(int shard_idx) {
-        if (local_host_id_ < num_succinctstore_hosts_) {
-            return shard_idx * num_succinctstore_hosts_ + local_host_id_;
-        } else if (local_host_id_ == num_succinctstore_hosts_) {
-            // case: suffix store machine
-            return shard_idx + num_succinctstore_shards_;
-        } else {
-            // case: log store machine
-            assert(local_host_id_ == num_succinctstore_hosts_ + 1);
-            return shard_idx +
-                num_succinctstore_shards_ + num_suffixstore_shards_;
-        }
+//        if (local_host_id_ < num_succinctstore_hosts_) {
+//            return shard_idx * num_succinctstore_hosts_ + local_host_id_;
+//        } else if (local_host_id_ == num_succinctstore_hosts_) {
+//            // case: suffix store machine
+//            return shard_idx + num_succinctstore_shards_;
+//        } else {
+//            // case: log store machine
+//            assert(local_host_id_ == num_succinctstore_hosts_ + 1);
+//            return shard_idx +
+//                num_succinctstore_shards_ + num_suffixstore_shards_;
+//        }
+    	if (local_host_id_ < num_succinctstore_hosts_ && shard_idx < local_num_shards_) {
+			return shard_idx * num_succinctstore_hosts_ + local_host_id_;
+		} else {
+			// case: log store machine
+			assert(local_host_id_ == num_succinctstore_hosts_ - 1);
+			return shard_idx +
+				num_succinctstore_shards_ + num_suffixstore_shards_;
+		}
     }
 
     const int total_num_shards_; // total # of logical shards
