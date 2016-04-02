@@ -874,7 +874,7 @@ public:
 
         COND_LOG_E("assoc_get_local(src %lld, atype %lld) "
             "; shardId %d on host %d, shard idx %d, num local shards = %zu\n",
-            src, atype, shardId, local_host_id_, shard_idx, local_shards_);
+            src, atype, shardId, local_host_id_, shard_idx, local_shards_.size());
 
         std::vector<ThriftEdgeUpdatePtr> ptrs;
         get_edge_update_ptrs(ptrs, shard_idx, src, atype);
