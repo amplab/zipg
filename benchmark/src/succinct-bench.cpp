@@ -753,6 +753,17 @@ int main(int argc, char **argv) {
         // Demo code
 
     } else if (type == "debug") {
+    	bench->read_test_queries(warmup_neighbor_file, // assoc_range
+            measure_neighbor_file,
+            warmup_query_file, // assoc_count
+            measure_query_file,
+            warmup_nhbr_node_file, // obj_get
+            nhbr_node_file,
+            warmup_node_file, // assoc_get
+            query_node_file,
+            warmup_assoc_time_range_file, // assoc_time_range
+            query_assoc_time_range_file);
+
         while (true) {
             char cmd_line[500];
             std::cout << "debug> ";

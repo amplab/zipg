@@ -416,6 +416,33 @@ public:
         }
     }
 
+    void read_test_queries(const std::string& warmup_assoc_range_file,
+            const std::string& assoc_range_file,
+            const std::string& warmup_assoc_count_file,
+            const std::string& assoc_count_file,
+            const std::string& warmup_obj_get_file,
+            const std::string& obj_get_file,
+            const std::string& warmup_assoc_get_file,
+            const std::string& assoc_get_file,
+            const std::string& warmup_assoc_time_range_file,
+            const std::string& assoc_time_range_file) {
+
+    	// assoc_range
+		read_assoc_range_queries(warmup_assoc_range_file, assoc_range_file);
+		// assoc_count
+		read_neighbor_atype_queries(warmup_assoc_count_file, assoc_count_file,
+			warmup_assoc_count_nodes, assoc_count_nodes,
+			warmup_assoc_count_atypes, assoc_count_atypes);
+		// obj_get
+		read_neighbor_queries(warmup_obj_get_file, obj_get_file,
+			warmup_obj_get_nodes, obj_get_nodes);
+		// assoc_get
+		read_assoc_get_queries(warmup_assoc_get_file, assoc_get_file);
+		// assoc_time_range
+		read_assoc_time_range_queries(
+			warmup_assoc_time_range_file, assoc_time_range_file);
+    }
+
     void test_tao_query(int query_type, int query_idx) {
         shared_ptr<TSocket> socket(
             new TSocket("localhost", QUERY_HANDLER_PORT));
