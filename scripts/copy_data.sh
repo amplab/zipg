@@ -89,7 +89,7 @@ if [[ "$ENABLE_MULTI_STORE" == T ]]; then
 
   limit=$((NUM_LOGSTORE_PARTS - 1))
   # Copy to last succinct store server
-  host=$(sed -n "$((num_succinctstore_hosts)){p;q;}" ${currDir}/../conf/hosts)
+  host=$(sed -n "$((num_succinctstore_hosts + 2)){p;q;}" ${currDir}/../conf/hosts)
   for i in $(seq 0 "${limit}"); do
     padWidth=${#NUM_LOGSTORE_PARTS}
     padded_shard_id=$(printf "%0*d" ${padWidth} ${i})
