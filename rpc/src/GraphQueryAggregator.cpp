@@ -1055,7 +1055,7 @@ public:
         	COND_LOG_E("Shard %d is local.\n", shard_id);
             obj_get_local(_return, shard_id, nodeId);
         } else {
-        	COND_LOG_E("Forwarding to shard %d on host %d is local.\n", shard_id, host_id);
+        	COND_LOG_E("Forwarding to shard %d on host %d.\n", shard_id, host_id);
             aggregators_.at(host_id).obj_get_local(_return, shard_id, nodeId);
         }
     }
