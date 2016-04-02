@@ -525,7 +525,7 @@ public:
                 assert(false);
         }
         } catch (std::exception& e) {
-          LOG_E("Query failed.\n");
+          LOG_E("Query failed: %s\n", e.what());
           return;
         }
         transport->close();
