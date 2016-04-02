@@ -1049,9 +1049,13 @@ public:
         int shard_id = nodeId % total_num_shards_;
         int host_id = shard_id % num_succinctstore_hosts_;
 
+        COND_LOG_E("Received obj_get for nodeId = %lld\n", nodeId);
+
         if (host_id == local_host_id_) {
+        	COND_LOG_E("Shard %d is local.\n", shard_id);
             obj_get_local(_return, shard_id, nodeId);
         } else {
+        	COND_LOG_E("Forwarding to shard %d on host %d is local.\n", shard_id, host_id);
             aggregators_.at(host_id).obj_get_local(_return, shard_id, nodeId);
         }
     }
@@ -1099,7 +1103,9 @@ public:
         const int32_t shardId,
         const int64_t nodeId)
     {
+    	COND_LOG_E("Received local request for obj_get nodeId = %lld\n", nodeId);
         int shard_idx = shard_id_to_shard_idx(shardId);
+        COND_LOG_E("Shard index = %d, number of shards on this server = %zu\n", local_shards_.size());
         local_shards_.at(shard_idx)
             .obj_get(_return, global_to_local_node_id(nodeId, shardId));
     }
@@ -1474,15 +1480,15 @@ int main(int argc, char **argv) {
             // LogStore
             // +1 because of the last, empty shard
             edge_update_ptrs.resize(num_logstore_shards + 1);
-            LOG_E("[LOGSTORE] Have %zu update pointer tables.", edge_update_ptrs.size());
+            LOG_E("[LOGSTORE] Have %zu update pointer tables.\n", edge_update_ptrs.size());
         } else if (local_host_id == hostnames.size() - 2) {
             // Suf.
             edge_update_ptrs.resize(num_suffixstore_shards);
-            LOG_E("[SUFFIXSTORE] Have %zu update pointer tables.", edge_update_ptrs.size());
+            LOG_E("[SUFFIXSTORE] Have %zu update pointer tables.\n", edge_update_ptrs.size());
         } else {
             // Succ.
             edge_update_ptrs.resize(total_num_shards);
-            LOG_E("[SUCCINCT] Have %zu update pointer tables.", edge_update_ptrs.size());
+            LOG_E("[SUCCINCT] Have %zu update pointer tables.\n", edge_update_ptrs.size());
         }
     }
 
