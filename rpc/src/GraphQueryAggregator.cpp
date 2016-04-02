@@ -886,6 +886,7 @@ public:
             int next_host_id = host_id_for_shard(it->shardId);
             assert(next_host_id != local_host_id_ && "next host is myself!");
 
+            COND_LOG_E("Update ptrs: Next host id = %d\n", next_host_id);
             aggregators_.at(next_host_id).send_assoc_get_local(
                 it->shardId, src, atype, dstIdSet, tLow, tHigh);
         }
