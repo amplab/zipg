@@ -17,12 +17,12 @@ npa=128; sa=32; isa=64 # L0, by default
 node_file_raw=/mnt2/twitter2010-40attr16each-tpch.node
 edge_file_raw=/mnt2/twitter2010-npa128sa32isa64.assoc
 
-threads=( 64 )
+threads=( 32 )
 benches=(
   #benchTaoMix
   #benchTaoUpdates # latency
   benchTaoMixThput
-  benchTaoMixWithUpdatesThput
+  #benchTaoMixWithUpdatesThput
   #benchMixThput
   #benchNhbrNodeThput
   #benchNeighborThput
@@ -61,10 +61,8 @@ function timestamp() {
   date +"%D-%T"
 }
 
-stop_all
-
-bash ${currDir}/../sbin/hosts.sh source "${currDir}/sbin/succinct-config.sh"
-bash ${currDir}/../sbin/hosts.sh source "${currDir}/sbin/load-succinct-env.sh"
+bash ${currDir}/../sbin/hosts.sh source "${currDir}/../sbin/succinct-config.sh"
+bash ${currDir}/../sbin/hosts.sh source "${currDir}/../sbin/load-succinct-env.sh"
 sleep 2
 
 #### Launch benchmark
@@ -91,6 +89,7 @@ for benchType in "${benches[@]}"; do
   case $benchType in
     *Thput)
       for throughput_threads in ${threads[*]}; do
+          stop_all
           start_all
 
           launcherStart=$(date +"%s")
@@ -119,20 +118,17 @@ for benchType in "${benches[@]}"; do
           entry="$t,$bench,${throughput_threads}*10,$sum"
           echo $entry
           echo $entry >> thput-summary
-
-          stop_all
       done
       ;;
     *)
       echo "Running latency benchmark, ${benchType}"
+      stop_all
       start_all
 
       # launch the single client from this master
       export $benchType=T && bash ${currDir}/bench_func.sh \
         $node_file_raw $edge_file_raw $throughput_threads localhost false 2>&1 >run.log
       wait
-
-      stop_all
       ;;
   esac
 done
