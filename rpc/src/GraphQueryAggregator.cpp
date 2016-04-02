@@ -850,11 +850,11 @@ public:
         int host_id = shard_id % num_succinctstore_hosts_;
 
         if (host_id == local_host_id_) {
-            COND_LOG_E("sending to shard %d on host %d\n", shard_id, host_id);
+            COND_LOG_E("sending to shard %d on localhost\n", shard_id);
             assoc_get_local(
                 _return, shard_id, src, atype, dstIdSet, tLow, tHigh);
-            COND_LOG_E("done\n");
         } else {
+            COND_LOG_E("sending to shard %d on host %d\n", shard_id, host_id);
             aggregators_.at(host_id).assoc_get_local(
                 _return, shard_id, src, atype, dstIdSet, tLow, tHigh);
         }
@@ -873,8 +873,8 @@ public:
         int shard_idx = shard_id_to_shard_idx(shardId);
 
         COND_LOG_E("assoc_get_local(src %lld, atype %lld) "
-            "; shardId %d on host %d, shard idx %d\n",
-            src, atype, shardId, local_host_id_, shard_idx);
+            "; shardId %d on host %d, shard idx %d, num local shards = %zu\n",
+            src, atype, shardId, local_host_id_, shard_idx, local_shards_);
 
         std::vector<ThriftEdgeUpdatePtr> ptrs;
         get_edge_update_ptrs(ptrs, shard_idx, src, atype);
