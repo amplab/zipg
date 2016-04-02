@@ -41,7 +41,9 @@
 # Eclipse files
 .cproject
 .project
+.settings
 
+# Idea files
 .idea/
 .idea_modules/
 
