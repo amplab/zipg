@@ -714,7 +714,9 @@ public:
         assert(shard_idx < edge_update_ptrs.size() && "shard_idx >= edge_update_ptrs.size()");
 
         boost::shared_lock<boost::shared_mutex> lk(edge_update_ptrs_mutex);
-        ptrs = edge_update_ptrs.at(shard_idx)[src][atype];
+        auto& src_map = edge_update_ptrs.at(shard_idx);
+        auto& atype_map = src_map[src];
+        ptrs = atype_map[atype];
         lk.unlock();
     }
 
