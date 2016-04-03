@@ -1280,12 +1280,8 @@ int main(int argc, char **argv) {
         if (local_host_id == hostnames.size() - 1) {
             // LogStore
             // +1 because of the last, empty shard
-            edge_update_ptrs.resize(num_logstore_shards + 1);
+            edge_update_ptrs.resize(total_num_shards + num_logstore_shards + 1);
             LOG_E("[LOGSTORE] Have %zu update pointer tables.\n", edge_update_ptrs.size());
-        } else if (local_host_id == hostnames.size() - 2) {
-            // Suf.
-            edge_update_ptrs.resize(num_suffixstore_shards);
-            LOG_E("[SUFFIXSTORE] Have %zu update pointer tables.\n", edge_update_ptrs.size());
         } else {
             // Succ.
             edge_update_ptrs.resize(total_num_shards);
