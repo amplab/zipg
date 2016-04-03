@@ -226,11 +226,6 @@ public:
 //            }
         	if (local_host_id_ == total_num_hosts_ - 1) {
         		num_shards_on_host += (num_logstore_shards_ + 1); // FIXME
-        		LOG_E("Server %d has SuccinctStore+LogStore shards: Total = %d\n",
-        				local_host_id_, num_shards_on_host);
-        	} else {
-        		LOG_E("Server %d has only SuccinctStore shards: Total = %d\n",
-        				local_host_id_, num_shards_on_host);
         	}
         }
         COND_LOG_E("num shards on this host (id %d): %d\n",
@@ -327,6 +322,7 @@ public:
                 curr_ptrs.push_back(ptr);
             }
         }
+        lk.unlock();
 //
 //        local_shards_.at(shard_id_to_shard_idx(local_shard_id))
 //            .record_edge_updates(next_shard_id, updates);
@@ -711,10 +707,15 @@ public:
             ptrs.clear();
             return;
         }
-        boost::shared_lock<boost::shared_mutex> lk(edge_update_ptrs_mutex);
+
         COND_LOG_E("Getting edge update pointers at idx=%d, size = %zu\n",
         		shard_idx, edge_update_ptrs.size());
+
+        assert(shard_idx < edge_update_ptrs.size() && "shard_idx >= edge_update_ptrs.size()");
+
+        boost::shared_lock<boost::shared_mutex> lk(edge_update_ptrs_mutex);
         ptrs = edge_update_ptrs.at(shard_idx)[src][atype];
+        lk.unlock();
     }
 
     // FIXME: the implementation is sequential for now...
@@ -729,8 +730,8 @@ public:
     {
         int shard_idx = shard_id_to_shard_idx(shardId);
         COND_LOG_E("assoc_range_local(src %lld, atype %lld, ..., len %d) "
-            "shard %d on host %d, shard idx %d",
-            src, atype, len, shardId, local_host_id_, shard_idx);
+            "shard %d on host %d, shard idx %d of %d shards\n",
+            src, atype, len, shardId, local_host_id_, shard_idx, local_shards_.size());
         std::vector<ThriftAssoc> assocs;
         int32_t curr_len = 0;
         _return.clear();
@@ -816,6 +817,7 @@ public:
         std::vector<ThriftEdgeUpdatePtr> ptrs;
         get_edge_update_ptrs(ptrs, shard_idx, src, atype);
         COND_LOG_E("# update ptrs: %d\n", ptrs.size());
+
         // Follow all pointers.  Suffix and Log Stores should not have them.
         for (auto& ptr : ptrs) {
             // int64_t offset = ptr.offset; // TODO: add optimization
@@ -826,6 +828,7 @@ public:
         }
 
         // Execute locally
+        assert(shard_idx < local_shards_.size() && "shard_idx >= local_shards_.size()");
         int64_t cnt = local_shards_.at(shard_idx).assoc_count(src, atype);
 
         for (auto& ptr : ptrs) {
@@ -873,6 +876,7 @@ public:
         const int64_t tHigh)
     {
         int shard_idx = shard_id_to_shard_idx(shardId);
+        assert(shard_idx < local_shards_.size() && "shard_idx >= local_shards_.size()");
 
         COND_LOG_E("assoc_get_local(src %lld, atype %lld) "
             "; shardId %d on host %d, shard idx %d, num local shards = %zu\n",
@@ -942,6 +946,8 @@ public:
     {
     	COND_LOG_E("Received local request for obj_get nodeId = %lld\n", nodeId);
         int shard_idx = shard_id_to_shard_idx(shardId);
+        assert(shard_idx < local_shards_.size() && "shard_idx >= local_shards_.size()");
+
         COND_LOG_E("Shard index = %d, number of shards on this server = %zu\n", shard_idx, local_shards_.size());
         local_shards_.at(shard_idx)
             .obj_get(_return, global_to_local_node_id(nodeId, shardId));
@@ -980,6 +986,7 @@ public:
         const int32_t limit)
     {
         int shard_idx = shard_id_to_shard_idx(shardId);
+        assert(shard_idx < local_shards_.size() && "shard_idx >= local_shards_.size()");
 
         COND_LOG_E("assoc_time_range_local(src %lld, atype %lld,...) "
             "; shardId %d on host %d, shard idx %d\n",
@@ -1287,6 +1294,7 @@ int main(int argc, char **argv) {
             edge_update_ptrs.resize(total_num_shards);
             LOG_E("[SUCCINCT] Have %zu update pointer tables.\n", edge_update_ptrs.size());
         }
+        lk.unlock();
     }
 
     int port = QUERY_HANDLER_PORT;

@@ -433,6 +433,7 @@ public:
         case StoreMode::LogStore:
             return graph_log_store_->assoc_count(src, atype);
         }
+        return 0;
     }
 
     void assoc_get(
