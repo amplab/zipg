@@ -1414,6 +1414,7 @@ public:
 
 			  thread_data->client = client;
 			  thread_data->transport = transport;
+			  LOG_E("Reestablished connection.\n");
 			}
 			++i;
 		}
@@ -1489,6 +1490,7 @@ public:
 
 				thread_data->client = client;
 				thread_data->transport = transport;
+				LOG_E("Reestablished connection.\n");
 			}
 		}
 		time_t end = get_timestamp();
@@ -1525,6 +1527,7 @@ public:
 
 				thread_data->client = client;
 				thread_data->transport = transport;
+				LOG_E("Reestablished connection.\n");
 			}
 		}
 		LOG_E("Cooldown done: served %" PRId64 " queries\n", i);
@@ -1671,6 +1674,7 @@ public:
 
 			  thread_data->client = client;
 			  thread_data->transport = transport;
+			  LOG_E("Reestablished connection.\n");
 			}
 		}
 		COND_LOG_E("Warmup done: served %" PRId64 " queries/batches\n", i);
@@ -1749,6 +1753,7 @@ public:
 
 			  thread_data->client = client;
 			  thread_data->transport = transport;
+			  LOG_E("Reestablished connection.\n");
 			}
 		}
 		time_t end = get_timestamp();
@@ -1783,6 +1788,7 @@ public:
 
 			thread_data->client = client;
 			thread_data->transport = transport;
+			LOG_E("Reestablished connection.\n");
 		  }
 		}
         return std::make_pair(query_thput, edges_thput);
