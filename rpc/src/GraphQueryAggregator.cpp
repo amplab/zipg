@@ -716,10 +716,10 @@ public:
         boost::shared_lock<boost::shared_mutex> lk(edge_update_ptrs_mutex);
         auto& src_map = edge_update_ptrs.at(shard_idx);
         auto& src_map_entry = src_map.find(src);
-        if (src_map_entry != std::unordered_map::end) {
+        if (src_map_entry != src_map.end()) {
         	auto& atype_map = src_map[src];
         	auto& atype_map_entry = atype_map.find(atype);
-        	if (atype_map_entry != std::unordered_map::end) {
+        	if (atype_map_entry != atype_map.end()) {
         		ptrs = atype_map[atype];
         	}
         }
