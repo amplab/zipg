@@ -712,6 +712,8 @@ public:
             return;
         }
         boost::shared_lock<boost::shared_mutex> lk(edge_update_ptrs_mutex);
+        COND_LOG_E("Getting edge update pointers at idx=%d, size = %zu\n",
+        		shard_idx, edge_update_ptrs.size());
         ptrs = edge_update_ptrs.at(shard_idx)[src][atype];
     }
 
@@ -891,6 +893,8 @@ public:
                 it->shardId, src, atype, dstIdSet, tLow, tHigh);
         }
 
+        COND_LOG_E("Sending assoc_get request to local shard at idx=%d\n", shard_idx);
+
         local_shards_.at(shard_idx)
             .send_assoc_get(src, atype, dstIdSet, tLow, tHigh);
 
@@ -900,6 +904,7 @@ public:
         for (auto it = ptrs.rbegin(); it != ptrs.rend(); ++it) {
             // int64_t offset = ptr.offset; // TODO: add optimization
             int next_host_id = host_id_for_shard(it->shardId);
+            COND_LOG_E("Update ptrs: Next host id = %d\n", next_host_id);
             aggregators_.at(next_host_id).recv_assoc_get_local(assocs);
             _return.insert(_return.end(), assocs.begin(), assocs.end());
         }
