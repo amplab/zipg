@@ -1064,6 +1064,8 @@ public:
         // (1) the last machine is LogStore machine, and
         // (2) its last shard is the append-only store
         if (local_host_id_ == total_num_hosts_ - 1) {
+
+        	COND_LOG_E("Updating local logstore.\n");
             int ret = local_shards_.back()
                 .assoc_add(src, atype, dst, time, attr);
 
@@ -1087,8 +1089,11 @@ public:
                     { src_atype });
             }
 
+            COND_LOG_E("Finished update!\n");
+
             return ret;
         } else {
+        	COND_LOG_E("Forwarding assoc_add to host %d\n", (total_num_hosts_ - 1));
             return aggregators_.at(total_num_hosts_ - 1)
                 .assoc_add(src, atype, dst, time, attr);
         }
