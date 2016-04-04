@@ -1033,7 +1033,6 @@ public:
         for (auto it = ptrs.rbegin(); it != ptrs.rend(); ++it) {
             // int64_t offset = ptr.offset; // TODO: add optimization
             int next_host_id = host_id_for_shard(it->shardId);
-            assert(next_host_id != local_host_id_ && "next host is myself!");
             if (next_host_id == local_host_id_) {
             	int shard_idx_local = shard_id_to_shard_idx(it->shardId);
             	local_shards_.at(shard_idx_local)
