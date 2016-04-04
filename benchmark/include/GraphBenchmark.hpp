@@ -534,9 +534,8 @@ public:
 				src = dist_node(gen);
 				atype = dist_atype(gen);
 				dst = dist_node(gen);
-				COND_LOG_E("assoc_add(%lld,atype %d,%lld,...) ",
-					src, atype, dst);
-				ret = thread_data->client->assoc_add(
+				LOG_E("assoc_add(%lld,atype %d,%lld,...)\n", src, atype, dst);
+				ret = client->assoc_add(
 					src,
 					atype,
 					dst,
