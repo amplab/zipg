@@ -1070,7 +1070,7 @@ public:
             if (!ret) {
                 int primary_shard_id = src % num_succinctstore_shards_;
                 int primary_host_id = host_id_for_shard(primary_shard_id);
-                assert(local_host_id_ != primary_host_id);
+                // assert(local_host_id_ != primary_host_id); // No loger holds
 
                 ThriftSrcAtype src_atype;
                 src_atype.src = src;
