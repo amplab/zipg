@@ -838,9 +838,10 @@ public:
             if (next_host_id == local_host_id_) {
             	int shard_idx_local = shard_id_to_shard_idx(ptr.shardId);
             	local_shards_.at(shard_idx_local).send_assoc_count(src, atype);
+            } else {
+				aggregators_.at(next_host_id).send_assoc_count_local(
+					ptr.shardId, src, atype);
             }
-            aggregators_.at(next_host_id).send_assoc_count_local(
-                ptr.shardId, src, atype);
         }
 
         // Execute locally
