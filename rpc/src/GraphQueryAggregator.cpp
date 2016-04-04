@@ -1081,12 +1081,20 @@ public:
                 COND_LOG_E("Updating host %d, shard %d about (%lld,%d)\n",
                     primary_host_id, primary_shard_id, src, atype);
 
-                aggregators_.at(primary_host_id).record_edge_updates(
-                    num_succinctstore_shards_ +
-                        num_suffixstore_shards_ +
-                        num_logstore_shards_ - 1,
-                    primary_shard_id,
-                    { src_atype });
+                if (primary_host_id == local_host_id_) {
+                	record_edge_updates(num_succinctstore_shards_ +
+							num_suffixstore_shards_ +
+							num_logstore_shards_ - 1,
+						primary_shard_id,
+						{ src_atype });
+                } else {
+					aggregators_.at(primary_host_id).record_edge_updates(
+						num_succinctstore_shards_ +
+							num_suffixstore_shards_ +
+							num_logstore_shards_ - 1,
+						primary_shard_id,
+						{ src_atype });
+                }
             }
 
             COND_LOG_E("Finished update!\n");
