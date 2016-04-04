@@ -457,6 +457,14 @@ public:
         std::vector<ThriftAssoc> result;
         std::vector<std::string> attrs;
 
+        thread_local std::random_device rd;
+        thread_local std::mt19937 gen(rd());
+
+        std::uniform_int_distribution<int64_t> dist_node(0, NUM_NODES - 1);
+        std::uniform_int_distribution<int64_t> dist_atype(0, NUM_ATYPES - 1);
+
+        int64_t src, atype, dst;
+
         shared_ptr<benchmark_thread_data_t> thread_data(
             new benchmark_thread_data_t);
         try {
@@ -521,6 +529,20 @@ public:
                     this->warmup_assoc_time_range_highs.at(query_idx),
                     this->warmup_assoc_time_range_limits.at(query_idx));
                 break;
+            case 5:
+				src = dist_node(gen);
+				atype = dist_atype(gen);
+				dst = dist_node(gen);
+				COND_LOG_E("assoc_add(%lld,atype %d,%lld,...) ",
+					src, atype, dst);
+				ret = thread_data->client->assoc_add(
+					src,
+					atype,
+					dst,
+					MAX_TIME,
+					ATTR_FOR_NEW_EDGES);
+				COND_LOG_E("; ret = %d\n", ret);
+				break;
             default:
                 assert(false);
         }
