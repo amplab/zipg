@@ -756,15 +756,19 @@ public:
             auto& ptr = *it;
             // int64_t offset = ptr.offset; // TODO: add optimization
             int next_host_id = host_id_for_shard(ptr.shardId);
-            assert(next_host_id != local_host_id_ && "next host is myself!");
-
-            aggregators_.at(next_host_id).assoc_range_local(
-                assocs,
-                ptr.shardId,
-                src,
-                atype,
-                0, // FIXME: this is hacky and potentially expensive
-                len - curr_len);
+            if (next_host_id == local_host_id_) {
+            	int shard_idx_local = shard_id_to_shard_idx(ptr.shardId);
+            	local_shards_.at(shard_idx_local)
+            			.assoc_range(assocs, src, atype, 0, len - curr_len);
+            } else {
+				aggregators_.at(next_host_id).assoc_range_local(
+					assocs,
+					ptr.shardId,
+					src,
+					atype,
+					0, // FIXME: this is hacky and potentially expensive
+					len - curr_len);
+            }
             _return.insert(_return.end(), assocs.begin(), assocs.end());
 
             curr_len += assocs.size();
@@ -831,19 +835,29 @@ public:
         for (auto& ptr : ptrs) {
             // int64_t offset = ptr.offset; // TODO: add optimization
             int next_host_id = host_id_for_shard(ptr.shardId);
-            assert(next_host_id != local_host_id_ && "next host is myself!");
+            if (next_host_id == local_host_id_) {
+            	int shard_idx_local = shard_id_to_shard_idx(ptr.shardId);
+            	local_shards_.at(shard_idx_local).send_assoc_count(src, atype);
+            }
             aggregators_.at(next_host_id).send_assoc_count_local(
                 ptr.shardId, src, atype);
         }
 
         // Execute locally
         assert(shard_idx < local_shards_.size() && "shard_idx >= local_shards_.size()");
-        int64_t cnt = local_shards_.at(shard_idx).assoc_count(src, atype);
+        local_shards_.at(shard_idx).send_assoc_count(src, atype);
 
+        int64_t cnt = 0;
         for (auto& ptr : ptrs) {
             int next_host_id = host_id_for_shard(ptr.shardId);
-            cnt += aggregators_.at(next_host_id).recv_assoc_count_local();
+            if (next_host_id == local_host_id_) {
+            	int shard_idx_local = shard_id_to_shard_idx(ptr.shardId);
+            	cnt += local_shards_.at(shard_idx_local).recv_assoc_count();
+            } else {
+            	cnt += aggregators_.at(next_host_id).recv_assoc_count_local();
+            }
         }
+        cnt += local_shards_.at(shard_idx).recv_assoc_count();
 
         return cnt;
     }
@@ -899,11 +913,16 @@ public:
         for (auto it = ptrs.rbegin(); it != ptrs.rend(); ++it) {
             // int64_t offset = ptr.offset; // TODO: add optimization
             int next_host_id = host_id_for_shard(it->shardId);
-            assert(next_host_id != local_host_id_ && "next host is myself!");
 
             COND_LOG_E("Update ptrs: Next host id = %d\n", next_host_id);
-            aggregators_.at(next_host_id).send_assoc_get_local(
-                it->shardId, src, atype, dstIdSet, tLow, tHigh);
+            if (next_host_id == local_host_id_) {
+            	int shard_idx_local = shard_id_to_shard_idx(it->shardId);
+            	local_shards_.at(shard_idx_local)
+            	            .send_assoc_get(src, atype, dstIdSet, tLow, tHigh);
+            } else {
+            	aggregators_.at(next_host_id).send_assoc_get_local(
+            			it->shardId, src, atype, dstIdSet, tLow, tHigh);
+            }
         }
 
         COND_LOG_E("Sending assoc_get request to local shard at idx=%d\n", shard_idx);
@@ -918,7 +937,12 @@ public:
             // int64_t offset = ptr.offset; // TODO: add optimization
             int next_host_id = host_id_for_shard(it->shardId);
             COND_LOG_E("Update ptrs: Next host id = %d\n", next_host_id);
-            aggregators_.at(next_host_id).recv_assoc_get_local(assocs);
+            if (next_host_id == local_host_id_) {
+            	int shard_idx_local = shard_id_to_shard_idx(it->shardId);
+            	local_shards_.at(shard_idx_local).recv_assoc_get(assocs);
+            } else {
+            	aggregators_.at(next_host_id).recv_assoc_get_local(assocs);
+            }
             _return.insert(_return.end(), assocs.begin(), assocs.end());
         }
 
@@ -1010,9 +1034,14 @@ public:
             // int64_t offset = ptr.offset; // TODO: add optimization
             int next_host_id = host_id_for_shard(it->shardId);
             assert(next_host_id != local_host_id_ && "next host is myself!");
-
-            aggregators_.at(next_host_id).send_assoc_time_range_local(
-                it->shardId, src, atype, tLow, tHigh, limit);
+            if (next_host_id == local_host_id_) {
+            	int shard_idx_local = shard_id_to_shard_idx(it->shardId);
+            	local_shards_.at(shard_idx_local)
+            	            .send_assoc_time_range(src, atype, tLow, tHigh, limit);
+            } else {
+				aggregators_.at(next_host_id).send_assoc_time_range_local(
+					it->shardId, src, atype, tLow, tHigh, limit);
+            }
         }
 
         local_shards_.at(shard_idx)
@@ -1021,10 +1050,17 @@ public:
         std::vector<ThriftAssoc> assocs;
         _return.clear();
 
+        // TODO: Early termination?
         for (auto it = ptrs.rbegin(); it != ptrs.rend(); ++it) {
             // int64_t offset = ptr.offset; // TODO: add optimization
             int next_host_id = host_id_for_shard(it->shardId);
-            aggregators_.at(next_host_id).recv_assoc_time_range_local(assocs);
+            if (next_host_id == local_host_id_) {
+            	int shard_idx_local = shard_id_to_shard_idx(it->shardId);
+				local_shards_.at(shard_idx_local)
+						.recv_assoc_time_range(assocs);
+            } else {
+            	aggregators_.at(next_host_id).recv_assoc_time_range_local(assocs);
+            }
 
             if (_return.size() + assocs.size() <= limit) {
                 _return.insert(_return.end(), assocs.begin(), assocs.end());
