@@ -464,6 +464,7 @@ public:
         std::uniform_int_distribution<int64_t> dist_atype(0, NUM_ATYPES - 1);
 
         int64_t src, atype, dst;
+        int ret;
 
         shared_ptr<benchmark_thread_data_t> thread_data(
             new benchmark_thread_data_t);
@@ -535,7 +536,7 @@ public:
 				dst = dist_node(gen);
 				COND_LOG_E("assoc_add(%lld,atype %d,%lld,...) ",
 					src, atype, dst);
-				int ret = thread_data->client->assoc_add(
+				ret = thread_data->client->assoc_add(
 					src,
 					atype,
 					dst,
