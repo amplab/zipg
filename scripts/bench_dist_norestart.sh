@@ -17,12 +17,12 @@ npa=128; sa=32; isa=64 # L0, by default
 node_file_raw=/mnt2/twitter2010-40attr16each-tpch.node
 edge_file_raw=/mnt2/twitter2010-npa128sa32isa64.assoc
 
-threads=( 64 )
+threads=( 16 32 64 )
 benches=(
   #benchTaoMix
   #benchTaoUpdates # latency
-  #benchTaoMixThput
-  benchTaoMixWithUpdatesThput
+  benchTaoMixThput
+  #benchTaoMixWithUpdatesThput
   #benchMixThput
   #benchNhbrNodeThput
   #benchNeighborThput
@@ -36,23 +36,6 @@ currDir=$(cd $(dirname $0); pwd)
 . "${currDir}/../sbin/load-succinct-env.sh"
 
 #### Launch aggregator & shards on all hosts
-
-function stop_all() {
-  bash ${currDir}/../sbin/stop-all.sh 
-}
-
-function start_all() {
-  ${currDir}/../sbin/start-servers.sh $node_file_raw $edge_file_raw $sa $isa $npa
-  sleep 2
-
-  ${currDir}/../sbin/start-handlers.sh 
-  sleep 2
-
-  ${currDir}/../sbin/load-data.sh
-
-  # note: the script launch order is important
-  ${currDir}/../sbin/backfill-updates.sh
-}
 
 function timestamp() {
   date +"%D-%T"
@@ -86,11 +69,6 @@ for benchType in "${benches[@]}"; do
   case $benchType in
     *Thput)
       for throughput_threads in ${threads[*]}; do
-          stop_all
-          start_all
-
-          read -rsp $'Press any key to continue...\n' -n1 key
-
           launcherStart=$(date +"%s")
           bash ${currDir}/../sbin/hosts-noStderr.sh \
             $benchType=T bash ${currDir}/bench_func.sh \
