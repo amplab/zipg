@@ -1420,29 +1420,30 @@ public:
 				default:
 					assert(false);
 				}
+				++i;
 			} catch (std::exception& e) {
-			  fprintf(stderr, "Query failed: type = %d, idx = %d err = %s\n", query, query_idx, e.what());
+			  LOG_E("Query failed: type = %d, idx = %d err = %s\n", query, query_idx, e.what());
 			  thread_data->client.reset();
 			  thread_data->transport.reset();
-			  LOG_E("Cleared old connection; ");
 
-			  shared_ptr<TSocket> socket(
-				  new TSocket(thread_data->master_hostname, QUERY_HANDLER_PORT));
-			  shared_ptr<TTransport> transport(
-				  new TBufferedTransport(socket));
-			  shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
-			  shared_ptr<GraphQueryAggregatorServiceClient> client(
-				  new GraphQueryAggregatorServiceClient(protocol));
-			  transport->open();
-			  LOG_E("Reestablished connection; ");
+			  try {
+				  shared_ptr<TSocket> socket(
+					  new TSocket(thread_data->master_hostname, QUERY_HANDLER_PORT));
+				  shared_ptr<TTransport> transport(
+					  new TBufferedTransport(socket));
+				  shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
+				  shared_ptr<GraphQueryAggregatorServiceClient> client(
+					  new GraphQueryAggregatorServiceClient(protocol));
+				  transport->open();
+				  client->init();
+				  LOG_E("Reestablished connections.\n");
 
-			  client->init();
-			  LOG_E("Initialized all-to-all connections.\n");
-
-			  thread_data->client = client;
-			  thread_data->transport = transport;
+				  thread_data->client = client;
+				  thread_data->transport = transport;
+			  } catch(std::exception& e2) {
+				  LOG_E("Failed to establish connections, will try next round.\n");
+			  }
 			}
-			++i;
 		}
 		LOG_E("Warmup done: served %" PRId64 " queries\n", i);
 
@@ -1501,26 +1502,27 @@ public:
 			try {
 				RUN_TAO_MIX_THPUT_BODY // actually run
 			} catch (std::exception& e) {
-				fprintf(stderr, "Query failed: type = %d, idx = %d err = %s\n", query, query_idx, e.what());
+				LOG_E("Query failed: type = %d, idx = %d err = %s\n", query, query_idx, e.what());
 				thread_data->client.reset();
 				thread_data->transport.reset();
-				LOG_E("Cleared old connection; ");
 
-				shared_ptr<TSocket> socket(
-				  new TSocket(thread_data->master_hostname, QUERY_HANDLER_PORT));
-				shared_ptr<TTransport> transport(
-				  new TBufferedTransport(socket));
-				shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
-				shared_ptr<GraphQueryAggregatorServiceClient> client(
-				  new GraphQueryAggregatorServiceClient(protocol));
-				transport->open();
-				LOG_E("Reestablished connection; ");
+				try {
+				  shared_ptr<TSocket> socket(
+					  new TSocket(thread_data->master_hostname, QUERY_HANDLER_PORT));
+				  shared_ptr<TTransport> transport(
+					  new TBufferedTransport(socket));
+				  shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
+				  shared_ptr<GraphQueryAggregatorServiceClient> client(
+					  new GraphQueryAggregatorServiceClient(protocol));
+				  transport->open();
+				  client->init();
+				  LOG_E("Reestablished connections.\n");
 
-				client->init();
-				LOG_E("Initialized all-to-all connections.\n");
-
-				thread_data->client = client;
-				thread_data->transport = transport;
+				  thread_data->client = client;
+				  thread_data->transport = transport;
+				} catch(std::exception& e2) {
+				  LOG_E("Failed to establish connections, will try next round.\n");
+				}
 			}
 		}
 		time_t end = get_timestamp();
@@ -1542,26 +1544,27 @@ public:
 			try {
 				RUN_TAO_MIX_THPUT_BODY
 			} catch (std::exception& e) {
-				fprintf(stderr, "Query failed: type = %d, idx = %d err = %s\n", query, query_idx, e.what());
+				LOG_E("Query failed: type = %d, idx = %d err = %s\n", query, query_idx, e.what());
 				thread_data->client.reset();
 				thread_data->transport.reset();
-				LOG_E("Cleared old connection; ");
 
-				shared_ptr<TSocket> socket(
-				  new TSocket(thread_data->master_hostname, QUERY_HANDLER_PORT));
-				shared_ptr<TTransport> transport(
-				  new TBufferedTransport(socket));
-				shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
-				shared_ptr<GraphQueryAggregatorServiceClient> client(
-				  new GraphQueryAggregatorServiceClient(protocol));
-				transport->open();
-				LOG_E("Reestablished connection; ");
+				try {
+				  shared_ptr<TSocket> socket(
+					  new TSocket(thread_data->master_hostname, QUERY_HANDLER_PORT));
+				  shared_ptr<TTransport> transport(
+					  new TBufferedTransport(socket));
+				  shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
+				  shared_ptr<GraphQueryAggregatorServiceClient> client(
+					  new GraphQueryAggregatorServiceClient(protocol));
+				  transport->open();
+				  client->init();
+				  LOG_E("Reestablished connections.\n");
 
-				client->init();
-				LOG_E("Initialized all-to-all connections.\n");
-
-				thread_data->client = client;
-				thread_data->transport = transport;
+				  thread_data->client = client;
+				  thread_data->transport = transport;
+				} catch(std::exception& e2) {
+				  LOG_E("Failed to establish connections, will try next round.\n");
+				}
 			}
 		}
 		LOG_E("Cooldown done: served %" PRId64 " queries\n", i);
@@ -1693,26 +1696,27 @@ public:
 
 			++i;
 			} catch (std::exception& e) {
-				fprintf(stderr, "Query failed: type = %d, idx = %d err = %s\n", query, query_idx, e.what());
+				LOG_E("Query failed: type = %d, idx = %d err = %s\n", query, query_idx, e.what());
 				thread_data->client.reset();
 				thread_data->transport.reset();
-				LOG_E("Cleared old connection; ");
 
-				shared_ptr<TSocket> socket(
-				  new TSocket(thread_data->master_hostname, QUERY_HANDLER_PORT));
-				shared_ptr<TTransport> transport(
-				  new TBufferedTransport(socket));
-				shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
-				shared_ptr<GraphQueryAggregatorServiceClient> client(
-				  new GraphQueryAggregatorServiceClient(protocol));
-				transport->open();
-				LOG_E("Reestablished connection; ");
+				try {
+				  shared_ptr<TSocket> socket(
+					  new TSocket(thread_data->master_hostname, QUERY_HANDLER_PORT));
+				  shared_ptr<TTransport> transport(
+					  new TBufferedTransport(socket));
+				  shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
+				  shared_ptr<GraphQueryAggregatorServiceClient> client(
+					  new GraphQueryAggregatorServiceClient(protocol));
+				  transport->open();
+				  client->init();
+				  LOG_E("Reestablished connections.\n");
 
-				client->init();
-				LOG_E("Initialized all-to-all connections.\n");
-
-				thread_data->client = client;
-				thread_data->transport = transport;
+				  thread_data->client = client;
+				  thread_data->transport = transport;
+				} catch(std::exception& e2) {
+				  LOG_E("Failed to establish connections, will try next round.\n");
+				}
 			}
 		}
 		COND_LOG_E("Warmup done: served %" PRId64 " queries/batches\n", i);
@@ -1776,26 +1780,27 @@ public:
 			try {
 			  RUN_TAO_MIX_WITH_UPDATES_THPUT_BODY // actually run
 			} catch (std::exception& e) {
-				fprintf(stderr, "Query failed: type = %d, idx = %d err = %s\n", query, query_idx, e.what());
+				LOG_E("Query failed: type = %d, idx = %d err = %s\n", query, query_idx, e.what());
 				thread_data->client.reset();
 				thread_data->transport.reset();
-				LOG_E("Cleared old connection; ");
 
-				shared_ptr<TSocket> socket(
-				  new TSocket(thread_data->master_hostname, QUERY_HANDLER_PORT));
-				shared_ptr<TTransport> transport(
-				  new TBufferedTransport(socket));
-				shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
-				shared_ptr<GraphQueryAggregatorServiceClient> client(
-				  new GraphQueryAggregatorServiceClient(protocol));
-				transport->open();
-				LOG_E("Reestablished connection; ");
+				try {
+				  shared_ptr<TSocket> socket(
+					  new TSocket(thread_data->master_hostname, QUERY_HANDLER_PORT));
+				  shared_ptr<TTransport> transport(
+					  new TBufferedTransport(socket));
+				  shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
+				  shared_ptr<GraphQueryAggregatorServiceClient> client(
+					  new GraphQueryAggregatorServiceClient(protocol));
+				  transport->open();
+				  client->init();
+				  LOG_E("Reestablished connections.\n");
 
-				client->init();
-				LOG_E("Initialized all-to-all connections.\n");
-
-				thread_data->client = client;
-				thread_data->transport = transport;
+				  thread_data->client = client;
+				  thread_data->transport = transport;
+				} catch(std::exception& e2) {
+				  LOG_E("Failed to establish connections, will try next round.\n");
+				}
 			}
 		}
 		time_t end = get_timestamp();
@@ -1815,26 +1820,27 @@ public:
 		  try {
 			RUN_TAO_MIX_WITH_UPDATES_THPUT_BODY
 		  } catch(std::exception& e) {
-			fprintf(stderr, "Query failed: type = %d, idx = %d err = %s\n", query, query_idx, e.what());
+			LOG_E("Query failed: type = %d, idx = %d err = %s\n", query, query_idx, e.what());
 			thread_data->client.reset();
 			thread_data->transport.reset();
-			LOG_E("Cleared old connection; ");
 
-			shared_ptr<TSocket> socket(
-			  new TSocket(thread_data->master_hostname, QUERY_HANDLER_PORT));
-			shared_ptr<TTransport> transport(
-			  new TBufferedTransport(socket));
-			shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
-			shared_ptr<GraphQueryAggregatorServiceClient> client(
-			  new GraphQueryAggregatorServiceClient(protocol));
-			transport->open();
-			LOG_E("Reestablished connection; ");
+			try {
+			  shared_ptr<TSocket> socket(
+				  new TSocket(thread_data->master_hostname, QUERY_HANDLER_PORT));
+			  shared_ptr<TTransport> transport(
+				  new TBufferedTransport(socket));
+			  shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
+			  shared_ptr<GraphQueryAggregatorServiceClient> client(
+				  new GraphQueryAggregatorServiceClient(protocol));
+			  transport->open();
+			  client->init();
+			  LOG_E("Reestablished connections.\n");
 
-			client->init();
-			LOG_E("Initialized all-to-all connections.\n");
-
-			thread_data->client = client;
-			thread_data->transport = transport;
+			  thread_data->client = client;
+			  thread_data->transport = transport;
+			} catch(std::exception& e2) {
+			  LOG_E("Failed to establish connections, will try next round.\n");
+			}
 		  }
 		}
         return std::make_pair(query_thput, edges_thput);
