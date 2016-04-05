@@ -35,12 +35,12 @@ private:
     const static int MAX_NUM_NEW_EDGES = 200000; // 3.5M takes too long to run
 
     // Timings for throughput benchmarks.
-    constexpr static int64_t WARMUP_MICROSECS = 300 * 1000 * 1000;
-    constexpr static int64_t MEASURE_MICROSECS = 900 * 1000 * 1000;
-    constexpr static int64_t COOLDOWN_MICROSECS = 450 * 1000 * 1000;
-    // constexpr static int64_t WARMUP_MICROSECS = 30 * 1000 * 1000;
-    // constexpr static int64_t MEASURE_MICROSECS = 120 * 1000 * 1000;
-    // constexpr static int64_t COOLDOWN_MICROSECS = 30 * 1000 * 1000;
+    // constexpr static int64_t WARMUP_MICROSECS = 300 * 1000 * 1000;
+    // constexpr static int64_t MEASURE_MICROSECS = 900 * 1000 * 1000;
+    // constexpr static int64_t COOLDOWN_MICROSECS = 450 * 1000 * 1000;
+    constexpr static int64_t WARMUP_MICROSECS = 30 * 1000 * 1000;
+    constexpr static int64_t MEASURE_MICROSECS = 120 * 1000 * 1000;
+    constexpr static int64_t COOLDOWN_MICROSECS = 30 * 1000 * 1000;
 
     constexpr static int query_batch_size = 100;
 
@@ -1424,6 +1424,8 @@ public:
 			  fprintf(stderr, "Query failed: type = %d, idx = %d err = %s\n", query, query_idx, e.what());
 			  thread_data->client.reset();
 			  thread_data->transport.reset();
+			  LOG_E("Cleared old connection; ");
+
 			  shared_ptr<TSocket> socket(
 				  new TSocket(thread_data->master_hostname, QUERY_HANDLER_PORT));
 			  shared_ptr<TTransport> transport(
@@ -1432,11 +1434,13 @@ public:
 			  shared_ptr<GraphQueryAggregatorServiceClient> client(
 				  new GraphQueryAggregatorServiceClient(protocol));
 			  transport->open();
+			  LOG_E("Reestablished connection; ");
+
 			  client->init();
+			  LOG_E("Initialized all-to-all connections.\n");
 
 			  thread_data->client = client;
 			  thread_data->transport = transport;
-			  LOG_E("Reestablished connection.\n");
 			}
 			++i;
 		}
@@ -1500,6 +1504,8 @@ public:
 				fprintf(stderr, "Query failed: type = %d, idx = %d err = %s\n", query, query_idx, e.what());
 				thread_data->client.reset();
 				thread_data->transport.reset();
+				LOG_E("Cleared old connection; ");
+
 				shared_ptr<TSocket> socket(
 				  new TSocket(thread_data->master_hostname, QUERY_HANDLER_PORT));
 				shared_ptr<TTransport> transport(
@@ -1508,11 +1514,13 @@ public:
 				shared_ptr<GraphQueryAggregatorServiceClient> client(
 				  new GraphQueryAggregatorServiceClient(protocol));
 				transport->open();
+				LOG_E("Reestablished connection; ");
+
 				client->init();
+				LOG_E("Initialized all-to-all connections.\n");
 
 				thread_data->client = client;
 				thread_data->transport = transport;
-				LOG_E("Reestablished connection.\n");
 			}
 		}
 		time_t end = get_timestamp();
@@ -1537,19 +1545,23 @@ public:
 				fprintf(stderr, "Query failed: type = %d, idx = %d err = %s\n", query, query_idx, e.what());
 				thread_data->client.reset();
 				thread_data->transport.reset();
+				LOG_E("Cleared old connection; ");
+
 				shared_ptr<TSocket> socket(
-					new TSocket(thread_data->master_hostname, QUERY_HANDLER_PORT));
+				  new TSocket(thread_data->master_hostname, QUERY_HANDLER_PORT));
 				shared_ptr<TTransport> transport(
-					new TBufferedTransport(socket));
+				  new TBufferedTransport(socket));
 				shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
 				shared_ptr<GraphQueryAggregatorServiceClient> client(
-					new GraphQueryAggregatorServiceClient(protocol));
+				  new GraphQueryAggregatorServiceClient(protocol));
 				transport->open();
+				LOG_E("Reestablished connection; ");
+
 				client->init();
+				LOG_E("Initialized all-to-all connections.\n");
 
 				thread_data->client = client;
 				thread_data->transport = transport;
-				LOG_E("Reestablished connection.\n");
 			}
 		}
 		LOG_E("Cooldown done: served %" PRId64 " queries\n", i);
@@ -1681,22 +1693,26 @@ public:
 
 			++i;
 			} catch (std::exception& e) {
-			  fprintf(stderr, "Query failed: type = %d, idx = %d err = %s\n", query, query_idx, e.what());
-			  thread_data->client.reset();
-			  thread_data->transport.reset();
-			  shared_ptr<TSocket> socket(
-				  new TSocket(thread_data->master_hostname, QUERY_HANDLER_PORT));
-			  shared_ptr<TTransport> transport(
-				  new TBufferedTransport(socket));
-			  shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
-			  shared_ptr<GraphQueryAggregatorServiceClient> client(
-				  new GraphQueryAggregatorServiceClient(protocol));
-			  transport->open();
-			  client->init();
+				fprintf(stderr, "Query failed: type = %d, idx = %d err = %s\n", query, query_idx, e.what());
+				thread_data->client.reset();
+				thread_data->transport.reset();
+				LOG_E("Cleared old connection; ");
 
-			  thread_data->client = client;
-			  thread_data->transport = transport;
-			  LOG_E("Reestablished connection.\n");
+				shared_ptr<TSocket> socket(
+				  new TSocket(thread_data->master_hostname, QUERY_HANDLER_PORT));
+				shared_ptr<TTransport> transport(
+				  new TBufferedTransport(socket));
+				shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
+				shared_ptr<GraphQueryAggregatorServiceClient> client(
+				  new GraphQueryAggregatorServiceClient(protocol));
+				transport->open();
+				LOG_E("Reestablished connection; ");
+
+				client->init();
+				LOG_E("Initialized all-to-all connections.\n");
+
+				thread_data->client = client;
+				thread_data->transport = transport;
 			}
 		}
 		COND_LOG_E("Warmup done: served %" PRId64 " queries/batches\n", i);
@@ -1760,22 +1776,26 @@ public:
 			try {
 			  RUN_TAO_MIX_WITH_UPDATES_THPUT_BODY // actually run
 			} catch (std::exception& e) {
-			  fprintf(stderr, "Query failed: type = %d, idx = %d err = %s\n", query, query_idx, e.what());
-			  thread_data->client.reset();
-			  thread_data->transport.reset();
-			  shared_ptr<TSocket> socket(
-				  new TSocket(thread_data->master_hostname, QUERY_HANDLER_PORT));
-			  shared_ptr<TTransport> transport(
-				  new TBufferedTransport(socket));
-			  shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
-			  shared_ptr<GraphQueryAggregatorServiceClient> client(
-				  new GraphQueryAggregatorServiceClient(protocol));
-			  transport->open();
-			  client->init();
+				fprintf(stderr, "Query failed: type = %d, idx = %d err = %s\n", query, query_idx, e.what());
+				thread_data->client.reset();
+				thread_data->transport.reset();
+				LOG_E("Cleared old connection; ");
 
-			  thread_data->client = client;
-			  thread_data->transport = transport;
-			  LOG_E("Reestablished connection.\n");
+				shared_ptr<TSocket> socket(
+				  new TSocket(thread_data->master_hostname, QUERY_HANDLER_PORT));
+				shared_ptr<TTransport> transport(
+				  new TBufferedTransport(socket));
+				shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
+				shared_ptr<GraphQueryAggregatorServiceClient> client(
+				  new GraphQueryAggregatorServiceClient(protocol));
+				transport->open();
+				LOG_E("Reestablished connection; ");
+
+				client->init();
+				LOG_E("Initialized all-to-all connections.\n");
+
+				thread_data->client = client;
+				thread_data->transport = transport;
 			}
 		}
 		time_t end = get_timestamp();
@@ -1798,19 +1818,23 @@ public:
 			fprintf(stderr, "Query failed: type = %d, idx = %d err = %s\n", query, query_idx, e.what());
 			thread_data->client.reset();
 			thread_data->transport.reset();
+			LOG_E("Cleared old connection; ");
+
 			shared_ptr<TSocket> socket(
-				new TSocket(thread_data->master_hostname, QUERY_HANDLER_PORT));
+			  new TSocket(thread_data->master_hostname, QUERY_HANDLER_PORT));
 			shared_ptr<TTransport> transport(
-				new TBufferedTransport(socket));
+			  new TBufferedTransport(socket));
 			shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
 			shared_ptr<GraphQueryAggregatorServiceClient> client(
-				new GraphQueryAggregatorServiceClient(protocol));
+			  new GraphQueryAggregatorServiceClient(protocol));
 			transport->open();
+			LOG_E("Reestablished connection; ");
+
 			client->init();
+			LOG_E("Initialized all-to-all connections.\n");
 
 			thread_data->client = client;
 			thread_data->transport = transport;
-			LOG_E("Reestablished connection.\n");
 		  }
 		}
         return std::make_pair(query_thput, edges_thput);
