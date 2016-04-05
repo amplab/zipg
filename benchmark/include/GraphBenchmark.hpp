@@ -1700,23 +1700,22 @@ public:
 				thread_data->client.reset();
 				thread_data->transport.reset();
 
+				shared_ptr<TSocket> socket(
+				  new TSocket(thread_data->master_hostname, QUERY_HANDLER_PORT));
+				shared_ptr<TTransport> transport(
+				  new TBufferedTransport(socket));
+				shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
+				shared_ptr<GraphQueryAggregatorServiceClient> client(
+				  new GraphQueryAggregatorServiceClient(protocol));
+				transport->open();
 				try {
-				  shared_ptr<TSocket> socket(
-					  new TSocket(thread_data->master_hostname, QUERY_HANDLER_PORT));
-				  shared_ptr<TTransport> transport(
-					  new TBufferedTransport(socket));
-				  shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
-				  shared_ptr<GraphQueryAggregatorServiceClient> client(
-					  new GraphQueryAggregatorServiceClient(protocol));
-				  transport->open();
 				  client->init();
 				  LOG_E("Reestablished connections.\n");
-
-				  thread_data->client = client;
-				  thread_data->transport = transport;
 				} catch(std::exception& e2) {
 				  LOG_E("Failed to establish connections, will try next round.\n");
 				}
+				thread_data->client = client;
+				thread_data->transport = transport;
 			}
 		}
 		COND_LOG_E("Warmup done: served %" PRId64 " queries/batches\n", i);
