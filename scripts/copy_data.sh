@@ -14,9 +14,9 @@ currDir=$(cd $(dirname $0); pwd)
 echo "Copying shard files..."
 
 num_succinctstore_hosts=$num_hosts
-if [[ "$ENABLE_MULTI_STORE" == T ]]; then
-  num_succinctstore_hosts=$(( num_hosts - 2 ))
-fi
+#if [[ "$ENABLE_MULTI_STORE" == T ]]; then
+#  num_succinctstore_hosts=$(( num_hosts - 2 ))
+#fi
 
 limit=$(($TOTAL_NUM_SHARDS - 1))
 padWidth=${#TOTAL_NUM_SHARDS}

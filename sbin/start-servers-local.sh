@@ -50,14 +50,9 @@ num_succinctstore_hosts=$num_hosts
 if [[ "$ENABLE_MULTI_STORE" == T ]]; then
   if [[ $(( num_hosts - 1 )) == $local_host_id ]]; then
     storeMode=logstore
-  elif [[ $(( $num_hosts - 2 )) = $local_host_id ]]; then
-    storeMode=suffixstore
   fi
-  num_succinctstore_hosts=$(( num_hosts - 2 ))
+  num_succinctstore_hosts=$(( num_hosts ))
 fi
-
-# ??
-num_replicas=$( wc -l < ${SUCCINCT_CONF_DIR}/repl)
 
 if [ "$num_shards_local" = "" ]; then
   num_shards_local=1
@@ -85,38 +80,26 @@ if [ "$QUERY_SERVER_PORT" = "" ]; then
 	QUERY_SERVER_PORT=11002
 fi
 
-i=0
-while read sr dist; do
-	((sampling_rates[$i] = $sr))
-	i=$(($i + 1))
-done < ${SUCCINCT_CONF_DIR}/repl
-
 case "$storeMode" in
   succinctstore )
     limit=$(($num_shards_local - 1))
     padWidth=${#TOTAL_NUM_SHARDS}
     ;;
-  suffixstore )
-    limit=$(( NUM_SUFFIXSTORE_PARTS - 1 ))
-    padWidth=${#NUM_SUFFIXSTORE_PARTS}
-    ;;
   logstore )
-    limit=$(( NUM_LOGSTORE_PARTS )) # NOTE: we launch an "empty" LogStore for appends
-    padWidth=${#NUM_LOGSTORE_PARTS}
+    limit=$(( $num_shards_local + $NUM_LOGSTORE_PARTS )) # NOTE: we launch an "empty" LogStore for appends
+    padWidth=${#TOTAL_NUM_SHARDS}
     ;;
 esac
 
+shardType="succinctstore"
 for i in `seq 0 $limit`; do
-	port=$(($QUERY_SERVER_PORT + $i))
+    port=$(($QUERY_SERVER_PORT + $i))
+    shard_id=$(($i * $num_succinctstore_hosts + $local_host_id)) # balance across physical nodes
 
-    case "$storeMode" in
-      succinctstore )
-        shard_id=$(($i * $num_succinctstore_hosts + local_host_id)) # balance across physical nodes
-        ;;
-      * )
-        shard_id=$i
-        ;;
-    esac
+    if [ "$storeMode" = "logstore" ] && [ "$i" = "$limit" ]; then
+      shard_id="$TOTAL_NUM_SHARDS"
+      shardType="logstore"
+    fi
 
     padded_shard_id=$(printf "%0*d" ${padWidth} ${shard_id})
 
@@ -159,24 +142,30 @@ for i in `seq 0 $limit`; do
     fi
 
     ##### special cases: if logstore or suffixstore, modify input arguments
-    case "$storeMode" in
-      logstore )
+    #case "$storeMode" in
+    #  logstore )
+    #    nodeInput="${node_file_raw}.logstore-part${padded_shard_id}of${NUM_LOGSTORE_PARTS}"
+    #    edgeInput="${edge_file_raw}.logstore-part${padded_shard_id}of${NUM_LOGSTORE_PARTS}"
+    #    #if [[ ( ( ! -f "${nodeInput}_logstore" ) || ( ! -f "${edgeInput}_logstore" ) ) ]]; then
+    #    if [[ ! -f "${edgeInput}_logstore" ]]; then # TODO: ignore node for now
+    #      mode=0
+    #    fi
+    #    ;;
+    #  suffixstore )
+    #    nodeInput="${node_file_raw}.suffixstore-part${padded_shard_id}of${NUM_SUFFIXSTORE_PARTS}"
+    #    edgeInput="${edge_file_raw}.suffixstore-part${padded_shard_id}of${NUM_SUFFIXSTORE_PARTS}"
+    #    #if [[ ( ( ! -f "${nodeInput}_suffixstore" ) || ( ! -f "${edgeInput}_suffixstore" ) ) ]]; then
+    #    if [[ ! -f "${edgeInput}_suffixstore" ]]; then # TODO: ignore node for now
+    #      mode=0
+    #    fi
+    #    ;;
+    #esac
+
+    if [ "$shardType" = "logstore" ]; then
         nodeInput="${node_file_raw}.logstore-part${padded_shard_id}of${NUM_LOGSTORE_PARTS}"
         edgeInput="${edge_file_raw}.logstore-part${padded_shard_id}of${NUM_LOGSTORE_PARTS}"
-        #if [[ ( ( ! -f "${nodeInput}_logstore" ) || ( ! -f "${edgeInput}_logstore" ) ) ]]; then
-        if [[ ! -f "${edgeInput}_logstore" ]]; then # TODO: ignore node for now
-          mode=0
-        fi
-        ;;
-      suffixstore )
-        nodeInput="${node_file_raw}.suffixstore-part${padded_shard_id}of${NUM_SUFFIXSTORE_PARTS}"
-        edgeInput="${edge_file_raw}.suffixstore-part${padded_shard_id}of${NUM_SUFFIXSTORE_PARTS}"
-        #if [[ ( ( ! -f "${nodeInput}_suffixstore" ) || ( ! -f "${edgeInput}_suffixstore" ) ) ]]; then
-        if [[ ! -f "${edgeInput}_suffixstore" ]]; then # TODO: ignore node for now
-          mode=0
-        fi
-        ;;
-    esac
+        mode=0
+    fi
 
     echo "Launching shard ${shard_id}"
 
@@ -187,7 +176,7 @@ for i in `seq 0 $limit`; do
       -a ${NUM_SUFFIXSTORE_PARTS} \
       -c ${NUM_LOGSTORE_PARTS} \
       -d ${shard_id} \
-      -s${sa_sr} -i${isa_sr} -n${npa_sr} \
+      -s ${sa_sr} -i ${isa_sr} -n ${npa_sr} \
       -h ${local_host_id} -k ${num_hosts} \
       -b ${ENABLE_MULTI_STORE} \
       $nodeInput \
