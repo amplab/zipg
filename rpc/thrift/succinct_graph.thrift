@@ -204,6 +204,8 @@ service GraphQueryAggregatorService {
     list<ThriftAssoc> assoc_get_local(
         1: i32 shardId, 2: i64 src, 3: i64 atype,
         4: set<i64> dstIdSet, 5: i64 tLow, 6: i64 tHigh),
+        
+	i32 obj_add(1: i64 nodeId, 2: list<string> properties),
 
     list<string> obj_get(1: i64 nodeId),
 

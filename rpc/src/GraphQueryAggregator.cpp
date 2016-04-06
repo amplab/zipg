@@ -33,6 +33,10 @@ std::vector< std::unordered_map<int64_t,
     > > edge_update_ptrs;
 boost::shared_mutex edge_update_ptrs_mutex;
 
+std::vector<NodeTableBuffer> node_buffers;
+boost::shared_mutex node_buffers_mutex;
+
+
 // anuragk: What we want is per shard control over whether
 // the shard is a SuccinctStore shard, SuffixStore shard, or
 // a LogStore shard. Right now, for much of the code it is assumed
@@ -982,6 +986,12 @@ public:
         int shard_idx = shard_id_to_shard_idx(shardId);
         assert(shard_idx < local_shards_.size() && "shard_idx >= local_shards_.size()");
 
+        if (node_buffers.at(shard_idx).contains(nodeId)) {
+        	// TODO: This should be lock protected
+        	node_buffers.at(shard_idx).obj_get(_return, nodeId);
+        	return;
+        }
+
         COND_LOG_E("Shard index = %d, number of shards on this server = %zu\n", shard_idx, local_shards_.size());
         local_shards_.at(shard_idx)
             .obj_get(_return, global_to_local_node_id(nodeId, shardId));
@@ -1083,6 +1093,28 @@ public:
 
         COND_LOG_E("assoc_time_range done, returning %d assocs (limit %d)!\n",
             _return.size(), limit);
+    }
+
+    int obj_add(int64_t nodeId, std::vector<std::string>& properties) {
+    	assert(total_num_shards_ > 0 && "total_num_shards_ <= 0");
+		assert(num_succinctstore_hosts_ > 0 && "num_succinctstore_hosts_ <= 0");
+
+		int shard_id = nodeId % total_num_shards_;
+		int host_id = shard_id % num_succinctstore_hosts_;
+
+		COND_LOG_E("Received obj_add for nodeId = %lld\n", nodeId);
+		if (host_id == local_host_id_) {
+			int shard_idx = shard_id_to_shard_idx(shard_id);
+			{
+				boost::unique_lock<boost::shared_mutex> lk(node_buffers_mutex);
+				node_buffers.at(shard_idx).obj_add(nodeId, properties);
+				lk.unlock();
+			}
+		} else {
+			aggregators_.at(host_id).obj_add(nodeId, properties);
+		}
+
+		return 0;
     }
 
     int assoc_add(
@@ -1346,10 +1378,12 @@ int main(int argc, char **argv) {
             // LogStore
             // +1 because of the last, empty shard
             edge_update_ptrs.resize(total_num_shards + num_logstore_shards + 1);
+            node_buffers.resize(total_num_shards + num_logstore_shards + 1);
             LOG_E("[LOGSTORE] Have %zu update pointer tables.\n", edge_update_ptrs.size());
         } else {
             // Succ.
             edge_update_ptrs.resize(total_num_shards);
+            node_buffers.resize(total_num_shards);
             LOG_E("[SUCCINCT] Have %zu update pointer tables.\n", edge_update_ptrs.size());
         }
         lk.unlock();
