@@ -17,16 +17,12 @@ void GraphLogStore::load() {
 }
 
 // Serialize into the "[lengths] [attrs]" format, and call append().
-void GraphLogStore::append_node(
-    int64_t node_id, std::vector<std::string>& attrs)
+int64_t GraphLogStore::append_node(std::vector<std::string>& attrs)
 {
     std::string delimed(GraphFormatter::format_node_attrs_str({ attrs }));
     std::string val(GraphFormatter::attach_attr_lengths(delimed));
     COND_LOG_E("Appending node %lld, attrs '%s'\n", node_id, val.c_str());
-    if (node_table_->append(node_id, val)) {
-        LOG_E("Failed append node %lld, LogStore full?\n", node_id);
-        exit(-1);
-    }
+    return node_table_->append(val);
 }
 
 int GraphLogStore::append_edge(

@@ -12,6 +12,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <atomic>
 
 constexpr int MAX_LOG_STORE_SIZE = 131072000; // 125MB
 
@@ -23,12 +24,16 @@ public:
     KVLogStore(const std::string& input_file, const std::string& pointer_file)
         : input_file_(input_file),
           pointer_file_(pointer_file)
-    { }
+    {
+    	cur_key = 0;
+    }
 
     KVLogStore(const std::string& input_file)
         : input_file_(input_file),
           pointer_file_("")
-    { }
+    {
+    	cur_key = 0;
+    }
 
     ~KVLogStore() {
         if (data != nullptr) {
@@ -44,7 +49,7 @@ public:
     void load();
 
     // Thread-safe for concurrent writes.
-    int32_t append(int64_t key, const std::string& value);
+    int64_t append(const std::string& value);
 
     // Clears `_return` for caller.
     void search(std::set<int64_t> &_return, const std::string& substring);
@@ -116,6 +121,8 @@ private:
     static constexpr char delim = '\n';
     std::vector<long> keys;
     std::vector<long> value_offsets;
+    long cur_key;
+
 
     std::mutex mutex_;
 };

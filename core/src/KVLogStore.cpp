@@ -148,13 +148,15 @@ void KVLogStore::create_ngram_idx() {
         << "; num entries = " << ngram_idx.size() << "\n";
 }
 
-int32_t KVLogStore::append(int64_t key, const std::string& value) {
+int64_t KVLogStore::append(const std::string& value) {
     std::lock_guard<std::mutex> lock(mutex_);
 
     if (data_pos + value.length() > MAX_LOG_STORE_SIZE) {
         return -1;   // Data exceeds max chunk size
     }
     std::string val(value);
+    int64_t key = cur_key;
+    cur_key++;
     keys.push_back(key);
     value_offsets.push_back(data_pos);
     val += delim;
@@ -173,7 +175,8 @@ int32_t KVLogStore::append(int64_t key, const std::string& value) {
         ngram_idx[ngram].push_back(i);
     }
     data_pos += val.length();
-    return 0;
+
+    return key;
 }
 
 void KVLogStore::search(
