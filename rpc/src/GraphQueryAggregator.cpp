@@ -33,8 +33,8 @@ std::vector< std::unordered_map<int64_t,
     > > edge_update_ptrs;
 boost::shared_mutex edge_update_ptrs_mutex;
 
-std::vector<NodeTableBuffer> node_buffers;
-boost::shared_mutex node_buffers_mutex;
+std::vector<std::unordered_map<int64_t, int32_t>> node_update_ptrs;
+boost::shared_mutex node_update_ptrs_mutex;
 
 
 // anuragk: What we want is per shard control over whether
@@ -298,6 +298,22 @@ public:
 
         return num_backfilled;
     }
+
+	void record_node_append(const int32_t next_shard_id,
+			const int32_t local_shard_id, const int64_t obj)
+	{
+		COND_LOG_E("Recording node updates for shard %d at host %d, "
+		            "from shard %d, obj %lld \n",
+		            local_shard_id, local_host_id_, next_shard_id, obj);
+
+		boost::unique_lock<boost::shared_mutex> lk(node_update_ptrs_mutex);
+		auto& map_for_shard = node_update_ptrs.at(
+			shard_id_to_shard_idx(local_shard_id));
+
+		map_for_shard[obj] = next_shard_id;
+
+		lk.unlock();
+	}
 
     void record_edge_updates(
         const int32_t next_shard_id,
@@ -1095,26 +1111,39 @@ public:
             _return.size(), limit);
     }
 
-    int obj_add(int64_t nodeId, std::vector<std::string>& properties) {
-    	assert(total_num_shards_ > 0 && "total_num_shards_ <= 0");
-		assert(num_succinctstore_hosts_ > 0 && "num_succinctstore_hosts_ <= 0");
+    int64_t obj_add(std::vector<std::string>& attrs) {
+    	// Currently on host holding log store shard
+    	assert(multistore_enabled_ &&
+			"multistore not enabled but obj_add called");
+		COND_LOG_E("Received obj_add(...)\n");
 
-		int shard_id = nodeId % total_num_shards_;
-		int host_id = shard_id % num_succinctstore_hosts_;
+    	if (local_host_id_ == total_num_hosts_ - 1) {
+    		COND_LOG_E("Updating local logstore.\n");
+    		int obj = local_shards_.back()
+    		                .obj_add(attrs);
 
-		COND_LOG_E("Received obj_add for nodeId = %lld\n", nodeId);
-		if (host_id == local_host_id_) {
-			int shard_idx = shard_id_to_shard_idx(shard_id);
-			{
-				boost::unique_lock<boost::shared_mutex> lk(node_buffers_mutex);
-				node_buffers.at(shard_idx).obj_add(nodeId, properties);
-				lk.unlock();
-			}
-		} else {
-			aggregators_.at(host_id).obj_add(nodeId, properties);
-		}
+    		if (obj != -1) {
+    			int primary_shard_id = obj % num_succinctstore_shards_;
+				int primary_host_id = host_id_for_shard(primary_shard_id);
+				// assert(local_host_id_ != primary_host_id); // No loger holds
 
-		return 0;
+				COND_LOG_E("Updating host %d, shard %d about obj(%lld)\n",
+					primary_host_id, primary_shard_id, obj);
+
+				if (primary_host_id == local_host_id_) {
+					record_node_append(primary_shard_id, obj);
+				} else {
+					aggregators_.at(primary_host_id).record_node_append(
+						primary_shard_id, obj);
+				}
+    		}
+    	} else {
+    		COND_LOG_E("Forwarding assoc_add to host %d\n", (total_num_hosts_ - 1));
+			return aggregators_.at(total_num_hosts_ - 1)
+				.obj_add(attrs);
+    	}
+
+    	return 0;
     }
 
     int assoc_add(

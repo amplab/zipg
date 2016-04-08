@@ -568,6 +568,17 @@ public:
         return ret;
     }
 
+    int64_t obj_add(std::vector<std::string>& attrs) {
+		assert(store_mode_ == StoreMode::LogStore);
+		COND_LOG_E("Handling obj_add(...)");
+
+		// Note the argument order is switched
+		int ret = graph_log_store_->append_node(attrs);
+
+		COND_LOG_E("; ret = %d\n", ret);
+		return ret;
+	}
+
 private:
 
     // By default, StoreMode::SuccinctStore

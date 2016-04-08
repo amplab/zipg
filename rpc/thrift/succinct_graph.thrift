@@ -90,6 +90,8 @@ service GraphQueryService {
 
     i32 assoc_add(
         1: i64 src, 2: i64 atype, 3: i64 dst, 4: i64 time, 5: string attr),
+        
+	i64 obj_add(1: list<string> attrs),
 
 }
 
@@ -136,6 +138,11 @@ service GraphQueryAggregatorService {
         1: i32 next_shard, // where are these updates located?
         2: i32 local_shard, // one of this aggregator's shards
         3: list<ThriftSrcAtype> updates),
+        
+    void record_node_append(
+    	1: i32 next_shard,
+    	2: i32 local_shard,
+    	3: i64 obj),
 
     // Primitive queries
 
@@ -205,7 +212,7 @@ service GraphQueryAggregatorService {
         1: i32 shardId, 2: i64 src, 3: i64 atype,
         4: set<i64> dstIdSet, 5: i64 tLow, 6: i64 tHigh),
         
-	i32 obj_add(1: i64 nodeId, 2: list<string> properties),
+	i64 obj_add(1: list<string> attrs),
 
     list<string> obj_get(1: i64 nodeId),
 
