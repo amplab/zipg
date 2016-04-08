@@ -1131,10 +1131,16 @@ public:
 					primary_host_id, primary_shard_id, obj);
 
 				if (primary_host_id == local_host_id_) {
-					record_node_append(primary_shard_id, obj);
+					record_node_append(num_succinctstore_shards_ +
+							num_suffixstore_shards_ +
+							num_logstore_shards_ - 1,
+							primary_shard_id, obj);
 				} else {
 					aggregators_.at(primary_host_id).record_node_append(
-						primary_shard_id, obj);
+							num_succinctstore_shards_ +
+							num_suffixstore_shards_ +
+							num_logstore_shards_ - 1,
+							primary_shard_id, obj);
 				}
     		}
     	} else {
