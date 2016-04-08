@@ -1407,12 +1407,12 @@ int main(int argc, char **argv) {
             // LogStore
             // +1 because of the last, empty shard
             edge_update_ptrs.resize(total_num_shards + num_logstore_shards + 1);
-            node_buffers.resize(total_num_shards + num_logstore_shards + 1);
+            node_update_ptrs.resize(total_num_shards + num_logstore_shards + 1);
             LOG_E("[LOGSTORE] Have %zu update pointer tables.\n", edge_update_ptrs.size());
         } else {
             // Succ.
             edge_update_ptrs.resize(total_num_shards);
-            node_buffers.resize(total_num_shards);
+            node_update_ptrs.resize(total_num_shards);
             LOG_E("[SUCCINCT] Have %zu update pointer tables.\n", edge_update_ptrs.size());
         }
         lk.unlock();
