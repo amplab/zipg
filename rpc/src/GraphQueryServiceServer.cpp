@@ -570,7 +570,7 @@ public:
 
     int64_t obj_add(const std::vector<std::string>& attrs) {
 		assert(store_mode_ == StoreMode::LogStore);
-		LOG_E("Handling obj_add(...)");
+		LOG_E("Handling obj_add(...)\n");
 
 		// Note the argument order is switched
 		int ret = graph_log_store_->append_node(attrs);

@@ -149,6 +149,7 @@ void KVLogStore::create_ngram_idx() {
 }
 
 int64_t KVLogStore::append(const std::string& value) {
+	LOG_E("[KVLogStore] Appending %s\n", value.c_str());
     std::lock_guard<std::mutex> lock(mutex_);
 
     if (data_pos + value.length() > MAX_LOG_STORE_SIZE) {
