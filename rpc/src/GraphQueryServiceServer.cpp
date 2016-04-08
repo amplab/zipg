@@ -568,7 +568,7 @@ public:
         return ret;
     }
 
-    int64_t obj_add(std::vector<std::string>& attrs) {
+    int64_t obj_add(const std::vector<std::string>& attrs) {
 		assert(store_mode_ == StoreMode::LogStore);
 		COND_LOG_E("Handling obj_add(...)");
 
