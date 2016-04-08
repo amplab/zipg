@@ -1002,9 +1002,8 @@ public:
         int shard_idx = shard_id_to_shard_idx(shardId);
         assert(shard_idx < local_shards_.size() && "shard_idx >= local_shards_.size()");
 
-        if (node_buffers.at(shard_idx).contains(nodeId)) {
-        	// TODO: This should be lock protected
-        	node_buffers.at(shard_idx).obj_get(_return, nodeId);
+        // TODO: Fix
+        if (node_update_ptrs.at(shard_idx).find(nodeId) != node_update_ptrs.at(shard_idx).end()) {
         	return;
         }
 
@@ -1111,7 +1110,7 @@ public:
             _return.size(), limit);
     }
 
-    int64_t obj_add(std::vector<std::string>& attrs) {
+    int64_t obj_add(const std::vector<std::string>& attrs) {
     	// Currently on host holding log store shard
     	assert(multistore_enabled_ &&
 			"multistore not enabled but obj_add called");
