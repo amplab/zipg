@@ -31,6 +31,17 @@ private:
     constexpr static int64_t MIN_TIME = 1439721981221; // unused
     constexpr static int64_t MAX_TIME = 1441905687237;
     const std::string ATTR_FOR_NEW_EDGES = std::string(128, '|');
+    const std::string ATTR_FOR_NEW_NODES = std::string(128, '?');
+
+    std::vector<std::string> populate_node_attrs() {
+    	std::vector<std::string> attrs;
+    	for (size_t i = 0; i < 40; i++) {
+    		attrs.push_back(ATTR_FOR_NEW_NODES);
+    	}
+    	return attrs;
+    }
+
+    const std::vector<std::string> ATTRS_FOR_NEW_NODES = populate_node_attrs();
 
     const static int MAX_NUM_NEW_EDGES = 200000; // 3.5M takes too long to run
 
@@ -57,12 +68,14 @@ private:
     } BenchType;
 
     // Read workload distribution; from ATC 13 Bronson et al.
-    constexpr static double TAO_WRITE_PERC = 0.002;
     constexpr static double ASSOC_RANGE_PERC = 0.409;
     constexpr static double OBJ_GET_PERC = 0.289;
     constexpr static double ASSOC_GET_PERC = 0.157;
     constexpr static double ASSOC_COUNT_PERC = 0.117;
     constexpr static double ASSOC_TIME_RANGE_PERC = 0.028;
+    constexpr static double TAO_WRITE_PERC = 0.002;
+    constexpr static double ASSOC_ADD_PERC = 0.76;
+    constexpr static double OBJ_ADD_PERC = 0.24;
 
     inline int choose_query(double rand_r) {
         if (rand_r < ASSOC_RANGE_PERC) {
@@ -81,7 +94,9 @@ private:
 
     inline int choose_query_with_updates(double rand_update, double rand_r) {
         if (rand_update < TAO_WRITE_PERC) {
-            return 5; // assoc_add only, for now
+        	if (rand_r < ASSOC_ADD_PERC)
+        		return 5; // assoc_add only, for now
+        	return 6;
         }
         // otherwise, all masses are allocated to reads
         if (rand_r < ASSOC_RANGE_PERC) {
@@ -1619,6 +1634,7 @@ public:
 
         int64_t i = 0;
         int64_t src, atype, dst;
+        int64_t obj;
         int ret;
 
 		// Warmup phase
@@ -1688,6 +1704,13 @@ public:
 					dst,
 					MAX_TIME,
 					ATTR_FOR_NEW_EDGES);
+				// TODO: Add it back to query list?
+				COND_LOG_E("; ret = %d\n", ret);
+				break;
+			case 6:
+				COND_LOG_E("obj_add(...) ");
+				obj = thread_data->client->obj_add(ATTRS_FOR_NEW_NODES);
+				// TODO: Add it back to query list?
 				COND_LOG_E("; ret = %d\n", ret);
 				break;
 			default:
@@ -1770,6 +1793,9 @@ public:
 				atype = dist_atype(gen); \
 				dst = dist_node(gen); \
 				thread_data->client->assoc_add(src, atype, dst, MAX_TIME, ATTR_FOR_NEW_EDGES); \
+				break; \
+			case 6: \
+				obj = thread_data->client->obj_add(ATTRS_FOR_NEW_NODES); \
 				break; \
 			default: \
 			  assert(false); \
