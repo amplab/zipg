@@ -4,13 +4,16 @@
 
 void GraphLogStore::construct() {
     node_table_ = std::make_shared<KVLogStore>(node_file_);
+    LOG_E("GraphLogStore: Constructing Node table\n");
     node_table_->construct();
-    COND_LOG_E("GraphLogStore: Node table constructed\n");
+    LOG_E("GraphLogStore: Node table constructed\n");
+    LOG_E("GraphLogStore: Constructing Edge table\n");
     edge_table_.construct();
-    COND_LOG_E("GraphLogStore: Edge table constructed\n");
+    LOG_E("GraphLogStore: Edge table constructed\n");
 }
 
 void GraphLogStore::load() {
+	LOG_E("Loading GraphLogStore");
     node_table_ = std::make_shared<KVLogStore>(node_file_);
     node_table_->load();
     edge_table_.load();

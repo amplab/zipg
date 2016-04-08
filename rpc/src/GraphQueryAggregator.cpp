@@ -1124,7 +1124,7 @@ public:
 
     	if (local_host_id_ == total_num_hosts_ - 1) {
     		COND_LOG_E("Updating local logstore.\n");
-    		int obj = local_shards_.back()
+    		int64_t obj = local_shards_.back()
     		                .obj_add(attrs);
 
     		if (obj != -1) {
