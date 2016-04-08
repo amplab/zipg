@@ -77,17 +77,17 @@ void test_kv_log_store() {
     kv_log_store.search(keys, "kkk");
     assert_eq(keys, { });
 
-    kv_log_store.append(2, "sup");
+    kv_log_store.append("sup");
     kv_log_store.get_value(ret, 2);
     assert(ret == "sup");
 
-    kv_log_store.append(4, "1618");
+    kv_log_store.append("1618");
     kv_log_store.search(keys, "1618");
-    assert_eq(keys, { 0, 4 });
+    assert_eq(keys, { 0, 3 });
 
-    kv_log_store.append(10, "1619");
+    kv_log_store.append("1619");
     kv_log_store.search(keys, "1619");
-    assert_eq(keys, { 10 });
+    assert_eq(keys, { 4 });
 }
 
 void test_kv_suffix_store() {
@@ -129,10 +129,10 @@ void test_graph_log_store() {
     std::vector<std::string> attrs2{ "what's up?", "bro" };
     std::vector<std::string> attrs3{ "heyy", "", "k" };
     std::vector<std::string> attrs4{ "heyy", "k" };
-    graph_log_store.append_node(0, attrs);
-    graph_log_store.append_node(2, attrs2);
-    graph_log_store.append_node(3, attrs3);
-    graph_log_store.append_node(5, attrs4);
+    graph_log_store.append_node(attrs);
+    graph_log_store.append_node(attrs2);
+    graph_log_store.append_node(attrs3);
+    graph_log_store.append_node(attrs4);
 
     // get_attr
 
@@ -140,27 +140,27 @@ void test_graph_log_store() {
     assert(attr == "what's up?");
     graph_log_store.get_attribute(attr, 0, 1);
     assert(attr == "");
-    graph_log_store.get_attribute(attr, 2, 1);
+    graph_log_store.get_attribute(attr, 1, 1);
     assert(attr == "bro");
-    graph_log_store.get_attribute(attr, 2, 0);
+    graph_log_store.get_attribute(attr, 1, 0);
     assert(attr == "what's up?");
 
     // search
 
     graph_log_store.get_nodes(keys, 1, "bro");
-    assert_eq(keys, { 2 });
+    assert_eq(keys, { 1 });
 
     graph_log_store.get_nodes(keys, 0, "heyy");
-    assert_eq(keys, { 3, 5 });
+    assert_eq(keys, { 2, 3 });
 
     graph_log_store.get_nodes(keys, 0, "what's up?");
-    assert_eq(keys, { 0, 2 });
+    assert_eq(keys, { 0, 1 });
 
     graph_log_store.get_nodes(keys, 0, "what's up?", 1, "bro");
-    assert_eq(keys, { 2 });
+    assert_eq(keys, { 1 });
 
     graph_log_store.get_nodes(keys, 0, "heyy", 2, "k");
-    assert_eq(keys, { 3 });
+    assert_eq(keys, { 2 });
 
     // append edges
 
