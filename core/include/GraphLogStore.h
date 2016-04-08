@@ -30,6 +30,7 @@ public:
           edge_file_(edge_file),
           node_pointer_file(""), // FIXME?
           edge_table_(edge_file),
+		  node_table_(new KVLogStore(4294967296ULL)), // FIXME: hard-coded
           max_num_edges_(3500000) // FIXME: hard-coded
     { }
 
@@ -115,7 +116,7 @@ private:
     const std::string node_file_, edge_file_;
     std::string node_pointer_file;
 
-    std::shared_ptr<KVLogStore> node_table_ = nullptr;
+    std::shared_ptr<KVLogStore> node_table_;
     StructuredEdgeTable edge_table_;
 
     const int max_num_edges_; // bound per log store

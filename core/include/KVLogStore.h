@@ -35,6 +35,10 @@ public:
     	cur_key = 0;
     }
 
+    KVLogStore(int64_t start_key) {
+    	cur_key = start_key;
+    }
+
     ~KVLogStore() {
         if (data != nullptr) {
             delete [] data;

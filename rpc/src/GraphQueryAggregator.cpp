@@ -1003,8 +1003,14 @@ public:
         assert(shard_idx < local_shards_.size() && "shard_idx >= local_shards_.size()");
 
         // TODO: Fix
-        if (node_update_ptrs.at(shard_idx).find(nodeId) != node_update_ptrs.at(shard_idx).end()) {
-        	return;
+        {
+        	boost::unique_lock<boost::shared_mutex> lk(node_update_ptrs_mutex);
+			if (node_update_ptrs.at(shard_idx).find(nodeId) !=
+					node_update_ptrs.at(shard_idx).end()) {
+				assert(false && "Should not have got here, new objects are not queried in the benchmark");
+				return;
+			}
+			lk.unlock();
         }
 
         COND_LOG_E("Shard index = %d, number of shards on this server = %zu\n", shard_idx, local_shards_.size());
