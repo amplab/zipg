@@ -575,7 +575,7 @@ public:
 		// Note the argument order is switched
 		int ret = graph_log_store_->append_node(attrs);
 
-		COND_LOG_E("; ret = %d\n", ret);
+		LOG_E("; ret = %d\n", ret);
 		return ret;
 	}
 
