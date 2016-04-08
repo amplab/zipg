@@ -17,7 +17,7 @@ void GraphLogStore::load() {
 }
 
 // Serialize into the "[lengths] [attrs]" format, and call append().
-int64_t GraphLogStore::append_node(std::vector<std::string>& attrs)
+int64_t GraphLogStore::append_node(const std::vector<std::string>& attrs)
 {
     std::string delimed(GraphFormatter::format_node_attrs_str({ attrs }));
     std::string val(GraphFormatter::attach_attr_lengths(delimed));

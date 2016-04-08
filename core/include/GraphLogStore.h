@@ -42,7 +42,7 @@ public:
     // that these id's are local keys.
     //
     // Thread-safe: internally, a lock is used.
-    int64_t append_node(std::vector<std::string>& attrs);
+    int64_t append_node(const std::vector<std::string>& attrs);
 
     // Thread-safe: internally, a lock is used.
     int append_edge(
