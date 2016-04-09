@@ -68,7 +68,7 @@ void KVLogStore::search(
 {
     _return.clear();
     COND_LOG_E("search string '%s' (size %d)\n",
-        substring.c_str(), substring.length());
+        query.c_str(), query.length());
 
     char *substr = (char *) query.c_str();
 	char *suffix = substr + ngram_n_;
@@ -76,11 +76,10 @@ void KVLogStore::search(
 	size_t suffix_len = skip_filter ? 0 : query.length() - ngram_n_;
 	uint32_t prefix_ngram = Hash::simple_hash3(substr);
 
-    COND_LOG_E("idx sizes: %d, substring '%s'\n", idx_offsets.size(),
-        substring_ngram.c_str());
-
     boost::shared_lock<boost::shared_mutex> lk(mutex_);
     std::vector<uint32_t> idx_off = ngram_idx_[prefix_ngram];
+
+    COND_LOG_E("idx sizes: %d, substring '%s'\n", idx_off.size(), substr);
 	for (uint32_t i = 0; i < idx_off.size(); i++) {
 		if (skip_filter
 			|| strncmp(data_ + idx_off[i] + ngram_n_, suffix, suffix_len) == 0) {
