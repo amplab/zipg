@@ -561,7 +561,7 @@ public:
 				break;
             case 6:
             	LOG_E("obj_add(...) ");
-				obj = thread_data->client->obj_add(ATTRS_FOR_NEW_NODES);
+				obj = client->obj_add(ATTRS_FOR_NEW_NODES);
 				LOG_E("; ret = %d\n", ret);
 				break;
             default:
