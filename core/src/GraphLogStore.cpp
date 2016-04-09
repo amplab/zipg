@@ -24,9 +24,7 @@ int64_t GraphLogStore::append_node(const std::vector<std::string>& attrs)
 {
     std::string delimed(GraphFormatter::format_node_attrs_str({ attrs }));
     std::string val(GraphFormatter::attach_attr_lengths(delimed));
-    LOG_E("Appending node %lld, attrs '%s'\n", val.c_str());
     int64_t node = node_table_->append(val);
-    LOG_E("Append Node successful. Node = %lld\n");
     return node;
 }
 

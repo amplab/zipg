@@ -149,10 +149,7 @@ void KVLogStore::create_ngram_idx() {
 }
 
 int64_t KVLogStore::append(const std::string& value) {
-	LOG_E("[KVLogStore] Appending %s\n", value.c_str());
     std::lock_guard<std::mutex> lock(mutex_);
-
-    LOG_E("Obtained mutex.\n");
 
     if (data_pos + value.length() > MAX_LOG_STORE_SIZE) {
         return -1;   // Data exceeds max chunk size
@@ -162,17 +159,11 @@ int64_t KVLogStore::append(const std::string& value) {
     int64_t key = cur_key;
     cur_key++;
 
-    LOG_E("Obtained current key: %ld\n", key);
-
     keys.push_back(key);
     value_offsets.push_back(data_pos);
     val += delim;
 
-    LOG_E("Added new key\n");
-
     strncpy(data + data_pos, val.c_str(), val.length());
-
-    LOG_E("Copied data.\n");
 
     // Update the index
 
@@ -187,8 +178,6 @@ int64_t KVLogStore::append(const std::string& value) {
         ngram_idx[ngram].push_back(i);
     }
     data_pos += val.length();
-
-    LOG_E("Updated index.\n");
 
     return key;
 }
