@@ -37,6 +37,7 @@ public:
 
     KVLogStore(int64_t start_key) {
     	cur_key = start_key;
+    	data = new char[MAX_LOG_STORE_SIZE];
     }
 
     ~KVLogStore() {
