@@ -66,8 +66,7 @@ void test_kv_log_store() {
     std::string ret;
     std::set<int64_t> keys;
 
-    KVLogStore kv_log_store("tests/vals", "tests/ptrs");
-    kv_log_store.construct();
+    KVLogStore kv_log_store(0);
 
     kv_log_store.get_value(ret, 0);
     assert(ret == "1618");

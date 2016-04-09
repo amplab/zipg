@@ -12,7 +12,6 @@ void GraphLogStore::construct() {
 void GraphLogStore::load() {
 	LOG_E("Loading GraphLogStore");
     node_table_ = std::make_shared<KVLogStore>(4294967296ULL);
-    edge_table_.load();
 }
 
 // Serialize into the "[lengths] [attrs]" format, and call append().
