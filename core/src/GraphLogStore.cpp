@@ -3,7 +3,7 @@
 #include "GraphFormatter.hpp"
 
 void GraphLogStore::construct() {
-    node_table_ = std::make_shared<KVLogStore>(node_file_);
+    node_table_ = std::make_shared<KVLogStore>(4294967296ULL);
     LOG_E("GraphLogStore: Constructing Edge table\n");
     edge_table_.construct();
     LOG_E("GraphLogStore: Edge table constructed\n");
@@ -11,7 +11,7 @@ void GraphLogStore::construct() {
 
 void GraphLogStore::load() {
 	LOG_E("Loading GraphLogStore");
-    node_table_ = std::make_shared<KVLogStore>(node_file_);
+    node_table_ = std::make_shared<KVLogStore>(4294967296ULL);
     edge_table_.load();
 }
 
