@@ -155,6 +155,9 @@ int64_t KVLogStore::append(const std::string& value) {
         return -1;   // Data exceeds max chunk size
     }
 
+    int64_t start, end;
+
+    start = get_timestamp();
     std::string val(value);
     int64_t key = cur_key;
     cur_key++;
@@ -162,10 +165,19 @@ int64_t KVLogStore::append(const std::string& value) {
     keys.push_back(key);
     value_offsets.push_back(data_pos);
     val += delim;
+    end = get_timestamp();
 
+    COND_LOG_E("Inserted keys in %lld us\n", (end - start));
+
+    start = get_timestamp();
     strncpy(data + data_pos, val.c_str(), val.length());
+    end = get_timestamp();
+
+    COND_LOG_E("Copied data in %lld us\n", (end - start));
 
     // Update the index
+
+    start = get_timestamp();
 
     // min with 0, since data_pos can be small (or zero) initially
     for(uint64_t i = std::min(data_pos - ngram_n, static_cast<uint64_t>(0));
@@ -178,6 +190,10 @@ int64_t KVLogStore::append(const std::string& value) {
         ngram_idx[ngram].push_back(i);
     }
     data_pos += val.length();
+
+    end = get_timestamp();
+
+    COND_LOG_E("Indexed value in %lld\n", (end - start));
 
     return key;
 }
