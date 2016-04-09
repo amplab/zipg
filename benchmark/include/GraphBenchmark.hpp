@@ -561,8 +561,10 @@ public:
 				break;
             case 6:
             	LOG_E("obj_add(...) ");
+            	int64_t start = get_timestamp();
 				obj = client->obj_add(ATTRS_FOR_NEW_NODES);
-				LOG_E("; ret = %d\n", ret);
+				int64_t end = get_timestamp();
+				LOG_E("; ret = %d, time taken = %lld\n", ret, (end - start));
 				break;
             default:
                 assert(false);
