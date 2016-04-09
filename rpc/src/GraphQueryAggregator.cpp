@@ -1115,9 +1115,14 @@ public:
 
     	if (local_host_id_ == total_num_hosts_ - 1) {
     		COND_LOG_E("Updating local logstore.\n");
+    		int64_t start = get_timestamp();
     		int64_t obj = local_shards_.back()
     		                .obj_add(attrs);
+    		int64_t end = get_timestamp();
 
+    		COND_LOG_E("Updated local logstore in %lld us\n", (end - start));
+
+    		int64_t start = get_timestamp();
     		if (obj != -1) {
     			int primary_shard_id = obj % num_succinctstore_shards_;
 				int primary_host_id = host_id_for_shard(primary_shard_id);
@@ -1139,6 +1144,8 @@ public:
 							primary_shard_id, obj);
 				}
     		}
+    		int64_t end = get_timestamp();
+    		COND_LOG_E("Updated remote node update pointers in %lld us\n", (end - start));
     	} else {
     		COND_LOG_E("Forwarding assoc_add to host %d\n", (total_num_hosts_ - 1));
 			return aggregators_.at(total_num_hosts_ - 1)
