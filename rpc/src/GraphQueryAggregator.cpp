@@ -1002,16 +1002,7 @@ public:
         int shard_idx = shard_id_to_shard_idx(shardId);
         assert(shard_idx < local_shards_.size() && "shard_idx >= local_shards_.size()");
 
-        // TODO: Fix
-        {
-        	boost::unique_lock<boost::shared_mutex> lk(node_update_ptrs_mutex);
-			if (node_update_ptrs.at(shard_idx).find(nodeId) !=
-					node_update_ptrs.at(shard_idx).end()) {
-				assert(false && "Should not have got here, new objects are not queried in the benchmark");
-				return;
-			}
-			lk.unlock();
-        }
+        // TODO: Add check for key range to determine if object lies within SuccinctStore shards or LogStore shards
 
         COND_LOG_E("Shard index = %d, number of shards on this server = %zu\n", shard_idx, local_shards_.size());
         local_shards_.at(shard_idx)
