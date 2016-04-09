@@ -572,7 +572,11 @@ public:
 		assert(store_mode_ == StoreMode::LogStore);
 
 		// Note the argument order is switched
+		int64_t start, end;
+		start = get_timestamp();
 		int64_t ret = graph_log_store_->append_node(attrs);
+		end = get_timestamp();
+		COND_LOG_E("obj_add: Time taken at server = %lld\n", (end - start));
 		return ret;
 	}
 
