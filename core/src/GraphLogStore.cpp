@@ -27,12 +27,12 @@ int64_t GraphLogStore::append_node(const std::vector<std::string>& attrs)
 	std::string delimed(GraphFormatter::format_node_attrs_str({ attrs }));
     std::string val(GraphFormatter::attach_attr_lengths(delimed));
     end = get_timestamp();
-    LOG_E("Time to format attributes: %lld\n", (end - start));
+    COND_LOG_E("Time to format attributes: %lld\n", (end - start));
 
     start = get_timestamp();
     int64_t node = node_table_->append(val);
     end = get_timestamp();
-    LOG_E("Time to append node at GraphLogStore: %lld us\n", (end - start));
+    COND_LOG_E("Time to append node at GraphLogStore: %lld us\n", (end - start));
     return node;
 }
 
