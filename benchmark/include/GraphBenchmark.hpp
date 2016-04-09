@@ -1477,55 +1477,51 @@ public:
 		int64_t edges = 0;
 		start = get_timestamp();
 		while (get_timestamp() - start < MEASURE_MICROSECS) {
-
-#define RUN_TAO_MIX_THPUT_BODY
-			query = choose_query(query_dis(gen)); \
-			switch (query) { \
-			case 0: \
-			  query_idx = assoc_range_size(gen); \
-			  thread_data->client->assoc_range(result, \
-				  this->assoc_range_nodes.at(query_idx), \
-				  this->assoc_range_atypes.at(query_idx), \
-				  this->assoc_range_offs.at(query_idx), \
-				  this->assoc_range_lens.at(query_idx)); \
-			  break; \
-			case 1: \
-			  query_idx = obj_get_size(gen); \
-			  thread_data->client->obj_get(attrs, \
-				  this->obj_get_nodes.at(query_idx)); \
-			  break; \
-			case 2: \
-			  query_idx = assoc_get_size(gen); \
-			  thread_data->client->assoc_get(result, \
-				  this->assoc_get_nodes.at(query_idx), \
-				  this->assoc_get_atypes.at(query_idx), \
-				  this->assoc_get_dst_id_sets.at(query_idx), \
-				  this->assoc_get_lows.at(query_idx), \
-				  this->assoc_get_highs.at(query_idx)); \
-			  break; \
-			case 3: \
-			  query_idx = assoc_count_size(gen); \
-			  thread_data->client->assoc_count( \
-				  this->assoc_count_nodes.at(query_idx), \
-				  this->assoc_count_atypes.at(query_idx)); \
-			  break; \
-			case 4: \
-			  query_idx = assoc_time_range_size(gen); \
-			  thread_data->client->assoc_time_range(result, \
-				  this->assoc_time_range_nodes.at(query_idx), \
-				  this->assoc_time_range_atypes.at(query_idx), \
-				  this->assoc_time_range_lows.at(query_idx), \
-				  this->assoc_time_range_highs.at(query_idx), \
-				  this->assoc_time_range_limits.at(query_idx)); \
-			  break; \
-			default: \
-			  assert(false); \
-			} \
-			edges += result.size(); \
-			++i;
-
 			try {
-				RUN_TAO_MIX_THPUT_BODY // actually run
+				query = choose_query(query_dis(gen));
+				switch (query) {
+				case 0:
+				  query_idx = assoc_range_size(gen);
+				  thread_data->client->assoc_range(result,
+					  this->assoc_range_nodes.at(query_idx),
+					  this->assoc_range_atypes.at(query_idx),
+					  this->assoc_range_offs.at(query_idx),
+					  this->assoc_range_lens.at(query_idx));
+				  break;
+				case 1:
+				  query_idx = obj_get_size(gen);
+				  thread_data->client->obj_get(attrs,
+					  this->obj_get_nodes.at(query_idx));
+				  break;
+				case 2:
+				  query_idx = assoc_get_size(gen);
+				  thread_data->client->assoc_get(result,
+					  this->assoc_get_nodes.at(query_idx),
+					  this->assoc_get_atypes.at(query_idx),
+					  this->assoc_get_dst_id_sets.at(query_idx),
+					  this->assoc_get_lows.at(query_idx),
+					  this->assoc_get_highs.at(query_idx));
+				  break;
+				case 3:
+				  query_idx = assoc_count_size(gen);
+				  thread_data->client->assoc_count(
+					  this->assoc_count_nodes.at(query_idx),
+					  this->assoc_count_atypes.at(query_idx));
+				  break;
+				case 4:
+				  query_idx = assoc_time_range_size(gen);
+				  thread_data->client->assoc_time_range(result,
+					  this->assoc_time_range_nodes.at(query_idx),
+					  this->assoc_time_range_atypes.at(query_idx),
+					  this->assoc_time_range_lows.at(query_idx),
+					  this->assoc_time_range_highs.at(query_idx),
+					  this->assoc_time_range_limits.at(query_idx));
+				  break;
+				default:
+				  assert(false);
+				}
+				edges += result.size();
+				++i;
 			} catch (std::exception& e) {
 				LOG_E("Query failed: type = %d, idx = %d err = %s\n", query, query_idx, e.what());
 				thread_data->client.reset();
@@ -1567,7 +1563,50 @@ public:
 		time_t cooldown_start = get_timestamp();
 		while (get_timestamp() - cooldown_start < COOLDOWN_MICROSECS) {
 			try {
-				RUN_TAO_MIX_THPUT_BODY
+				query = choose_query(query_dis(gen));
+				switch (query) {
+				case 0:
+				  query_idx = assoc_range_size(gen);
+				  thread_data->client->assoc_range(result,
+					  this->assoc_range_nodes.at(query_idx),
+					  this->assoc_range_atypes.at(query_idx),
+					  this->assoc_range_offs.at(query_idx),
+					  this->assoc_range_lens.at(query_idx));
+				  break;
+				case 1:
+				  query_idx = obj_get_size(gen);
+				  thread_data->client->obj_get(attrs,
+					  this->obj_get_nodes.at(query_idx));
+				  break;
+				case 2:
+				  query_idx = assoc_get_size(gen);
+				  thread_data->client->assoc_get(result,
+					  this->assoc_get_nodes.at(query_idx),
+					  this->assoc_get_atypes.at(query_idx),
+					  this->assoc_get_dst_id_sets.at(query_idx),
+					  this->assoc_get_lows.at(query_idx),
+					  this->assoc_get_highs.at(query_idx));
+				  break;
+				case 3:
+				  query_idx = assoc_count_size(gen);
+				  thread_data->client->assoc_count(
+					  this->assoc_count_nodes.at(query_idx),
+					  this->assoc_count_atypes.at(query_idx));
+				  break;
+				case 4:
+				  query_idx = assoc_time_range_size(gen);
+				  thread_data->client->assoc_time_range(result,
+					  this->assoc_time_range_nodes.at(query_idx),
+					  this->assoc_time_range_atypes.at(query_idx),
+					  this->assoc_time_range_lows.at(query_idx),
+					  this->assoc_time_range_highs.at(query_idx),
+					  this->assoc_time_range_limits.at(query_idx));
+				  break;
+				default:
+				  assert(false);
+				}
+				edges += result.size();
+				++i;
 			} catch (std::exception& e) {
 				LOG_E("Query failed: type = %d, idx = %d err = %s\n", query, query_idx, e.what());
 				thread_data->client.reset();
@@ -1758,62 +1797,60 @@ public:
 		int64_t edges = 0;
 		start = get_timestamp();
 		while (get_timestamp() - start < MEASURE_MICROSECS) {
-#define RUN_TAO_MIX_WITH_UPDATES_THPUT_BODY
-			query = choose_query_with_updates(query_dis(gen), query_dis(gen)); \
-			switch (query) { \
-			case 0: \
-			  query_idx = assoc_range_size(gen); \
-			  thread_data->client->assoc_range(result, \
-				  this->assoc_range_nodes.at(query_idx), \
-				  this->assoc_range_atypes.at(query_idx), \
-				  this->assoc_range_offs.at(query_idx), \
-				  this->assoc_range_lens.at(query_idx)); \
-			  break; \
-			case 1: \
-			  query_idx = obj_get_size(gen); \
-			  thread_data->client->obj_get(attrs, \
-				  this->obj_get_nodes.at(query_idx)); \
-			  break; \
-			case 2: \
-			  query_idx = assoc_get_size(gen); \
-			  thread_data->client->assoc_get(result, \
-				  this->assoc_get_nodes.at(query_idx), \
-				  this->assoc_get_atypes.at(query_idx), \
-				  this->assoc_get_dst_id_sets.at(query_idx), \
-				  this->assoc_get_lows.at(query_idx), \
-				  this->assoc_get_highs.at(query_idx)); \
-			  break; \
-			case 3: \
-			  query_idx = assoc_count_size(gen); \
-			  thread_data->client->assoc_count( \
-				  this->assoc_count_nodes.at(query_idx), \
-				  this->assoc_count_atypes.at(query_idx)); \
-			  break; \
-			case 4: \
-			  query_idx = assoc_time_range_size(gen); \
-			  thread_data->client->assoc_time_range(result, \
-				  this->assoc_time_range_nodes.at(query_idx), \
-				  this->assoc_time_range_atypes.at(query_idx), \
-				  this->assoc_time_range_lows.at(query_idx), \
-				  this->assoc_time_range_highs.at(query_idx), \
-				  this->assoc_time_range_limits.at(query_idx)); \
-			  break; \
-			case 5: \
-				src = dist_node(gen); \
-				atype = dist_atype(gen); \
-				dst = dist_node(gen); \
-				thread_data->client->assoc_add(src, atype, dst, MAX_TIME, ATTR_FOR_NEW_EDGES); \
-				break; \
-			case 6: \
-				obj = thread_data->client->obj_add(ATTRS_FOR_NEW_NODES); \
-				break; \
-			default: \
-			  assert(false); \
-			} \
-			edges += result.size(); \
-			++i;
 			try {
-			  RUN_TAO_MIX_WITH_UPDATES_THPUT_BODY // actually run
+				query = choose_query_with_updates(query_dis(gen), query_dis(gen));
+				switch (query) {
+				case 0:
+				  query_idx = assoc_range_size(gen);
+				  thread_data->client->assoc_range(result,
+					  this->assoc_range_nodes.at(query_idx),
+					  this->assoc_range_atypes.at(query_idx),
+					  this->assoc_range_offs.at(query_idx),
+					  this->assoc_range_lens.at(query_idx));
+				  break;
+				case 1:
+				  query_idx = obj_get_size(gen);
+				  thread_data->client->obj_get(attrs,
+					  this->obj_get_nodes.at(query_idx));
+				  break;
+				case 2:
+				  query_idx = assoc_get_size(gen);
+				  thread_data->client->assoc_get(result,
+					  this->assoc_get_nodes.at(query_idx),
+					  this->assoc_get_atypes.at(query_idx),
+					  this->assoc_get_dst_id_sets.at(query_idx),
+					  this->assoc_get_lows.at(query_idx),
+					  this->assoc_get_highs.at(query_idx));
+				  break;
+				case 3:
+				  query_idx = assoc_count_size(gen);
+				  thread_data->client->assoc_count(
+					  this->assoc_count_nodes.at(query_idx),
+					  this->assoc_count_atypes.at(query_idx));
+				  break;
+				case 4:
+				  query_idx = assoc_time_range_size(gen);
+				  thread_data->client->assoc_time_range(result,
+					  this->assoc_time_range_nodes.at(query_idx),
+					  this->assoc_time_range_atypes.at(query_idx),
+					  this->assoc_time_range_lows.at(query_idx),
+					  this->assoc_time_range_highs.at(query_idx),
+					  this->assoc_time_range_limits.at(query_idx));
+				  break;
+				case 5:
+					src = dist_node(gen);
+					atype = dist_atype(gen);
+					dst = dist_node(gen);
+					thread_data->client->assoc_add(src, atype, dst, MAX_TIME, ATTR_FOR_NEW_EDGES);
+					break;
+				case 6:
+					obj = thread_data->client->obj_add(ATTRS_FOR_NEW_NODES);
+					break;
+				default:
+				  assert(false);
+				}
+				edges += result.size();
+				++i;
 			} catch (std::exception& e) {
 				LOG_E("Query failed: type = %d, idx = %d err = %s\n", query, query_idx, e.what());
 				thread_data->client.reset();
@@ -1853,7 +1890,59 @@ public:
 		time_t cooldown_start = get_timestamp();
 		while (get_timestamp() - cooldown_start < COOLDOWN_MICROSECS) {
 		  try {
-			RUN_TAO_MIX_WITH_UPDATES_THPUT_BODY
+			query = choose_query_with_updates(query_dis(gen), query_dis(gen));
+			switch (query) {
+			case 0:
+			  query_idx = assoc_range_size(gen);
+			  thread_data->client->assoc_range(result,
+				  this->assoc_range_nodes.at(query_idx),
+				  this->assoc_range_atypes.at(query_idx),
+				  this->assoc_range_offs.at(query_idx),
+				  this->assoc_range_lens.at(query_idx));
+			  break;
+			case 1:
+			  query_idx = obj_get_size(gen);
+			  thread_data->client->obj_get(attrs,
+				  this->obj_get_nodes.at(query_idx));
+			  break;
+			case 2:
+			  query_idx = assoc_get_size(gen);
+			  thread_data->client->assoc_get(result,
+				  this->assoc_get_nodes.at(query_idx),
+				  this->assoc_get_atypes.at(query_idx),
+				  this->assoc_get_dst_id_sets.at(query_idx),
+				  this->assoc_get_lows.at(query_idx),
+				  this->assoc_get_highs.at(query_idx));
+			  break;
+			case 3:
+			  query_idx = assoc_count_size(gen);
+			  thread_data->client->assoc_count(
+				  this->assoc_count_nodes.at(query_idx),
+				  this->assoc_count_atypes.at(query_idx));
+			  break;
+			case 4:
+			  query_idx = assoc_time_range_size(gen);
+			  thread_data->client->assoc_time_range(result,
+				  this->assoc_time_range_nodes.at(query_idx),
+				  this->assoc_time_range_atypes.at(query_idx),
+				  this->assoc_time_range_lows.at(query_idx),
+				  this->assoc_time_range_highs.at(query_idx),
+				  this->assoc_time_range_limits.at(query_idx));
+			  break;
+			case 5:
+				src = dist_node(gen);
+				atype = dist_atype(gen);
+				dst = dist_node(gen);
+				thread_data->client->assoc_add(src, atype, dst, MAX_TIME, ATTR_FOR_NEW_EDGES);
+				break;
+			case 6:
+				obj = thread_data->client->obj_add(ATTRS_FOR_NEW_NODES);
+				break;
+			default:
+			  assert(false);
+			}
+			edges += result.size();
+			++i;
 		  } catch(std::exception& e) {
 			LOG_E("Query failed: type = %d, idx = %d err = %s\n", query, query_idx, e.what());
 			thread_data->client.reset();
