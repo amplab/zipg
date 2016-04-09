@@ -480,6 +480,7 @@ public:
 
         int64_t src, atype, dst;
         int ret;
+        int64_t obj;
 
         shared_ptr<benchmark_thread_data_t> thread_data(
             new benchmark_thread_data_t);
@@ -556,7 +557,12 @@ public:
 					dst,
 					MAX_TIME,
 					ATTR_FOR_NEW_EDGES);
-				COND_LOG_E("; ret = %d\n", ret);
+				LOG_E("; ret = %d\n", ret);
+				break;
+            case 6:
+            	LOG_E("obj_add(...) ");
+				obj = thread_data->client->obj_add(ATTRS_FOR_NEW_NODES);
+				LOG_E("; ret = %d\n", ret);
 				break;
             default:
                 assert(false);
