@@ -4,6 +4,7 @@
 #include <mutex>
 #include <set>
 #include <unordered_map>
+#include <future>
 
 #include <thrift/protocol/TBinaryProtocol.h>
 #include <thrift/server/TThreadedServer.h>
@@ -426,39 +427,32 @@ public:
         COND_LOG_E("in agg. filter_nodes_local, %d ids to filter\n",
             nodeIds.size());
         // shardId -> [list of responsible nhbr IDs to check]
-        std::unordered_map<int, std::vector<int64_t>> splits_by_keys;
+        std::vector<std::vector<int64_t>> splits_by_keys(local_num_shards_);
         int shard_id;
 
         for (int64_t nhbr_id : nodeIds) {
             shard_id = nhbr_id % total_num_shards_;
-            splits_by_keys[shard_id].push_back(
-                global_to_local_node_id(nhbr_id, shard_id)); // to local
+            splits_by_keys[shard_id].push_back(global_to_local_node_id(nhbr_id, shard_id)); // to local
         }
 
-        for (auto it = splits_by_keys.begin(); it != splits_by_keys.end(); ++it)
-        {
-            COND_LOG_E("sending to shard %d, filter_nodes\n",
-                it->first / total_num_hosts_);
-            // FIXME?: try to sleep a while? get_nhbr(n, attr) bug here?
-            local_shards_[it->first / total_num_hosts_]
-                .send_filter_nodes(it->second, attrId, attrKey);
-            COND_LOG_E("sent");
+        std::vector<std::vector<int64_t>> shard_results(local_num_shards_);
+
+		#pragma omp parallel for
+        for (size_t i = 0; i < local_shards_.size(); i++) {
+        	if (!splits_by_keys[i].empty()) {
+        		local_shards_[i / total_num_hosts_]->filter_nodes(shard_results[i], splits_by_keys[i], attrId, attrKey);
+        	}
         }
 
         _return.clear();
-        std::vector<int64_t> shard_result;
-        for (auto it = splits_by_keys.begin(); it != splits_by_keys.end(); ++it)
-        {
-            COND_LOG_E("receiving filter_nodes() result from shard %d, ",
-                it->first / total_num_hosts_);
-            local_shards_[it->first / total_num_hosts_]
-                .recv_filter_nodes(shard_result);
-            COND_LOG_E("size: %d\n", shard_result.size());
+        for (size_t i = 0; i < local_shards_.size(); i++) {
+        	auto& shard_result = shard_results[i];
+
             // local back to global
             for (const int64_t local_key : shard_result) {
                 // globalKey = localKey * numShards + shardId
                 // localKey = (globalKey - shardId) / numShards
-                _return.push_back(local_key * total_num_shards_ + it->first);
+                _return.push_back(local_key * total_num_shards_ + i);
             }
         }
     }
@@ -494,7 +488,7 @@ public:
     {
     	std::vector<std::set<int64_t>> shard_result(local_shards_.size());
 
-#pragma omp parallel for
+		#pragma omp parallel for
         for (size_t i = 0; i < local_shards_.size(); i++) {
             local_shards_.at(i)->get_nodes(shard_result[i], attrId, attrKey);
         }
@@ -543,7 +537,7 @@ public:
 
     	std::vector<std::set<int64_t>> shard_result(local_shards_.size());
 
-#pragma omp parallel for
+		#pragma omp parallel for
     	for (size_t i = 0; i < local_shards_.size(); i++) {
     		local_shards_.at(i)->get_nodes2(shard_result[i], attrId1, attrKey1, attrId2, attrKey2);
         }
@@ -733,7 +727,8 @@ public:
         assert(shard_idx < local_shards_.size() && "shard_idx >= local_shards_.size()");
 
         int64_t cnt = 0;
-#pragma omp parallel for default(shared) schedule(static, chunk) reduction(+:cnt)
+
+        #pragma omp parallel for default(shared) schedule(static, chunk) reduction(+:cnt)
         for (size_t i = 0; i < locals.size(); i++) {
         	cnt += local_shards_.at(i)->assoc_count(src, atype);
         }
@@ -818,7 +813,7 @@ public:
         _return.clear();
         std::vector<std::vector<ThriftAssoc>> assocs(locals.size());
 
-#pragma omp parallel for
+		#pragma omp parallel for
         for (size_t i = 0; i < locals.size(); i++) {
         	local_shards_.at(i)->assoc_get(assocs[i], src, atype, dstIdSet, tLow, tHigh);
         }
@@ -938,7 +933,7 @@ public:
         _return.clear();
         std::vector<std::vector<ThriftAssoc>> assocs(locals.size());
 
-#pragma omp parallel for
+		#pragma omp parallel for
 		for (size_t i = 0; i < locals.size(); i++) {
 			local_shards_.at(i)->assoc_time_range(assocs[i], src, atype, tLow, tHigh, limit);
 		}
@@ -1271,7 +1266,7 @@ int main(int argc, char **argv) {
 		char node_filename[100], edge_filename[100];
 		sprintf(node_filename, "%s-part-%02dof%dWithPtrs", node_file.c_str(), shard_id, total_num_shards);
 		sprintf(edge_filename, "%s-part-%02dof%d", node_file.c_str(), shard_id, total_num_shards);
-		LOG_E("Shard Id = %d, Node File = %s, Edge File = %s", shard_id, node_file, edge_file);
+		LOG_E("Shard Id = %d, Node File = %s, Edge File = %s", shard_id, node_filename, edge_filename);
 		GraphShard *shard = new GraphShard(node_filename, edge_filename, false,
 				sa_sampling_rate, isa_sampling_rate, npa_sampling_rate,
 				shard_id, total_num_shards, StoreMode::SuccinctStore,

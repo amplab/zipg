@@ -40,26 +40,13 @@ service GraphQueryAggregatorService {
     //       local shards as well.
     i32 init(),
 
-    // Have this aggregator connect to machine-local shards (servers),
-    // and call init() on them (i.e. loads or constructs).  End users
-    // should just call init() once and not call this method.
-    i32 init_local_shards(),
-
-    i32 local_data_init(),
-
     // Have this aggregator connect to all other aggregators.
     i32 connect_to_aggregators(),
-
-    i32 connect_to_local_shards(),
 
     // Have all aggregators shutdown (1) connections to their own shards, (2)
     // connections to other aggregators.
     void shutdown(),
-    void disconnect_from_local_shards(),
     void disconnect_from_aggregators(),
-
-    // Send edge updates, if any.  No-op for SuccinctStore machines.
-    i32 backfill_edge_updates(),
 
     // Thread-safe, since it uses a mutex.
     void record_edge_updates(

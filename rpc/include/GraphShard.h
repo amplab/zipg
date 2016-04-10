@@ -29,6 +29,7 @@ public:
 					store_mode), num_logstore_shards_(
 					num_logstore_shards) {
 
+		graph_ = shared_ptr<SuccinctGraph>(new SuccinctGraph(""));
 		if (store_mode == StoreMode::SuccinctStore) {
 			graph_->set_npa_sampling_rate(npa_sampling_rate);
 			graph_->set_sa_sampling_rate(sa_sampling_rate);
@@ -62,24 +63,13 @@ public:
             _return.clear();
             return;
         }
-#ifdef DEBUG_RPC_NHBR
-        auto t1 = get_timestamp();
-#endif
         graph_->get_neighbors(_return, nodeId);
-
-#ifdef DEBUG_RPC_NHBR
-        auto t2 = get_timestamp();
-        if (shard_id_ == 0) {
-            LOG_E(",%lld\n", t2 - t1);
-        }
-#endif
     }
 
     void get_neighbors_atype(
         std::vector<int64_t> & _return,
         const int64_t nodeId,
-        const int64_t atype)
-    {
+        const int64_t atype) {
         COND_LOG_E("get_neighbors_atype\n");
 
         assert(nodeId % total_num_shards_ == shard_id_);
@@ -87,17 +77,7 @@ public:
             _return.clear();
             return;
         }
-#ifdef DEBUG_RPC_NHBR
-        auto t1 = get_timestamp();
-#endif
         graph_->get_neighbors(_return, nodeId, atype);
-
-#ifdef DEBUG_RPC_NHBR
-        auto t2 = get_timestamp();
-        if (shard_id_ == 0) {
-            LOG_E(",%lld\n", t2 - t1);
-        }
-#endif
     }
 
     void get_edge_attrs(
@@ -407,7 +387,7 @@ private:
 
     const int num_logstore_shards_;
 
-    shared_ptr<SuccinctGraph> graph_ = new SuccinctGraph("");
+    shared_ptr<SuccinctGraph> graph_ = nullptr;
     shared_ptr<GraphLogStore> graph_log_store_ = nullptr;
 };
 
