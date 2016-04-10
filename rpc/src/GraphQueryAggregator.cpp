@@ -15,7 +15,6 @@
 
 #include "ports.h"
 #include "utils.h"
-#include "GraphQueryService.h"
 #include "GraphShard.h"
 
 using namespace ::apache::thrift;
