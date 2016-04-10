@@ -11,15 +11,18 @@ npa=128; sa=32; isa=64
 NODE_FILE=${1:-/mnt2/twitter2010-40attr16each-tpch-npa${npa}sa${sa}isa${isa}.node}
 EDGE_FILE=${2:-/mnt2/twitter2010-npa${npa}sa${sa}isa${isa}.assoc}
 
-echo "Node File: $NODE_FILE"
-echo "Edge File: $EDGE_FILE"
-echo "Query Path: $QUERY_DIR"
 
 throughput_threads=${3:-""}
 # hostname of the master aggregator that bench client connects to
 # if desirable to put client on 1 host, and agg. on the other, change this
 masterHostName=${4:-"localhost"}
 copyQueries=${5:-"true"}
+
+echo "Node File: $NODE_FILE"
+echo "Edge File: $EDGE_FILE"
+echo "Query Path: $QUERY_DIR"
+echo "Throughput Threads: $throughput_threads"
+echo "Server: $masterHostName"
 
 num_nodes=100000 # hack
 augOpt="-augOpts"
@@ -32,39 +35,8 @@ if [[ -z "$SHARDED" ]]; then
   TOTAL_NUM_SHARDS=no
 fi
 
-###############
-
-if [[ "$copyQueries" == "true" ]]; then
-  if [[ "$dataset" == "orkut-40attr16each"* ]]; then
-    pushd ${qUERY_DIR} >/dev/null
-    yes | cp -rf orkut-40attr16each-queries/*txt ./
-    popd >/dev/null
-  elif [[ "$dataset" == "twitter2010-40attr16each"* ]]; then
-    pushd ${QUERY_DIR} >/dev/null
-    yes | cp -rf twitter2010-40attr16each-queries/*txt ./
-    popd >/dev/null
-  else
-    echo implement query copying for me! dataset: '${dataset}'
-    exit 1
-  fi
-fi
-  
 function bench() {
-
-  # If there's an argument supplied to this script, these steps have been done
-  if [[ $# -eq 0 ]]; then
-    echo "In rates-bench's stop"
-    if [[ -n "$SHARDED" ]]; then
-      bash ${SCRIPT_DIR}/../sbin/stop-all.sh
-      sleep 2
-    
-      bash ${SCRIPT_DIR}/../sbin/start-servers.sh $NODE_FILE $EDGE_FILE $sa $isa $npa &
-      sleep 2
-    
-      bash ${SCRIPT_DIR}/../sbin/start-handlers.sh &
-      sleep 2
-    fi
-  fi
+  echo "Benchmarking..."
 
   if [[ -n "$benchNode" ]]; then
     sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
@@ -352,6 +324,22 @@ function bench() {
 
   if [[ -n "$benchTaoMixThput" ]]; then
     #sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+
+    echo "${BIN_DIR}/../benchmark/bin/bench -t tao-mix-throughput \
+      -p ${throughput_threads} \
+      -w ${QUERY_DIR}/assocCount_warmup.txt \
+      -q ${QUERY_DIR}/assocCount_query.txt \
+      -a ${QUERY_DIR}/assocRange_warmup.txt \
+      -b ${QUERY_DIR}/assocRange_query.txt \
+      -c ${QUERY_DIR}/objGet_warmup.txt \
+      -d ${QUERY_DIR}/objGet_query.txt \
+      -e ${QUERY_DIR}/assocGet_warmup.txt \
+      -f ${QUERY_DIR}/assocGet_query.txt \
+      -g ${QUERY_DIR}/assocTimeRange_warmup.txt \
+      -l ${QUERY_DIR}/assocTimeRange_query.txt \
+      -m ${masterHostName} \
+      ${NODE_FILE} ${EDGE_FILE} ${SHARDED}"
+
 
     ${BIN_DIR}/../benchmark/bin/bench -t tao-mix-throughput \
       -p ${throughput_threads} \
