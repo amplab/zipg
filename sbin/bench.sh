@@ -14,7 +14,11 @@ npa=128; sa=32; isa=64 # L0, by default
 node_file_raw=/mnt2/twitter2010-40attr16each-tpch.node
 edge_file_raw=/mnt2/twitter2010-npa128sa32isa64.assoc
 
-master=`cat "$SUCCINCT_CONF_DIR/master"`
+if [ -f "$SUCCINCT_CONF_DIR/master" ]; then
+  master=`cat "$SUCCINCT_CONF_DIR/master"`
+else
+  master="localhost"
+fi
 
 threads=( 56 )
 benches=(
