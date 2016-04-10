@@ -35,14 +35,32 @@ if [ "$SUCCINCT_SSH_OPTS" = "" ]; then
   SUCCINCT_SSH_OPTS="-o StrictHostKeyChecking=no"
 fi
 
+# optionally support input file override
+# default is to read from sbin/succinct-config.sh
+node_file_raw=$1
+if [ "$node_file_raw" = "" ]; then
+  node_file_raw=${NODE_FILE}
+fi
+edge_file_raw=$2
+if [ "$edge_file_raw" = "" ]; then
+  edge_file_raw=${EDGE_FILE}
+fi
+
 i=0
 for host in `echo "$HOSTLIST"|sed  "s/#.*$//;/^$/d"`; do
+	# NOTE: $3 $4 $5 are supposed to be sampling rates
   if [ -n "${SUCCINCT_SSH_FOREGROUND}" ]; then
     ssh $SUCCINCT_SSH_OPTS "$host" "$sbin/start-handler.sh" $SHARDS_PER_SERVER $i \
-      2>&1 | sed "s/^/$host: /"
+      $num_hosts \
+      $node_file_raw \
+      $edge_file_raw \
+      $3 $4 $5 2>&1 | sed "s/^/$host: /"
   else
     ssh $SUCCINCT_SSH_OPTS "$host" "$sbin/start-handler.sh" $SHARDS_PER_SERVER $i \
-      2>&1 | sed "s/^/$host: /" &
+      $num_hosts \
+      $node_file_raw \
+      $edge_file_raw \
+      $3 $4 $5 2>&1 | sed "s/^/$host: /" &
   fi
   if [ "$SUCCINCT_HOST_SLEEP" != "" ]; then
     sleep $SUCCINCT_HOST_SLEEP

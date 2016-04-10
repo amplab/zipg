@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
-set -e
-
 sbin="`dirname "$0"`"
 sbin="`cd "$sbin"; pwd`"
 
@@ -19,17 +17,6 @@ fi
 
 . "$SUCCINCT_PREFIX/sbin/load-succinct-env.sh"
 
-# optionally support input file override
-# default is to read from sbin/succinct-config.sh
-node_file_raw=$1
-if [ "$node_file_raw" = "" ]; then
-  node_file_raw=${NODE_FILE}
-fi
-edge_file_raw=$2
-if [ "$edge_file_raw" = "" ]; then
-  edge_file_raw=${EDGE_FILE}
-fi
-
 if [ "$HOSTLIST" = "" ]; then
   if [ "$SUCCINCT_HOSTS" = "" ]; then
     if [ -f "${SUCCINCT_CONF_DIR}/hosts" ]; then
@@ -46,6 +33,17 @@ fi
 # By default disable strict host key checking
 if [ "$SUCCINCT_SSH_OPTS" = "" ]; then
   SUCCINCT_SSH_OPTS="-o StrictHostKeyChecking=no"
+fi
+
+# optionally support input file override
+# default is to read from sbin/succinct-config.sh
+node_file_raw=$1
+if [ "$node_file_raw" = "" ]; then
+  node_file_raw=${NODE_FILE}
+fi
+edge_file_raw=$2
+if [ "$edge_file_raw" = "" ]; then
+  edge_file_raw=${EDGE_FILE}
 fi
 
 i=0
