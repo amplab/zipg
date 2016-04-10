@@ -16,6 +16,7 @@
 #include "ports.h"
 #include "utils.h"
 #include "GraphQueryService.h"
+#include "GraphShard.h"
 
 using namespace ::apache::thrift;
 using namespace ::apache::thrift::protocol;
@@ -26,6 +27,8 @@ using boost::shared_ptr;
 
 boost::shared_mutex local_shards_data_mutex;
 bool local_shards_data_initiated = false;
+
+std::vector<GraphShard*> local_shards_;
 
 // a vector of maps: src -> (atype -> [shard id, file offset])
 std::vector< std::unordered_map<int64_t,
@@ -81,24 +84,6 @@ public:
         num_succinctstore_hosts_ = total_num_hosts_; // FIXME
     }
 
-    int32_t local_data_init() {
-        boost::shared_lock<boost::shared_mutex> lk(local_shards_data_mutex);
-        if (local_shards_data_initiated) {
-            LOG_E("Local shard processes have already loaded data!");
-            return 0;
-        }
-
-        int status = init_local_shards();
-        if (status) {
-            LOG_E("Initialization failed at shard, status = %d\n", status);
-        } else {
-            local_shards_data_initiated = true;
-        }
-
-        disconnect_from_local_shards();
-        return status;
-    }
-
     // Should just be connection establishment; assumes data loading has already
     // been done.
     int32_t init() {
@@ -106,41 +91,20 @@ public:
             LOG_E("Cluster already initiated\n");
             return 0;
         }
-        connect_to_local_shards();
+
         if (connect_to_aggregators() != 0) {
             LOG_E("Connection to remote aggregators not successful!\n");
             exit(1);
         }
 
         for (int i = 0; i < total_num_hosts_; ++i) {
-            if (i == local_host_id_) {
+            if (i == local_host_id_)
                 continue;
-            }
-            aggregators_.at(i).connect_to_local_shards();
             aggregators_.at(i).connect_to_aggregators();
         }
 
         LOG_E("Cluster init() done\n");
         initiated_ = true;
-        return 0;
-    }
-
-    int32_t init_local_shards() {
-        COND_LOG_E("About to connect to local shards and init them\n");
-        if (connect_to_local_shards() != 0) {
-            LOG_E("Connection to local shards failed\n");
-            exit(1);
-        }
-        for (auto& shard : local_shards_) {
-            shard.send_init();
-        }
-        for (auto& shard : local_shards_) {
-            if (shard.recv_init() != 0) {
-                LOG_E("Some shard doesn't init() successfully, exiting\n");
-                exit(1);
-            }
-        }
-        COND_LOG_E("init_local_shards() done\n");
         return 0;
     }
 
@@ -163,11 +127,6 @@ public:
 
                 transport->open();
                 COND_LOG_E("Connected!\n");
-
-                // Critical, otherwise this agg. client won't have sockets open
-                // to its own local shard servers.
-                // client.init_local_shards();
-                client.connect_to_local_shards();
 
                 aggregators_.insert(
                     std::pair<int, GraphQueryAggregatorServiceClient>(
@@ -193,21 +152,9 @@ public:
             if (i == local_host_id_) {
                 continue;
             }
-            aggregators_.at(i).disconnect_from_local_shards();
             aggregators_.at(i).disconnect_from_aggregators();
         }
-        disconnect_from_local_shards();
         disconnect_from_aggregators();
-    }
-
-    void disconnect_from_local_shards() {
-        for (auto transport : shard_transports_) {
-            if (transport != nullptr && transport->isOpen()) {
-                transport->close();
-            }
-        }
-        shard_transports_.clear();
-        local_shards_.clear();
     }
 
     void disconnect_from_aggregators() {
@@ -217,86 +164,6 @@ public:
             }
         }
         aggregator_transports_.clear();
-    }
-
-    int32_t connect_to_local_shards() {
-        int num_shards_on_host = local_num_shards_;
-        if (multistore_enabled_) {
-//            if (local_host_id_ == total_num_hosts_ - 2) {
-//                num_shards_on_host = num_suffixstore_shards_;
-//            } else if (local_host_id_ == total_num_hosts_ - 1) {
-//                // FIXME: we should configure if there is an empty LogStore
-//                num_shards_on_host = num_logstore_shards_ + 1;
-//            }
-        	if (local_host_id_ == total_num_hosts_ - 1) {
-        		num_shards_on_host += (num_logstore_shards_ + 1); // FIXME
-        	}
-        }
-        COND_LOG_E("num shards on this host (id %d): %d\n",
-            local_host_id_, num_shards_on_host);
-
-        for (int i = 0; i < num_shards_on_host; ++i) {
-            // Desirable? Hacky way to facilitate benchmark client reconnecting
-            // to a healthy cluster of aggregators & shard servers.
-            if (i < local_shards_.size()) continue;
-
-            COND_LOG_E("Connecting to local server %d...", i);
-            try {
-                shared_ptr<TSocket> socket(new TSocket(
-                    "localhost", QUERY_SERVER_PORT + i));
-                shared_ptr<TTransport> transport(
-                    new TBufferedTransport(socket));
-                shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
-                GraphQueryServiceClient client(protocol);
-
-                transport->open();
-                COND_LOG_E("Connected!\n");
-                local_shards_.push_back(client);
-                shard_transports_.push_back(transport);
-            } catch (std::exception& e) {
-                LOG_E("Could not connect to server: %s\n", e.what());
-                return 1;
-            }
-        }
-        COND_LOG_E(
-            "Currently have %zu local server connections.\n",
-            local_shards_.size());
-        return 0;
-    }
-
-    // The correctness relies on host 0 is called first, then host 1, etc.
-    int32_t backfill_edge_updates() {
-        int shard_idx = 0, src_shard_id, num_backfilled = 0;
-
-        // dst shard id -> { (src, atype) }
-        std::map<int32_t, std::vector<ThriftSrcAtype> > update_map;
-
-        // We assume shards are ordered according to time order.
-        for (auto& shard: local_shards_) {
-            src_shard_id = shard_idx_to_shard_id(shard_idx);
-
-            shard.get_edge_updates(update_map);
-
-            for (auto it = update_map.begin(); it != update_map.end(); ++it) {
-                int dst_shard_id = it->first;
-                auto& src_atypes = it->second;
-                int dst_host_id = dst_shard_id % num_succinctstore_hosts_;
-
-                if (local_host_id_ == dst_host_id) {
-                    record_edge_updates(src_shard_id, dst_shard_id, src_atypes);
-                } else {
-                    aggregators_.at(dst_host_id).record_edge_updates(
-                        src_shard_id,
-                        dst_shard_id, // src shard contains more recent stuff
-                        src_atypes);
-                }
-
-                num_backfilled += src_atypes.size();
-            }
-            ++shard_idx;
-        }
-
-        return num_backfilled;
     }
 
 	void record_node_append(const int32_t next_shard_id,
@@ -373,7 +240,7 @@ public:
         const int64_t node_id,
         const int32_t attrId)
     {
-        local_shards_.at(shard_id_to_shard_idx(shard_id)).get_attribute_local(
+        local_shards_.at(shard_id_to_shard_idx(shard_id))->get_attribute_local(
             _return, global_to_local_node_id(node_id, shard_id), attrId);
     }
 
@@ -389,8 +256,7 @@ public:
             auto t1 = get_timestamp();
 #endif
 
-            local_shards_.at(shard_id_to_shard_idx(shard_id))
-                .get_neighbors(_return, nodeId);
+            local_shards_.at(shard_id_to_shard_idx(shard_id))->get_neighbors(_return, nodeId);
 
 #ifdef DEBUG_RPC_NHBR
             auto t2 = get_timestamp();
@@ -410,8 +276,7 @@ public:
         const int32_t shardId,
         const int64_t nodeId)
     {
-        local_shards_[shardId / total_num_hosts_]
-            .get_neighbors(_return, nodeId);
+        local_shards_[shardId / total_num_hosts_]->get_neighbors(_return, nodeId);
     }
 
     void get_neighbors_atype(
@@ -425,8 +290,7 @@ public:
 #ifdef DEBUG_RPC_NHBR
             auto t1 = get_timestamp();
 #endif
-            local_shards_.at(shard_id_to_shard_idx(shard_id))
-                .get_neighbors_atype(_return, nodeId, atype);
+            local_shards_.at(shard_id_to_shard_idx(shard_id))->get_neighbors_atype(_return, nodeId, atype);
 
 #ifdef DEBUG_RPC_NHBR
             auto t2 = get_timestamp();
@@ -446,8 +310,7 @@ public:
         const int64_t nodeId,
         const int64_t atype)
     {
-        local_shards_[shardId / total_num_hosts_]
-            .get_neighbors_atype(_return, nodeId, atype);
+        local_shards_[shardId / total_num_hosts_]->get_neighbors_atype(_return, nodeId, atype);
     }
 
     void get_edge_attrs(
@@ -458,8 +321,7 @@ public:
         int shard_id = nodeId % total_num_shards_;
         int host_id = shard_id % total_num_hosts_;
         if (host_id == local_host_id_) {
-            local_shards_.at(shard_id_to_shard_idx(shard_id))
-                .get_edge_attrs(_return, nodeId, atype);
+            local_shards_.at(shard_id_to_shard_idx(shard_id))->get_edge_attrs(_return, nodeId, atype);
         } else {
             aggregators_.at(host_id).get_edge_attrs_local(
                 _return, shard_id, nodeId, atype);
@@ -472,8 +334,7 @@ public:
         const int64_t nodeId,
         const int64_t atype)
     {
-        local_shards_[shardId / total_num_hosts_]
-            .get_edge_attrs(_return, nodeId, atype);
+        local_shards_[shardId / total_num_hosts_]->get_edge_attrs(_return, nodeId, atype);
     }
 
     void get_neighbors_attr(
@@ -632,16 +493,17 @@ public:
         const int32_t attrId,
         const std::string& attrKey)
     {
-        for (auto& shard : local_shards_) {
-            shard.send_get_nodes(attrId, attrKey);
+    	std::vector<std::set<int64_t>> shard_result(local_shards_.size());
+
+#pragma omp parallel for
+        for (size_t i = 0; i < local_shards_.size(); i++) {
+            local_shards_.at(i)->get_nodes(shard_result[i], attrId, attrKey);
         }
 
-        std::set<int64_t> shard_result;
         _return.clear();
 
-        for (auto& shard : local_shards_) {
-            shard.recv_get_nodes(shard_result);
-            _return.insert(shard_result.begin(), shard_result.end());
+        for (auto& result : shard_result) {
+            _return.insert(result.begin(), result.end());
         }
     }
 
@@ -679,16 +541,18 @@ public:
         const int32_t attrId2,
         const std::string& attrKey2)
     {
-        for (auto& shard : local_shards_) {
-            shard.send_get_nodes2(attrId1, attrKey1, attrId2, attrKey2);
+
+    	std::vector<std::set<int64_t>> shard_result(local_shards_.size());
+
+#pragma omp parallel for
+    	for (size_t i = 0; i < local_shards_.size(); i++) {
+    		local_shards_.at(i)->get_nodes2(shard_result[i], attrId1, attrKey1, attrId2, attrKey2);
         }
 
-        std::set<int64_t> shard_result;
         _return.clear();
 
-        for (auto& shard : local_shards_) {
-            shard.recv_get_nodes2(shard_result);
-            _return.insert(shard_result.begin(), shard_result.end());
+        for (auto& result : shard_result) {
+            _return.insert(result.begin(), result.end());
         }
     }
 
@@ -778,8 +642,7 @@ public:
             int next_host_id = host_id_for_shard(ptr.shardId);
             if (next_host_id == local_host_id_) {
             	int shard_idx_local = shard_id_to_shard_idx(ptr.shardId);
-            	local_shards_.at(shard_idx_local)
-            			.assoc_range(assocs, src, atype, 0, len - curr_len);
+            	local_shards_.at(shard_idx_local)->assoc_range(assocs, src, atype, 0, len - curr_len);
             } else {
 				aggregators_.at(next_host_id).assoc_range_local(
 					assocs,
@@ -797,8 +660,7 @@ public:
         size_t from_updates = _return.size();
 
         if (_return.size() < len) {
-            local_shards_.at(shard_idx)
-                .assoc_range(assocs, src, atype, 0, len - _return.size());
+            local_shards_.at(shard_idx)->assoc_range(assocs, src, atype, 0, len - _return.size());
             COND_LOG_E("local shard returns %d assocs\n", assocs.size());
             _return.insert(_return.end(), assocs.begin(), assocs.end());
         }
@@ -848,8 +710,12 @@ public:
             src, atype, shardId, local_host_id_, shard_idx);
 
         std::vector<ThriftEdgeUpdatePtr> ptrs;
+
         get_edge_update_ptrs(ptrs, shard_idx, src, atype);
         COND_LOG_E("# update ptrs: %d\n", ptrs.size());
+
+        std::vector<int64_t> locals;
+        locals.push_back(shard_idx);
 
         // Follow all pointers.  Suffix and Log Stores should not have them.
         for (auto& ptr : ptrs) {
@@ -857,7 +723,7 @@ public:
             int next_host_id = host_id_for_shard(ptr.shardId);
             if (next_host_id == local_host_id_) {
             	int shard_idx_local = shard_id_to_shard_idx(ptr.shardId);
-            	local_shards_.at(shard_idx_local).send_assoc_count(src, atype);
+            	locals.push_back(shard_idx_local);
             } else {
 				aggregators_.at(next_host_id).send_assoc_count_local(
 					ptr.shardId, src, atype);
@@ -866,19 +732,19 @@ public:
 
         // Execute locally
         assert(shard_idx < local_shards_.size() && "shard_idx >= local_shards_.size()");
-        local_shards_.at(shard_idx).send_assoc_count(src, atype);
 
         int64_t cnt = 0;
+#pragma omp parallel for default(shared) schedule(static, chunk) reduction(+:cnt)
+        for (size_t i = 0; i < locals.size(); i++) {
+        	cnt += local_shards_.at(i)->assoc_count(src, atype);
+        }
+
         for (auto& ptr : ptrs) {
             int next_host_id = host_id_for_shard(ptr.shardId);
-            if (next_host_id == local_host_id_) {
-            	int shard_idx_local = shard_id_to_shard_idx(ptr.shardId);
-            	cnt += local_shards_.at(shard_idx_local).recv_assoc_count();
-            } else {
+            if (next_host_id != local_host_id_) {
             	cnt += aggregators_.at(next_host_id).recv_assoc_count_local();
             }
         }
-        cnt += local_shards_.at(shard_idx).recv_assoc_count();
 
         return cnt;
     }
@@ -931,6 +797,9 @@ public:
 
         COND_LOG_E("# update ptrs: %d\n", ptrs.size());
 
+        std::vector<int64_t> locals;
+		locals.push_back(shard_idx);
+
         for (auto it = ptrs.rbegin(); it != ptrs.rend(); ++it) {
             // int64_t offset = ptr.offset; // TODO: add optimization
             int next_host_id = host_id_for_shard(it->shardId);
@@ -938,8 +807,7 @@ public:
             COND_LOG_E("Update ptrs: Next host id = %d\n", next_host_id);
             if (next_host_id == local_host_id_) {
             	int shard_idx_local = shard_id_to_shard_idx(it->shardId);
-            	local_shards_.at(shard_idx_local)
-            	            .send_assoc_get(src, atype, dstIdSet, tLow, tHigh);
+            	locals.push_back(shard_idx_local);
             } else {
             	aggregators_.at(next_host_id).send_assoc_get_local(
             			it->shardId, src, atype, dstIdSet, tLow, tHigh);
@@ -948,27 +816,28 @@ public:
 
         COND_LOG_E("Sending assoc_get request to local shard at idx=%d\n", shard_idx);
 
-        local_shards_.at(shard_idx)
-            .send_assoc_get(src, atype, dstIdSet, tLow, tHigh);
-
-        std::vector<ThriftAssoc> assocs;
         _return.clear();
+        std::vector<std::vector<ThriftAssoc>> assocs(locals.size());
+
+#pragma omp parallel for
+        for (size_t i = 0; i < locals.size(); i++) {
+        	local_shards_.at(i)->assoc_get(assocs[i], src, atype, dstIdSet, tLow, tHigh);
+        }
+
+        for (auto assocs_local : assocs) {
+        	_return.insert(_return.end(), assocs_local.begin(), assocs_local.end());
+        }
 
         for (auto it = ptrs.rbegin(); it != ptrs.rend(); ++it) {
             // int64_t offset = ptr.offset; // TODO: add optimization
+        	std::vector<ThriftAssoc> assocs_local;
             int next_host_id = host_id_for_shard(it->shardId);
             COND_LOG_E("Update ptrs: Next host id = %d\n", next_host_id);
-            if (next_host_id == local_host_id_) {
-            	int shard_idx_local = shard_id_to_shard_idx(it->shardId);
-            	local_shards_.at(shard_idx_local).recv_assoc_get(assocs);
-            } else {
-            	aggregators_.at(next_host_id).recv_assoc_get_local(assocs);
+            if (next_host_id != local_host_id_) {
+            	aggregators_.at(next_host_id).recv_assoc_get_local(assocs_local);
             }
-            _return.insert(_return.end(), assocs.begin(), assocs.end());
+            _return.insert(_return.end(), assocs_local.begin(), assocs_local.end());
         }
-
-        local_shards_.at(shard_idx).recv_assoc_get(assocs);
-        _return.insert(_return.end(), assocs.begin(), assocs.end());
 
         COND_LOG_E("assoc_get_local done, returning %d assocs!\n",
             _return.size());
@@ -1005,8 +874,7 @@ public:
         // TODO: Add check for key range to determine if object lies within SuccinctStore shards or LogStore shards
 
         COND_LOG_E("Shard index = %d, number of shards on this server = %zu\n", shard_idx, local_shards_.size());
-        local_shards_.at(shard_idx)
-            .obj_get(_return, global_to_local_node_id(nodeId, shardId));
+        local_shards_.at(shard_idx)->obj_get(_return, global_to_local_node_id(nodeId, shardId));
     }
 
     void assoc_time_range(
@@ -1053,55 +921,55 @@ public:
 
         COND_LOG_E("# update ptrs: %d\n", ptrs.size());
 
+        std::vector<int> locals;
+        locals.push_back(shard_idx);
+
         for (auto it = ptrs.rbegin(); it != ptrs.rend(); ++it) {
             // int64_t offset = ptr.offset; // TODO: add optimization
             int next_host_id = host_id_for_shard(it->shardId);
             if (next_host_id == local_host_id_) {
             	int shard_idx_local = shard_id_to_shard_idx(it->shardId);
-            	local_shards_.at(shard_idx_local)
-            	            .send_assoc_time_range(src, atype, tLow, tHigh, limit);
+            	locals.push_back(shard_idx_local);
             } else {
 				aggregators_.at(next_host_id).send_assoc_time_range_local(
 					it->shardId, src, atype, tLow, tHigh, limit);
             }
         }
 
-        local_shards_.at(shard_idx)
-            .send_assoc_time_range(src, atype, tLow, tHigh, limit);
-
-        std::vector<ThriftAssoc> assocs;
         _return.clear();
+        std::vector<std::vector<ThriftAssoc>> assocs(locals.size());
+
+#pragma omp parallel for
+		for (size_t i = 0; i < locals.size(); i++) {
+			local_shards_.at(i)->assoc_time_range(assocs[i], src, atype, tLow, tHigh, limit);
+		}
 
         // TODO: Early termination?
         for (auto it = ptrs.rbegin(); it != ptrs.rend(); ++it) {
             // int64_t offset = ptr.offset; // TODO: add optimization
+        	std::vector<ThriftAssoc> assocs_local;
             int next_host_id = host_id_for_shard(it->shardId);
-            if (next_host_id == local_host_id_) {
-            	int shard_idx_local = shard_id_to_shard_idx(it->shardId);
-				local_shards_.at(shard_idx_local)
-						.recv_assoc_time_range(assocs);
-            } else {
-            	aggregators_.at(next_host_id).recv_assoc_time_range_local(assocs);
+            if (next_host_id != local_host_id_) {
+            	aggregators_.at(next_host_id).recv_assoc_time_range_local(assocs_local);
             }
 
-            if (_return.size() + assocs.size() <= limit) {
-                _return.insert(_return.end(), assocs.begin(), assocs.end());
-            } else {
-                _return.insert(_return.end(), assocs.begin(),
-                    assocs.begin() + std::min(
-                        assocs.size(), limit - _return.size()));
+			if (_return.size() + assocs.size() <= limit) {
+				_return.insert(_return.end(), assocs_local.begin(),
+					assocs_local.end());
+			} else {
+				_return.insert(_return.end(), assocs_local.begin(),
+					assocs_local.begin() + std::min(assocs_local.size(), limit - _return.size()));
             }
         }
 
-        local_shards_.at(shard_idx).recv_assoc_time_range(assocs);
-
-        if (_return.size() + assocs.size() <= limit) {
-            _return.insert(_return.end(), assocs.begin(), assocs.end());
-        } else {
-            _return.insert(_return.end(), assocs.begin(),
-                assocs.begin() + std::min(
-                    assocs.size(), limit - _return.size()));
-        }
+        for (auto assocs_local : assocs) {
+        	if (_return.size() + assocs_local.size() <= limit) {
+				_return.insert(_return.end(), assocs_local.begin(), assocs_local.end());
+			} else {
+				_return.insert(_return.end(), assocs_local.begin(),
+					assocs_local.begin() + std::min(assocs_local.size(),limit - _return.size()));
+			}
+		}
 
         COND_LOG_E("assoc_time_range done, returning %d assocs (limit %d)!\n",
             _return.size(), limit);
@@ -1118,8 +986,7 @@ public:
     	if (local_host_id_ == total_num_hosts_ - 1) {
     		COND_LOG_E("Updating local logstore.\n");
     		start = get_timestamp();
-    		int64_t obj = local_shards_.back()
-    		                .obj_add(attrs);
+    		int64_t obj = local_shards_.back()->obj_add(attrs);
     		end = get_timestamp();
 
     		COND_LOG_E("Updated local logstore in %lld us\n", (end - start));
@@ -1174,8 +1041,7 @@ public:
         if (local_host_id_ == total_num_hosts_ - 1) {
 
         	COND_LOG_E("Updating local logstore.\n");
-            int ret = local_shards_.back()
-                .assoc_add(src, atype, dst, time, attr);
+            int ret = local_shards_.back()->assoc_add(src, atype, dst, time, attr);
 
             if (!ret) {
                 int primary_shard_id = src % num_succinctstore_shards_;
@@ -1233,11 +1099,6 @@ private:
             assert(num_succinctstore_hosts_ > 0 && "num_succinctstore_hosts_ <= 0");
             return shard_id % num_succinctstore_hosts_;
         }
-//        if (shard_id - num_succinctstore_shards_ < num_suffixstore_shards_) {
-//            return num_succinctstore_hosts_; // host n - 2
-//        } else {
-//            return num_succinctstore_hosts_ + 1; // host n - 1
-//        }
         // FIXME
         COND_LOG_E("LogStore shard %d resides on host %d\n", shard_id, num_succinctstore_hosts_ - 1);
         return num_succinctstore_hosts_ - 1;
@@ -1254,26 +1115,11 @@ private:
         if (diff >= 0) {
             return diff; // log store
         }
-//        diff = shard_id - num_succinctstore_shards_;
-//        return diff >= 0
-//            ? diff // suffix store
-//            : shard_id / num_succinctstore_hosts_; // succinct st., round-robin
         return shard_id / num_succinctstore_hosts_; // succinct st., round-robin
     }
 
     // Limitation: this assumes 1 SuffixStore machine and 1 LogStore machine.
     inline int shard_idx_to_shard_id(int shard_idx) {
-//        if (local_host_id_ < num_succinctstore_hosts_) {
-//            return shard_idx * num_succinctstore_hosts_ + local_host_id_;
-//        } else if (local_host_id_ == num_succinctstore_hosts_) {
-//            // case: suffix store machine
-//            return shard_idx + num_succinctstore_shards_;
-//        } else {
-//            // case: log store machine
-//            assert(local_host_id_ == num_succinctstore_hosts_ + 1);
-//            return shard_idx +
-//                num_succinctstore_shards_ + num_suffixstore_shards_;
-//        }
     	if (local_host_id_ < num_succinctstore_hosts_ && shard_idx < local_num_shards_) {
 			return shard_idx * num_succinctstore_hosts_ + local_host_id_;
 		} else {
@@ -1300,13 +1146,10 @@ private:
     int num_suffixstore_shards_;
     int num_logstore_shards_;
 
-    std::vector<GraphQueryServiceClient> local_shards_;
-
     // Maps host id to aggregator handle.  Does not contain self.
     std::unordered_map<int, GraphQueryAggregatorServiceClient> aggregators_;
 
     std::vector<shared_ptr<TTransport>> aggregator_transports_;
-    std::vector<shared_ptr<TTransport>> shard_transports_;
 };
 
 // Dummy factory that just delegates fields.
@@ -1374,8 +1217,9 @@ int main(int argc, char **argv) {
     int c, total_num_shards, local_num_shards, local_host_id;
     bool multistore_enabled;
     int num_suffixstore_shards, num_logstore_shards;
+    int sa_sampling_rate = 32, isa_sampling_rate = 64, npa_sampling_rate = 128;
     std::string hostsfile;
-    while ((c = getopt(argc, argv, "t:s:i:h:f:l:m:")) != -1) {
+    while ((c = getopt(argc, argv, "t:s:i:h:f:l:m:x:y:z:")) != -1) {
         switch(c) {
         case 't':
             total_num_shards = atoi(optarg);
@@ -1398,10 +1242,17 @@ int main(int argc, char **argv) {
         case 'm':
             multistore_enabled = (std::string(optarg) == "T");
             break;
+        case 'x':
+        	sa_sampling_rate = atoi(optarg);
+        	break;
+        case 'y':
+        	isa_sampling_rate = atoi(optarg);
+        	break;
+        case 'z':
+        	npa_sampling_rate = atoi(optarg);
+        	break;
         default:
-            total_num_shards = local_num_shards = 1;
-            local_host_id = 0;
-            hostsfile = "./conf/hosts";
+            LOG_E("Could not parse command line arguments.\n");
         }
     }
 
@@ -1411,23 +1262,47 @@ int main(int argc, char **argv) {
     while (std::getline(hosts, host)) {
         hostnames.push_back(host);
     }
+    int total_num_hosts = hostnames.size();
 
-    {
-        boost::unique_lock<boost::shared_mutex> lk(edge_update_ptrs_mutex);
-        if (local_host_id == hostnames.size() - 1) {
-            // LogStore
-            // +1 because of the last, empty shard
-            edge_update_ptrs.resize(total_num_shards + num_logstore_shards + 1);
-            node_update_ptrs.resize(total_num_shards + num_logstore_shards + 1);
-            LOG_E("[LOGSTORE] Have %zu update pointer tables.\n", edge_update_ptrs.size());
-        } else {
-            // Succ.
-            edge_update_ptrs.resize(total_num_shards);
-            node_update_ptrs.resize(total_num_shards);
-            LOG_E("[SUCCINCT] Have %zu update pointer tables.\n", edge_update_ptrs.size());
-        }
-        lk.unlock();
-    }
+    std::string node_file = std::string(argv[optind]);
+	std::string edge_file = std::string(argv[optind + 1]);
+
+	for (size_t i = 0; i < local_num_shards; i++) {
+		int shard_id = i * total_num_hosts + local_host_id;
+		char node_filename[100], edge_filename[100];
+		sprintf(node_filename, "%s-part-%02dof%dWithPtrs", node_file.c_str(), shard_id, total_num_shards);
+		sprintf(edge_filename, "%s-part-%02dof%d", node_file.c_str(), shard_id, total_num_shards);
+		LOG_E("Shard Id = %d, Node File = %s, Edge File = %s", shard_id, node_file, edge_file);
+		GraphShard *shard = new GraphShard(node_filename, edge_filename, false,
+				sa_sampling_rate, isa_sampling_rate, npa_sampling_rate,
+				shard_id, total_num_shards, StoreMode::SuccinctStore,
+				num_suffixstore_shards, num_logstore_shards);
+		local_shards_.push_back(shard);
+	}
+
+	if (local_host_id == hostnames.size() - 1) {
+		// LogStore
+		// +1 because of the last, empty shard
+
+		int shard_id = total_num_shards;
+		GraphShard *shard = new GraphShard("", "", false,
+				sa_sampling_rate, isa_sampling_rate, npa_sampling_rate,
+				shard_id, total_num_shards, StoreMode::LogStore,
+				num_suffixstore_shards, num_logstore_shards);
+		local_shards_.push_back(shard);
+
+		edge_update_ptrs.resize(total_num_shards + num_logstore_shards + 1);
+		node_update_ptrs.resize(total_num_shards + num_logstore_shards + 1);
+		LOG_E("[LOGSTORE] Have %zu update pointer tables.\n",
+				edge_update_ptrs.size());
+	} else {
+		// Succ.
+		edge_update_ptrs.resize(total_num_shards);
+		node_update_ptrs.resize(total_num_shards);
+		LOG_E("[SUCCINCT] Have %zu update pointer tables.\n",
+				edge_update_ptrs.size());
+	}
+
 
     int port = QUERY_HANDLER_PORT;
     try {

@@ -30,29 +30,18 @@ thrift_gen_cpp(${THRIFT_SERVICE_FILE} ${SOURCES_DIR} ${INCLUDE_DIR} HANDLER_SOUR
 set(GENERAL_SOURCES ${SOURCES_DIR}/succinct_graph_constants.cpp
     ${SOURCES_DIR}/succinct_graph_types.cpp)
 
-set(SERVER_SOURCES ${GENERAL_SOURCES}
-    ${SOURCES_DIR}/GraphQueryService.cpp
-    ${SOURCES_DIR}/GraphQueryServiceServer.cpp)
-
 set(HANDLER_SOURCES ${GENERAL_SOURCES}
     ${SOURCES_DIR}/GraphQueryAggregator.cpp
     ${SOURCES_DIR}/GraphQueryAggregatorService.cpp)
 
 set(CLIENT_SOURCES ${GENERAL_SOURCES}
-    ${SOURCES_DIR}/GraphQueryAggregatorService.cpp
-    ${SOURCES_DIR}/GraphQueryService.cpp)
+    ${SOURCES_DIR}/GraphQueryAggregatorService.cpp)
 
 include_directories(${INCLUDE_DIR} ${CORE_INCLUDE_DIR})
 include_directories(${PROJECT_SOURCE_DIR}/../external/succinct-cpp/core/include)
 
-add_executable(graph_query_server ${SERVER_SOURCES})
 add_executable(graph_query_aggregator ${HANDLER_SOURCES})
-add_executable(load_data ${SOURCES_DIR}/load_data.cpp)
-add_executable(backfill_updates ${SOURCES_DIR}/backfill_updates.cpp)
 add_library(succinctgraph-client ${CLIENT_SOURCES})
-
-target_link_libraries(graph_query_server succinctgraph)
-target_link_libraries(graph_query_server ${THRIFT_LIBRARIES})
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
    # Mac OS X specific code: has to have -mt
@@ -62,6 +51,3 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
   # On EC2, can't have -mt
   target_link_libraries(graph_query_aggregator succinctgraph succinctgraph-client ${THRIFT_LIBRARIES} pthread boost_thread boost_system)
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-
-target_link_libraries(load_data succinctgraph-client ${THRIFT_LIBRARIES})
-target_link_libraries(backfill_updates succinctgraph-client ${THRIFT_LIBRARIES})
