@@ -1,10 +1,17 @@
 #!/bin/bash
 set -ex
 
-#node_file_raw=/mnt2/uk-2007-05-40attr16each-tpch-npa128sa32isa64.node
-#edge_file_raw=/mnt2/uk-2007-05-40attr16each-npa128sa32isa64.assoc
-node_file_raw=/mnt2/twitter2010-40attr16each-tpch.node
-edge_file_raw=/mnt2/twitter2010-npa128sa32isa64.assoc
+dataset="twitter"
+
+if [ "$dataset" = "twitter" ]; then
+  node_file_raw=/mnt2/twitter2010-40attr16each-tpch.node
+  edge_file_raw=/mnt2/twitter2010-npa128sa32isa64.assoc
+elif [ "$dataset" = "uk" ]; then
+  node_file_raw=/mnt2/uk-2007-05-40attr16each-tpch.node
+  edge_file_raw=/mnt2/uk-2007-05-40attr16each-npa128sa32isa64.assoc
+else
+  echo "Must specify dataset."
+fi
 
 currDir=$(cd $(dirname $0); pwd)
 . "${currDir}/../sbin/succinct-config.sh"
