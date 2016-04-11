@@ -31,7 +31,7 @@ private:
     constexpr static int64_t MIN_TIME = 1439721981221; // unused
     constexpr static int64_t MAX_TIME = 1441905687237;
     const std::string ATTR_FOR_NEW_EDGES = std::string(128, '|');
-    const std::string ATTR_FOR_NEW_NODES = std::string(128, '?');
+    const std::string ATTR_FOR_NEW_NODES = std::string(16, '?');
 
     std::vector<std::string> populate_node_attrs() {
     	std::vector<std::string> attrs;
