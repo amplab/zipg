@@ -189,6 +189,14 @@ private:
                     this, thread_data)));
             }
             break;
+        case EDGE_ATTRS:
+			LOG_E("Starting edgeAttrs thput\n");
+			for (auto thread_data : thread_datas) {
+				threads.push_back(shared_ptr<std::thread>(new std::thread(
+					&GraphBenchmark::benchmark_edge_attrs_throughput_helper,
+					this, thread_data)));
+			}
+			break;
         case MIX:
             LOG_E("Starting mix thput\n");
             for (auto thread_data : thread_datas) {
@@ -202,14 +210,6 @@ private:
             for (auto thread_data : thread_datas) {
                 threads.push_back(shared_ptr<std::thread>(new std::thread(
                     &GraphBenchmark::benchmark_tao_mix_throughput_helper,
-                    this, thread_data)));
-            }
-            break;
-        case EDGE_ATTRS:
-            LOG_E("Starting edgeAttrs thput\n");
-            for (auto thread_data : thread_datas) {
-                threads.push_back(shared_ptr<std::thread>(new std::thread(
-                    &GraphBenchmark::benchmark_edge_attrs_throughput_helper,
                     this, thread_data)));
             }
             break;
@@ -301,6 +301,14 @@ public:
                 aggregator_->get_nodes2(nodes, attr1, key1, attr2, key2);
             };
 
+            get_edge_attrs_f_ = [this](
+            	std::vector<std::string>& attrs,
+				int64_t src,
+				int64_t atype)
+			{
+            	aggregator_->get_edge_attrs(attrs, src, atype);
+			};
+
             obj_get_f_ = [this](
                 std::vector<std::string>& result,
                 int64_t obj_id)
@@ -389,6 +397,14 @@ public:
             {
                 graph_->get_nodes(nodes, attr1, key1, attr2, key2);
             };
+
+            get_edge_attrs_f_ = [this](
+				std::vector<std::string>& attrs,
+				int64_t src,
+				int64_t atype)
+			{
+				graph_->get_edge_attrs(attrs, src, atype);
+			};
         }
     }
 
@@ -637,6 +653,46 @@ public:
             warmup_atypes, atypes);
         bench_throughput(num_threads, master_hostname, BenchType::NHBR_ATYPE);
     }
+
+    // get_neighbor(nodeId, atype)
+	void benchmark_edge_attrs_latency(
+		std::string res_path,
+		uint64_t WARMUP_N,
+		uint64_t MEASURE_N,
+		std::string warmup_query_file,
+		std::string query_file)
+	{
+		time_t t0, t1;
+		LOG_E("Benchmarking getEdgeAttrs latency\n");
+		read_neighbor_atype_queries(warmup_query_file, query_file,
+			warmup_nhbrAtype_indices, nhbrAtype_indices,
+			warmup_atypes, atypes);
+		std::ofstream res_stream(res_path);
+
+		// Warmup
+		LOG_E("Warming up for %" PRIu64 " queries...\n", WARMUP_N);
+		std::vector<std::string> result;
+		for (uint64_t i = 0; i < WARMUP_N; ++i) {
+			get_edge_attrs_f_(
+				result,
+				mod_get(warmup_nhbrAtype_indices, i),
+				mod_get(warmup_atypes, i));
+		}
+		LOG_E("Warmup complete.\n");
+
+		// Measure
+		LOG_E("Measuring for %" PRIu64 " queries...\n", MEASURE_N);
+		for (uint64_t i = 0; i < MEASURE_N; ++i) {
+			t0 = get_timestamp();
+			get_edge_attrs_f_(
+				result,
+				mod_get(warmup_nhbrAtype_indices, i),
+				mod_get(warmup_atypes, i));
+			t1 = get_timestamp();
+			res_stream << result.size() << "," << t1 - t0 << "\n";
+		}
+		LOG_E("Measure complete.\n");
+	}
 
     void benchmark_edge_attrs_throughput(
         const int num_threads,
@@ -2879,6 +2935,11 @@ protected:
         const std::string&,
         int,
         const std::string&)> get_nodes2_f_;
+
+    std::function<void(
+    	std::vector<std::string>&,
+		int64_t,
+		int64_t)> get_edge_attrs_f_;
 
     // TAO functions
 
