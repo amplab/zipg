@@ -193,80 +193,10 @@ int main(int argc, char **argv) {
         bench->benchmark_node_latency(result_file_name, warmup_n, measure_n,
                 warmup_query_file, measure_query_file);
 
-    } else if (type == "node-throughput") {
-
-        bench->benchmark_node_throughput(throughput_threads, master_hostname,
-                warmup_query_file, measure_query_file);
-
-    } else if (type == "neighbor-throughput") {
-
-        bench->benchmark_neighbor_throughput(
-            throughput_threads,
-            master_hostname,
-            warmup_query_file,
-            measure_query_file);
-
-    } else if (type == "tao-mix-throughput") {
-
-        bench->benchmark_tao_mix_throughput(
-            throughput_threads,
-            master_hostname,
-            warmup_neighbor_file, // assoc_range
-            measure_neighbor_file,
-            warmup_query_file, // assoc_count
-            measure_query_file,
-            warmup_nhbr_node_file, // obj_get
-            nhbr_node_file,
-            warmup_node_file, // assoc_get
-            query_node_file,
-            warmup_assoc_time_range_file, // assoc_time_range
-            query_assoc_time_range_file);
-
-    } else if (type == "tao-mix-with-updates-throughput") {
-
-        bench->benchmark_tao_mix_with_updates_throughput(
-            throughput_threads,
-            master_hostname,
-            warmup_neighbor_file, // assoc_range
-            measure_neighbor_file,
-            warmup_query_file, // assoc_count
-            measure_query_file,
-            warmup_nhbr_node_file, // obj_get
-            nhbr_node_file,
-            warmup_node_file, // assoc_get
-            query_node_file,
-            warmup_assoc_time_range_file, // assoc_time_range
-            query_assoc_time_range_file);
-
-    } else if (type == "mix-throughput") {
-
-        bench->benchmark_mix_throughput(
-            throughput_threads, master_hostname,
-            warmup_neighbor_file, measure_neighbor_file,
-            warmup_query_file, measure_query_file, // nhbr_atype
-            warmup_nhbr_node_file, nhbr_node_file,
-            warmup_node_file, query_node_file);
-
-    } else if (type == "mix-latency") {
-
-        bench->benchmark_mix_latency(result_file_name, // nhbr
-            nhbr_atype_res, nhbr_node_res, node_res, node_node_res,
-            warmup_n, measure_n,
-            warmup_neighbor_file, measure_neighbor_file,
-            warmup_query_file, measure_query_file, // nhbr_atype
-            warmup_nhbr_node_file, nhbr_node_file,
-            warmup_node_file, query_node_file);
-
     } else if (type == "node-node-latency") {
 
         bench->benchmark_node_node_latency(
             result_file_name, warmup_n, measure_n,
-            warmup_query_file, measure_query_file);
-
-    } else if (type == "node-node-throughput") {
-
-        bench->benchmark_node_node_throughput(
-            throughput_threads, master_hostname,
             warmup_query_file, measure_query_file);
 
     } else if (type == "neighbor-node-latency") {
@@ -275,14 +205,6 @@ int main(int argc, char **argv) {
             result_file_name,
             warmup_n,
             measure_n,
-            warmup_query_file,
-            measure_query_file);
-
-    } else if (type == "neighbor-node-throughput") {
-
-        bench->benchmark_neighbor_node_throughput(
-            throughput_threads,
-            master_hostname,
             warmup_query_file,
             measure_query_file);
 
@@ -295,21 +217,24 @@ int main(int argc, char **argv) {
             warmup_query_file,
             measure_query_file);
 
-    } else if (type == "neighbor-atype-throughput") {
+    } else if (type == "edge-attrs-latency") {
 
-        bench->benchmark_neighbor_atype_throughput(
-            throughput_threads,
-            master_hostname,
+        bench->benchmark_edge_attrs_latency(
+            result_file_name,
+            warmup_n,
+            measure_n,
             warmup_query_file,
             measure_query_file);
 
-    } else if (type == "edge-attrs-throughput") {
+    } else if (type == "mix-latency") {
 
-        bench->benchmark_edge_attrs_throughput(
-            throughput_threads,
-            master_hostname,
-            warmup_query_file,
-            measure_query_file);
+        bench->benchmark_mix_latency(result_file_name, // nhbr
+            nhbr_atype_res, nhbr_node_res, node_res, node_node_res,
+            warmup_n, measure_n,
+            warmup_neighbor_file, measure_neighbor_file,
+            warmup_query_file, measure_query_file, // nhbr_atype
+            warmup_nhbr_node_file, nhbr_node_file,
+            warmup_node_file, query_node_file);
 
     } else if (type == "tao-assoc-range-latency") {
 
@@ -356,6 +281,10 @@ int main(int argc, char **argv) {
             warmup_query_file,
             measure_query_file);
 
+    } else if (type == "tao-assoc-add-latency") {
+        // Messy: some arguments are reused...
+        bench->benchmark_tao_assoc_add_latency(result_file_name); // assoc_add
+
     } else if (type == "tao-mix-latency") {
         // Messy: some arguments are reused...
         bench->benchmark_tao_mix_latency(
@@ -377,9 +306,91 @@ int main(int argc, char **argv) {
             warmup_assoc_time_range_file, // assoc_time_range
             query_assoc_time_range_file);
 
-    } else if (type == "tao-updates-latency") {
-        // Messy: some arguments are reused...
-        bench->benchmark_tao_updates_latency(result_file_name); // assoc_add
+    } else if (type == "node-throughput") {
+
+        bench->benchmark_node_throughput(throughput_threads,
+        		master_hostname,
+                warmup_query_file,
+				measure_query_file);
+
+    } else if (type == "neighbor-throughput") {
+
+        bench->benchmark_neighbor_throughput(
+            throughput_threads,
+            master_hostname,
+            warmup_query_file,
+            measure_query_file);
+
+    } else if (type == "node-node-throughput") {
+
+        bench->benchmark_node_node_throughput(
+            throughput_threads, master_hostname,
+            warmup_query_file, measure_query_file);
+
+    } else if (type == "neighbor-node-throughput") {
+
+        bench->benchmark_neighbor_node_throughput(
+            throughput_threads,
+            master_hostname,
+            warmup_query_file,
+            measure_query_file);
+
+    } else if (type == "neighbor-atype-throughput") {
+
+        bench->benchmark_neighbor_atype_throughput(
+            throughput_threads,
+            master_hostname,
+            warmup_query_file,
+            measure_query_file);
+
+    } else if (type == "edge-attrs-throughput") {
+
+        bench->benchmark_edge_attrs_throughput(
+            throughput_threads,
+            master_hostname,
+            warmup_query_file,
+            measure_query_file);
+
+    } else if (type == "mix-throughput") {
+
+        bench->benchmark_mix_throughput(
+            throughput_threads, master_hostname,
+            warmup_neighbor_file, measure_neighbor_file,
+            warmup_query_file, measure_query_file, // nhbr_atype
+            warmup_nhbr_node_file, nhbr_node_file,
+            warmup_node_file, query_node_file);
+
+    } else if (type == "tao-mix-throughput") {
+
+        bench->benchmark_tao_mix_throughput(
+            throughput_threads,
+            master_hostname,
+            warmup_neighbor_file, // assoc_range
+            measure_neighbor_file,
+            warmup_query_file, // assoc_count
+            measure_query_file,
+            warmup_nhbr_node_file, // obj_get
+            nhbr_node_file,
+            warmup_node_file, // assoc_get
+            query_node_file,
+            warmup_assoc_time_range_file, // assoc_time_range
+            query_assoc_time_range_file);
+
+    } else if (type == "tao-mix-with-updates-throughput") {
+
+        bench->benchmark_tao_mix_with_updates_throughput(
+            throughput_threads,
+            master_hostname,
+            warmup_neighbor_file, // assoc_range
+            measure_neighbor_file,
+            warmup_query_file, // assoc_count
+            measure_query_file,
+            warmup_nhbr_node_file, // obj_get
+            nhbr_node_file,
+            warmup_node_file, // assoc_get
+            query_node_file,
+            warmup_assoc_time_range_file, // assoc_time_range
+            query_assoc_time_range_file);
 
     } else if (type == "graph-format") {
 

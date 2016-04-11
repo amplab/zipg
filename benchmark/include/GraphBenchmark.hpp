@@ -2374,7 +2374,7 @@ public:
         }
     }
 
-    void benchmark_tao_updates_latency(
+    void benchmark_tao_assoc_add_latency(
         const std::string& assoc_add_res_file,
         int max_num_new_edges = MAX_NUM_NEW_EDGES)
     {
