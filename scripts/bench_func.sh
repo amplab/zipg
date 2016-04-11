@@ -6,17 +6,16 @@
 SCRIPT_DIR=$(dirname $0)
 source ${SCRIPT_DIR}/config.sh
 source ${SCRIPT_DIR}/../conf/succinct-env.sh
-npa=128; sa=32; isa=64
 
 NODE_FILE=${1:-/mnt2/twitter2010-40attr16each-tpch-npa${npa}sa${sa}isa${isa}.node}
 EDGE_FILE=${2:-/mnt2/twitter2010-npa${npa}sa${sa}isa${isa}.assoc}
-
-
 throughput_threads=${3:-""}
-# hostname of the master aggregator that bench client connects to
-# if desirable to put client on 1 host, and agg. on the other, change this
 masterHostName=${4:-"localhost"}
 copyQueries=${5:-"true"}
+npa=${6:-"128"}
+sa=${7:-"32"}
+isa=${8:-"64"}
+dataset=${9:-"twitter"}
 
 echo "Node File: $NODE_FILE"
 echo "Edge File: $EDGE_FILE"
@@ -26,8 +25,6 @@ echo "Server: $masterHostName"
 
 num_nodes=100000 # hack
 augOpt="-augOpts"
-
-dataset="twitter2010-40attr16each"
 
 # NOTE: comment this out for non-sharded bench
 SHARDED=T
@@ -91,7 +88,7 @@ function bench() {
       throughput_get_nodes2-npa${npa}sa${sa}isa${isa}-${throughput_threads}clients.txt
   fi
 
-  if [[ -n "$benchNeighborNode" ]]; then
+  if [[ -n "$benchNhbrNode" ]]; then
     sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
     ${BIN_DIR}/../benchmark/bin/bench -t neighbor-node-latency -x ${warmup_neighbor_node} \
     -y ${measure_neighbor_node} -w ${QUERY_DIR}/neighbor_node_warmup_${num_nodes}.txt \
@@ -118,7 +115,7 @@ function bench() {
       throughput_get_nhbrsNode-npa${npa}sa${sa}isa${isa}-${throughput_threads}clients.txt
   fi
 
-  if [[ -n "$benchNeighborAtype" ]]; then
+  if [[ -n "$benchNhbrAtype" ]]; then
       sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
       ${BIN_DIR}/../benchmark/bin/bench -t neighbor-atype-latency -x ${warmup_neighbor_atype} \
       -y ${measure_neighbor_atype} -w ${QUERY_DIR}/neighborAtype_warmup_${num_nodes}.txt \
@@ -145,6 +142,16 @@ function bench() {
       throughput_get_nhbrsAtype-npa${npa}sa${sa}isa${isa}-${throughput_threads}clients.txt
   fi
 
+  if [[ -n "$benchEdgeAttrs" ]]; then
+      sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+      ${BIN_DIR}/../benchmark/bin/bench -t neighbor-edge-attrs-latency -x ${warmup_edgeAttrs} \
+      -y ${measure_edgeAttrs} -w ${QUERY_DIR}/neighborAtype_warmup_${num_nodes}.txt \
+      -q ${QUERY_DIR}/neighborAtype_query_${num_nodes}.txt \
+      -o ${HOME_DIR}/edgeAttrs_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+      -m ${masterHostName} \
+      ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
+  fi
+
   if [[ -n "$benchEdgeAttrsThput" ]]; then
       # sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
       ${BIN_DIR}/../benchmark/bin/bench -t edge-attrs-throughput -x ${warmup_edgeAttrs} \
@@ -161,7 +168,7 @@ function bench() {
       throughput_getEdgeAttrs-npa${npa}sa${sa}isa${isa}-${throughput_threads}clients.txt
   fi
 
-  if [[ -n "$benchNeighbor" ]]; then
+  if [[ -n "$benchNhbr" ]]; then
     #sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
     ${BIN_DIR}/../benchmark/bin/bench -t neighbor-latency -x ${warmup_neighbor} \
     -y ${measure_neighbor} -w ${QUERY_DIR}/neighbor_warmup_${num_nodes}.txt \
@@ -171,7 +178,24 @@ function bench() {
     ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
   fi
 
-  if [[ -n "$benchMix" ]]; then
+  if [[ -n "$benchNhbrThput" ]]; then
+    #sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+
+    ${BIN_DIR}/../benchmark/bin/bench -t neighbor-throughput \
+      -p ${throughput_threads} \
+      -x ${warmup_neighbor} -y ${measure_neighbor} \
+      -w ${QUERY_DIR}/neighbor_warmup_${num_nodes}.txt \
+      -q ${QUERY_DIR}/neighbor_query_${num_nodes}.txt \
+      -m ${masterHostName} \
+      ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
+
+    o=throughput_get_nhbrs.txt
+    x=$(cut -d' ' -f1 ${o} | awk '{sum += $1} END {print sum}')
+    echo $throughput_threads clients, $x aggregated queries/sec >> ${o}
+    mv ${o} throughput_get_nhbrs-npa${npa}sa${sa}isa${isa}-${throughput_threads}clients.txt
+  fi
+
+  if [[ -n "$benchPrimitiveMix" ]]; then
     #sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
 
     ${BIN_DIR}/../benchmark/bin/bench -t mix-latency \
@@ -193,7 +217,7 @@ function bench() {
       ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
   fi
 
-  if [[ -n "$benchMixThput" ]]; then
+  if [[ -n "$benchPrimitiveMixThput" ]]; then
     #sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
 
     ${BIN_DIR}/../benchmark/bin/bench -t mix-throughput \
@@ -220,25 +244,7 @@ function bench() {
     echo $throughput_threads clients, $x aggregated queries/sec >> ${o}
     mv ${o} throughput_mix-npa${npa}sa${sa}isa${isa}-${throughput_threads}clients.txt
   fi
-
-
-  if [[ -n "$benchNeighborThput" ]]; then
-    #sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
-
-    ${BIN_DIR}/../benchmark/bin/bench -t neighbor-throughput \
-      -p ${throughput_threads} \
-      -x ${warmup_neighbor} -y ${measure_neighbor} \
-      -w ${QUERY_DIR}/neighbor_warmup_${num_nodes}.txt \
-      -q ${QUERY_DIR}/neighbor_query_${num_nodes}.txt \
-      -m ${masterHostName} \
-      ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
-
-    o=throughput_get_nhbrs.txt
-    x=$(cut -d' ' -f1 ${o} | awk '{sum += $1} END {print sum}')
-    echo $throughput_threads clients, $x aggregated queries/sec >> ${o}
-    mv ${o} throughput_get_nhbrs-npa${npa}sa${sa}isa${isa}-${throughput_threads}clients.txt
-  fi
-
+ 
   if [[ -n "$benchAssocRange" ]]; then
     #sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
     ${BIN_DIR}/../benchmark/bin/bench -t tao-assoc-range-latency \
@@ -289,6 +295,15 @@ function bench() {
       ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
   fi
 
+  if [[ -n "$benchTaoAssocAdd" ]]; then
+    #sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+
+    ${BIN_DIR}/../benchmark/bin/bench -t tao-assoc-add-latency \
+      -o ${HOME_DIR}/assocAdd_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+      -m ${masterHostName} \
+      ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
+  fi
+
   if [[ -n "$benchTaoMix" ]]; then
     #sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
 
@@ -312,16 +327,7 @@ function bench() {
       -m ${masterHostName} \
       ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
   fi
-
-  if [[ -n "$benchTaoUpdates" ]]; then
-    #sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
-
-    ${BIN_DIR}/../benchmark/bin/bench -t tao-updates-latency \
-      -o ${HOME_DIR}/taoUpdates_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
-      -m ${masterHostName} \
-      ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
-  fi
-
+  
   if [[ -n "$benchTaoMixThput" ]]; then
     #sleep 2 && sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
 
@@ -339,7 +345,6 @@ function bench() {
       -l ${QUERY_DIR}/assocTimeRange_query.txt \
       -m ${masterHostName} \
       ${NODE_FILE} ${EDGE_FILE} ${SHARDED}"
-
 
     ${BIN_DIR}/../benchmark/bin/bench -t tao-mix-throughput \
       -p ${throughput_threads} \
@@ -396,9 +401,7 @@ function bench() {
 if [[ "$throughput_threads" == "" ]]; then
   for throughput_threads in 32 64; do
     sa=32; isa=64; npa=128; bench "$@"
-    #sa=8; isa=64; npa=64; bench
-    #sa=4; isa=16; npa=16; bench
   done
 else
-    sa=32; isa=64; npa=128; bench "$@" 2>&1
+  sa=32; isa=64; npa=128; bench "$@" 2>&1
 fi

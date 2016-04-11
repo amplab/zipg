@@ -69,10 +69,14 @@ node_file_raw=$1
 edge_file_raw=$2
 throughput_threads=$3
 benchType=$4
+sa=$5
+isa=$6
+npa=$7
+dataset=$8
 i=0
 for host in `echo "$HOSTLIST"|sed  "s/#.*$//;/^$/d"`; do
   server=${servers[$i]}
-  ssh $SUCCINCT_SSH_OPTS "$host" "$benchType=T bash $sbin/../scripts/bench_func.sh $node_file_raw $edge_file_raw $throughput_threads $server true 2>&1 >run.log" &
+  ssh $SUCCINCT_SSH_OPTS "$host" "$benchType=T bash $sbin/../scripts/bench_func.sh $node_file_raw $edge_file_raw $throughput_threads $server true $sa $isa $npa $dataset 2>&1 >run.log" &
   i=$((i + 1))
 done
 

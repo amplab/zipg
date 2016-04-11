@@ -21,16 +21,37 @@ datasets=(
 )
 threads=( 56 )
 benches=(
-  #benchTaoMix
-  #benchTaoUpdates # latency
-  benchTaoMixThput
-  benchTaoMixWithUpdatesThput
-  benchMixThput
+  
+  #benchNhbrNode # latency
+  #benchNhbr # latency
+  #benchNhbrAtype # latency
+  #benchNodeNode # latency
+  #benchEdgeAttrs # latency
+  #benchPrimitiveMix # latency
+  #benchTaoAssocRange # latency
+  #benchTaoAssocCount # latency
+  #benchTaoObjGet # latency
+  #benchTaoAssocGet # latency
+  #benchTaoAssocTimeRange # latency
+  #benchTaoAssocAdd # latency
+  #benchTaoObjAdd # latency
+  #benchTaoMix  # latency
+  #benchTaoMixWithUpdates # latency
   benchNhbrNodeThput
-  benchNeighborThput
+  benchNhbrThput
   benchNhbrAtypeThput
   benchNodeNodeThput
   benchEdgeAttrsThput
+  benchPrimitiveMixThput
+  #benchTaoAssocRangeThput
+  #benchTaoAssocCountThput
+  #benchTaoObjGetThput
+  #benchTaoAssocGetThput
+  #benchTaoAssocTimeRangeThput
+  #benchTaoAssocAddThput
+  #benchTaoObjAddThput
+  benchTaoMixThput
+  benchTaoMixWithUpdatesThput
 )
 
 function timestamp() {
@@ -69,20 +90,19 @@ function bench_latency() {
     SUCCINCT_SSH_OPTS="-o StrictHostKeyChecking=no -i $SUCCINCT_CONF_DIR/cqlkeypair.pem"
   fi
 
-  ssh $SUCCINCT_SSH_OPTS "$client" "bash $benchType=T && bash ${currDir}/../scripts/bench_func.sh $node_file_raw $edge_file_raw 0 localhost false 2>&1"
+  ssh $SUCCINCT_SSH_OPTS "$client" "$benchType=T bash ${currDir}/../scripts/bench_func.sh $node_file_raw $edge_file_raw 0 localhost false $sa $isa $npa $dataset 2>&1"
 }
 
 #### Launch benchmark
 declare -A benchMap=(
   ["benchTaoMixThput"]="tao_mix"
   ["benchTaoMixWithUpdatesThput"]="taoMixWithUpdates"
-  ["benchTaoUpdates"]="taoUpdates"
-  ["benchMixThput"]="mix"
+  ["benchPrimitiveMixThput"]="mix"
   ["benchNodeNodeThput"]="get_nodes2"
   ["benchNhbrNodeThput"]="get_nhbrsNode"
   ["benchEdgeAttrsThput"]="getEdgeAttrs"
   ["benchNhbrAtypeThput"]="get_nhbrsAtype"
-  ["benchNeighborThput"]="get_nhbrs"
+  ["benchNhbrThput"]="get_nhbrs"
 )
 
 for throughput_threads in ${threads[*]}; do
@@ -102,7 +122,7 @@ for dataset in "${datasets[@]}"; do
 
           launcherStart=$(date +"%s")
 
-          bash $sbin/hosts-bench.sh $node_file_raw $edge_file_raw $throughput_threads $benchType
+          bash $sbin/hosts-bench.sh $node_file_raw $edge_file_raw $throughput_threads $benchType $sa $isa $npa $dataset
           wait
           launcherEnd=$(date +"%s")
 
