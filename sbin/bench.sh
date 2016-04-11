@@ -9,31 +9,30 @@ sbin="`cd "$sbin"; pwd`"
 
 npa=128; sa=32; isa=64 # L0, by default
 
-#node_file_raw=/mnt2/uk-2007-05-40attr16each-tpch-npa128sa32isa64.node
-#edge_file_raw=/mnt2/uk-2007-05-40attr16each-npa128sa32isa64.assoc
-node_file_raw=/mnt2/twitter2010-40attr16each-tpch.node
-edge_file_raw=/mnt2/twitter2010-npa128sa32isa64.assoc
-
 if [ -f "$SUCCINCT_CONF_DIR/master" ]; then
   master=`cat "$SUCCINCT_CONF_DIR/master"`
 else
   master="localhost"
 fi
 
-threads=( 56 )
-benches=(
-  #benchTaoMix
-  #benchTaoUpdates # latency
-  benchTaoMixThput
-  benchTaoMixWithUpdatesThput
-  benchMixThput
-  benchNhbrNodeThput
-  benchNeighborThput
-  benchNhbrAtypeThput
-  benchNodeNodeThput
-  benchEdgeAttrsThput
+datasets=(
+  uk
+  twitter
 )
 
+threads=( 56 )
+benches=(
+  benchTaoMix
+  benchTaoUpdates # latency
+  #benchTaoMixThput
+  #benchTaoMixWithUpdatesThput
+  #benchMixThput
+  #benchNhbrNodeThput
+  #benchNeighborThput
+  #benchNhbrAtypeThput
+  #benchNodeNodeThput
+  #benchEdgeAttrsThput
+)
 
 function timestamp() {
   date +"%D-%T"
@@ -45,12 +44,30 @@ function setup() {
     SUCCINCT_SSH_OPTS="-o StrictHostKeyChecking=no -i $SUCCINCT_CONF_DIR/cqlkeypair.pem"
   fi
 
-  ssh $SUCCINCT_SSH_OPTS "$master" "bash $sbin/../scripts/setup_dist.sh"
+  if [ "$dataset" = "twitter" ]; then
+    node_file_raw=/mnt2/twitter2010-40attr16each-tpch.node
+    edge_file_raw=/mnt2/twitter2010-npa128sa32isa64.assoc
+  elif [ "$dataset" = "uk" ]; then
+    node_file_raw=/mnt2/uk-2007-05-40attr16each-tpch.node
+    edge_file_raw=/mnt2/uk-2007-05-40attr16each-npa128sa32isa64.assoc
+  else
+    echo "Must specify dataset."
+    exit
+  fi
+    
+  ssh $SUCCINCT_SSH_OPTS "$master" "bash $sbin/../scripts/setup_dist.sh $node_file_raw $edge_file_raw $sa $isa $npa"
 }
 
-bash $sbin/hosts.sh source "$sbin/succinct-config.sh"
-bash $sbin/hosts.sh source "$sbin/load-succinct-env.sh"
-sleep 2
+function bench_latency() {
+  client=`tail -n 1 "$SUCCINCT_CONF_DIR/servers"`
+  
+  # By default disable strict host key checking
+  if [ "$SUCCINCT_SSH_OPTS" = "" ]; then
+    SUCCINCT_SSH_OPTS="-o StrictHostKeyChecking=no -i $SUCCINCT_CONF_DIR/cqlkeypair.pem"
+  fi
+
+  ssh $SUCCINCT_SSH_OPTS "$client" "bash $benchType=T && bash ${currDir}/../scripts/bench_func.sh $node_file_raw $edge_file_raw 0 localhost false 2>&1"
+}
 
 #### Launch benchmark
 declare -A benchMap=(
@@ -110,9 +127,8 @@ for benchType in "${benches[@]}"; do
       echo "Running latency benchmark, ${benchType}"
       setup
 
-      # launch the single client from this master
-      export $benchType=T && bash ${currDir}/bench_func.sh \
-        $node_file_raw $edge_file_raw $throughput_threads localhost false 2>&1 >run.log
+      # launch a single client on the last node of the cluster
+      bench_latency
       wait
       ;;
   esac
