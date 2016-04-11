@@ -19,19 +19,18 @@ datasets=(
   uk
   twitter
 )
-
 threads=( 56 )
 benches=(
-  benchTaoMix
-  benchTaoUpdates # latency
-  #benchTaoMixThput
-  #benchTaoMixWithUpdatesThput
-  #benchMixThput
-  #benchNhbrNodeThput
-  #benchNeighborThput
-  #benchNhbrAtypeThput
-  #benchNodeNodeThput
-  #benchEdgeAttrsThput
+  #benchTaoMix
+  #benchTaoUpdates # latency
+  benchTaoMixThput
+  benchTaoMixWithUpdatesThput
+  benchMixThput
+  benchNhbrNodeThput
+  benchNeighborThput
+  benchNhbrAtypeThput
+  benchNodeNodeThput
+  benchEdgeAttrsThput
 )
 
 function timestamp() {
@@ -47,9 +46,13 @@ function setup() {
   if [ "$dataset" = "twitter" ]; then
     node_file_raw=/mnt2/twitter2010-40attr16each-tpch.node
     edge_file_raw=/mnt2/twitter2010-npa128sa32isa64.assoc
+    $sbin/hosts.sh rm -rf /mnt2/queries
+    $sbin/hosts.sh cp -r /mnt2/twitterQueries /mnt2/queries
   elif [ "$dataset" = "uk" ]; then
     node_file_raw=/mnt2/uk-2007-05-40attr16each-tpch.node
     edge_file_raw=/mnt2/uk-2007-05-40attr16each-npa128sa32isa64.assoc
+    $sbin/hosts.sh rm -rf /mnt2/queries
+    $sbin/hosts.sh cp -r /mnt2/ukQueries /mnt2/queries
   else
     echo "Must specify dataset."
     exit
@@ -89,47 +92,49 @@ for throughput_threads in ${threads[*]}; do
   done
 done
 
-for benchType in "${benches[@]}"; do
-  case $benchType in
-    *Thput)
-      for throughput_threads in ${threads[*]}; do
-        echo "Running throughput benchmark, ${benchType}, numThreads=$throughput_threads"
+for dataset in "${datasets[@]}"; do
+  for benchType in "${benches[@]}"; do
+    case $benchType in
+      *Thput)
+        for throughput_threads in ${threads[*]}; do
+          echo "Running throughput benchmark, ${benchType}, numThreads=$throughput_threads"
+          setup
+
+          launcherStart=$(date +"%s")
+
+          bash $sbin/hosts-bench.sh $node_file_raw $edge_file_raw $throughput_threads $benchType
+          wait
+          launcherEnd=$(date +"%s")
+
+          bench="${benchMap["$benchType"]}"
+          rm -rf thput
+          bash ${currDir}/../sbin/hosts.sh \
+            tail -n1 throughput_${bench}-npa128sa32isa64-${throughput_threads}clients.txt | \
+            cut -d',' -f2 | \
+            cut -d' ' -f2 >>thput
+          sum=$(awk '{ sum += $1 } END { print sum }' thput)
+
+          f="thput-${bench}-${throughput_threads}clients.txt"
+          t=$(timestamp)
+          echo "$t,$bench" >>${f}
+          sanity=$(${currDir}/../sbin/hosts.sh tail -n1 run.log)
+          echo $sanity >> ${f}
+          echo "Measured from master: $((launcherEnd - launcherStart)) secs" >> ${f}
+          cat thput >> ${f}
+
+          entry="$t,$bench,${throughput_threads}*10,$sum"
+          echo $entry
+          echo $entry >> thput-summary
+        done
+        ;;
+      *)
+        echo "Running latency benchmark, ${benchType}"
         setup
 
-        launcherStart=$(date +"%s")
-
-        bash $sbin/hosts-bench.sh $node_file_raw $edge_file_raw $throughput_threads $benchType
+        # launch a single client on the last node of the cluster
+        bench_latency
         wait
-        launcherEnd=$(date +"%s")
-
-        bench="${benchMap["$benchType"]}"
-        rm -rf thput
-        bash ${currDir}/../sbin/hosts.sh \
-          tail -n1 throughput_${bench}-npa128sa32isa64-${throughput_threads}clients.txt | \
-          cut -d',' -f2 | \
-          cut -d' ' -f2 >>thput
-        sum=$(awk '{ sum += $1 } END { print sum }' thput)
-
-        f="thput-${bench}-${throughput_threads}clients.txt"
-        t=$(timestamp)
-        echo "$t,$bench" >>${f}
-        sanity=$(${currDir}/../sbin/hosts.sh tail -n1 run.log)
-        echo $sanity >> ${f}
-        echo "Measured from master: $((launcherEnd - launcherStart)) secs" >> ${f}
-        cat thput >> ${f}
-
-        entry="$t,$bench,${throughput_threads}*10,$sum"
-        echo $entry
-        echo $entry >> thput-summary
-      done
-      ;;
-    *)
-      echo "Running latency benchmark, ${benchType}"
-      setup
-
-      # launch a single client on the last node of the cluster
-      bench_latency
-      wait
-      ;;
-  esac
+        ;;
+    esac
+  done
 done
