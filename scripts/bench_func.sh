@@ -69,7 +69,7 @@ function bench() {
   fi
 
   if [[ -n "$benchEdgeAttrs" ]]; then
-    ${BIN_DIR}/../benchmark/bin/bench -t neighbor-edge-attrs-latency -x ${warmup_edgeAttrs} \
+    ${BIN_DIR}/../benchmark/bin/bench -t edge-attrs-latency -x ${warmup_edgeAttrs} \
       -y ${measure_edgeAttrs} -w ${QUERY_DIR}/neighborAtype_warmup_${num_nodes}.txt \
       -q ${QUERY_DIR}/neighborAtype_query_${num_nodes}.txt \
       -o ${HOME_DIR}/latency-edgeAttrs-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
