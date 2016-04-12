@@ -84,7 +84,7 @@ int main(int argc, char **argv) {
 
     std::string warmup_nhbr_node_file, nhbr_node_file;
     std::string warmup_node_file, query_node_file;
-    std::string nhbr_atype_res, nhbr_node_res, node_res, node_node_res;
+    std::string nhbr_atype_res, nhbr_node_res, node_res, node_node_res, assoc_add_res, obj_add_res;
     std::string warmup_assoc_time_range_file, query_assoc_time_range_file;
 
     // By default, make the host executing the benchmark client an aggregator
@@ -95,7 +95,7 @@ int main(int argc, char **argv) {
 
     // TODO: how the script uses these here is a mess.
     while ((c = getopt(
-        argc, argv, "t:x:y:z:w:q:a:b:c:d:e:f:o:h:i:j:k:p:g:l:m:")) != -1)
+        argc, argv, "t:x:y:z:w:q:a:b:c:d:e:f:o:h:i:j:k:r:s:p:g:l:m:")) != -1)
     {
         switch(c) {
         case 't':
@@ -146,6 +146,12 @@ int main(int argc, char **argv) {
         case 'k':
             node_node_res = std::string(optarg);
             break;
+        case 'r':
+			assoc_add_res = std::string(optarg);
+			break;
+		case 's':
+			obj_add_res = std::string(optarg);
+			break;
         case 'p':
             throughput_threads = std::stoi(optarg);
             break;
@@ -285,6 +291,10 @@ int main(int argc, char **argv) {
         // Messy: some arguments are reused...
         bench->benchmark_tao_assoc_add_latency(result_file_name); // assoc_add
 
+    } else if (type == "tao-obj-add-latency") {
+        // Messy: some arguments are reused...
+        bench->benchmark_tao_obj_add_latency(result_file_name); // assoc_add
+
     } else if (type == "tao-mix-latency") {
         // Messy: some arguments are reused...
         bench->benchmark_tao_mix_latency(
@@ -293,6 +303,29 @@ int main(int argc, char **argv) {
             nhbr_node_res, // obj_get
             node_res, // assoc_get
             node_node_res, // assoc_time_range
+            warmup_n,
+            measure_n,
+            warmup_neighbor_file, // assoc_range
+            measure_neighbor_file,
+            warmup_query_file, // assoc_count
+            measure_query_file,
+            warmup_nhbr_node_file, // obj_get
+            nhbr_node_file,
+            warmup_node_file, // assoc_get
+            query_node_file,
+            warmup_assoc_time_range_file, // assoc_time_range
+            query_assoc_time_range_file);
+
+    } else if (type == "tao-mix-with-updates-latency") {
+        // Messy: some arguments are reused...
+        bench->benchmark_tao_mix_with_updates_latency(
+            result_file_name, // assoc_range
+            nhbr_atype_res, // assoc_count
+            nhbr_node_res, // obj_get
+            node_res, // assoc_get
+            node_node_res, // assoc_time_range
+			assoc_add_res, // assoc_add
+			obj_add_res, // obj_add
             warmup_n,
             measure_n,
             warmup_neighbor_file, // assoc_range
