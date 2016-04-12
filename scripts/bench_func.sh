@@ -157,6 +157,13 @@ function bench() {
       -m ${masterHostName} \
       ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
   fi
+	
+  if [[ -n "$benchTaoObjAdd" ]]; then
+    ${BIN_DIR}/../benchmark/bin/bench -t tao-obj-add-latency \
+      -o ${HOME_DIR}/latency-taoObjAdd-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+      -m ${masterHostName} \
+      ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
+  fi
 
   if [[ -n "$benchTaoMix" ]]; then
     ${BIN_DIR}/../benchmark/bin/bench -t tao-mix-latency \
@@ -176,6 +183,30 @@ function bench() {
       -i ${HOME_DIR}/latency-taoMixObjGet-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
       -j ${HOME_DIR}/latency-taoMixAssocGet-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
       -k ${HOME_DIR}/latency-taoMixAssocTimeRange-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+      -m ${masterHostName} \
+      ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
+  fi
+	
+  if [[ -n "$benchTaoMixWithUpdates" ]]; then
+    ${BIN_DIR}/../benchmark/bin/bench -t tao-mix-with-updates-latency \
+      -x ${warmup_taoMix} -y ${measure_taoMix} \
+      -w ${QUERY_DIR}/assocCount_warmup.txt \
+      -q ${QUERY_DIR}/assocCount_query.txt \
+      -a ${QUERY_DIR}/assocRange_warmup.txt \
+      -b ${QUERY_DIR}/assocRange_query.txt \
+      -c ${QUERY_DIR}/objGet_warmup.txt \
+      -d ${QUERY_DIR}/objGet_query.txt \
+      -e ${QUERY_DIR}/assocGet_warmup.txt \
+      -f ${QUERY_DIR}/assocGet_query.txt \
+      -g ${QUERY_DIR}/assocTimeRange_warmup.txt \
+      -l ${QUERY_DIR}/assocTimeRange_query.txt \
+      -o ${HOME_DIR}/latency-taoMixAssocRange-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+      -h ${HOME_DIR}/latency-taoMixAssocCount-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+      -i ${HOME_DIR}/latency-taoMixObjGet-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+      -j ${HOME_DIR}/latency-taoMixAssocGet-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+      -k ${HOME_DIR}/latency-taoMixAssocTimeRange-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+	    -r ${HOME_DIR}/latency-taoMixAssocAdd-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+	    -s ${HOME_DIR}/latency-taoMixObjAdd-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
       -m ${masterHostName} \
       ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
   fi
