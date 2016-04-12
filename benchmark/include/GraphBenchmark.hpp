@@ -2969,11 +2969,13 @@ public:
 						src, atype, dst, MAX_TIME, ATTR_FOR_NEW_EDGES);
 					t1 = get_timestamp();
 					assoc_add_res << ret << "," << t1 - t0 << "\n";
+					break;
 				case 6:
 					t0 = get_timestamp();
 					obj = aggregator_->obj_add(ATTRS_FOR_NEW_NODES);
 					t1 = get_timestamp();
 					obj_add_res << obj << "," << t1 - t0 << "\n";
+					break;
 				default:
 					assert(false);
 				}
