@@ -22,27 +22,27 @@ datasets=(
 threads=( 56 )
 benches=(
   
-  #benchNhbrNode # latency
-  #benchNhbr # latency
-  #benchNhbrAtype # latency
-  #benchNodeNode # latency
-  #benchEdgeAttrs # latency
+  benchNhbrNode # latency
+  benchNhbr # latency
+  benchNhbrAtype # latency
+  benchNodeNode # latency
+  benchEdgeAttrs # latency
   #benchPrimitiveMix # latency
-  #benchTaoAssocRange # latency
-  #benchTaoAssocCount # latency
-  #benchTaoObjGet # latency
-  #benchTaoAssocGet # latency
-  #benchTaoAssocTimeRange # latency
-  #benchTaoAssocAdd # latency
+  benchTaoAssocRange # latency
+  benchTaoAssocCount # latency
+  benchTaoObjGet # latency
+  benchTaoAssocGet # latency
+  benchTaoAssocTimeRange # latency
+  benchTaoAssocAdd # latency
   #benchTaoObjAdd # latency
   #benchTaoMix  # latency
   #benchTaoMixWithUpdates # latency
-  benchNhbrNodeThput
-  benchNhbrThput
-  benchNhbrAtypeThput
-  benchNodeNodeThput
-  benchEdgeAttrsThput
-  benchPrimitiveMixThput
+  #benchNhbrNodeThput
+  #benchNhbrThput
+  #benchNhbrAtypeThput
+  #benchNodeNodeThput
+  #benchEdgeAttrsThput
+  #benchPrimitiveMixThput
   #benchTaoAssocRangeThput
   #benchTaoAssocCountThput
   #benchTaoObjGetThput
@@ -50,8 +50,8 @@ benches=(
   #benchTaoAssocTimeRangeThput
   #benchTaoAssocAddThput
   #benchTaoObjAddThput
-  benchTaoMixThput
-  benchTaoMixWithUpdatesThput
+  #benchTaoMixThput
+  #benchTaoMixWithUpdatesThput
 )
 
 function timestamp() {
