@@ -44,6 +44,7 @@ private:
     const std::vector<std::string> ATTRS_FOR_NEW_NODES = populate_node_attrs();
 
     const static int MAX_NUM_NEW_EDGES = 200000; // 3.5M takes too long to run
+    const static int MAX_NUM_NEW_NODES = 125000;
 
     // Timings for throughput benchmarks.
     constexpr static int64_t WARMUP_MICROSECS = 300 * 1000 * 1000;
@@ -2220,6 +2221,92 @@ public:
         LOG_E("Measure complete.\n");
     }
 
+    void benchmark_tao_assoc_add_latency(
+		const std::string& assoc_add_res_file,
+		int max_num_new_edges = MAX_NUM_NEW_EDGES)
+	{
+		assert(max_num_new_edges <= MAX_NUM_NEW_EDGES);
+
+		std::ofstream assoc_add_res(assoc_add_res_file);
+		std::mt19937 gen(1618);
+		std::uniform_int_distribution<int64_t> dist_node(0, NUM_NODES - 1);
+		std::uniform_int_distribution<int64_t> dist_atype(0, NUM_ATYPES - 1);
+
+		time_t t0, t1;
+
+		LOG_E("Benchmarking TAO assoc_add latency\n");
+		int warmup_n = max_num_new_edges / 10;
+		int measure_n = max_num_new_edges - warmup_n;
+		int ret;
+		int64_t src, atype, dst;
+
+		try {
+			LOG_E("Warming up for %d queries...\n", warmup_n);
+			for (int i = 0; i < warmup_n; ++i) {
+				src = dist_node(gen);
+				atype = dist_atype(gen);
+				dst = dist_node(gen);
+				aggregator_->assoc_add(
+					src, atype, dst, MAX_TIME, ATTR_FOR_NEW_EDGES);
+			}
+			LOG_E("Warmup complete.\n");
+
+			// Measure phase
+			LOG_E("Measuring for %d queries...\n", measure_n);
+			for (int i = 0; i < measure_n; ++i) {
+				src = dist_node(gen);
+				atype = dist_atype(gen);
+				dst = dist_node(gen);
+
+				t0 = get_timestamp();
+				ret = aggregator_->assoc_add(
+					src, atype, dst, MAX_TIME, ATTR_FOR_NEW_EDGES);
+				t1 = get_timestamp();
+				assoc_add_res << ret << "," << t1 - t0 << "\n";
+			}
+			LOG_E("Measure complete.\n");
+		} catch (std::exception &e) {
+			LOG_E("Exception: %s\n", e.what());
+		}
+	}
+
+    void benchmark_tao_obj_add_latency(
+		const std::string& obj_add_res_file,
+		int max_num_new_nodes = MAX_NUM_NEW_NODES)
+	{
+		assert(max_num_new_nodes <= MAX_NUM_NEW_NODES);
+
+		std::ofstream obj_add_res(obj_add_res_file);
+
+		time_t t0, t1;
+
+		LOG_E("Benchmarking TAO obj_add latency\n");
+		int warmup_n = max_num_new_nodes / 10;
+		int measure_n = max_num_new_nodes - warmup_n;
+		int ret;
+		int64_t src, atype, dst;
+
+		try {
+			LOG_E("Warming up for %d queries...\n", warmup_n);
+			for (int i = 0; i < warmup_n; ++i) {
+				aggregator_->obj_add(ATTRS_FOR_NEW_NODES);
+			}
+			LOG_E("Warmup complete.\n");
+
+			// Measure phase
+			LOG_E("Measuring for %d queries...\n", measure_n);
+			for (int i = 0; i < measure_n; ++i) {
+				t0 = get_timestamp();
+				ret = aggregator_->obj_add(ATTRS_FOR_NEW_NODES);
+				t1 = get_timestamp();
+				obj_add_res << ret << "," << t1 - t0 << "\n";
+			}
+			LOG_E("Measure complete.\n");
+		} catch (std::exception &e) {
+			LOG_E("Exception: %s\n", e.what());
+		}
+	}
+
     void benchmark_tao_mix_latency(
         const std::string& assoc_range_res_file,
         const std::string& assoc_count_res_file,
@@ -2374,54 +2461,195 @@ public:
         }
     }
 
-    void benchmark_tao_assoc_add_latency(
-        const std::string& assoc_add_res_file,
-        int max_num_new_edges = MAX_NUM_NEW_EDGES)
-    {
-        assert(max_num_new_edges <= MAX_NUM_NEW_EDGES);
+    void benchmark_tao_mix_with_updates_latency(
+		const std::string& assoc_range_res_file,
+		const std::string& assoc_count_res_file,
+		const std::string& obj_get_res_file,
+		const std::string& assoc_get_res_file,
+		const std::string& assoc_time_range_res_file,
+		const std::string& assoc_add_res_file,
+		const std::string& obj_add_res_file,
+		int warmup_n, int measure_n,
+		const std::string& warmup_assoc_range_file,
+		const std::string& assoc_range_file,
+		const std::string& warmup_assoc_count_file,
+		const std::string& assoc_count_file,
+		const std::string& warmup_obj_get_file,
+		const std::string& obj_get_file,
+		const std::string& warmup_assoc_get_file,
+		const std::string& assoc_get_file,
+		const std::string& warmup_assoc_time_range_file,
+		const std::string& assoc_time_range_file)
+	{
+		std::ofstream assoc_range_res(assoc_range_res_file);
+		std::ofstream assoc_count_res(assoc_count_res_file);
+		std::ofstream obj_get_res(obj_get_res_file);
+		std::ofstream assoc_get_res(assoc_get_res_file);
+		std::ofstream assoc_time_range_res(assoc_time_range_res_file);
+		std::ofstream assoc_add_res(assoc_add_res_file);
+		std::ofstream obj_add_res(obj_add_res_file);
 
-        std::ofstream assoc_add_res(assoc_add_res_file);
-        std::mt19937 gen(1618);
-        std::uniform_int_distribution<int64_t> dist_node(0, NUM_NODES - 1);
-        std::uniform_int_distribution<int64_t> dist_atype(0, NUM_ATYPES - 1);
+		// assoc_range
+		read_assoc_range_queries(warmup_assoc_range_file, assoc_range_file);
+		// assoc_count
+		read_neighbor_atype_queries(warmup_assoc_count_file, assoc_count_file,
+			warmup_assoc_count_nodes, assoc_count_nodes,
+			warmup_assoc_count_atypes, assoc_count_atypes);
+		// obj_get
+		read_neighbor_queries(warmup_obj_get_file, obj_get_file,
+			warmup_obj_get_nodes, obj_get_nodes);
+		// assoc_get
+		read_assoc_get_queries(warmup_assoc_get_file, assoc_get_file);
+		// assoc_time_range
+		read_assoc_time_range_queries(
+			warmup_assoc_time_range_file, assoc_time_range_file);
 
-        time_t t0, t1;
+		thread_local std::mt19937 rng(1618);
+		std::uniform_int_distribution<int> uni(0, 4);
 
-        LOG_E("Benchmarking TAO assoc_add latency\n");
-        int warmup_n = max_num_new_edges / 10;
-        int measure_n = max_num_new_edges - warmup_n;
-        int ret;
-        int64_t src, atype, dst;
+		std::uniform_int_distribution<int64_t> dist_node(0, NUM_NODES - 1);
+		std::uniform_int_distribution<int64_t> dist_atype(0, NUM_ATYPES - 1);
 
-        try {
-            LOG_E("Warming up for %d queries...\n", warmup_n);
-            for (int i = 0; i < warmup_n; ++i) {
-                src = dist_node(gen);
-                atype = dist_atype(gen);
-                dst = dist_node(gen);
-                aggregator_->assoc_add(
-                    src, atype, dst, MAX_TIME, ATTR_FOR_NEW_EDGES);
-            }
-            LOG_E("Warmup complete.\n");
+		std::vector<ThriftAssoc> result;
+		int64_t cnt;
+		std::vector<std::string> attrs;
+		int64_t src, atype, dst, obj;
 
-            // Measure phase
-            LOG_E("Measuring for %d queries...\n", measure_n);
-            for (int i = 0; i < measure_n; ++i) {
-                src = dist_node(gen);
-                atype = dist_atype(gen);
-                dst = dist_node(gen);
+		int ret;
 
-                t0 = get_timestamp();
-                ret = aggregator_->assoc_add(
-                    src, atype, dst, MAX_TIME, ATTR_FOR_NEW_EDGES);
-                t1 = get_timestamp();
-                assoc_add_res << ret << "," << t1 - t0 << "\n";
-            }
-            LOG_E("Measure complete.\n");
-        } catch (std::exception &e) {
-            LOG_E("Exception: %s\n", e.what());
-        }
-    }
+		time_t t0, t1;
+
+		LOG_E("Benchmarking TAO mixed query latency\n");
+		try {
+			LOG_E("Warming up for %d queries...\n", warmup_n);
+			for (int i = 0; i < warmup_n; ++i) {
+				int rand_query = uni(rng);
+				switch (rand_query) {
+				case 0:
+					assoc_range_f_(result,
+						mod_get(warmup_assoc_range_nodes, i),
+						mod_get(warmup_assoc_range_atypes, i),
+						mod_get(warmup_assoc_range_offs, i),
+						mod_get(warmup_assoc_range_lens, i));
+					break;
+				case 1:
+					assoc_count_f_(
+						mod_get(warmup_assoc_count_nodes, i),
+						mod_get(warmup_assoc_count_atypes, i));
+					break;
+				case 2:
+					obj_get_f_(attrs, mod_get(warmup_obj_get_nodes, i));
+					break;
+				case 3:
+					assoc_get_f_(result,
+						mod_get(warmup_assoc_get_nodes, i),
+						mod_get(warmup_assoc_get_atypes, i),
+						mod_get(warmup_assoc_get_dst_id_sets, i),
+						mod_get(warmup_assoc_get_lows, i),
+						mod_get(warmup_assoc_get_highs, i));
+					break;
+				case 4:
+					assoc_time_range_f_(result,
+						mod_get(warmup_assoc_time_range_nodes, i),
+						mod_get(warmup_assoc_time_range_atypes, i),
+						mod_get(warmup_assoc_time_range_lows, i),
+						mod_get(warmup_assoc_time_range_highs, i),
+						mod_get(warmup_assoc_time_range_limits, i));
+					break;
+				case 5:
+					src = dist_node(rng);
+					atype = dist_atype(rng);
+					dst = dist_node(rng);
+					ret = aggregator_->assoc_add(
+						src, atype, dst, MAX_TIME, ATTR_FOR_NEW_EDGES);
+					break;
+				case 6:
+					obj = aggregator_->obj_add(ATTRS_FOR_NEW_NODES);
+					break;
+				default:
+					assert(false);
+				}
+			}
+			LOG_E("Warmup complete.\n");
+
+			rng.seed(1618);
+
+			// Measure phase
+			LOG_E("Measuring for %d queries...\n", measure_n);
+			for (int i = 0; i < measure_n; ++i) {
+				int rand_query = uni(rng);
+				switch (rand_query) {
+				case 0:
+					t0 = get_timestamp();
+					assoc_range_f_(result,
+						mod_get(assoc_range_nodes, i),
+						mod_get(assoc_range_atypes, i),
+						mod_get(assoc_range_offs, i),
+						mod_get(assoc_range_lens, i));
+					t1 = get_timestamp();
+					assoc_range_res << result.size() << "," << t1 - t0 << '\n';
+					break;
+				case 1:
+					t0 = get_timestamp();
+					cnt = assoc_count_f_(
+						mod_get(assoc_count_nodes, i),
+						mod_get(assoc_count_atypes, i));
+					t1 = get_timestamp();
+					assoc_count_res << cnt << "," << t1 - t0 << "\n";
+					break;
+				case 2:
+					t0 = get_timestamp();
+					obj_get_f_(attrs, mod_get(obj_get_nodes, i));
+					t1 = get_timestamp();
+					obj_get_res << attrs.size() << "," << t1 - t0 << "\n";
+					break;
+				case 3:
+					t0 = get_timestamp();
+					assoc_get_f_(result,
+						mod_get(assoc_get_nodes, i),
+						mod_get(assoc_get_atypes, i),
+						mod_get(assoc_get_dst_id_sets, i),
+						mod_get(assoc_get_lows, i),
+						mod_get(assoc_get_highs, i));
+					t1 = get_timestamp();
+					assoc_get_res << result.size() << "," << t1 - t0 << "\n";
+					break;
+				case 4:
+					t0 = get_timestamp();
+					assoc_time_range_f_(result,
+						mod_get(assoc_time_range_nodes, i),
+						mod_get(assoc_time_range_atypes, i),
+						mod_get(assoc_time_range_lows, i),
+						mod_get(assoc_time_range_highs, i),
+						mod_get(assoc_time_range_limits, i));
+					t1 = get_timestamp();
+					assoc_time_range_res << result.size() << "," << t1 - t0
+						<< "\n";
+					break;
+				case 5:
+					src = dist_node(rng);
+					atype = dist_atype(rng);
+					dst = dist_node(rng);
+
+					t0 = get_timestamp();
+					ret = aggregator_->assoc_add(
+						src, atype, dst, MAX_TIME, ATTR_FOR_NEW_EDGES);
+					t1 = get_timestamp();
+					assoc_add_res << ret << "," << t1 - t0 << "\n";
+				case 6:
+					t0 = get_timestamp();
+					obj = aggregator_->obj_add(ATTRS_FOR_NEW_NODES);
+					t1 = get_timestamp();
+					obj_add_res << obj << "," << t1 - t0 << "\n";
+				default:
+					assert(false);
+				}
+			}
+			LOG_E("Measure complete.\n");
+		} catch (std::exception &e) {
+			LOG_E("Exception: %s\n", e.what());
+		}
+	}
 
     void benchmark_mix_throughput(
         const int num_threads,
