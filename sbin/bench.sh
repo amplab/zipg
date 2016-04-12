@@ -21,7 +21,6 @@ datasets=(
 )
 threads=( 56 )
 benches=(
-  
   benchNhbrNode # latency
   benchNhbr # latency
   benchNhbrAtype # latency
@@ -83,13 +82,21 @@ function setup() {
 }
 
 function bench_latency() {
+	
+	if [ "$dataset" = "" ]; then
+		echo "Must specify dataset."
+		exit
+	fi
+	
   client=`tail -n 1 "$SUCCINCT_CONF_DIR/servers"`
   
   # By default disable strict host key checking
   if [ "$SUCCINCT_SSH_OPTS" = "" ]; then
     SUCCINCT_SSH_OPTS="-o StrictHostKeyChecking=no -i $SUCCINCT_CONF_DIR/cqlkeypair.pem"
   fi
-
+	
+  ssh $SUCCINCT_SSH_OPTS "$client" "rm -rf /mnt2/queries"
+	scp $SUCCINCT_SSH_OPTS -r /mnt2/${dataset}Queries $client:/mnt2/queries
   ssh $SUCCINCT_SSH_OPTS "$client" "$benchType=T bash ${currDir}/../scripts/bench_func.sh $node_file_raw $edge_file_raw 0 localhost false $sa $isa $npa $dataset 2>&1"
 }
 

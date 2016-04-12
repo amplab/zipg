@@ -36,11 +36,150 @@ function bench() {
     ${BIN_DIR}/../benchmark/bin/bench -t node-latency -x ${warmup_node} \
       -y ${measure_node} -w ${QUERY_DIR}/node_warmup_${num_nodes}.txt \
       -q ${QUERY_DIR}/node_query_${num_nodes}.txt \
-      -o ${HOME_DIR}/node_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+      -o ${HOME_DIR}/latency-node-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
       -m ${masterHostName} \
       ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
   fi
 
+  if [[ -n "$benchNodeNode" ]]; then
+    ${BIN_DIR}/../benchmark/bin/bench -t node-node-latency -x ${warmup_node} \
+      -y ${measure_node} -w ${QUERY_DIR}/node_warmup_${num_nodes}.txt \
+      -q ${QUERY_DIR}/node_query_${num_nodes}.txt \
+      -o ${HOME_DIR}/latency-nodeNode-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+      -m ${masterHostName} \
+      ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
+  fi
+
+  if [[ -n "$benchNhbrNode" ]]; then
+    ${BIN_DIR}/../benchmark/bin/bench -t neighbor-node-latency -x ${warmup_neighbor_node} \
+      -y ${measure_neighbor_node} -w ${QUERY_DIR}/neighbor_node_warmup_${num_nodes}.txt \
+      -q ${QUERY_DIR}/neighbor_node_query_${num_nodes}.txt \
+      -o ${HOME_DIR}/latency-neighborNode-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+      -m ${masterHostName} \
+      ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
+  fi
+
+  if [[ -n "$benchNhbrAtype" ]]; then
+    ${BIN_DIR}/../benchmark/bin/bench -t neighbor-atype-latency -x ${warmup_neighbor_atype} \
+      -y ${measure_neighbor_atype} -w ${QUERY_DIR}/neighborAtype_warmup_${num_nodes}.txt \
+      -q ${QUERY_DIR}/neighborAtype_query_${num_nodes}.txt \
+      -o ${HOME_DIR}/latency-neighborAtype-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+      -m ${masterHostName} \
+      ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
+  fi
+
+  if [[ -n "$benchEdgeAttrs" ]]; then
+    ${BIN_DIR}/../benchmark/bin/bench -t neighbor-edge-attrs-latency -x ${warmup_edgeAttrs} \
+      -y ${measure_edgeAttrs} -w ${QUERY_DIR}/neighborAtype_warmup_${num_nodes}.txt \
+      -q ${QUERY_DIR}/neighborAtype_query_${num_nodes}.txt \
+      -o ${HOME_DIR}/latency-edgeAttrs-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+      -m ${masterHostName} \
+      ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
+  fi
+
+  if [[ -n "$benchNhbr" ]]; then
+    ${BIN_DIR}/../benchmark/bin/bench -t neighbor-latency -x ${warmup_neighbor} \
+      -y ${measure_neighbor} -w ${QUERY_DIR}/neighbor_warmup_${num_nodes}.txt \
+      -q ${QUERY_DIR}/neighbor_query_${num_nodes}.txt \
+      -o ${HOME_DIR}/latency-neighbor-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+      -m ${masterHostName} \
+      ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
+  fi
+
+  if [[ -n "$benchPrimitiveMix" ]]; then
+    ${BIN_DIR}/../benchmark/bin/bench -t mix-latency \
+      -x ${warmup_mix} -y ${measure_mix} \
+      -w ${QUERY_DIR}/neighborAtype_warmup_${num_nodes}.txt \
+      -q ${QUERY_DIR}/neighborAtype_query_${num_nodes}.txt \
+      -a ${QUERY_DIR}/neighbor_warmup_${num_nodes}.txt \
+      -b ${QUERY_DIR}/neighbor_query_${num_nodes}.txt \
+      -c ${QUERY_DIR}/neighbor_node_warmup_${num_nodes}.txt \
+      -d ${QUERY_DIR}/neighbor_node_query_${num_nodes}.txt \
+      -e ${QUERY_DIR}/node_warmup_${num_nodes}.txt \
+      -f ${QUERY_DIR}/node_query_${num_nodes}.txt \
+      -o ${HOME_DIR}/latency-mixNeighbor-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+      -h ${HOME_DIR}/latency-mixNeighborAtype-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+      -i ${HOME_DIR}/latency-mixNeighborNode-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+      -j ${HOME_DIR}/latency-mixNode-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+      -k ${HOME_DIR}/latency-mixNodeNode-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+      -m ${masterHostName} \
+      ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
+  fi
+ 
+  if [[ -n "$benchTaoAssocRange" ]]; then
+    ${BIN_DIR}/../benchmark/bin/bench -t tao-assoc-range-latency \
+      -x ${warmup_assocRange} -y ${measure_assocRange} \
+      -w ${QUERY_DIR}/assocRange_warmup.txt -q ${QUERY_DIR}/assocRange_query.txt \
+      -o ${HOME_DIR}/latency-taoAssocRange-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+      -m ${masterHostName} \
+      ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
+  fi
+
+  if [[ -n "$benchTaoAssocCount" ]]; then
+    ${BIN_DIR}/../benchmark/bin/bench -t tao-assoc-count-latency \
+      -x ${warmup_assocCount} -y ${measure_assocCount} \
+      -w ${QUERY_DIR}/assocCount_warmup.txt -q ${QUERY_DIR}/assocCount_query.txt \
+      -o ${HOME_DIR}/latency-taoAssocCount-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+      -m ${masterHostName} \
+      ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
+  fi
+
+  if [[ -n "$benchTaoObjGet" ]]; then
+    ${BIN_DIR}/../benchmark/bin/bench -t tao-obj-get-latency \
+      -x ${warmup_objGet} -y ${measure_objGet} \
+      -w ${QUERY_DIR}/objGet_warmup.txt -q ${QUERY_DIR}/objGet_query.txt \
+      -o ${HOME_DIR}/latency-taoObjGet-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+      -m ${masterHostName} \
+      ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
+  fi
+
+  if [[ -n "$benchTaoAssocGet" ]]; then
+    ${BIN_DIR}/../benchmark/bin/bench -t tao-assoc-get-latency \
+      -x ${warmup_assocGet} -y ${measure_assocGet} \
+      -w ${QUERY_DIR}/assocGet_warmup.txt -q ${QUERY_DIR}/assocGet_query.txt \
+      -o ${HOME_DIR}/latency-taoAssocGet-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+      -m ${masterHostName} \
+      ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
+  fi
+
+  if [[ -n "$benchTaoAssocTimeRange" ]]; then
+    ${BIN_DIR}/../benchmark/bin/bench -t tao-assoc-time-range-latency \
+      -x ${warmup_assocTimeRange} -y ${measure_assocTimeRange} \
+      -w ${QUERY_DIR}/assocTimeRange_warmup.txt -q ${QUERY_DIR}/assocTimeRange_query.txt \
+      -o ${HOME_DIR}/latency-taoAssocTimeRange-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+      -m ${masterHostName} \
+      ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
+  fi
+
+  if [[ -n "$benchTaoAssocAdd" ]]; then
+    ${BIN_DIR}/../benchmark/bin/bench -t tao-assoc-add-latency \
+      -o ${HOME_DIR}/latency-taoAssocAdd-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+      -m ${masterHostName} \
+      ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
+  fi
+
+  if [[ -n "$benchTaoMix" ]]; then
+    ${BIN_DIR}/../benchmark/bin/bench -t tao-mix-latency \
+      -x ${warmup_taoMix} -y ${measure_taoMix} \
+      -w ${QUERY_DIR}/assocCount_warmup.txt \
+      -q ${QUERY_DIR}/assocCount_query.txt \
+      -a ${QUERY_DIR}/assocRange_warmup.txt \
+      -b ${QUERY_DIR}/assocRange_query.txt \
+      -c ${QUERY_DIR}/objGet_warmup.txt \
+      -d ${QUERY_DIR}/objGet_query.txt \
+      -e ${QUERY_DIR}/assocGet_warmup.txt \
+      -f ${QUERY_DIR}/assocGet_query.txt \
+      -g ${QUERY_DIR}/assocTimeRange_warmup.txt \
+      -l ${QUERY_DIR}/assocTimeRange_query.txt \
+      -o ${HOME_DIR}/latency-taoMixAssocRange-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+      -h ${HOME_DIR}/latency-taoMixAssocCount-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+      -i ${HOME_DIR}/latency-taoMixObjGet-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+      -j ${HOME_DIR}/latency-taoMixAssocGet-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+      -k ${HOME_DIR}/latency-taoMixAssocTimeRange-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
+      -m ${masterHostName} \
+      ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
+  fi
+	
   if [[ -n "$benchNodeThput" ]]; then
     ${BIN_DIR}/../benchmark/bin/bench -t node-throughput -x ${warmup_node} \
       -p ${throughput_threads} \
@@ -54,15 +193,6 @@ function bench() {
     echo $throughput_threads clients, $x aggregated queries/sec >> ${o}
     mv ${o} \
       throughput_get_nodes-npa${npa}sa${sa}isa${isa}-${throughput_threads}clients.txt
-  fi
-
-  if [[ -n "$benchNodeNode" ]]; then
-    ${BIN_DIR}/../benchmark/bin/bench -t node-node-latency -x ${warmup_node} \
-      -y ${measure_node} -w ${QUERY_DIR}/node_warmup_${num_nodes}.txt \
-      -q ${QUERY_DIR}/node_query_${num_nodes}.txt \
-      -o ${HOME_DIR}/double_node_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
-      -m ${masterHostName} \
-      ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
   fi
 
   if [[ -n "$benchNodeNodeThput" ]]; then
@@ -81,15 +211,6 @@ function bench() {
       throughput_get_nodes2-npa${npa}sa${sa}isa${isa}-${throughput_threads}clients.txt
   fi
 
-  if [[ -n "$benchNhbrNode" ]]; then
-    ${BIN_DIR}/../benchmark/bin/bench -t neighbor-node-latency -x ${warmup_neighbor_node} \
-      -y ${measure_neighbor_node} -w ${QUERY_DIR}/neighbor_node_warmup_${num_nodes}.txt \
-      -q ${QUERY_DIR}/neighbor_node_query_${num_nodes}.txt \
-      -o ${HOME_DIR}/neighbor_node_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
-      -m ${masterHostName} \
-      ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
-  fi
-
   if [[ -n "$benchNhbrNodeThput" ]]; then
     ${BIN_DIR}/../benchmark/bin/bench -t neighbor-node-throughput -x ${warmup_neighbor_node} \
       -p ${throughput_threads} \
@@ -104,15 +225,6 @@ function bench() {
     echo $throughput_threads clients, $x aggregated queries/sec >> ${o}
     mv ${o} \
       throughput_get_nhbrsNode-npa${npa}sa${sa}isa${isa}-${throughput_threads}clients.txt
-  fi
-
-  if [[ -n "$benchNhbrAtype" ]]; then
-    ${BIN_DIR}/../benchmark/bin/bench -t neighbor-atype-latency -x ${warmup_neighbor_atype} \
-      -y ${measure_neighbor_atype} -w ${QUERY_DIR}/neighborAtype_warmup_${num_nodes}.txt \
-      -q ${QUERY_DIR}/neighborAtype_query_${num_nodes}.txt \
-      -o ${HOME_DIR}/neighborAtype_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
-      -m ${masterHostName} \
-      ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
   fi
 
   if [[ -n "$benchNhbrAtypeThput" ]]; then
@@ -131,15 +243,6 @@ function bench() {
       throughput_get_nhbrsAtype-npa${npa}sa${sa}isa${isa}-${throughput_threads}clients.txt
   fi
 
-  if [[ -n "$benchEdgeAttrs" ]]; then
-    ${BIN_DIR}/../benchmark/bin/bench -t neighbor-edge-attrs-latency -x ${warmup_edgeAttrs} \
-      -y ${measure_edgeAttrs} -w ${QUERY_DIR}/neighborAtype_warmup_${num_nodes}.txt \
-      -q ${QUERY_DIR}/neighborAtype_query_${num_nodes}.txt \
-      -o ${HOME_DIR}/edgeAttrs_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
-      -m ${masterHostName} \
-      ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
-  fi
-
   if [[ -n "$benchEdgeAttrsThput" ]]; then
     ${BIN_DIR}/../benchmark/bin/bench -t edge-attrs-throughput -x ${warmup_edgeAttrs} \
       -p ${throughput_threads} \
@@ -155,15 +258,6 @@ function bench() {
       throughput_getEdgeAttrs-npa${npa}sa${sa}isa${isa}-${throughput_threads}clients.txt
   fi
 
-  if [[ -n "$benchNhbr" ]]; then
-    ${BIN_DIR}/../benchmark/bin/bench -t neighbor-latency -x ${warmup_neighbor} \
-      -y ${measure_neighbor} -w ${QUERY_DIR}/neighbor_warmup_${num_nodes}.txt \
-      -q ${QUERY_DIR}/neighbor_query_${num_nodes}.txt \
-      -o ${HOME_DIR}/neighbor_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
-      -m ${masterHostName} \
-      ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
-  fi
-
   if [[ -n "$benchNhbrThput" ]]; then
     ${BIN_DIR}/../benchmark/bin/bench -t neighbor-throughput \
       -p ${throughput_threads} \
@@ -177,26 +271,6 @@ function bench() {
     x=$(cut -d' ' -f1 ${o} | awk '{sum += $1} END {print sum}')
     echo $throughput_threads clients, $x aggregated queries/sec >> ${o}
     mv ${o} throughput_get_nhbrs-npa${npa}sa${sa}isa${isa}-${throughput_threads}clients.txt
-  fi
-
-  if [[ -n "$benchPrimitiveMix" ]]; then
-    ${BIN_DIR}/../benchmark/bin/bench -t mix-latency \
-      -x ${warmup_mix} -y ${measure_mix} \
-      -w ${QUERY_DIR}/neighborAtype_warmup_${num_nodes}.txt \
-      -q ${QUERY_DIR}/neighborAtype_query_${num_nodes}.txt \
-      -a ${QUERY_DIR}/neighbor_warmup_${num_nodes}.txt \
-      -b ${QUERY_DIR}/neighbor_query_${num_nodes}.txt \
-      -c ${QUERY_DIR}/neighbor_node_warmup_${num_nodes}.txt \
-      -d ${QUERY_DIR}/neighbor_node_query_${num_nodes}.txt \
-      -e ${QUERY_DIR}/node_warmup_${num_nodes}.txt \
-      -f ${QUERY_DIR}/node_query_${num_nodes}.txt \
-      -o ${HOME_DIR}/mix_neighbor_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
-      -h ${HOME_DIR}/mix_neighborAtype_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
-      -i ${HOME_DIR}/mix_neighbor_node_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
-      -j ${HOME_DIR}/mix_node_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
-      -k ${HOME_DIR}/mix_double_node_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
-      -m ${masterHostName} \
-      ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
   fi
 
   if [[ -n "$benchPrimitiveMixThput" ]]; then
@@ -223,80 +297,6 @@ function bench() {
     x=$(cut -d' ' -f1 ${o} | awk '{sum += $1} END {print sum}')
     echo $throughput_threads clients, $x aggregated queries/sec >> ${o}
     mv ${o} throughput_mix-npa${npa}sa${sa}isa${isa}-${throughput_threads}clients.txt
-  fi
- 
-  if [[ -n "$benchTaoAssocRange" ]]; then
-    ${BIN_DIR}/../benchmark/bin/bench -t tao-assoc-range-latency \
-      -x ${warmup_assocRange} -y ${measure_assocRange} \
-      -w ${QUERY_DIR}/assocRange_warmup.txt -q ${QUERY_DIR}/assocRange_query.txt \
-      -o ${HOME_DIR}/assocRange_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
-      -m ${masterHostName} \
-      ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
-  fi
-
-  if [[ -n "$benchTaoAssocCount" ]]; then
-    ${BIN_DIR}/../benchmark/bin/bench -t tao-assoc-count-latency \
-      -x ${warmup_assocCount} -y ${measure_assocCount} \
-      -w ${QUERY_DIR}/assocCount_warmup.txt -q ${QUERY_DIR}/assocCount_query.txt \
-      -o ${HOME_DIR}/assocCount_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
-      -m ${masterHostName} \
-      ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
-  fi
-
-  if [[ -n "$benchTaoObjGet" ]]; then
-    ${BIN_DIR}/../benchmark/bin/bench -t tao-obj-get-latency \
-      -x ${warmup_objGet} -y ${measure_objGet} \
-      -w ${QUERY_DIR}/objGet_warmup.txt -q ${QUERY_DIR}/objGet_query.txt \
-      -o ${HOME_DIR}/objGet_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
-      -m ${masterHostName} \
-      ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
-  fi
-
-  if [[ -n "$benchTaoAssocGet" ]]; then
-    ${BIN_DIR}/../benchmark/bin/bench -t tao-assoc-get-latency \
-      -x ${warmup_assocGet} -y ${measure_assocGet} \
-      -w ${QUERY_DIR}/assocGet_warmup.txt -q ${QUERY_DIR}/assocGet_query.txt \
-      -o ${HOME_DIR}/assocGet_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
-      -m ${masterHostName} \
-      ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
-  fi
-
-  if [[ -n "$benchTaoAssocTimeRange" ]]; then
-    ${BIN_DIR}/../benchmark/bin/bench -t tao-assoc-time-range-latency \
-      -x ${warmup_assocTimeRange} -y ${measure_assocTimeRange} \
-      -w ${QUERY_DIR}/assocTimeRange_warmup.txt -q ${QUERY_DIR}/assocTimeRange_query.txt \
-      -o ${HOME_DIR}/assocTimeRange_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
-      -m ${masterHostName} \
-      ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
-  fi
-
-  if [[ -n "$benchTaoAssocAdd" ]]; then
-    ${BIN_DIR}/../benchmark/bin/bench -t tao-assoc-add-latency \
-      -o ${HOME_DIR}/assocAdd_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
-      -m ${masterHostName} \
-      ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
-  fi
-
-  if [[ -n "$benchTaoMix" ]]; then
-    ${BIN_DIR}/../benchmark/bin/bench -t tao-mix-latency \
-      -x ${warmup_taoMix} -y ${measure_taoMix} \
-      -w ${QUERY_DIR}/assocCount_warmup.txt \
-      -q ${QUERY_DIR}/assocCount_query.txt \
-      -a ${QUERY_DIR}/assocRange_warmup.txt \
-      -b ${QUERY_DIR}/assocRange_query.txt \
-      -c ${QUERY_DIR}/objGet_warmup.txt \
-      -d ${QUERY_DIR}/objGet_query.txt \
-      -e ${QUERY_DIR}/assocGet_warmup.txt \
-      -f ${QUERY_DIR}/assocGet_query.txt \
-      -g ${QUERY_DIR}/assocTimeRange_warmup.txt \
-      -l ${QUERY_DIR}/assocTimeRange_query.txt \
-      -o ${HOME_DIR}/mix_assocRange_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
-      -h ${HOME_DIR}/mix_assocCount_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
-      -i ${HOME_DIR}/mix_objGet_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
-      -j ${HOME_DIR}/mix_assocGet_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
-      -k ${HOME_DIR}/mix_assocTimeRange_latency-npa${npa}sa${sa}isa${isa}${dataset}-${TOTAL_NUM_SHARDS}shards.txt \
-      -m ${masterHostName} \
-      ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
   fi
   
   if [[ -n "$benchTaoMixThput" ]]; then
