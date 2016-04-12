@@ -62,13 +62,20 @@ private:
         NHBR_NODE = 2,
         NODE = 3, // deprecated
         NODE2 = 4,
-        MIX = 5,
-        TAO_MIX = 6,
-        EDGE_ATTRS = 7,
-        TAO_MIX_WITH_UPDATES = 8
+		EDGE_ATTRS = 5,
+        MIX = 6,
+		TAO_ASSOC_RANGE = 7,
+		TAO_ASSOC_COUNT = 8,
+		TAO_OBJ_GET = 9,
+		TAO_ASSOC_GET = 10,
+		TAO_ASSOC_TIME_RANGE = 11,
+		TAO_ASSOC_ADD = 12,
+		TAO_OBJ_ADD = 13,
+        TAO_MIX = 14,
+        TAO_MIX_WITH_UPDATES = 15
     } BenchType;
 
-    // Read workload distribution; from ATC 13 Bronson et al.
+    // Read/Write workload distribution; from ATC 13 Bronson et al.
     constexpr static double ASSOC_RANGE_PERC = 0.409;
     constexpr static double OBJ_GET_PERC = 0.289;
     constexpr static double ASSOC_GET_PERC = 0.157;
@@ -206,6 +213,27 @@ private:
                     this, thread_data)));
             }
             break;
+        case TAO_ASSOC_RANGE:
+        	LOG_E("Starting assocRange thput\n");
+        	break;
+        case TAO_ASSOC_COUNT:
+        	LOG_E("Starting assocCount thput\n");
+        	break;
+        case TAO_OBJ_GET:
+        	LOG_E("Starting objGet thput\n");
+        	break;
+        case TAO_ASSOC_GET:
+        	LOG_E("Starting assocGet thput\n");
+        	break;
+        case TAO_ASSOC_TIME_RANGE:
+        	LOG_E("Starting assocTimeRange thput\n");
+        	break;
+        case TAO_ASSOC_ADD:
+        	LOG_E("Starting assocAdd thput\n");
+        	break;
+        case TAO_OBJ_ADD:
+        	LOG_E("Starting objAdd thput\n");
+        	break;
         case TAO_MIX:
             LOG_E("Starting taoMix thput\n");
             for (auto thread_data : thread_datas) {
@@ -1363,25 +1391,281 @@ public:
         bench_throughput(num_threads, master_hostname, BenchType::NHBR);
     }
 
+    std::pair<double, double> benchmark_tao_assoc_range_throughput_helper(
+		shared_ptr<benchmark_thread_data_t> thread_data)
+	{
+    	double query_thput = 0;
+		double edges_thput = 0;
+		COND_LOG_E("About to start querying on this thread...\n");
 
-    typedef struct {
-        int64_t src, atype;
-        int32_t off, len;
-    } AssocRangeQuery;
+		int query_idx;
 
-    typedef struct {
-        int64_t src, atype, tLow, tHigh;
-        std::set<int64_t> dstIdSet;
-    } AssocGetQuery;
+		thread_local std::random_device rd;
+		thread_local std::mt19937 gen(rd());
 
-    typedef struct {
-        int64_t src, atype, tLow, tHigh;
-        int32_t limit;
-    } AssocTimeRangeQuery;
+		std::uniform_int_distribution<int> warmup_assoc_range_size(
+			0, warmup_assoc_range_nodes.size() - 1);
 
-    typedef struct {
-        int64_t src, atype;
-    } AssocCountQuery;
+		std::uniform_int_distribution<int> assoc_range_size(
+			0, assoc_range_nodes.size() - 1);
+
+		COND_LOG_E("warmup assoc range: %lld, query %lld\n",
+			warmup_assoc_range_nodes.size(), assoc_range_nodes.size());
+
+		std::uniform_real_distribution<double> query_dis(0, 1);
+
+		std::vector<ThriftAssoc> result;
+
+		int64_t i = 0;
+		// Warmup phase
+		time_t start = get_timestamp();
+		while (get_timestamp() - start < WARMUP_MICROSECS) {
+
+			COND_LOG_E("warmup query %d\n", i);
+
+			query_idx = warmup_assoc_range_size(gen);
+
+			COND_LOG_E("assoc range, query idx %d (%d %d %d %d)\n",
+				query_idx,
+				warmup_assoc_range_nodes.size(),
+				warmup_assoc_range_atypes.size(),
+				warmup_assoc_range_offs.size(),
+				warmup_assoc_range_lens.size());
+
+			thread_data->client->assoc_range(result,
+				this->warmup_assoc_range_nodes.at(query_idx),
+				this->warmup_assoc_range_atypes.at(query_idx),
+				this->warmup_assoc_range_offs.at(query_idx),
+				this->warmup_assoc_range_lens.at(query_idx));
+
+			++i;
+		}
+
+		LOG_E("Warmup done: served %" PRId64 " queries\n", i);
+
+		// Measure phase
+		i = 0;
+		int64_t edges = 0;
+		start = get_timestamp();
+		while (get_timestamp() - start < MEASURE_MICROSECS) {
+			query_idx = assoc_range_size(gen);
+			thread_data->client->assoc_range(result,
+				this->assoc_range_nodes.at(query_idx),
+				this->assoc_range_atypes.at(query_idx),
+				this->assoc_range_offs.at(query_idx),
+				this->assoc_range_lens.at(query_idx));
+
+			edges += result.size();
+			++i;
+		}
+
+		time_t end = get_timestamp();
+		double total_secs = (end - start) * 1. / 1e6;
+		query_thput = i * 1. / total_secs;
+		edges_thput = edges * 1. / total_secs;
+
+		LOG_E("Measure done: served %" PRId64 " queries\n", i);
+
+		std::ofstream ofs("throughput_tao_assoc_range.txt",
+			std::ofstream::out | std::ofstream::app);
+		ofs << query_thput << " " << edges_thput << std::endl;
+		ofs.close();
+
+		// Cooldown
+		i = 0;
+		time_t cooldown_start = get_timestamp();
+		while (get_timestamp() - cooldown_start < COOLDOWN_MICROSECS) {
+			query_idx = assoc_range_size(gen);
+			thread_data->client->assoc_range(result,
+				this->assoc_range_nodes.at(query_idx),
+				this->assoc_range_atypes.at(query_idx),
+				this->assoc_range_offs.at(query_idx),
+				this->assoc_range_lens.at(query_idx));
+
+            ++i;
+		}
+
+		LOG_E("Cooldown done: served %" PRId64 " queries\n", i);
+		return std::make_pair(query_thput, edges_thput);
+	}
+
+    std::pair<double, double> benchmark_tao_obj_get_throughput_helper(
+		shared_ptr<benchmark_thread_data_t> thread_data)
+	{
+		double query_thput = 0;
+		double edges_thput = 0;
+		COND_LOG_E("About to start querying on this thread...\n");
+
+		int query_idx;
+
+		thread_local std::random_device rd;
+		thread_local std::mt19937 gen(rd());
+
+		std::uniform_int_distribution<int> warmup_obj_get_size(
+			0, warmup_obj_get_nodes.size() - 1);
+
+		std::uniform_int_distribution<int> obj_get_size(
+			0, obj_get_nodes.size() - 1);
+
+		COND_LOG_E("warmup assoc range: %lld, query %lld\n",
+			warmup_assoc_range_nodes.size(), assoc_range_nodes.size());
+
+		std::uniform_real_distribution<double> query_dis(0, 1);
+
+		std::vector<std::string> attrs;
+
+		int64_t i = 0;
+		// Warmup phase
+		time_t start = get_timestamp();
+		while (get_timestamp() - start < WARMUP_MICROSECS) {
+
+			query_idx = warmup_obj_get_size(gen);
+			COND_LOG_E("obj_get, query idx %d (%d)\n",
+				query_idx, warmup_obj_get_nodes.size());
+			thread_data->client->obj_get(attrs,
+				this->warmup_obj_get_nodes.at(query_idx));
+
+			++i;
+		}
+
+		LOG_E("Warmup done: served %" PRId64 " queries\n", i);
+
+		// Measure phase
+		i = 0;
+		int64_t edges = 0;
+		start = get_timestamp();
+		while (get_timestamp() - start < MEASURE_MICROSECS) {
+			query_idx = obj_get_size(gen);
+			thread_data->client->obj_get(attrs,
+				this->obj_get_nodes.at(query_idx));
+			++i;
+		}
+
+		time_t end = get_timestamp();
+		double total_secs = (end - start) * 1. / 1e6;
+		query_thput = i * 1. / total_secs;
+		edges_thput = edges * 1. / total_secs;
+
+		LOG_E("Measure done: served %" PRId64 " queries\n", i);
+
+		std::ofstream ofs("throughput_tao_obj_get.txt",
+			std::ofstream::out | std::ofstream::app);
+		ofs << query_thput << " " << edges_thput << std::endl;
+		ofs.close();
+
+		// Cooldown
+		i = 0;
+		time_t cooldown_start = get_timestamp();
+		while (get_timestamp() - cooldown_start < COOLDOWN_MICROSECS) {
+			query_idx = obj_get_size(gen);
+			thread_data->client->obj_get(attrs,
+				this->obj_get_nodes.at(query_idx));
+
+			++i;
+		}
+
+		LOG_E("Cooldown done: served %" PRId64 " queries\n", i);
+		return std::make_pair(query_thput, edges_thput);
+	}
+
+    std::pair<double, double> benchmark_tao_assoc_get_throughput_helper(
+		shared_ptr<benchmark_thread_data_t> thread_data)
+	{
+		double query_thput = 0;
+		double edges_thput = 0;
+		COND_LOG_E("About to start querying on this thread...\n");
+
+		int query_idx;
+
+		thread_local std::random_device rd;
+		thread_local std::mt19937 gen(rd());
+
+		std::uniform_int_distribution<int> warmup_assoc_get_size(
+			0, warmup_assoc_get_nodes.size() - 1);
+
+		std::uniform_int_distribution<int> assoc_range_size(
+			0, assoc_range_nodes.size() - 1);
+
+		std::uniform_int_distribution<int> assoc_get_size(
+			0, assoc_get_nodes.size() - 1);
+
+		std::uniform_real_distribution<double> query_dis(0, 1);
+
+		std::vector<ThriftAssoc> result;
+
+		int64_t i = 0;
+		// Warmup phase
+		time_t start = get_timestamp();
+		while (get_timestamp() - start < WARMUP_MICROSECS) {
+
+			query_idx = warmup_assoc_get_size(gen);
+			COND_LOG_E("assoc_get, query idx %d (%d %d %d %d %d)\n",
+				query_idx,
+				this->warmup_assoc_get_nodes.size(),
+				this->warmup_assoc_get_lows.size(),
+				this->warmup_assoc_get_dst_id_sets.size(),
+				this->warmup_assoc_get_lows.size(),
+				this->warmup_assoc_get_highs.size());
+
+			thread_data->client->assoc_get(result,
+				this->warmup_assoc_get_nodes.at(query_idx),
+				this->warmup_assoc_get_atypes.at(query_idx),
+				this->warmup_assoc_get_dst_id_sets.at(query_idx),
+				this->warmup_assoc_get_lows.at(query_idx),
+				this->warmup_assoc_get_highs.at(query_idx));
+
+			++i;
+		}
+
+		LOG_E("Warmup done: served %" PRId64 " queries\n", i);
+
+		// Measure phase
+		i = 0;
+		int64_t edges = 0;
+		start = get_timestamp();
+		while (get_timestamp() - start < MEASURE_MICROSECS) {
+			query_idx = assoc_get_size(gen);
+			thread_data->client->assoc_get(result,
+				this->assoc_get_nodes.at(query_idx),
+				this->assoc_get_atypes.at(query_idx),
+				this->assoc_get_dst_id_sets.at(query_idx),
+				this->assoc_get_lows.at(query_idx),
+				this->assoc_get_highs.at(query_idx));
+
+			edges += result.size();
+			++i;
+		}
+
+		time_t end = get_timestamp();
+		double total_secs = (end - start) * 1. / 1e6;
+		query_thput = i * 1. / total_secs;
+		edges_thput = edges * 1. / total_secs;
+
+		LOG_E("Measure done: served %" PRId64 " queries\n", i);
+
+		std::ofstream ofs("throughput_tao_assoc_get.txt",
+			std::ofstream::out | std::ofstream::app);
+		ofs << query_thput << " " << edges_thput << std::endl;
+		ofs.close();
+
+		// Cooldown
+		i = 0;
+		time_t cooldown_start = get_timestamp();
+		while (get_timestamp() - cooldown_start < COOLDOWN_MICROSECS) {
+			query_idx = assoc_get_size(gen);
+			thread_data->client->assoc_get(result,
+				this->assoc_get_nodes.at(query_idx),
+				this->assoc_get_atypes.at(query_idx),
+				this->assoc_get_dst_id_sets.at(query_idx),
+				this->assoc_get_lows.at(query_idx),
+				this->assoc_get_highs.at(query_idx));
+
+			++i;
+		}
+
+		LOG_E("Cooldown done: served %" PRId64 " queries\n", i);
+		return std::make_pair(query_thput, edges_thput);
+	}
 
     std::pair<double, double> benchmark_tao_mix_throughput_helper(
         shared_ptr<benchmark_thread_data_t> thread_data)
@@ -2221,6 +2505,55 @@ public:
         LOG_E("Measure complete.\n");
     }
 
+    void benchmark_neighbor_node_throughput(
+		const int num_threads,
+		const std::string& master_hostname,
+		std::string warmup_query_file,
+		std::string query_file)
+	{
+		read_neighbor_node_queries(warmup_query_file, query_file);
+		bench_throughput(num_threads, master_hostname, BenchType::NHBR_NODE);
+	}
+
+    void benchmark_neighbor_node_latency(
+		std::string res_path,
+		uint64_t WARMUP_N,
+		uint64_t MEASURE_N,
+		std::string warmup_query_file,
+		std::string query_file)
+	{
+		read_neighbor_node_queries(warmup_query_file, query_file);
+		time_t t0, t1;
+		std::ofstream res_stream(res_path);
+
+		LOG_E("Benchmarking getNeighborOfNode latency\n");
+
+		// Warmup
+		LOG_E("Warming up for %" PRIu64 " queries...\n", WARMUP_N);
+		std::vector<int64_t> result;
+		for(uint64_t i = 0; i < WARMUP_N; ++i) {
+			get_neighbors_attr_f_(result,
+				mod_get(warmup_nhbrNode_indices, i),
+				mod_get(warmup_nhbrNode_attr_ids, i),
+				mod_get(warmup_nhbrNode_attrs, i));
+		}
+		LOG_E("Warmup complete.\n");
+
+		// Measure
+		LOG_E("Measuring for %" PRIu64 " queries...\n", MEASURE_N);
+		for (uint64_t i = 0; i < MEASURE_N; ++i) {
+			t0 = get_timestamp();
+			get_neighbors_attr_f_(result,
+				mod_get(nhbrNode_indices, i),
+				mod_get(nhbrNode_attr_ids, i),
+				mod_get(nhbrNode_attrs, i));
+			t1 = get_timestamp();
+			res_stream << result.size() << "," << t1 - t0 << "\n";
+		}
+
+		LOG_E("Measure complete.\n");
+	}
+
     void benchmark_tao_assoc_add_latency(
 		const std::string& assoc_add_res_file,
 		int max_num_new_edges = MAX_NUM_NEW_EDGES)
@@ -2347,7 +2680,7 @@ public:
             warmup_assoc_time_range_file, assoc_time_range_file);
 
         thread_local std::mt19937 rng(1618);
-        std::uniform_int_distribution<int> uni(0, 4);
+        std::uniform_real_distribution<double> query_dis(0, 1);
 
         std::vector<ThriftAssoc> result;
         int64_t cnt;
@@ -2358,7 +2691,7 @@ public:
         try {
             LOG_E("Warming up for %d queries...\n", warmup_n);
             for (int i = 0; i < warmup_n; ++i) {
-                int rand_query = uni(rng);
+                int rand_query = choose_query(query_dis(rng));
                 switch (rand_query) {
                 case 0:
                     assoc_range_f_(result,
@@ -2402,7 +2735,7 @@ public:
             // Measure phase
             LOG_E("Measuring for %d queries...\n", measure_n);
             for (int i = 0; i < measure_n; ++i) {
-                int rand_query = uni(rng);
+                int rand_query = choose_query(query_dis(rng));
                 switch (rand_query) {
                 case 0:
                     t0 = get_timestamp();
@@ -2505,7 +2838,7 @@ public:
 			warmup_assoc_time_range_file, assoc_time_range_file);
 
 		thread_local std::mt19937 rng(1618);
-		std::uniform_int_distribution<int> uni(0, 4);
+		std::uniform_real_distribution<double> query_dis(0, 1);
 
 		std::uniform_int_distribution<int64_t> dist_node(0, NUM_NODES - 1);
 		std::uniform_int_distribution<int64_t> dist_atype(0, NUM_ATYPES - 1);
@@ -2523,7 +2856,7 @@ public:
 		try {
 			LOG_E("Warming up for %d queries...\n", warmup_n);
 			for (int i = 0; i < warmup_n; ++i) {
-				int rand_query = uni(rng);
+				int rand_query = choose_query_with_updates(query_dis(rng), query_dis(rng));
 				switch (rand_query) {
 				case 0:
 					assoc_range_f_(result,
@@ -2577,7 +2910,7 @@ public:
 			// Measure phase
 			LOG_E("Measuring for %d queries...\n", measure_n);
 			for (int i = 0; i < measure_n; ++i) {
-				int rand_query = uni(rng);
+				int rand_query = choose_query_with_updates(query_dis(rng), query_dis(rng));
 				switch (rand_query) {
 				case 0:
 					t0 = get_timestamp();
@@ -2815,70 +3148,7 @@ public:
         }
     }
 
-    void benchmark_neighbor_node_throughput(
-        const int num_threads,
-        const std::string& master_hostname,
-        std::string warmup_query_file,
-        std::string query_file)
-    {
-        read_neighbor_node_queries(warmup_query_file, query_file);
-        bench_throughput(num_threads, master_hostname, BenchType::NHBR_NODE);
-    }
-
-    void benchmark_neighbor_node_latency(
-        std::string res_path,
-        uint64_t WARMUP_N,
-        uint64_t MEASURE_N,
-        std::string warmup_query_file,
-        std::string query_file)
-    {
-        read_neighbor_node_queries(warmup_query_file, query_file);
-        time_t t0, t1;
-        std::ofstream res_stream(res_path);
-
-#ifdef BENCH_PRINT_RESULTS
-        std::ofstream query_res_stream(res_path + ".succinct_result");
-#endif
-
-        LOG_E("Benchmarking getNeighborOfNode latency\n");
-
-        // Warmup
-        LOG_E("Warming up for %" PRIu64 " queries...\n", WARMUP_N);
-        std::vector<int64_t> result;
-        for(uint64_t i = 0; i < WARMUP_N; ++i) {
-            get_neighbors_attr_f_(result,
-                mod_get(warmup_nhbrNode_indices, i),
-                mod_get(warmup_nhbrNode_attr_ids, i),
-                mod_get(warmup_nhbrNode_attrs, i));
-        }
-        LOG_E("Warmup complete.\n");
-
-        // Measure
-        LOG_E("Measuring for %" PRIu64 " queries...\n", MEASURE_N);
-        for (uint64_t i = 0; i < MEASURE_N; ++i) {
-            t0 = get_timestamp();
-            get_neighbors_attr_f_(result,
-                mod_get(nhbrNode_indices, i),
-                mod_get(nhbrNode_attr_ids, i),
-                mod_get(nhbrNode_attrs, i));
-            t1 = get_timestamp();
-            res_stream << result.size() << "," << t1 - t0 << "\n";
-
-#ifdef BENCH_PRINT_RESULTS
-            // correctness
-            query_res_stream << "id " << mod_get(nhbrNode_indices, i)
-                << " attr " << mod_get(nhbrNode_attr_ids, i);
-            query_res_stream << " query " << mod_get(nhbrNode_attrs, i) << "\n";
-            std::sort(result.begin(), result.end());
-            for (auto it = result.begin(); it != result.end(); ++it)
-                query_res_stream << *it << " ";
-            query_res_stream << "\n";
-#endif
-        }
-
-        LOG_E("Measure complete.\n");
-    }
-
+    // TAO Queries
     void benchmark_assoc_range_latency(
         std::string res_path,
         uint64_t warmup_n,
