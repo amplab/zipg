@@ -92,8 +92,8 @@ measure_node=6000000
 neo4j_warmup_node=1000000
 neo4j_measure_node=6000000
 
-warmup_neighbor_node=1000000
-measure_neighbor_node=6000000
+warmup_neighbor_node=100000
+measure_neighbor_node=600000
 
 neo4j_warmup_neighbor_node=1000000
 neo4j_measure_neighbor_node=6000000
