@@ -80,55 +80,55 @@ npa_sampling_rate=256
 # benchmark configs
 JVM_HEAP=16g
 
-warmup_neighbor=20000
-measure_neighbor=100000
+warmup_neighbor=200000
+measure_neighbor=1000000
 
 neo4j_warmup_neighbor=1000000
 neo4j_measure_neighbor=6000000
 
-warmup_node=20000
-measure_node=100000
+warmup_node=200000
+measure_node=1000000
 
 neo4j_warmup_node=1000000
 neo4j_measure_node=6000000
 
-warmup_neighbor_node=20000
-measure_neighbor_node=100000
+warmup_neighbor_node=200000
+measure_neighbor_node=1000000
 
 neo4j_warmup_neighbor_node=1000000
 neo4j_measure_neighbor_node=6000000
 
 # * 2 normal isolated, due to reuse w/ getEdgeAttrs
-warmup_neighbor_atype=20000
-measure_neighbor_atype=100000
+warmup_neighbor_atype=200000
+measure_neighbor_atype=1000000
 
 neo4j_warmup_neighbor_atype=20000
 neo4j_measure_neighbor_atype=100000
 
-warmup_edgeAttrs=20000
-measure_edgeAttrs=100000
+warmup_edgeAttrs=200000
+measure_edgeAttrs=1000000
 
-warmup_mix=100000
-measure_mix=500000
+warmup_mix=1000000
+measure_mix=5000000
 
 neo4j_warmup_mix=4000000
 neo4j_measure_mix=20000000
 
 ## TAO queries
-warmup_assocRange=20000
-measure_assocRange=100000
+warmup_assocRange=200000
+measure_assocRange=1000000
 
-warmup_objGet=20000
-measure_objGet=100000
+warmup_objGet=200000
+measure_objGet=1000000
 
-warmup_assocGet=20000
-measure_assocGet=100000
+warmup_assocGet=200000
+measure_assocGet=1000000
 
-warmup_assocCount=20000
-measure_assocCount=100000
+warmup_assocCount=200000
+measure_assocCount=1000000
 
-warmup_assocTimeRange=20000
-measure_assocTimeRange=100000
+warmup_assocTimeRange=200000
+measure_assocTimeRange=1000000
 
-warmup_taoMix=100000
-measure_taoMix=500000
+warmup_taoMix=1000000
+measure_taoMix=5000000
