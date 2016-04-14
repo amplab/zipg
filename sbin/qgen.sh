@@ -75,6 +75,6 @@ for dataset in "${datasets[@]}"; do
 	setup
   for query in "${queries[@]}"; do
 		echo "Generating queries for ($query, $dataset) in $query_dir, with $numNode nodes."
-		bash $sbin/hosts.sh "$query=T bash $script_dir/create_queries.sh $query_dir $num_nodes $warmup_n $measure_n $node_file_raw $edge_file_raw 2>&1 >qgen.log"
+		bash $sbin/hosts.sh $query=T bash $script_dir/create_queries.sh $query_dir $num_nodes $warmup_n $measure_n $node_file_raw $edge_file_raw
 	done
 done
