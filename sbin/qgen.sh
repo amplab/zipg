@@ -7,6 +7,8 @@ sbin="`cd "$sbin"; pwd`"
 . "$sbin/succinct-config.sh"
 . "$sbin/load-succinct-env.sh"
 
+script_dir=$sbin/../scripts
+
 npa=128; sa=32; isa=64 # L0, by default
 
 if [ -f "$SUCCINCT_CONF_DIR/master" ]; then
