@@ -329,7 +329,77 @@ function bench() {
     echo $throughput_threads clients, $x aggregated queries/sec >> ${o}
     mv ${o} throughput_mix-npa${npa}sa${sa}isa${isa}-${throughput_threads}clients.txt
   fi
-  
+
+  if [[ -n "$benchTaoAssocRangeThput" ]]; then
+    ${BIN_DIR}/../benchmark/bin/bench -t tao-assoc-range-throughput \
+      -p ${throughput_threads} \
+      -w ${QUERY_DIR}/assocRange_warmup.txt \
+      -q ${QUERY_DIR}/assocRange_query.txt \
+      -m ${masterHostName} \
+      ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
+
+    x=$(cut -d' ' -f1 throughput_tao_assoc_range.txt | awk '{sum += $1} END {print sum}')
+    echo $throughput_threads clients, $x aggregated queries/sec >> throughput_tao_assoc_range.txt
+    mv throughput_tao_assoc_range.txt \
+      throughput_tao_assoc_range-npa${npa}sa${sa}isa${isa}-${throughput_threads}clients.txt
+  fi
+
+  if [[ -n "$benchTaoAssocGetThput" ]]; then
+    ${BIN_DIR}/../benchmark/bin/bench -t tao-assoc-get-throughput \
+      -p ${throughput_threads} \
+      -w ${QUERY_DIR}/assocGet_warmup.txt \
+      -q ${QUERY_DIR}/assocGet_query.txt \
+      -m ${masterHostName} \
+      ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
+
+    x=$(cut -d' ' -f1 throughput_tao_assoc_get.txt | awk '{sum += $1} END {print sum}')
+    echo $throughput_threads clients, $x aggregated queries/sec >> throughput_tao_assoc_get.txt
+    mv throughput_tao_assoc_get.txt \
+      throughput_tao_assoc_get-npa${npa}sa${sa}isa${isa}-${throughput_threads}clients.txt
+  fi
+
+  if [[ -n "$benchTaoObjGetThput" ]]; then
+    ${BIN_DIR}/../benchmark/bin/bench -t tao-obj-get-throughput \
+      -p ${throughput_threads} \
+      -w ${QUERY_DIR}/objGet_warmup.txt \
+      -q ${QUERY_DIR}/objGet_query.txt \
+      -m ${masterHostName} \
+      ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
+
+    x=$(cut -d' ' -f1 throughput_tao_obj_get.txt | awk '{sum += $1} END {print sum}')
+    echo $throughput_threads clients, $x aggregated queries/sec >> throughput_tao_obj_get.txt
+    mv throughput_tao_obj_get.txt \
+      throughput_tao_obj_get-npa${npa}sa${sa}isa${isa}-${throughput_threads}clients.txt
+  fi
+
+  if [[ -n "$benchTaoAssocCountThput" ]]; then
+    ${BIN_DIR}/../benchmark/bin/bench -t tao-assoc-count-throughput \
+      -p ${throughput_threads} \
+      -w ${QUERY_DIR}/assocCount_warmup.txt \
+      -q ${QUERY_DIR}/assocCount_query.txt \
+      -m ${masterHostName} \
+      ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
+
+    x=$(cut -d' ' -f1 throughput_tao_assoc_count.txt | awk '{sum += $1} END {print sum}')
+    echo $throughput_threads clients, $x aggregated queries/sec >> throughput_tao_assoc_count.txt
+    mv throughput_tao_assoc_count.txt \
+      throughput_tao_assoc_count-npa${npa}sa${sa}isa${isa}-${throughput_threads}clients.txt
+  fi
+
+  if [[ -n "$benchTaoAssocTimeRangeThput" ]]; then
+    ${BIN_DIR}/../benchmark/bin/bench -t tao-assoc-time-range-throughput \
+      -p ${throughput_threads} \
+      -w ${QUERY_DIR}/assocTimeRange_warmup.txt \
+      -q ${QUERY_DIR}/assocTimeRange_query.txt \
+      -m ${masterHostName} \
+      ${NODE_FILE} ${EDGE_FILE} ${SHARDED}
+
+    x=$(cut -d' ' -f1 throughput_tao_assoc_time_range.txt | awk '{sum += $1} END {print sum}')
+    echo $throughput_threads clients, $x aggregated queries/sec >> throughput_tao_assoc_time_range.txt
+    mv throughput_tao_assoc_time_range.txt \
+      throughput_tao_assoc_time_range-npa${npa}sa${sa}isa${isa}-${throughput_threads}clients.txt
+  fi
+ 
   if [[ -n "$benchTaoMixThput" ]]; then
     ${BIN_DIR}/../benchmark/bin/bench -t tao-mix-throughput \
       -p ${throughput_threads} \
