@@ -214,7 +214,9 @@ void generate_neighbor_queries_limited(
         int64_t node;
         for (int64_t i = 0; i < out_size; i++) {
             node = uni1(rng);
-            if (aggregator->assoc_count(node, rand() % 5) > DEGREE_LIMIT) {
+            auto cnt = aggregator->assoc_count(node, rand() % 5);
+            if (cnt > DEGREE_LIMIT || cnt == 0) {
+            	i--;
                 continue;
             }
             out << node << std::endl;
@@ -277,7 +279,9 @@ void generate_neighbor_atype_queries_limited(
         for (int64_t i = 0; i < out_size; i++) {
             node = uni1(rng);
             atype = uni2(rng);
-            if (aggregator->assoc_count(node, atype) > DEGREE_LIMIT) {
+            auto cnt = aggregator->assoc_count(node, atype);
+            if (cnt > DEGREE_LIMIT || cnt == 0) {
+            	i--;
                 continue;
             }
             out << node << "," << atype << std::endl;
@@ -550,7 +554,8 @@ void generate_tao_assoc_range_queries_limited(
             int64_t node_id = uni_node(rng);
             int atype = uni_atype(rng);
 
-            if (aggregator->assoc_count(node_id, atype) > DEGREE_LIMIT) {
+            auto cnt = aggregator->assoc_count(node_id, atype);
+            if (cnt > DEGREE_LIMIT || cnt == 0) {
                 continue;
             }
 
@@ -679,7 +684,8 @@ void generate_tao_time_related_queries_helper_limited(
             int64_t node_id = uni_node(my_rng);
             int atype = uni_atype(my_rng);
 
-            if (aggregator->assoc_count(node_id, atype) > DEGREE_LIMIT) {
+            auto cnt = aggregator->assoc_count(node_id, atype);
+            if (cnt > DEGREE_LIMIT || cnt == 0) {
                 continue;
             }
 
@@ -831,7 +837,8 @@ int main(int argc, char **argv) {
         int query_size = atoi(argv[4]);
         std::string warmup_file = argv[5];
         std::string query_file = argv[6];
-        generate_neighbor_queries(num_nodes,
+        // non empty
+        generate_neighbor_queries_limited(num_nodes,
             warmup_size, query_size,
             warmup_file, query_file);
 
@@ -845,8 +852,8 @@ int main(int argc, char **argv) {
         int query_size = atoi(argv[7]);
         std::string warmup_file = argv[8];
         std::string query_file = argv[9];
-
-        generate_neighbor_node_queries(
+        // non empty
+        generate_neighbor_node_queries_limited(
             num_nodes,
             node_num_attrs,
             warmup_size,
@@ -864,6 +871,7 @@ int main(int argc, char **argv) {
         int num_actual_delims = atoi(argv[7]); // not succinct's max bound
         bool is_node_file_comma_separated = true;
         if (std::strcmp(argv[8], "1")) is_node_file_comma_separated = false;
+
         generate_neighbor_node_queries_no_load(
             node_file,
             warmup_size,
@@ -882,7 +890,8 @@ int main(int argc, char **argv) {
         std::string warmup_file = argv[6];
         std::string query_file = argv[7];
 
-        generate_neighbor_atype_queries(
+        // non empty
+        generate_neighbor_atype_queries_limited(
             num_nodes,
             max_num_atype,
             warmup_size,
@@ -910,7 +919,8 @@ int main(int argc, char **argv) {
         std::string warmup_file = argv[6];
         std::string query_file = argv[7];
 
-        generate_tao_assoc_range_queries(
+        // non empty
+        generate_tao_assoc_range_queries_limited(
             num_nodes, max_num_atype, warmup_size, query_size,
             warmup_file, query_file);
 
@@ -924,7 +934,8 @@ int main(int argc, char **argv) {
         std::string warmup_file(argv[7]);
         std::string query_file(argv[8]);
 
-        generate_tao_assoc_get_queries(
+        // non empty
+        generate_tao_assoc_get_queries_limited(
             num_nodes, max_num_atype, warmup_size, query_size,
             assoc_file, warmup_file, query_file);
 
@@ -937,7 +948,8 @@ int main(int argc, char **argv) {
         std::string warmup_file(argv[6]);
         std::string query_file(argv[7]);
 
-        generate_neighbor_atype_queries(
+        // non empty
+        generate_neighbor_atype_queries_limited(
             num_nodes, max_num_atype, warmup_size, query_size,
             warmup_file, query_file);
 
@@ -951,7 +963,8 @@ int main(int argc, char **argv) {
         std::string warmup_file(argv[7]);
         std::string query_file(argv[8]);
 
-        generate_tao_assoc_time_range_queries(
+        // non empty
+        generate_tao_assoc_time_range_queries_limited(
             num_nodes, max_num_atype, warmup_size, query_size,
             assoc_file, warmup_file, query_file);
 
