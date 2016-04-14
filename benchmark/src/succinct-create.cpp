@@ -6,6 +6,7 @@
 #include <thread>
 #include <vector>
 #include <list>
+#include <limits.h>
 
 #include <thrift/protocol/TBinaryProtocol.h>
 #include <thrift/transport/TBufferTransports.h>
@@ -592,15 +593,15 @@ std::pair<int64_t, int64_t> get_min_max_timestamp(const std::string& assoc_file)
 void generate_tao_time_related_queries_helper(
     int64_t num_nodes, int max_num_atype,
     int warmup_size, int query_size,
-    const std::string& assoc_file,
+    //const std::string& assoc_file,
     const std::string& warmup_file,
     const std::string& query_file,
     bool for_assoc_get)
 {
-    auto pair = get_min_max_timestamp(assoc_file);
-    int64_t min_time = pair.first, max_time = pair.second;
-    LOG_E("Assoc scan finishes: min timestamp %lld, max timestamp %lld\n",
-        min_time, max_time);
+    // auto pair = get_min_max_timestamp(assoc_file);
+    // int64_t min_time = pair.first, max_time = pair.second;
+    // LOG_E("Assoc scan finishes: min timestamp %lld, max timestamp %lld\n",
+    //    min_time, max_time);
 
     auto aggregator = init_sharded_graph();
 
@@ -608,7 +609,7 @@ void generate_tao_time_related_queries_helper(
     std::mt19937 rng1(rd()), rng2(rd());
     std::uniform_int_distribution<int64_t> uni_node(0, num_nodes - 1);
     std::uniform_int_distribution<int> uni_atype(0, max_num_atype - 1);
-    std::uniform_int_distribution<int64_t> uni_time(min_time, max_time);
+    // std::uniform_int_distribution<int64_t> uni_time(min_time, max_time);
     std::uniform_int_distribution<int> uni_put(0, 1);
 
     auto output = [&](
@@ -628,10 +629,10 @@ void generate_tao_time_related_queries_helper(
                 }
             }
 
-            int64_t t1 = uni_time(rng);
-            int64_t t2 = uni_time(rng);
+            // int64_t t1 = uni_time(rng);
+            // int64_t t2 = uni_time(rng);
             out << node_id << "," << atype << ","
-                << std::min(t1, t2) << "," << std::max(t1, t2);
+                << 0 << "," << std::numeric_limits<int64_t>::max();
 
             if (for_assoc_get) {
                 for (int64_t dst_id : vec) {
@@ -655,15 +656,15 @@ void generate_tao_time_related_queries_helper(
 void generate_tao_time_related_queries_helper_limited(
     int64_t num_nodes, int max_num_atype,
     int warmup_size, int query_size,
-    const std::string& assoc_file,
+    // const std::string& assoc_file,
     const std::string& warmup_file,
     const std::string& query_file,
     bool for_assoc_get)
 {
-    auto pair = get_min_max_timestamp(assoc_file);
-    int64_t min_time = pair.first, max_time = pair.second;
-    LOG_E("Assoc scan finishes: min timestamp %lld, max timestamp %lld\n",
-        min_time, max_time);
+    // auto pair = get_min_max_timestamp(assoc_file);
+    // int64_t min_time = pair.first, max_time = pair.second;
+    // LOG_E("Assoc scan finishes: min timestamp %lld, max timestamp %lld\n",
+    //    min_time, max_time);
 
     auto aggregator = init_sharded_graph();
 
@@ -671,7 +672,7 @@ void generate_tao_time_related_queries_helper_limited(
     std::mt19937 rng1(rd()), rng2(rd());
     std::uniform_int_distribution<int64_t> uni_node(0, num_nodes - 1);
     std::uniform_int_distribution<int> uni_atype(0, max_num_atype - 1);
-    std::uniform_int_distribution<int64_t> uni_time(min_time, max_time);
+    // std::uniform_int_distribution<int64_t> uni_time(min_time, max_time);
     std::uniform_int_distribution<int> uni_put(0, 1);
 
     auto output = [&](
@@ -696,10 +697,10 @@ void generate_tao_time_related_queries_helper_limited(
                 }
             }
 
-            int64_t t1 = uni_time(my_rng);
-            int64_t t2 = uni_time(my_rng);
+            // int64_t t1 = uni_time(my_rng);
+            // int64_t t2 = uni_time(my_rng);
             out << node_id << "," << atype << ","
-                << std::min(t1, t2) << "," << std::max(t1, t2);
+                << 0 << "," << std::numeric_limits<int64_t>::max();
 
             if (for_assoc_get) {
                 for (int64_t dst_id : vec) {
@@ -732,23 +733,23 @@ void generate_tao_time_related_queries_helper_limited(
 void generate_tao_assoc_get_queries(
     int64_t num_nodes, int max_num_atype,
     int warmup_size, int query_size,
-    const std::string& assoc_file,
+    // const std::string& assoc_file,
     const std::string& warmup_file, const std::string& query_file)
 {
     generate_tao_time_related_queries_helper(num_nodes, max_num_atype,
-        warmup_size, query_size, assoc_file, warmup_file, query_file,
-        true);
+        warmup_size, query_size, //assoc_file,
+		warmup_file, query_file, true);
 }
 
 void generate_tao_assoc_get_queries_limited(
     int64_t num_nodes, int max_num_atype,
     int warmup_size, int query_size,
-    const std::string& assoc_file,
+    // const std::string& assoc_file,
     const std::string& warmup_file, const std::string& query_file)
 {
     generate_tao_time_related_queries_helper_limited(num_nodes, max_num_atype,
-        warmup_size, query_size, assoc_file, warmup_file, query_file,
-        true);
+        warmup_size, query_size, // assoc_file,
+		warmup_file, query_file, true);
 }
 
 // Generates time ranges similar to assoc_get().  Sets `limit` to 1000.
@@ -757,23 +758,23 @@ void generate_tao_assoc_get_queries_limited(
 void generate_tao_assoc_time_range_queries(
     int64_t num_nodes, int max_num_atype,
     int warmup_size, int query_size,
-    const std::string& assoc_file,
+    // const std::string& assoc_file,
     const std::string& warmup_file, const std::string& query_file)
 {
     generate_tao_time_related_queries_helper(num_nodes, max_num_atype,
-        warmup_size, query_size, assoc_file, warmup_file, query_file,
-        false);
+        warmup_size, query_size, // assoc_file,
+		warmup_file, query_file, false);
 }
 
 void generate_tao_assoc_time_range_queries_limited(
     int64_t num_nodes, int max_num_atype,
     int warmup_size, int query_size,
-    const std::string& assoc_file,
+    // const std::string& assoc_file,
     const std::string& warmup_file, const std::string& query_file)
 {
     generate_tao_time_related_queries_helper_limited(num_nodes, max_num_atype,
-        warmup_size, query_size, assoc_file, warmup_file, query_file,
-        false);
+        warmup_size, query_size, // assoc_file,
+		warmup_file, query_file, false);
 }
 
 int main(int argc, char **argv) {
@@ -930,14 +931,14 @@ int main(int argc, char **argv) {
         int max_num_atype = std::stoi(argv[3]);
         int warmup_size = std::stoi(argv[4]);
         int query_size = std::stoi(argv[5]);
-        std::string assoc_file(argv[6]);
-        std::string warmup_file(argv[7]);
-        std::string query_file(argv[8]);
+        // std::string assoc_file(argv[6]);
+        std::string warmup_file(argv[6]);
+        std::string query_file(argv[7]);
 
         // non empty
         generate_tao_assoc_get_queries_limited(
-            num_nodes, max_num_atype, warmup_size, query_size,
-            assoc_file, warmup_file, query_file);
+            num_nodes, max_num_atype, warmup_size, query_size, // assoc_file,
+			warmup_file, query_file);
 
     } else if (type == "tao-assoc-count-queries") {
 
@@ -959,14 +960,14 @@ int main(int argc, char **argv) {
         int max_num_atype = std::stoi(argv[3]);
         int warmup_size = std::stoi(argv[4]);
         int query_size = std::stoi(argv[5]);
-        std::string assoc_file(argv[6]);
-        std::string warmup_file(argv[7]);
-        std::string query_file(argv[8]);
+        // std::string assoc_file(argv[6]);
+        std::string warmup_file(argv[6]);
+        std::string query_file(argv[7]);
 
         // non empty
         generate_tao_assoc_time_range_queries_limited(
-            num_nodes, max_num_atype, warmup_size, query_size,
-            assoc_file, warmup_file, query_file);
+            num_nodes, max_num_atype, warmup_size, query_size, // assoc_file,
+			warmup_file, query_file);
 
     } else if (type == "format-input") {
 

@@ -1,90 +1,153 @@
 #!/bin/bash
 SCRIPT_DIR=$(dirname $0)
-source ${SCRIPT_DIR}/config.sh
-mkdir -p ${QUERY_DIR}
+BIN_DIR=$SCRIPT_DIR/../benchmark/bin
 
-neighborAtype=T
-node=T
-neighbor=T
-neighborNode=T
+query_dir=${1:-"DUMMY"}
+num_nodes=${2:-"0"}
+warmup_n=${3:-"20000"}
+measure_n=${4:-"100000"}
+NODE_FILE=${5:-"DUMMY"}
+EDGE_FILE=${6:-"DUMMY"}
 
-#numNode=$(wc -l ${NODE_FILE} | cut -d' ' -f 1) # calculate once
-numNode=41652230
-numNodeAttrs=40
+echo "query_dir=$query_dir"
 
-NODE_FILE=/mnt2/twitter2010-40attr16each-tpch-npa128sa32isa64.node
-EDGE_FILE=/mnt2/twitter2010-npa128sa32isa64.edge_table
+num_node_attrs=40
+attribute_length=16
+max_num_atype=5
 
-function stop_all() {
-  bash ${SCRIPT_DIR}/../sbin/stop-all.sh
-}
+if [[ -n "$neighbor" ]]; then
+  echo "creating neighbor queries for ${num_nodes} nodes, warmup ${warmup_n}, measure ${measure_n}"
+  echo "numNode=$num_nodes"
 
-function start_all() {
-  stop_all
-  sleep 2
-  bash ${SCRIPT_DIR}/../sbin/start-servers.sh $NODE_FILE $EDGE_FILE &
-  sleep 2
-  bash ${SCRIPT_DIR}/../sbin/start-handlers.sh &
-  sleep 2
-  bash ${SCRIPT_DIR}/../sbin/load-data.sh &
-  sleep 2
-}
+  ${BIN_DIR}/create neighbor-queries \
+    ${num_nodes} \
+    ${warmup_n} \
+    ${measure_n} \
+    ${query_dir}/neighbor_warmup_100000.txt \
+    ${query_dir}/neighbor_query_100000.txt 
+fi
 
-for num_nodes in ${nodes[@]}
-do
-  if [[ -n "$neighbor" ]]; then
-    echo "creating neighbor queries for ${num_nodes} nodes, warmup ${warmup_neighbor}, measure ${measure_neighbor}"
-    echo "numNode=$numNode"
+if [[ -n "$node" ]]; then
+  echo "creating node queries for ${num_nodes} nodes, warmup ${warmup_n}, measure ${measure_n}"
+  echo "numNodeAttrs=$num_node_attrs, attributes=$num_node_attrs, IS_NODE_FILE_CSV=0"
 
-    ${BIN_DIR}/../benchmark/bin/create neighbor-queries \
-      ${numNode} \
-      ${warmup_neighbor} \
-      ${measure_neighbor} \
-      ${QUERY_DIR}/neighbor_warmup_${num_nodes}.txt \
-      ${QUERY_DIR}/neighbor_query_${num_nodes}.txt 
-  fi
+  ${BIN_DIR}/create node-queries \
+    ${num_node_attrs} \
+    ${warmup_n} \
+    ${measure_n} \
+    ${query_dir}/node_warmup_100000.txt \
+    ${query_dir}/node_query_100000.txt \
+    ${num_node_attrs} \
+		0
+fi
 
-  if [[ -n "$node" ]]; then
-    echo "creating node queries for ${num_nodes} nodes, warmup ${warmup_node}, measure ${measure_node}"
-    echo "numNodeAttrs=$numNodeAttrs, attributes=$attributes, IS_NODE_FILE_CSV=$IS_NODE_FILE_CSV"
+if [[ -n "$neighborNode" ]]; then
+  echo "creating neighbor-node queries for ${num_nodes} nodes, warmup ${warmup_n}, measure ${measure_n}"
+  echo "numNode=$num_nodes, attributes=$attributes"
 
-    ${BIN_DIR}/../benchmark/bin/create node-queries \
-      ${numNodeAttrs} \
-      ${warmup_node} \
-      ${measure_node} \
-      ${QUERY_DIR}/node_warmup_${num_nodes}.txt \
-      ${QUERY_DIR}/node_query_${num_nodes}.txt \
-      ${attributes} \
-      ${IS_NODE_FILE_CSV} 
-  fi
+  # load sharded graph to generate queries
+  ${BIN_DIR}/create neighbor-node-queries \
+   ${NODE_FILE} \
+   ${EDGE_FILE} \
+   ${num_nodes} \
+   ${num_node_attrs} \
+   ${warmup_n} \
+   ${measure_n} \
+   ${query_dir}/neighbor_node_warmup_100000.txt \
+   ${query_dir}/neighbor_node_query_100000.txt 
+fi
 
-  if [[ -n "$neighborNode" ]]; then
-    echo "creating neighbor-node queries for ${num_nodes} nodes, warmup ${warmup_neighbor_node}, measure ${measure_neighbor_node}"
-    echo "numNode=$numNode, attributes=$attributes"
+if [[ -n "$neighborAtype" ]]; then
+  echo "creating neighbor-atype queries, warmup ${warmup_n}, measure ${measure_n}"
+  echo "numNode=$num_nodes, max_num_atype=$max_num_atype"
 
-    # load sharded graph to generate queries
-    ${BIN_DIR}/../benchmark/bin/create neighbor-node-queries \
-     ${NODE_FILE} \
-     ${EDGE_FILE} \
-     ${numNode} \
-     ${attributes} \
-     ${warmup_neighbor_node} \
-     ${measure_neighbor_node} \
-     ${QUERY_DIR}/neighbor_node_warmup_${num_nodes}.txt \
-     ${QUERY_DIR}/neighbor_node_query_${num_nodes}.txt 
-  fi
+  # queries can have empty results
+  ${BIN_DIR}/create neighbor-atype-queries \
+    ${num_nodes} \
+    ${max_num_atype} \
+    ${warmup_n} \
+    ${measure_n} \
+    ${query_dir}/neighborAtype_warmup_100000.txt \
+    ${query_dir}/neighborAtype_query_100000.txt 
+fi
 
-  if [[ -n "$neighborAtype" ]]; then
-    echo "creating neighbor-atype queries, warmup ${warmup_neighbor_atype}, measure ${measure_neighbor_atype}"
-    echo "numNode=$numNode, max_num_atype=$max_num_atype"
+## TAO Queries
 
-    # queries can have empty results
-    ${BIN_DIR}/../benchmark/bin/create neighbor-atype-queries \
-      ${numNode} \
-      ${max_num_atype} \
-      ${warmup_neighbor_atype} \
-      ${measure_neighbor_atype} \
-      ${QUERY_DIR}/neighborAtype_warmup_${num_nodes}.txt \
-      ${QUERY_DIR}/neighborAtype_query_${num_nodes}.txt 
-  fi
-done
+if [[ -n "$assocRange" ]]; then
+	
+  echo "creating assocRange queries, warmup ${warmup_n}, measure ${measure_n}"
+  echo "numNode=$num_nodes, max_num_atype=$max_num_atype"
+
+  ${BIN_DIR}/create \
+    tao-assoc-range-queries \
+    ${num_nodes} \
+    ${max_num_atype} \
+    ${warmup_n} \
+    ${measure_n} \
+    ${query_dir}/assocRange_warmup.txt \
+    ${query_dir}/assocRange_query.txt
+
+fi
+
+if [[ -n "$objGet" ]]; then
+	
+  echo "creating objGet queries, warmup ${warmup_n}, measure ${measure_n}"
+  echo "numNode=$num_nodes"
+
+  ${BIN_DIR}/create \
+    tao-node-get-queries \
+    ${num_nodes} \
+    ${warmup_n} \
+    ${measure_n} \
+    ${query_dir}/objGet_warmup.txt \
+    ${query_dir}/objGet_query.txt
+
+fi
+
+if [[ -n "$assocGet" ]]; then
+	
+  echo "creating assocGet queries, warmup ${warmup_n}, measure ${measure_n}"
+  echo "numNode=$num_nodes, max_num_atype=$max_num_atype"
+
+  ${BIN_DIR}/create \
+    tao-assoc-get-queries \
+    ${num_nodes} \
+    ${max_num_atype} \
+    ${warmup_n} \
+    ${measure_n} \
+    ${query_dir}/assocGet_warmup.txt \
+    ${query_dir}/assocGet_query.txt
+
+fi
+
+if [[ -n "$assocCount" ]]; then
+	
+  echo "creating assocCount queries, warmup ${warmup_n}, measure ${measure_n}"
+  echo "numNode=$num_nodes, max_num_atype=$max_num_atype"
+
+  ${BIN_DIR}/create \
+    tao-assoc-count-queries \
+    ${num_nodes} \
+    ${max_num_atype} \
+    ${warmup_n} \
+    ${measure_n} \
+    ${query_dir}/assocCount_warmup.txt \
+    ${query_dir}/assocCount_query.txt
+
+fi
+
+if [[ -n "$assocTimeRange" ]]; then
+	
+  echo "creating assocTimeRange queries, warmup ${warmup_n}, measure ${measure_n}"
+  echo "numNode=$num_nodes, max_num_atype=$max_num_atype"
+
+  ${BIN_DIR}/create \
+    tao-assoc-time-range-queries \
+    ${num_nodes} \
+    ${max_num_atype} \
+    ${warmup_n} \
+    ${measure_n} \
+    ${query_dir}/assocTimeRange_warmup.txt \
+    ${query_dir}/assocTimeRange_query.txt
+
+fi
