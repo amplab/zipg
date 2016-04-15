@@ -21,19 +21,19 @@ datasets=(
 )
 threads=( 56 )
 benches=(
-  benchNhbrNode # latency
-  benchNhbr # latency
-  benchNhbrAtype # latency
-  benchNodeNode # latency
-  benchEdgeAttrs # latency
+  #benchNhbrNode # latency
+  #benchNhbr # latency
+  #benchNhbrAtype # latency
+  #benchNodeNode # latency
+  #benchEdgeAttrs # latency
   #benchPrimitiveMix # latency
-  benchTaoAssocRange # latency
-  benchTaoAssocCount # latency
-  benchTaoObjGet # latency
-  benchTaoAssocGet # latency
-  benchTaoAssocTimeRange # latency
-  benchTaoAssocAdd # latency
-  benchTaoObjAdd # latency
+  #benchTaoAssocRange # latency
+  #benchTaoAssocCount # latency
+  #benchTaoObjGet # latency
+  #benchTaoAssocGet # latency
+  #benchTaoAssocTimeRange # latency
+  #benchTaoAssocAdd # latency
+  #benchTaoObjAdd # latency
   #benchTaoMix  # latency
   #benchTaoMixWithUpdates # latency
   #benchNhbrNodeThput
@@ -41,7 +41,7 @@ benches=(
   #benchNhbrAtypeThput
   #benchNodeNodeThput
   #benchEdgeAttrsThput
-  #benchPrimitiveMixThput
+  benchPrimitiveMixThput
   #benchTaoAssocRangeThput
   #benchTaoAssocCountThput
   #benchTaoObjGetThput
@@ -49,8 +49,8 @@ benches=(
   #benchTaoAssocTimeRangeThput
   #benchTaoAssocAddThput
   #benchTaoObjAddThput
-  #benchTaoMixThput
-  #benchTaoMixWithUpdatesThput
+  benchTaoMixThput
+  benchTaoMixWithUpdatesThput
 )
 
 function timestamp() {
@@ -80,7 +80,7 @@ function setup() {
 	
 	if [ "$master" = "localhost" ]; then
 		bash $sbin/../scripts/setup_dist.sh $node_file_raw $edge_file_raw $sa $isa $npa
-	elif
+  else
     ssh $SUCCINCT_SSH_OPTS "$master" "bash $sbin/../scripts/setup_dist.sh $node_file_raw $edge_file_raw $sa $isa $npa"
 	fi
 }
