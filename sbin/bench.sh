@@ -77,8 +77,12 @@ function setup() {
     echo "Must specify dataset."
     exit
   fi
-    
-  ssh $SUCCINCT_SSH_OPTS "$master" "bash $sbin/../scripts/setup_dist.sh $node_file_raw $edge_file_raw $sa $isa $npa"
+	
+	if [ "$master" = "localhost" ]; then
+		bash $sbin/../scripts/setup_dist.sh $node_file_raw $edge_file_raw $sa $isa $npa
+	elif
+    ssh $SUCCINCT_SSH_OPTS "$master" "bash $sbin/../scripts/setup_dist.sh $node_file_raw $edge_file_raw $sa $isa $npa"
+	fi
 }
 
 function bench_latency() {
