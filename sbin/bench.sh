@@ -33,7 +33,7 @@ benches=(
   benchTaoAssocGet # latency
   benchTaoAssocTimeRange # latency
   benchTaoAssocAdd # latency
-  #benchTaoObjAdd # latency
+  benchTaoObjAdd # latency
   #benchTaoMix  # latency
   #benchTaoMixWithUpdates # latency
   #benchNhbrNodeThput
