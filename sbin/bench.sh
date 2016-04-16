@@ -16,10 +16,10 @@ else
 fi
 
 datasets=(
-  uk
+  #uk
   twitter
 )
-threads=( 56 )
+threads=( 64 128 256 )
 benches=(
   #benchNhbrNode # latency
   #benchNhbr # latency
@@ -36,21 +36,21 @@ benches=(
   #benchTaoObjAdd # latency
   #benchTaoMix  # latency
   #benchTaoMixWithUpdates # latency
-  #benchNhbrNodeThput
-  #benchNhbrThput
-  #benchNhbrAtypeThput
-  #benchNodeNodeThput
-  #benchEdgeAttrsThput
   benchPrimitiveMixThput
-  #benchTaoAssocRangeThput
-  #benchTaoAssocCountThput
-  #benchTaoObjGetThput
-  #benchTaoAssocGetThput
-  #benchTaoAssocTimeRangeThput
-  #benchTaoAssocAddThput
-  #benchTaoObjAddThput
   benchTaoMixThput
   benchTaoMixWithUpdatesThput
+  benchNhbrNodeThput
+  benchNhbrThput
+  benchNhbrAtypeThput
+  benchNodeNodeThput
+  benchEdgeAttrsThput
+  benchTaoAssocRangeThput
+  benchTaoAssocCountThput
+  benchTaoObjGetThput
+  benchTaoAssocGetThput
+  benchTaoAssocTimeRangeThput
+  #benchTaoAssocAddThput
+  #benchTaoObjAddThput
 )
 
 function timestamp() {
@@ -114,6 +114,11 @@ declare -A benchMap=(
   ["benchEdgeAttrsThput"]="getEdgeAttrs"
   ["benchNhbrAtypeThput"]="get_nhbrsAtype"
   ["benchNhbrThput"]="get_nhbrs"
+  ["benchTaoAssocGetThput"]="tao_assoc_get"
+  ["benchTaoAssocCountThput"]="tao_assoc_count"
+  ["benchTaoAssocRangeThput"]="tao_assoc_range"
+  ["benchTaoAssocTimeRangeThput"]="tao_assoc_time_range"
+  ["benchTaoObjGetThput"]="tao_obj_get"
 )
 
 for throughput_threads in ${threads[*]}; do
