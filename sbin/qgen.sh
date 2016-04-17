@@ -17,16 +17,17 @@ else
   master="localhost"
 fi
 
-warmup_n=20000 # Per server
-measure_n=100000 # Per server
+warmup_n=200000 # Per server
+measure_n=1000000 # Per server
 
 datasets=(
-  uk
-  twitter
+  #uk
+  #twitter
+  orkut
 )
 queries=(
 	neighborAtype
-	node
+	#node
 	neighbor
 	neighborNode
 	assocRange
@@ -56,6 +57,11 @@ function setup() {
     edge_file_raw=/mnt2/uk-2007-05-40attr16each-npa128sa32isa64.assoc
     query_dir=/mnt2/ukQueries
 		num_nodes=105896555
+  elif [ "$dataset" = "orkut" ]; then
+    node_file_raw=/mnt2/orkut-40attr16each-tpch-npa128sa32isa64.node
+    edge_file_raw=/mnt2/orkut-40attr16each-npa128sa32isa64.assoc
+    query_dir=/mnt2/orkutQueries
+		num_nodes=3072627
   else
     echo "Must specify dataset."
     exit
@@ -74,7 +80,7 @@ function setup() {
 for dataset in "${datasets[@]}"; do
 	setup
   for query in "${queries[@]}"; do
-		echo "Generating queries for ($query, $dataset) in $query_dir, with $numNode nodes."
+    echo "Generating queries for ($query, $dataset) in $query_dir, with $num_nodes nodes."
 		bash $sbin/hosts.sh $query=T bash $script_dir/create_queries.sh $query_dir $num_nodes $warmup_n $measure_n $node_file_raw $edge_file_raw
 	done
 done
