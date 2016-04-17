@@ -18,37 +18,38 @@ fi
 datasets=(
   #uk
   twitter
+  #orkut
 )
 threads=( 64 128 256 )
 benches=(
-  #benchNhbrNode # latency
-  #benchNhbr # latency
-  #benchNhbrAtype # latency
-  #benchNodeNode # latency
-  #benchEdgeAttrs # latency
-  #benchPrimitiveMix # latency
-  #benchTaoAssocRange # latency
-  #benchTaoAssocCount # latency
-  #benchTaoObjGet # latency
-  #benchTaoAssocGet # latency
-  #benchTaoAssocTimeRange # latency
-  #benchTaoAssocAdd # latency
-  #benchTaoObjAdd # latency
-  #benchTaoMix  # latency
+  benchNhbrNode # latency
+  benchNhbr # latency
+  benchNhbrAtype # latency
+  benchNodeNode # latency
+  benchEdgeAttrs # latency
+  benchPrimitiveMix # latency
+  benchTaoAssocRange # latency
+  benchTaoAssocCount # latency
+  benchTaoObjGet # latency
+  benchTaoAssocGet # latency
+  benchTaoAssocTimeRange # latency
+  benchTaoAssocAdd # latency
+  benchTaoObjAdd # latency
+  benchTaoMix  # latency
   #benchTaoMixWithUpdates # latency
-  benchPrimitiveMixThput
-  benchTaoMixThput
-  benchTaoMixWithUpdatesThput
-  benchNhbrNodeThput
-  benchNhbrThput
-  benchNhbrAtypeThput
-  benchNodeNodeThput
-  benchEdgeAttrsThput
-  benchTaoAssocRangeThput
-  benchTaoAssocCountThput
-  benchTaoObjGetThput
-  benchTaoAssocGetThput
-  benchTaoAssocTimeRangeThput
+  #benchPrimitiveMixThput
+  #benchTaoMixThput
+  #benchTaoMixWithUpdatesThput
+  #benchNhbrNodeThput
+  #benchNhbrThput
+  #benchNhbrAtypeThput
+  #benchNodeNodeThput
+  #benchEdgeAttrsThput
+  #benchTaoAssocRangeThput
+  #benchTaoAssocCountThput
+  #benchTaoObjGetThput
+  #benchTaoAssocGetThput
+  #benchTaoAssocTimeRangeThput
   #benchTaoAssocAddThput
   #benchTaoObjAddThput
 )
@@ -73,6 +74,11 @@ function setup() {
     edge_file_raw=/mnt2/uk-2007-05-40attr16each-npa128sa32isa64.assoc
     $sbin/hosts.sh rm -rf /mnt2/queries
     $sbin/hosts.sh cp -r /mnt2/ukQueries /mnt2/queries
+  elif [ "$dataset" = "orkut" ]; then
+    node_file_raw=/mnt2/orkut-40attr16each-tpch-npa128sa32isa64.node
+    edge_file_raw=/mnt2/orkut-40attr16each-npa128sa32isa64.assoc
+    $sbin/hosts.sh rm -rf /mnt2/queries
+    $sbin/hosts.sh cp -r /mnt2/orkutQueries /mnt2/queries
   else
     echo "Must specify dataset."
     exit
@@ -96,7 +102,11 @@ function bench_latency() {
   
   # By default disable strict host key checking
   if [ "$SUCCINCT_SSH_OPTS" = "" ]; then
-    SUCCINCT_SSH_OPTS="-o StrictHostKeyChecking=no -i $SUCCINCT_CONF_DIR/cqlkeypair.pem"
+    if [ "$client" = "localhost" ]; then
+      SUCCINCT_SSH_OPTS="-o StrictHostKeyChecking=no"
+    else
+      SUCCINCT_SSH_OPTS="-o StrictHostKeyChecking=no -i $SUCCINCT_CONF_DIR/cqlkeypair.pem"
+    fi
   fi
 	
   ssh $SUCCINCT_SSH_OPTS "$client" "rm -rf /mnt2/queries"
