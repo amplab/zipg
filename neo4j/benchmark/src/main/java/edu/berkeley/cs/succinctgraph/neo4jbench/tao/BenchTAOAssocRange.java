@@ -45,12 +45,8 @@ public class BenchTAOAssocRange {
         numMeasureQueries = Integer.parseInt(args[6]);
         int numClients = Integer.parseInt(args[7]);
         boolean tuned = Boolean.valueOf(args[8]);
+        String neo4jPageCacheMemory = args[8];
 
-        String neo4jPageCacheMemory = GraphDatabaseSettings.pagecache_memory
-            .getDefaultValue();
-        if (args.length >= 9) {
-            neo4jPageCacheMemory = args[8];
-        }
 
         BenchUtils.readAssocRangeQueries(
             warmupQueryFile, warmupAssocRangeNodes, warmupAssocRangeAtypes,

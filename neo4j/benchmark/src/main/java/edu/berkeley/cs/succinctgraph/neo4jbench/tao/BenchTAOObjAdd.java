@@ -30,14 +30,9 @@ public class BenchTAOObjAdd {
     String type = args[0];
     String dbPath = args[1];
     String outputFile = args[2];
+    String neo4jPageCacheMemory = args[3];
     numWarmupQueries = 10000;
     numMeasureQueries = 1000;
-
-    String neo4jPageCacheMemory = GraphDatabaseSettings.pagecache_memory
-      .getDefaultValue();
-    if (args.length >= 8) {
-      neo4jPageCacheMemory = args[7];
-    }
 
     if (type.equals("latency")) {
       benchAssocCountLatency(dbPath, neo4jPageCacheMemory, outputFile);

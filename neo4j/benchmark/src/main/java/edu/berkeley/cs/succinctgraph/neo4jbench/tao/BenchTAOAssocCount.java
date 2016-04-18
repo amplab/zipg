@@ -36,17 +36,12 @@ public class BenchTAOAssocCount {
         numMeasureQueries = Integer.parseInt(args[6]);
         int numClients = Integer.parseInt(args[7]);
         boolean tuned = Boolean.valueOf(args[8]);
+        String neo4jPageCacheMemory = args[9];
 
         warmupAssocCountNodes = new ArrayList<>();
         assocCountNodes = new ArrayList<>();
         warmupAssocCountAtypes = new ArrayList<>();
         assocCountAtypes = new ArrayList<>();
-
-        String neo4jPageCacheMemory = GraphDatabaseSettings.pagecache_memory
-            .getDefaultValue();
-        if (args.length >= 8) {
-            neo4jPageCacheMemory = args[7];
-        }
 
         BenchUtils.getNeighborAtypeQueries(
             warmupQueryFile, warmupAssocCountNodes, warmupAssocCountAtypes);

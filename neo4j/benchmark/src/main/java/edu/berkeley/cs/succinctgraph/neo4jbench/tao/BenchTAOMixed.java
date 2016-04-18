@@ -4,7 +4,6 @@ import edu.berkeley.cs.succinctgraph.neo4jbench.BenchUtils;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
-import org.neo4j.graphdb.factory.GraphDatabaseSettings;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -14,8 +13,10 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
-import static edu.berkeley.cs.succinctgraph.neo4jbench.BenchUtils.modGet;
 import static edu.berkeley.cs.succinctgraph.neo4jbench.BenchConstants.*;
+import static edu.berkeley.cs.succinctgraph.neo4jbench.BenchUtils.modGet;
+import static org.neo4j.graphdb.factory.GraphDatabaseSettings.cache_type;
+import static org.neo4j.graphdb.factory.GraphDatabaseSettings.pagecache_memory;
 
 public class BenchTAOMixed {
 
@@ -99,12 +100,7 @@ public class BenchTAOMixed {
         int numAtypes = Integer.parseInt(args[22]);
         long minTime = Long.parseLong(args[23]);
         long maxTime = Long.parseLong((args[24]));
-
-        String neo4jPageCacheMemory = GraphDatabaseSettings.pagecache_memory
-            .getDefaultValue();
-        if (args.length > 26) {
-            neo4jPageCacheMemory = args[25];
-        }
+        String neo4jPageCacheMemory = args[25];
 
         // assoc_range()
         BenchUtils.readAssocRangeQueries(
@@ -175,9 +171,9 @@ public class BenchTAOMixed {
         if (tuned) {
             db = new GraphDatabaseFactory()
                 .newEmbeddedDatabaseBuilder(DB_PATH)
-                .setConfig(GraphDatabaseSettings.cache_type, "none")
+                .setConfig(cache_type, "none")
                 .setConfig(
-                    GraphDatabaseSettings.pagecache_memory, neo4jPageCacheMem)
+                    pagecache_memory, neo4jPageCacheMem)
                 .newGraphDatabase();
         } else {
             db = new GraphDatabaseFactory().newEmbeddedDatabase(DB_PATH);
@@ -612,9 +608,9 @@ public class BenchTAOMixed {
         if (tuned) {
             graphDb = new GraphDatabaseFactory()
                 .newEmbeddedDatabaseBuilder(dbPath)
-                .setConfig(GraphDatabaseSettings.cache_type, "none")
+                .setConfig(cache_type, "none")
                 .setConfig(
-                    GraphDatabaseSettings.pagecache_memory, neo4jPageCacheMem)
+                    pagecache_memory, neo4jPageCacheMem)
                 .newGraphDatabase();
         } else {
             graphDb = new GraphDatabaseFactory().newEmbeddedDatabase(dbPath);

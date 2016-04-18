@@ -40,6 +40,7 @@ public class BenchTAOAssocGet {
         numMeasureQueries = Integer.parseInt(args[6]);
         int numClients = Integer.parseInt(args[7]);
         boolean tuned = Boolean.valueOf(args[8]);
+        String neo4jPageCacheMemory = args[9];
 
         warmupAssocGetNodes = new ArrayList<>();
         assocGetNodes = new ArrayList<>();
@@ -51,12 +52,6 @@ public class BenchTAOAssocGet {
         assocGetTimeLows = new ArrayList<>();
         warmupAssocGetTimeHighs = new ArrayList<>();
         assocGetTimeHighs = new ArrayList<>();
-
-        String neo4jPageCacheMemory = GraphDatabaseSettings.pagecache_memory
-            .getDefaultValue();
-        if (args.length >= 8) {
-            neo4jPageCacheMemory = args[7];
-        }
 
         BenchUtils.readAssocGetQueries(
             warmupQueryFile, warmupAssocGetNodes, warmupAssocGetAtypes,

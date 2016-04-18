@@ -34,17 +34,12 @@ public class BenchTAOAssocAdd {
     String dbPath = args[1];
     String outputFile = args[2];
     NUM_NODES = Long.parseLong(args[3]);
+    String neo4jPageCacheMemory = args[4];
+
     numWarmupQueries = 10000;
     numMeasureQueries = 1000;
-
     warmupRand = new Random(SEED);
     rand = new Random(SEED + 1);
-
-    String neo4jPageCacheMemory = GraphDatabaseSettings.pagecache_memory
-      .getDefaultValue();
-    if (args.length >= 8) {
-      neo4jPageCacheMemory = args[7];
-    }
 
     if (type.equals("latency")) {
       benchAssocCountLatency(dbPath, neo4jPageCacheMemory, outputFile);
