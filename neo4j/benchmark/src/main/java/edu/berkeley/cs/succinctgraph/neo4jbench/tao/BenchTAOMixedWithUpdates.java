@@ -563,7 +563,7 @@ public class BenchTAOMixedWithUpdates {
             try {
                 // true for append
                 out = new PrintWriter(new BufferedWriter(
-                    new FileWriter("neo4j_throughput_tao_mix.txt", true)));
+                    new FileWriter("neo4j_throughput_tao_mix_with_updates.txt", true)));
 
                 // warmup
                 int i = 0;

@@ -191,7 +191,7 @@ public class BenchTAOAssocRange {
             try {
                 // true for append
                 out = new PrintWriter(new BufferedWriter(
-                  new FileWriter("neo4j_assoc_range.txt", true)));
+                  new FileWriter("neo4j_throughput_assoc_range.txt", true)));
 
                 // warmup
                 int i = 0, queryIdx = 0;
