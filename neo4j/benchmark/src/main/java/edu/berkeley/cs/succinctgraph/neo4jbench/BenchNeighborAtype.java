@@ -66,6 +66,9 @@ public class BenchNeighborAtype {
         } else if (type.equals("throughput")) {
             benchThroughput(
                 tuned, dbPath, neo4jPageCacheMemory, numClients, true);
+        } else if (type.equals("edgeAttrs-latency")) {
+            benchEdgeAttrsLatency(tuned,
+              dbPath, neo4jPageCacheMemory, output_file);
         } else if (type.equals("edgeAttrs-throughput")) {
             benchThroughput(
                 tuned, dbPath, neo4jPageCacheMemory, numClients, false);
