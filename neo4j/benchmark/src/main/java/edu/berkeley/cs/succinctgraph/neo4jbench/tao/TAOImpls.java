@@ -1,7 +1,6 @@
 package edu.berkeley.cs.succinctgraph.neo4jbench.tao;
 
 import edu.berkeley.cs.succinctgraph.neo4jbench.BenchUtils;
-
 import org.neo4j.graphdb.*;
 import org.neo4j.graphdb.index.IndexManager;
 import org.neo4j.graphdb.index.RelationshipIndex;
@@ -88,6 +87,24 @@ public class TAOImpls implements TAOIface {
             res.add((String) (n.getProperty(key)));
         }
         return res;
+    }
+
+    public void objAdd(GraphDatabaseService db, List<String> attributes) {
+        Node node = db.createNode();
+        for (int i = 0; i < attributes.size(); i++) {
+            node.setProperty("name" + i, attributes.get(i));
+        }
+    }
+
+    public void assocAdd(GraphDatabaseService db, long src, long dst, int atype, long timestamp,
+      List<String> attributes) {
+        Node n1 = db.getNodeById(src);
+        Node n2 = db.getNodeById(dst);
+        Relationship rel = n1.createRelationshipTo(n2, atypeMap[atype]);
+        rel.setProperty("timestamp", timestamp);
+        for (int i = 0; i < attributes.size(); i++) {
+            rel.setProperty("name" + i, attributes.get(i));
+        }
     }
 
     /** Scans over all the assoc list and manually sorts by timestamp. */
