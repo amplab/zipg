@@ -121,9 +121,8 @@ public class BenchTAOMixedWithUpdates {
         int numAtypes = Integer.parseInt(args[24]);
         long minTime = Long.parseLong(args[25]);
         long maxTime = Long.parseLong((args[26]));
-        NUM_NODES = Long.parseLong(args[27]);
-        String neo4jPageCacheMemory = args[28];
-
+        String neo4jPageCacheMemory = args[27];
+        NUM_NODES = numNodes;
 
         warmupRand = new Random(SEED);
         rand = new Random(SEED + 1);
