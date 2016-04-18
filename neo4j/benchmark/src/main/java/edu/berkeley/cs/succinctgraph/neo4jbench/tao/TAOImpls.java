@@ -1,7 +1,6 @@
 package edu.berkeley.cs.succinctgraph.neo4jbench.tao;
 
 import edu.berkeley.cs.succinctgraph.neo4jbench.BenchUtils;
-
 import org.neo4j.graphdb.*;
 import org.neo4j.graphdb.index.IndexManager;
 import org.neo4j.graphdb.index.RelationshipIndex;
@@ -18,6 +17,9 @@ public class TAOImpls implements TAOIface {
     final static double ASSOC_GET_PERC = 0.157;
     final static double ASSOC_COUNT_PERC = 0.117;
     final static double ASSOC_TIME_RANGE_PERC = 0.028;
+    final static double TAO_WRITE_PERC = 0.002;
+    final static double ASSOC_ADD_PERC = 0.76;
+    final static double OBJ_ADD_PERC = 0.24;
 
     private static int MAX_NUM_ATYPES = 1618;
     private static RelationshipType[] atypeMap;
@@ -59,6 +61,31 @@ public class TAOImpls implements TAOIface {
         return 4;
     }
 
+    public static int chooseQuery(Random randUpdate, Random rand) {
+        double u = randUpdate.nextDouble();
+        double d = rand.nextDouble();
+        if (u < TAO_WRITE_PERC) {
+            if (d < ASSOC_ADD_PERC) {
+                return 5;
+            } else {
+                return 6;
+            }
+        }
+
+        if (d < ASSOC_RANGE_PERC) {
+            return 0;
+        } else if (d < ASSOC_RANGE_PERC + OBJ_GET_PERC) {
+            return 1;
+        } else if (d < ASSOC_RANGE_PERC + OBJ_GET_PERC + ASSOC_GET_PERC) {
+            return 2;
+        } else if (d < ASSOC_RANGE_PERC + OBJ_GET_PERC +
+          ASSOC_GET_PERC + ASSOC_COUNT_PERC) {
+            return 3;
+        } else {
+            return 4;
+        }
+    }
+
     // TODO: note that using an index on *all edges* doesn't make sense.
     // Refs:
     // http://neo4j.com/docs/stable/indexing-lucene-extras.html
@@ -88,6 +115,24 @@ public class TAOImpls implements TAOIface {
             res.add((String) (n.getProperty(key)));
         }
         return res;
+    }
+
+    public void objAdd(GraphDatabaseService db, List<String> attributes) {
+        Node node = db.createNode();
+        for (int i = 0; i < attributes.size(); i++) {
+            node.setProperty("name" + i, attributes.get(i));
+        }
+    }
+
+    public void assocAdd(GraphDatabaseService db, long src, long dst, int atype, long timestamp,
+      List<String> attributes) {
+        Node n1 = db.getNodeById(src);
+        Node n2 = db.getNodeById(dst);
+        Relationship rel = n1.createRelationshipTo(n2, atypeMap[atype]);
+        rel.setProperty("timestamp", timestamp);
+        for (int i = 0; i < attributes.size(); i++) {
+            rel.setProperty("name" + i, attributes.get(i));
+        }
     }
 
     /** Scans over all the assoc list and manually sorts by timestamp. */
