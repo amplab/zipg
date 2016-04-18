@@ -169,7 +169,7 @@ public class BenchTAOAssocCount {
             try {
                 // true for append
                 out = new PrintWriter(new BufferedWriter(
-                  new FileWriter("neo4j_throughput_get_nhbrs.txt", true)));
+                  new FileWriter("neo4j_throughput_assoc_count.txt", true)));
 
                 // warmup
                 int i = 0, queryIdx = 0;
