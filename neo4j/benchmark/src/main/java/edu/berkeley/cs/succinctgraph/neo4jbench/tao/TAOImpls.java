@@ -17,6 +17,9 @@ public class TAOImpls implements TAOIface {
     final static double ASSOC_GET_PERC = 0.157;
     final static double ASSOC_COUNT_PERC = 0.117;
     final static double ASSOC_TIME_RANGE_PERC = 0.028;
+    final static double TAO_WRITE_PERC = 0.002;
+    final static double ASSOC_ADD_PERC = 0.76;
+    final static double OBJ_ADD_PERC = 0.24;
 
     private static int MAX_NUM_ATYPES = 1618;
     private static RelationshipType[] atypeMap;
@@ -56,6 +59,31 @@ public class TAOImpls implements TAOIface {
             return 3;
         }
         return 4;
+    }
+
+    public static int chooseQuery(Random randUpdate, Random rand) {
+        double u = randUpdate.nextDouble();
+        double d = rand.nextDouble();
+        if (u < TAO_WRITE_PERC) {
+            if (d < ASSOC_ADD_PERC) {
+                return 5;
+            } else {
+                return 6;
+            }
+        }
+
+        if (d < ASSOC_RANGE_PERC) {
+            return 0;
+        } else if (d < ASSOC_RANGE_PERC + OBJ_GET_PERC) {
+            return 1;
+        } else if (d < ASSOC_RANGE_PERC + OBJ_GET_PERC + ASSOC_GET_PERC) {
+            return 2;
+        } else if (d < ASSOC_RANGE_PERC + OBJ_GET_PERC +
+          ASSOC_GET_PERC + ASSOC_COUNT_PERC) {
+            return 3;
+        } else {
+            return 4;
+        }
     }
 
     // TODO: note that using an index on *all edges* doesn't make sense.
