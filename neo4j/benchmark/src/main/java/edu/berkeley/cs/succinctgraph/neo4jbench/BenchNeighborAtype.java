@@ -226,6 +226,93 @@ public class BenchNeighborAtype {
         }
     }
 
+    private static void benchEdgeAttrsLatency(
+      boolean tuned, String dbPath, String neo4jPageCacheMem,
+      String output_file) {
+
+        List<String> attributes;
+
+        System.out.println("Benchmarking getEdgeAttrs queries");
+
+        GraphDatabaseService graphDb;
+        if (tuned) {
+            graphDb = new GraphDatabaseFactory()
+              .newEmbeddedDatabaseBuilder(dbPath)
+              .setConfig(GraphDatabaseSettings.cache_type, "none")
+              .setConfig(
+                GraphDatabaseSettings.pagecache_memory, neo4jPageCacheMem)
+              .newGraphDatabase();
+        } else {
+            graphDb = new GraphDatabaseFactory().newEmbeddedDatabase(dbPath);
+        }
+
+        BenchUtils.registerShutdownHook(graphDb);
+        Transaction tx = graphDb.beginTx();
+        try {
+            PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(
+              output_file)));
+            PrintWriter resOut = null;
+            if (System.getenv("BENCH_PRINT_RESULTS") != null) {
+                resOut = new PrintWriter(new BufferedWriter(
+                  new FileWriter(output_file + ".neo4j_result")));
+            }
+
+            if (tuned) {
+                BenchUtils.fullWarmup(graphDb);
+            }
+            System.out.println("Warming up for " + WARMUP_N + " queries");
+            for (int i = 0; i < WARMUP_N; i++) {
+                if (i % 10000 == 0) {
+                    tx.success();
+                    tx.close();
+                    tx = graphDb.beginTx();
+                }
+
+                getEdgeAttrs(graphDb, modGet(warmupIds, i),
+                  atypeMap[modGet(warmupAtypes, i).intValue()]);
+            }
+
+            System.out.println("Measuring for " + MEASURE_N + " queries");
+            // measure
+            for (int i = 0; i < MEASURE_N; i++) {
+                if (i % 10000 == 0) {
+                    tx.success();
+                    tx.close();
+                    tx = graphDb.beginTx();
+                }
+                long queryStart = System.nanoTime();
+
+                attributes = getEdgeAttrs(graphDb, modGet(warmupIds, i),
+                  atypeMap[modGet(warmupAtypes, i).intValue()]);
+
+                long queryEnd = System.nanoTime();
+                double microsecs = (queryEnd - queryStart) / ((double) 1000);
+                out.println(attributes.size() + "," + microsecs);
+
+                if (resOut != null) {
+                    // intentionally two spaces...
+                    String header = String.format("node id: %d\natype:  %d",
+                      queryIds.get(i % queryIds.size()),
+                      queryAtypes.get(i % queryAtypes.size()));
+                    BenchUtils.print(header, attributes, resOut);
+                }
+            }
+
+            tx.success();
+            out.close();
+            if (resOut != null) {
+                resOut.flush();
+                resOut.close();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            BenchUtils.printMemoryFootprint();
+            System.out.println("Shutting down database ...");
+            graphDb.shutdown();
+        }
+    }
+
     static class RunNeighborAtypeThroughput implements Runnable {
         private int clientId;
         private GraphDatabaseService graphDb;
