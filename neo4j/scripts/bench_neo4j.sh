@@ -435,6 +435,11 @@ for tuned in true; do
           ${thputThreads} \
           ${tuned} \
           ${pageCacheIgnoreIndexes}
+        
+        o=neo4j_throughput_assoc_range.txt
+        x=$(cut -d' ' -f1 ${o} | awk '{ sum += $1 } END { print sum }')
+        echo ${thputThreads} clients, $x aggregated queries/sec >> ${o}
+        mv ${o} neo4j_throughput_assoc_range-tuned_${tuned}-${thputThreads}clients.txt
       fi
 
       if [[ -n "$benchObjGet" ]]; then
@@ -469,6 +474,11 @@ for tuned in true; do
           ${thputThreads} \
           ${tuned} \
           ${pageCacheIgnoreIndexes}
+        
+        o=neo4j_throughput_obj_get.txt
+        x=$(cut -d' ' -f1 ${o} | awk '{ sum += $1 } END { print sum }')
+        echo ${thputThreads} clients, $x aggregated queries/sec >> ${o}
+        mv ${o} neo4j_throughput_obj_get-tuned_${tuned}-${thputThreads}clients.txt
       fi
 
       if [[ -n "$benchAssocGet" ]]; then
@@ -503,6 +513,11 @@ for tuned in true; do
           ${thputThreads} \
           ${tuned} \
           ${pageCacheIgnoreIndexes}
+        
+        o=neo4j_throughput_assoc_get.txt
+        x=$(cut -d' ' -f1 ${o} | awk '{ sum += $1 } END { print sum }')
+        echo ${thputThreads} clients, $x aggregated queries/sec >> ${o}
+        mv ${o} neo4j_throughput_assoc_get-tuned_${tuned}-${thputThreads}clients.txt
       fi
 
       if [[ -n "$benchAssocCount" ]]; then
@@ -537,6 +552,11 @@ for tuned in true; do
           ${thputThreads} \
           ${tuned} \
           ${pageCacheIgnoreIndexes}
+        
+        o=neo4j_throughput_assoc_count.txt
+        x=$(cut -d' ' -f1 ${o} | awk '{ sum += $1 } END { print sum }')
+        echo ${thputThreads} clients, $x aggregated queries/sec >> ${o}
+        mv ${o} neo4j_throughput_assoc_count-tuned_${tuned}-${thputThreads}clients.txt
       fi
 
       if [[ -n "$benchAssocTimeRange" ]]; then
@@ -571,6 +591,11 @@ for tuned in true; do
           ${thputThreads} \
           ${tuned} \
           ${pageCacheIgnoreIndexes}
+        
+        o=neo4j_throughput_assoc_time_range.txt
+        x=$(cut -d' ' -f1 ${o} | awk '{ sum += $1 } END { print sum }')
+        echo ${thputThreads} clients, $x aggregated queries/sec >> ${o}
+        mv ${o} neo4j_throughput_assoc_time_range-tuned_${tuned}-${thputThreads}clients.txt
       fi
 
       if [[ -n "$benchTAOMix" ]]; then
@@ -691,10 +716,10 @@ for tuned in true; do
           ${numNodes} ${numAtypes} ${minTime} ${maxTime} \
           ${pageCacheIgnoreIndexes}
 
-        o=neo4j_throughput_tao_mix.txt
+        o=neo4j_throughput_tao_mix_with_updates.txt
         x=$(cut -d' ' -f1 ${o} | awk '{ sum += $1 } END { print sum }')
         echo ${thputThreads} clients, $x aggregated queries/sec >> ${o}
-        mv ${o} neo4j_throughput_tao_mix-tuned_${tuned}-${thputThreads}clients.txt
+        mv ${o} neo4j_throughput_tao_mix_with_updates-tuned_${tuned}-${thputThreads}clients.txt
       fi
     done
   done
