@@ -7,6 +7,11 @@ struct ThriftAssoc {
     5: string attr,
 }
 
+struct ThriftEdgeUpdatePtr {
+    1: i64 shardId,
+    2: i64 offset,
+}
+
 // In the IDL we use list<ThriftSrcAtype>, but the implementation makes sure,
 // and relies on, it actually contains no duplicates -- i.e., it is a set.
 struct ThriftSrcAtype {
