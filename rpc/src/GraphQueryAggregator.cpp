@@ -1214,6 +1214,7 @@ int main(int argc, char **argv) {
   if (local_host_id == hostnames.size() - 1) {
     // LogStore
     int shard_id = total_num_shards;
+    LOG_E("Shard Id = %d, Log Store", shard_id);
     AsyncGraphShard *shard = new AsyncGraphShard("", "", false,
                                                  sa_sampling_rate,
                                                  isa_sampling_rate,
