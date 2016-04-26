@@ -373,7 +373,7 @@ class GraphQueryAggregatorServiceHandler :
       // FIXME?: try to sleep a while? get_nhbr(n, attr) bug here?
       AsyncGraphShard *shard = local_shards_[it->first / total_num_hosts_];
       auto future = shard->async_filter_nodes(it->second, attrId, attrKey);
-      futures.insert(std::pair<int, future_t>(it->first / total_num_hosts_, future));
+      futures.insert(std::pair<int, future_t>(it->first / total_num_hosts_, std::move(future)));
       COND_LOG_E("sent");
     }
 
@@ -420,7 +420,7 @@ class GraphQueryAggregatorServiceHandler :
     std::vector<future_t> futures;
     for (auto& shard : local_shards_) {
       auto future = shard->async_get_nodes(attrId, attrKey);
-      futures.push_back(future);
+      futures.push_back(std::move(future));
     }
 
     std::set<int64_t> shard_result;
@@ -463,7 +463,7 @@ class GraphQueryAggregatorServiceHandler :
     for (auto& shard : local_shards_) {
       auto future = shard->async_get_nodes2(attrId1, attrKey1, attrId2,
                                            attrKey2);
-      futures.push_back(future);
+      futures.push_back(std::move(future));
     }
 
     std::set<int64_t> shard_result;
@@ -627,7 +627,7 @@ class GraphQueryAggregatorServiceHandler :
         int shard_idx_local = shard_id_to_shard_idx(ptr.shardId);
         auto future = local_shards_.at(shard_idx_local)->async_assoc_count(
             src, atype);
-        local_futures.push_back(future);
+        local_futures.push_back(std::move(future));
       } else {
         aggregators_.at(next_host_id).send_assoc_count_local(ptr.shardId, src,
                                                              atype);
@@ -639,7 +639,7 @@ class GraphQueryAggregatorServiceHandler :
         shard_idx < local_shards_.size()
             && "shard_idx >= local_shards_.size()");
     auto future = local_shards_.at(shard_idx)->async_assoc_count(src, atype);
-    local_futures.push_back(future);
+    local_futures.push_back(std::move(future));
 
     int64_t cnt = 0;
     for (auto& future : local_futures) {
@@ -707,7 +707,7 @@ class GraphQueryAggregatorServiceHandler :
         int shard_idx_local = shard_id_to_shard_idx(it->shardId);
         auto future = local_shards_.at(shard_idx_local)->async_assoc_get(
             src, atype, dstIdSet, tLow, tHigh);
-        local_futures.push_back(future);
+        local_futures.push_back(std::move(future));
       } else {
         aggregators_.at(next_host_id).send_assoc_get_local(it->shardId, src,
                                                            atype, dstIdSet,
@@ -720,7 +720,7 @@ class GraphQueryAggregatorServiceHandler :
     auto future = local_shards_.at(shard_idx)->async_assoc_get(src, atype,
                                                                dstIdSet, tLow,
                                                                tHigh);
-    local_futures.push_back(future);
+    local_futures.push_back(std::move(future));
 
     _return.clear();
 
@@ -822,7 +822,7 @@ class GraphQueryAggregatorServiceHandler :
         int shard_idx_local = shard_id_to_shard_idx(it->shardId);
         auto future = local_shards_.at(shard_idx_local)->async_assoc_time_range(
             src, atype, tLow, tHigh, limit);
-        local_futures.push_back(future);
+        local_futures.push_back(std::move(future));
       } else {
         aggregators_.at(next_host_id).send_assoc_time_range_local(it->shardId,
                                                                   src, atype,
@@ -836,7 +836,7 @@ class GraphQueryAggregatorServiceHandler :
                                                                       tLow,
                                                                       tHigh,
                                                                       limit);
-    local_futures.push_back(future);
+    local_futures.push_back(std::move(future));
 
     _return.clear();
     for (auto& future : local_futures) {
