@@ -13,6 +13,7 @@
 
 #include <boost/thread.hpp>
 
+#include "graph_shard.h"
 #include "ports.h"
 #include "utils.h"
 
@@ -27,8 +28,7 @@ boost::shared_mutex local_shards_data_mutex;
 bool local_shards_data_initiated = false;
 
 // a vector of maps: src -> (atype -> [shard id, file offset])
-std::vector<
-    std::unordered_map<int64_t,
+std::vector<std::unordered_map<int64_t,
         std::unordered_map<int64_t, std::vector<ThriftEdgeUpdatePtr>> > > edge_update_ptrs;
 boost::shared_mutex edge_update_ptrs_mutex;
 
