@@ -1202,24 +1202,22 @@ int main(int argc, char **argv) {
   LOG_E("Setting concurrency to %u\n", num_threads);
   AsyncThreadPool *pool = new AsyncThreadPool(num_threads);
   for (size_t i = 0; i < local_num_shards; i++) {
-    init_threads.push_back(
-        std::thread(
-            [&] {
-              int shard_id = i * total_num_hosts + local_host_id;
-              std::string node_filename = node_part_name(node_file, shard_id, total_num_shards);
-              std::string edge_filename = edge_part_name(edge_file, shard_id, total_num_shards);
-              LOG_E("Shard Id = %d, Node File = %s, Edge File = %s", shard_id,
-                  node_filename.c_str(), edge_filename.c_str());
-              AsyncGraphShard *shard = new AsyncGraphShard(node_filename, edge_filename,
-                  false, sa_sampling_rate,
-                  isa_sampling_rate,
-                  npa_sampling_rate, shard_id,
-                  total_num_shards,
-                  StoreMode::SuccinctStore,
-                  num_suffixstore_shards,
-                  num_logstore_shards, pool);
-              local_shards[i] = shard;
-            }));
+    int shard_id = i * total_num_hosts + local_host_id;
+    std::string node_filename, edge_filename;
+    node_filename = node_part_name(node_file, shard_id, total_num_shards);
+    edge_filename = edge_part_name(edge_file, shard_id, total_num_shards);
+    LOG_E("Shard Id = %d, Node File = %s, Edge File = %s", shard_id,
+          node_filename.c_str(), edge_filename.c_str());
+    init_threads.push_back(std::thread([&] {
+      local_shards[i] = new AsyncGraphShard(node_filename, edge_filename,
+          false, sa_sampling_rate,
+          isa_sampling_rate,
+          npa_sampling_rate, shard_id,
+          total_num_shards,
+          StoreMode::SuccinctStore,
+          num_suffixstore_shards,
+          num_logstore_shards, pool);
+    }));
   }
 
   std::for_each(init_threads.begin(), init_threads.end(), [](std::thread &t) {
