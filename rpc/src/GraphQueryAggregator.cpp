@@ -1251,6 +1251,8 @@ int main(int argc, char **argv) {
           edge_update_ptrs.size());
   }
 
+  LOG_E("Handler started\n");
+
   int port = QUERY_HANDLER_PORT;
   try {
     shared_ptr<ProcessorFactory> processor_factory(
