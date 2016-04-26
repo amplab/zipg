@@ -1195,22 +1195,35 @@ int main(int argc, char **argv) {
   std::vector<AsyncGraphShard*> local_shards;
 
   local_shards.resize(local_num_shards);
+  std::vector<std::thread> init_threads;
+  unsigned num_threads = std::thread::hardware_concurrency();
+  num_threads = num_threads == 0 ? 64 : num_threads;
+  LOG_E("Setting concurrency to %u\n", num_threads);
+  ThreadPool pool(num_threads);
   for (size_t i = 0; i < local_num_shards; i++) {
-    int shard_id = i * total_num_hosts + local_host_id;
-    std::string node_filename = node_part_name(node_file, shard_id, total_num_shards);
-    std::string edge_filename = edge_part_name(edge_file, shard_id, total_num_shards);
-    LOG_E("Shard Id = %d, Node File = %s, Edge File = %s", shard_id,
-          node_filename.c_str(), edge_filename.c_str());
-    AsyncGraphShard *shard = new AsyncGraphShard(node_filename, edge_filename,
-                                                 false, sa_sampling_rate,
-                                                 isa_sampling_rate,
-                                                 npa_sampling_rate, shard_id,
-                                                 total_num_shards,
-                                                 StoreMode::SuccinctStore,
-                                                 num_suffixstore_shards,
-                                                 num_logstore_shards);
-    local_shards[i] = shard;
+    init_threads.push_back(
+        std::thread(
+            [&] {
+              int shard_id = i * total_num_hosts + local_host_id;
+              std::string node_filename = node_part_name(node_file, shard_id, total_num_shards);
+              std::string edge_filename = edge_part_name(edge_file, shard_id, total_num_shards);
+              LOG_E("Shard Id = %d, Node File = %s, Edge File = %s", shard_id,
+                  node_filename.c_str(), edge_filename.c_str());
+              AsyncGraphShard *shard = new AsyncGraphShard(node_filename, edge_filename,
+                  false, sa_sampling_rate,
+                  isa_sampling_rate,
+                  npa_sampling_rate, shard_id,
+                  total_num_shards,
+                  StoreMode::SuccinctStore,
+                  num_suffixstore_shards,
+                  num_logstore_shards, pool);
+              local_shards[i] = shard;
+            }));
   }
+
+  std::for_each(init_threads.begin(), init_threads.end(), [](std::thread &t) {
+    t.join();
+  });
 
   if (local_host_id == hostnames.size() - 1) {
     // LogStore
@@ -1223,7 +1236,7 @@ int main(int argc, char **argv) {
                                                  total_num_shards,
                                                  StoreMode::LogStore,
                                                  num_suffixstore_shards,
-                                                 num_logstore_shards);
+                                                 num_logstore_shards, pool);
     local_shards.push_back(shard);
 
     // +1 because of the last, empty shard
