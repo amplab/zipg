@@ -36,13 +36,6 @@ service GraphQueryAggregatorService {
     //       local shards as well.
     i32 init(),
 
-    // Have this aggregator connect to machine-local shards (servers),
-    // and call init() on them (i.e. loads or constructs).  End users
-    // should just call init() once and not call this method.
-    i32 init_local_shards(),
-
-    i32 local_data_init(),
-
     // Have this aggregator connect to all other aggregators.
     i32 connect_to_aggregators(),
 
