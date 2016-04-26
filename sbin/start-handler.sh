@@ -37,20 +37,20 @@ local_host_id=$2
 
 # optionally support input file override
 # default is to read from sbin/succinct-config.sh
-node_file_raw=$4
+node_file_raw=$3
 if [ "$node_file_raw" = "" ]; then
   node_file_raw=${NODE_FILE}
 fi
-edge_file_raw=$5
+edge_file_raw=$4
 if [ "$edge_file_raw" = "" ]; then
   edge_file_raw=${EDGE_FILE}
 fi
 
 # These can be set when calling this script; otherwise, use defaults
 # Only need be set / meaningful when constructing graphs (if loading, no effects)
-sa_sr=${6:-32}
-isa_sr=${7:-64}
-npa_sr=${8:-128}
+sa_sr=${5:-32}
+isa_sr=${6:-64}
+npa_sr=${7:-128}
 
 if [ "$num_shards_local" = "" ]; then
   num_shards_local=1
@@ -92,7 +92,6 @@ nohup "${bin}/../rpc/bin/graph_query_aggregator" \
   -l "${NUM_LOGSTORE_PARTS}" \
   -x ${sa_sr} -y ${isa_sr} -z ${npa_sr} \
   $node_file_raw \
-  $edge_file_raw \
-  2>"${SUCCINCT_LOG_PATH}/handler_${2}.log" >/dev/null &
+  $edge_file_raw 2>"${SUCCINCT_LOG_PATH}/handler_${2}.log" >/dev/null &
   #2>&1 > "${SUCCINCT_LOG_PATH}/handler_${2}.log" &
   # NOTE: use the /dev/null version to pipe to each worker's local log (which won't be piped back to master)
