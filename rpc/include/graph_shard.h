@@ -398,7 +398,7 @@ class AsyncGraphShard : public GraphShard {
                   int32_t isa_sampling_rate, int32_t npa_sampling_rate,
                   int shard_id, int total_num_shards,
                   const StoreMode store_mode, int num_suffixstore_shards,
-                  int num_logstore_shards, AsyncThreadPool& pool)
+                  int num_logstore_shards, AsyncThreadPool* pool)
       : GraphShard(node_file, edge_file, construct, sa_sampling_rate,
                    isa_sampling_rate, npa_sampling_rate, shard_id,
                    total_num_shards, store_mode, num_suffixstore_shards,
@@ -410,7 +410,7 @@ class AsyncGraphShard : public GraphShard {
   std::future<std::vector<int64_t>> async_filter_nodes(
       const std::vector<int64_t> & nodeIds, const int32_t attrId,
       const std::string& attrKey) {
-    return pool_.enqueue([&] {
+    return pool_->enqueue([&] {
       std::vector<int64_t> res;
       filter_nodes(res, nodeIds, attrId, attrKey);
       return res;
@@ -419,7 +419,7 @@ class AsyncGraphShard : public GraphShard {
 
   std::future<std::set<int64_t>> async_get_nodes(const int32_t attrId,
                                                  const std::string& attrKey) {
-    return pool_.enqueue([&] {
+    return pool_->enqueue([&] {
       std::set<int64_t> res;
       get_nodes(res, attrId, attrKey);
       return res;
@@ -430,7 +430,7 @@ class AsyncGraphShard : public GraphShard {
                                                   const std::string& attrKey1,
                                                   const int32_t attrId2,
                                                   const std::string& attrKey2) {
-    return pool_.enqueue([&] {
+    return pool_->enqueue([&] {
       std::set<int64_t> res;
       get_nodes2(res, attrId1, attrKey1, attrId2, attrKey2);
       return res;
@@ -438,7 +438,7 @@ class AsyncGraphShard : public GraphShard {
   }
 
   std::future<int64_t> async_assoc_count(int64_t src, int64_t atype) {
-    return pool_.enqueue([&] {
+    return pool_->enqueue([&] {
       return assoc_count(src, atype);
     });
   }
@@ -446,7 +446,7 @@ class AsyncGraphShard : public GraphShard {
   std::future<std::vector<ThriftAssoc>> async_assoc_get(
       const int64_t src, const int64_t atype, const std::set<int64_t>& dstIdSet,
       const int64_t tLow, const int64_t tHigh) {
-    return pool_.enqueue([&] {
+    return pool_->enqueue([&] {
       std::vector<ThriftAssoc> res;
       assoc_get(res, src, atype, dstIdSet, tLow, tHigh);
       return res;
@@ -456,7 +456,7 @@ class AsyncGraphShard : public GraphShard {
   std::future<std::vector<ThriftAssoc>> async_assoc_time_range(
       const int64_t src, const int64_t atype, const int64_t tLow,
       const int64_t tHigh, const int32_t limit) {
-    return pool_.enqueue([&] {
+    return pool_->enqueue([&] {
       std::vector<ThriftAssoc> res;
       assoc_time_range(res, src, atype, tLow, tHigh, limit);
       return res;
@@ -465,7 +465,7 @@ class AsyncGraphShard : public GraphShard {
 
   // TODO: Add more async functions
  private:
-  AsyncThreadPool pool_;
+  AsyncThreadPool *pool_;
 };
 
 #endif

@@ -1200,7 +1200,7 @@ int main(int argc, char **argv) {
   unsigned num_threads = std::thread::hardware_concurrency();
   num_threads = num_threads == 0 ? 64 : num_threads;
   LOG_E("Setting concurrency to %u\n", num_threads);
-  AsyncThreadPool pool(num_threads);
+  AsyncThreadPool *pool = new AsyncThreadPool(num_threads);
   for (size_t i = 0; i < local_num_shards; i++) {
     init_threads.push_back(
         std::thread(
