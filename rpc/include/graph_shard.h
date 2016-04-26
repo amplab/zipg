@@ -391,9 +391,9 @@ class GraphShard {
 
   const int num_suffixstore_shards_, num_logstore_shards_;
 
-  shared_ptr<SuccinctGraph> graph_;
-  shared_ptr<GraphLogStore> graph_log_store_ = nullptr;
-  shared_ptr<GraphSuffixStore> graph_suffix_store_ = nullptr;
+  SuccinctGraph *graph_ = nullptr;
+  GraphLogStore *graph_log_store_ = nullptr;
+  GraphSuffixStore *graph_suffix_store_ = nullptr;
 
 };
 
