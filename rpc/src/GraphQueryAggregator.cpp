@@ -12,6 +12,8 @@
 #include <thrift/transport/TSocket.h>
 
 #include <boost/thread.hpp>
+#include <iomanip>
+#include <sstream>
 
 #include "graph_shard.h"
 #include "ports.h"
@@ -28,7 +30,8 @@ boost::shared_mutex local_shards_data_mutex;
 bool local_shards_data_initiated = false;
 
 // a vector of maps: src -> (atype -> [shard id, file offset])
-std::vector<std::unordered_map<int64_t,
+std::vector<
+    std::unordered_map<int64_t,
         std::unordered_map<int64_t, std::vector<ThriftEdgeUpdatePtr>> > > edge_update_ptrs;
 boost::shared_mutex edge_update_ptrs_mutex;
 
@@ -254,8 +257,8 @@ class GraphQueryAggregatorServiceHandler :
                                  const int32_t shardId, const int64_t nodeId,
                                  const int64_t atype) {
     local_shards_[shardId / total_num_hosts_]->get_neighbors_atype(_return,
-                                                                  nodeId,
-                                                                  atype);
+                                                                   nodeId,
+                                                                   atype);
   }
 
   void get_edge_attrs(std::vector<std::string> & _return, const int64_t nodeId,
@@ -264,8 +267,8 @@ class GraphQueryAggregatorServiceHandler :
     int host_id = shard_id % total_num_hosts_;
     if (host_id == local_host_id_) {
       local_shards_.at(shard_id_to_shard_idx(shard_id))->get_edge_attrs(_return,
-                                                                       nodeId,
-                                                                       atype);
+                                                                        nodeId,
+                                                                        atype);
     } else {
       aggregators_.at(host_id).get_edge_attrs_local(_return, shard_id, nodeId,
                                                     atype);
@@ -276,7 +279,7 @@ class GraphQueryAggregatorServiceHandler :
                             const int32_t shardId, const int64_t nodeId,
                             const int64_t atype) {
     local_shards_[shardId / total_num_hosts_]->get_edge_attrs(_return, nodeId,
-                                                             atype);
+                                                              atype);
   }
 
   void get_neighbors_attr(std::vector<int64_t> & _return, const int64_t nodeId,
@@ -373,7 +376,9 @@ class GraphQueryAggregatorServiceHandler :
       // FIXME?: try to sleep a while? get_nhbr(n, attr) bug here?
       AsyncGraphShard *shard = local_shards_[it->first / total_num_hosts_];
       auto future = shard->async_filter_nodes(it->second, attrId, attrKey);
-      futures.insert(std::pair<int, future_t>(it->first / total_num_hosts_, std::move(future)));
+      futures.insert(
+          std::pair<int, future_t>(it->first / total_num_hosts_,
+                                   std::move(future)));
       COND_LOG_E("sent");
     }
 
@@ -462,7 +467,7 @@ class GraphQueryAggregatorServiceHandler :
     std::vector<future_t> futures;
     for (auto& shard : local_shards_) {
       auto future = shard->async_get_nodes2(attrId1, attrKey1, attrId2,
-                                           attrKey2);
+                                            attrKey2);
       futures.push_back(std::move(future));
     }
 
@@ -552,7 +557,7 @@ class GraphQueryAggregatorServiceHandler :
       if (next_host_id == local_host_id_) {
         int shard_idx_local = shard_id_to_shard_idx(ptr.shardId);
         local_shards_[shard_idx_local]->assoc_range(assocs, src, atype, 0,
-                                                   len - curr_len);
+                                                    len - curr_len);
       } else {
         aggregators_.at(next_host_id).assoc_range_local(assocs, ptr.shardId,
                                                         src, atype, 0,  // FIXME: this is a hack and potentially expensive
@@ -565,7 +570,7 @@ class GraphQueryAggregatorServiceHandler :
 
     if (_return.size() < len) {
       local_shards_.at(shard_idx)->assoc_range(assocs, src, atype, 0,
-                                              len - _return.size());
+                                               len - _return.size());
       COND_LOG_E("local shard returns %d assocs\n", assocs.size());
       _return.insert(_return.end(), assocs.begin(), assocs.end());
     }
@@ -1102,6 +1107,24 @@ void print_usage(char *exec) {
         exec);
 }
 
+std::string node_part_name(std::string base_path, int32_t shard_id,
+                           int32_t num_shards) {
+  std::string max = std::to_string(num_shards);
+  std::stringstream node_part;
+  node_part << base_path << "-part" << std::setfill('0')
+            << std::setw(max.length()) << shard_id << "of" << max << "WithPtrs";
+  return node_part.str();
+}
+
+std::string edge_part_name(std::string base_path, int32_t shard_id,
+                           int32_t num_shards) {
+  std::string max = std::to_string(num_shards);
+  std::stringstream edge_part;
+  edge_part << base_path << "-part" << std::setfill('0')
+            << std::setw(max.length()) << shard_id << "of" << max;
+  return edge_part.str();
+}
+
 int main(int argc, char **argv) {
   if (argc < 2) {
     print_usage(argv[0]);
@@ -1173,13 +1196,10 @@ int main(int argc, char **argv) {
 
   for (size_t i = 0; i < local_num_shards; i++) {
     int shard_id = i * total_num_hosts + local_host_id;
-    char node_filename[100], edge_filename[100];
-    sprintf(node_filename, "%s-part-%02dof%dWithPtrs", node_file.c_str(),
-            shard_id, total_num_shards);
-    sprintf(edge_filename, "%s-part-%02dof%d", node_file.c_str(), shard_id,
-            total_num_shards);
+    std::string node_filename = node_part_name(node_file, shard_id, total_num_shards);
+    std::string edge_filename = edge_part_name(edge_file, shard_id, total_num_shards);
     LOG_E("Shard Id = %d, Node File = %s, Edge File = %s", shard_id,
-          node_filename, edge_filename);
+          node_filename.c_str(), edge_filename.c_str());
     AsyncGraphShard *shard = new AsyncGraphShard(node_filename, edge_filename,
                                                  false, sa_sampling_rate,
                                                  isa_sampling_rate,
