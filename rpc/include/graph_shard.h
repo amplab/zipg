@@ -11,8 +11,6 @@
 #include <vector>
 #include <future>
 
-using boost::shared_ptr;
-
 class GraphShard {
  public:
   GraphShard(const std::string& node_file, const std::string& edge_file,
@@ -28,13 +26,6 @@ class GraphShard {
         store_mode_(store_mode),
         num_suffixstore_shards_(num_suffixstore_shards),
         num_logstore_shards_(num_logstore_shards) {
-
-    if (store_mode_ == StoreMode::SuccinctStore) {
-      graph_ = new SuccinctGraph("");
-      graph_->set_npa_sampling_rate(npa_sampling_rate);
-      graph_->set_sa_sampling_rate(sa_sampling_rate);
-      graph_->set_isa_sampling_rate(isa_sampling_rate);
-    }
 
     if (construct) {
       node_table_empty_ = !file_or_dir_exists(node_file);
@@ -64,6 +55,10 @@ class GraphShard {
 
     switch (store_mode_) {
       case StoreMode::SuccinctStore: {
+        graph_ = new SuccinctGraph("");
+        graph_->set_npa_sampling_rate(npa_sampling_rate);
+        graph_->set_sa_sampling_rate(sa_sampling_rate);
+        graph_->set_isa_sampling_rate(isa_sampling_rate);
         if (construct_) {
           LOG_E("Construct is set to true: starting to construct & encode\n");
           if (!node_table_empty_ && !edge_table_empty_) {
@@ -91,8 +86,7 @@ class GraphShard {
       }
 
       case StoreMode::SuffixStore: {
-        graph_suffix_store_ = shared_ptr<GraphSuffixStore>(
-            new GraphSuffixStore(node_file_, edge_file_));
+        graph_suffix_store_ = new GraphSuffixStore(node_file_, edge_file_);
         if (construct_) {
           graph_suffix_store_->construct();
         } else {
@@ -102,8 +96,7 @@ class GraphShard {
       }
 
       case StoreMode::LogStore: {
-        graph_log_store_ = shared_ptr<GraphLogStore>(
-            new GraphLogStore(node_file_, edge_file_));
+        graph_log_store_ = new GraphLogStore(node_file_, edge_file_);
 
         if (shard_id_ == total_num_shards_) {
           // This process is the append-only, initially empty store
