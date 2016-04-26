@@ -21,13 +21,7 @@ function stop_all() {
 }
 
 function start_all() {
-  bash ${currDir}/../sbin/start-servers.sh $node_file_raw $edge_file_raw $sa $isa $npa
-  sleep 2
-
-  bash ${currDir}/../sbin/start-handlers.sh 
-  sleep 2
-
-  bash ${currDir}/../sbin/load-data.sh
+  bash ${currDir}/../sbin/start-handlers.sh $node_file_raw $edge_file_raw $sa $isa $npa
   sleep 2
 }
 

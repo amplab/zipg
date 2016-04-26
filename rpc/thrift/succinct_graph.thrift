@@ -1,6 +1,3 @@
-//cpp_include "<unordered_map>"
-//cpp_include "<unordered_set>"
-
 // An association. The included fields are the same as SuccinctGraph::Assoc.
 struct ThriftAssoc {
     1: i64 srcId,
@@ -10,89 +7,11 @@ struct ThriftAssoc {
     5: string attr,
 }
 
-struct ThriftEdgeUpdatePtr {
-    1: i64 shardId,
-    2: i64 offset,
-}
-
 // In the IDL we use list<ThriftSrcAtype>, but the implementation makes sure,
 // and relies on, it actually contains no duplicates -- i.e., it is a set.
 struct ThriftSrcAtype {
     1: i64 src,
     2: i64 atype,
-}
-
-// One per logical shard (there can be multiple shards per physical node).
-service GraphQueryService {
-
-    // Loads or constructs graph shards.
-    i32 init(),
-
-    list<i64> get_neighbors(1: i64 nodeId),
-
-    list<i64> get_neighbors_atype(1: i64 nodeId, 2: i64 atype),
-
-    set<i64> get_nodes(1: i32 attrId, 2: string attrKey),
-
-    set<i64> get_nodes2(
-        1: i32 attrId1,
-        2: string attrKey1,
-        3: i32 attrId2,
-        4: string attrKey2),
-
-    // The `nodeId` is a local key, and is guaranteed to belong to this
-    // current shard.
-    string get_attribute_local(1: i64 nodeId, 2: i32 attrId),
-
-    // Filter the nodeIds by checking whether they contain the specified
-    // attribute.  Contracts:
-    // (1) This shard will only check its own local node table.
-    // (2) `nodeIds` contains "local keys".
-    // (3) On return, the result contains "local keys" as well.
-    list<i64> filter_nodes(
-        1: list<i64> nodeIds,
-        2: i32 attrId,
-        3: string attrKey),
-
-    list<string> get_edge_attrs(1: i64 nodeId, 2: i64 atype),
-
-    list<ThriftAssoc> assoc_range(
-        1: i64 src, 2: i64 atype, 3: i32 off, 4: i32 len),
-
-    i64 assoc_count(1: i64 src, 2: i64 atype),
-
-    list<ThriftAssoc> assoc_get(
-        1: i64 src, 2: i64 atype, 3: set<i64> dstIdSet,
-        4: i64 tLow, 5: i64 tHigh),
-
-    list<string> obj_get(1: i64 nodeId),
-
-    list<ThriftAssoc> assoc_time_range(
-        1: i64 src, 2: i64 atype,
-        3: i64 tLow, 4: i64 tHigh, 5: i32 limit),
-
-    // Multi-store related
-
-    // Thread-safe, since it uses a mutex.
-//    list<ThriftEdgeUpdatePtr> get_edge_update_ptrs(1: i64 src, 2: i64 atype),
-
-    // This still doesn't quite work,
-//    map cpp_type "std::unordered_map<int32_t, std::unordered_set<ThrfitAssoc>>"
-//    <i32, set cpp_type "std::unordered_set<ThriftSrcAtype>" <ThriftSrcAtype>>
-//    get_edge_updates(),
-
-    // Called only during initial backfill, so it assumes there are no
-    // concurrent writes.
-    map<i32, list<ThriftSrcAtype>> get_edge_updates(),
-
-    // Thread-safe, since it uses a mutex.
-//    void record_edge_updates(1: i32 next_shard, 2: list<ThriftSrcAtype> updates),
-
-    i32 assoc_add(
-        1: i64 src, 2: i64 atype, 3: i64 dst, 4: i64 time, 5: string attr),
-        
-	i64 obj_add(1: list<string> attrs),
-
 }
 
 // One aggregator per machine; handles local aggregation and query routing.
@@ -122,17 +41,10 @@ service GraphQueryAggregatorService {
     // Have this aggregator connect to all other aggregators.
     i32 connect_to_aggregators(),
 
-    i32 connect_to_local_shards(),
-
-    // Have all aggregators shutdown (1) connections to their own shards, (2)
-    // connections to other aggregators.
-    void shutdown(),
-    void disconnect_from_local_shards(),
+    // Have all aggregators shutdown connections to other aggregators.
     void disconnect_from_aggregators(),
-
-    // Send edge updates, if any.  No-op for SuccinctStore machines.
-    i32 backfill_edge_updates(),
-
+    void shutdown(),
+    
     // Thread-safe, since it uses a mutex.
     void record_edge_updates(
         1: i32 next_shard, // where are these updates located?
@@ -145,7 +57,6 @@ service GraphQueryAggregatorService {
     	3: i64 obj),
 
     // Primitive queries
-
     string get_attribute(1: i64 nodeId, 2: i32 attrId),
 
     string get_attribute_local(1: i64 shardId, 2: i64 nodeId, 3: i32 attrId),
@@ -193,7 +104,6 @@ service GraphQueryAggregatorService {
         1: i32 shardId, 2: i64 nodeId, 3: i64 atype),
 
     // TAO queries
-
     list<ThriftAssoc> assoc_range(
         1: i64 src, 2: i64 atype, 3: i32 off, 4: i32 len),
 
