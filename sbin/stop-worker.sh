@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-ids="`pgrep graph_query_agg`"
+pids="`pgrep graph_query_agg`"
 
 for pid in $pids
 do
