@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
+ids="`pgrep graph_query_agg`"
 
-sbin=`dirname "$0"`
-sbin=`cd "$sbin"; pwd`
-
-"$sbin/stop-handler.sh"
-"$sbin/stop-servers.sh"
+for pid in $pids
+do
+	echo "Killing pid $pid..."
+	kill -9 $pid
+done
