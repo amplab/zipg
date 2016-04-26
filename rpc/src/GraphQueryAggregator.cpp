@@ -1194,6 +1194,7 @@ int main(int argc, char **argv) {
 
   std::vector<AsyncGraphShard*> local_shards;
 
+  local_shards.resize(local_num_shards);
   for (size_t i = 0; i < local_num_shards; i++) {
     int shard_id = i * total_num_hosts + local_host_id;
     std::string node_filename = node_part_name(node_file, shard_id, total_num_shards);
@@ -1208,7 +1209,7 @@ int main(int argc, char **argv) {
                                                  StoreMode::SuccinctStore,
                                                  num_suffixstore_shards,
                                                  num_logstore_shards);
-    local_shards.push_back(shard);
+    local_shards[i] = shard;
   }
 
   if (local_host_id == hostnames.size() - 1) {
