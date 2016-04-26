@@ -391,7 +391,7 @@ class GraphShard {
 };
 
 class AsyncGraphShard : public GraphShard {
-
+ public:
   AsyncGraphShard(const std::string& node_file, const std::string& edge_file,
                   bool construct, int32_t sa_sampling_rate,
                   int32_t isa_sampling_rate, int32_t npa_sampling_rate,
