@@ -51,13 +51,11 @@ for host in `echo "$HOSTLIST"|sed  "s/#.*$//;/^$/d"`; do
 	# NOTE: $3 $4 $5 are supposed to be sampling rates
   if [ -n "${SUCCINCT_SSH_FOREGROUND}" ]; then
     ssh $SUCCINCT_SSH_OPTS "$host" "$sbin/start-handler.sh" $SHARDS_PER_SERVER $i \
-      $num_hosts \
       $node_file_raw \
       $edge_file_raw \
       $3 $4 $5 2>&1 | sed "s/^/$host: /"
   else
     ssh $SUCCINCT_SSH_OPTS "$host" "$sbin/start-handler.sh" $SHARDS_PER_SERVER $i \
-      $num_hosts \
       $node_file_raw \
       $edge_file_raw \
       $3 $4 $5 2>&1 | sed "s/^/$host: /" &

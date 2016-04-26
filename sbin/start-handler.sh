@@ -34,8 +34,6 @@ fi
 num_shards_local=$1
 # which id identifies this physical node?
 local_host_id=$2
-# total number of physical nodes in cluster
-num_hosts=$3
 
 # optionally support input file override
 # default is to read from sbin/succinct-config.sh
@@ -93,7 +91,6 @@ nohup "${bin}/../rpc/bin/graph_query_aggregator" \
   -f "${NUM_SUFFIXSTORE_PARTS}" \
   -l "${NUM_LOGSTORE_PARTS}" \
   -x ${sa_sr} -y ${isa_sr} -z ${npa_sr} \
-  -k ${num_hosts} \
   $nodeInput \
   $edgeInput \
   2>"${SUCCINCT_LOG_PATH}/handler_${2}.log" >/dev/null &
