@@ -92,6 +92,6 @@ nohup "${bin}/../rpc/bin/graph_query_aggregator" \
   -l "${NUM_LOGSTORE_PARTS}" \
   -x ${sa_sr} -y ${isa_sr} -z ${npa_sr} \
   $node_file_raw \
-  $edge_file_raw 2>"${SUCCINCT_LOG_PATH}/handler_${2}.log" >/dev/null &
+  $edge_file_raw 2>"${SUCCINCT_LOG_PATH}/handler.log" >/dev/null &
   #2>&1 > "${SUCCINCT_LOG_PATH}/handler_${2}.log" &
   # NOTE: use the /dev/null version to pipe to each worker's local log (which won't be piped back to master)

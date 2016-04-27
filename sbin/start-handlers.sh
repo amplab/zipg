@@ -49,20 +49,11 @@ fi
 i=0
 for host in `echo "$HOSTLIST"|sed  "s/#.*$//;/^$/d"`; do
 	# NOTE: $3 $4 $5 are supposed to be sampling rates
-  if [ -n "${SUCCINCT_SSH_FOREGROUND}" ]; then
-    ssh $SUCCINCT_SSH_OPTS "$host" "$sbin/start-handler.sh" $SHARDS_PER_SERVER $i \
-      $node_file_raw \
-      $edge_file_raw \
-      $3 $4 $5 2>&1 | sed "s/^/$host: /"
-  else
-    ssh $SUCCINCT_SSH_OPTS "$host" "$sbin/start-handler.sh" $SHARDS_PER_SERVER $i \
-      $node_file_raw \
-      $edge_file_raw \
-      $3 $4 $5 2>&1 | sed "s/^/$host: /" &
-  fi
-  if [ "$SUCCINCT_HOST_SLEEP" != "" ]; then
-    sleep $SUCCINCT_HOST_SLEEP
-  fi
+  ssh $SUCCINCT_SSH_OPTS "$host" "$sbin/start-handler.sh" $SHARDS_PER_SERVER $i \
+    $node_file_raw \
+    $edge_file_raw \
+    $3 $4 $5 2>&1 | sed "s/^/$host: /" &
   i=$(( $i + 1 ))
 done
-wait
+
+$sbin/hosts.sh $sbin/check-started.sh
