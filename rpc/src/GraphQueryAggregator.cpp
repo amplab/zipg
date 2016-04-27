@@ -1210,7 +1210,7 @@ int main(int argc, char **argv) {
           node_filename.c_str(), edge_filename.c_str());
     init_threads.push_back(
         std::thread(
-            [node_filename, edge_filename, sa_sampling_rate, isa_sampling_rate, npa_sampling_rate, shard_id, total_num_shards, num_suffixstore_shards, num_logstore_shards, &pool] {
+            [i, node_filename, edge_filename, sa_sampling_rate, isa_sampling_rate, npa_sampling_rate, shard_id, total_num_shards, num_suffixstore_shards, num_logstore_shards, &pool, &local_shards] {
               local_shards[i] = new AsyncGraphShard(node_filename, edge_filename,
                   false, sa_sampling_rate,
                   isa_sampling_rate,
