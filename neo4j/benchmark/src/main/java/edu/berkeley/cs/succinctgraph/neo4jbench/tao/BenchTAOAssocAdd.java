@@ -38,7 +38,7 @@ public class BenchTAOAssocAdd {
     NUM_NODES = Long.parseLong(args[3]);
     boolean tuned = Boolean.valueOf(args[4]);
     String neo4jPageCacheMemory = args[5];
-    numWarmupQueries = 100000;
+    numWarmupQueries = 1000;
     numMeasureQueries = 10000;
     warmupRand = new Random(SEED);
     rand = new Random(SEED + 1);
