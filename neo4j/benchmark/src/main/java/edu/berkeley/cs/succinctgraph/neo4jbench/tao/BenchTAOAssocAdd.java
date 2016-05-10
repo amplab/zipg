@@ -116,8 +116,6 @@ public class BenchTAOAssocAdd {
     } catch (Exception e) {
       e.printStackTrace();
     } finally {
-      tx.success();
-      tx.close();
       System.out.println("Shutting down database ...");
       db.shutdown();
     }
