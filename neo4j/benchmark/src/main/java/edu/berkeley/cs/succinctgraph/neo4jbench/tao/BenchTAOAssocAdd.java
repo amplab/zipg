@@ -67,7 +67,7 @@ public class BenchTAOAssocAdd {
     System.out.println("Done opening");
 
     BenchUtils.registerShutdownHook(db);
-    Transaction tx = db.beginTx();
+    Transaction tx;
     try {
       BenchUtils.fullWarmup(db);
 
@@ -80,27 +80,25 @@ public class BenchTAOAssocAdd {
 
       System.out.println("Warming up for " + numWarmupQueries + " queries");
       for (int i = 0; i < numWarmupQueries; ++i) {
-        tx.success();
-        tx.close();
-        tx = db.beginTx();
         long id1 = Math.abs(warmupRand.nextLong()) % NUM_NODES;
         long id2 = Math.abs(warmupRand.nextLong()) % NUM_NODES;
         int atype = warmupRand.nextInt(5);
+        tx = db.beginTx();
         taoImpls.assocAdd(db, id1, id2, atype, System.currentTimeMillis(), EDGE_ATTR);
+        tx.success();
+        tx.close();
       }
 
       System.out.println("Measuring for " + numMeasureQueries + " queries");
       for (int i = 0; i < numMeasureQueries; ++i) {
-        if (i % 10000 == 0) {
-          tx.success();
-          tx.close();
-          tx = db.beginTx();
-        }
         long id1 = Math.abs(rand.nextLong()) % NUM_NODES;
         long id2 = Math.abs(rand.nextLong()) % NUM_NODES;
         int atype = rand.nextInt(5);
         long queryStart = System.nanoTime();
+        tx = db.beginTx();
         taoImpls.assocAdd(db, id1, id2, atype, System.currentTimeMillis(), EDGE_ATTR);
+        tx.success();
+        tx.close();
         long queryEnd = System.nanoTime();
         double microsecs = (queryEnd - queryStart) / ((double) 1000);
         out.println("1," + microsecs);
