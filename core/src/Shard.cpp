@@ -59,9 +59,9 @@ int main(int argc, char** argv) {
 
   while (std::getline(in, line)) {
     if (line_num)
-      (*out[i % num_shards]) << line;
+      (*out[i % num_shards]) << line << "\n";
     else
-      (*out[std::stoll(Get(line, col_id)) % num_shards]) << line;
+      (*out[std::stoll(Get(line, col_id)) % num_shards]) << line << "\n";
     i++;
   }
 
