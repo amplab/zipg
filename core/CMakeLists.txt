@@ -24,12 +24,23 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 file(MAKE_DIRECTORY ${EXECUTABLE_OUTPUT_PATH})
 
 set(INCLUDE include)
-file(GLOB_RECURSE SOURCE_FILES src/*.cpp)
 include_directories(${INCLUDE})
 # Hacky: is there a better way?
 include_directories(${PROJECT_SOURCE_DIR}/../external/succinct-cpp/core/include/)
 
-add_library(succinctgraph STATIC ${SOURCE_FILES})
+add_library(succinctgraph STATIC FileSuffixStore.cpp
+	GraphFormatter.cpp
+	GraphLogStore.cpp
+	GraphSuffixStore.cpp
+	KeepInputSuccinctFile.cpp
+	KVLogStore.cpp
+	KVSuffixStore.cpp
+	partitioned_graph_formatter.cc
+	partitioners.cpp
+	StructuredEdgeTable.cpp
+	SuccinctGraph.cpp
+	SuccinctGraphSerde.cpp
+	ThreadedGraphEncoder.cpp)
 target_link_libraries(succinctgraph ${CMAKE_THREAD_LIBS_INIT})
 set_target_properties(succinctgraph PROPERTIES LINKER_LANGUAGE CXX)
 
