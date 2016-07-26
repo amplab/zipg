@@ -28,19 +28,19 @@ include_directories(${INCLUDE})
 # Hacky: is there a better way?
 include_directories(${PROJECT_SOURCE_DIR}/../external/succinct-cpp/core/include/)
 
-add_library(succinctgraph STATIC FileSuffixStore.cpp
-	GraphFormatter.cpp
-	GraphLogStore.cpp
-	GraphSuffixStore.cpp
-	KeepInputSuccinctFile.cpp
-	KVLogStore.cpp
-	KVSuffixStore.cpp
-	partitioned_graph_formatter.cc
-	partitioners.cpp
-	StructuredEdgeTable.cpp
-	SuccinctGraph.cpp
-	SuccinctGraphSerde.cpp
-	ThreadedGraphEncoder.cpp)
+add_library(succinctgraph STATIC src/FileSuffixStore.cpp
+	src/GraphFormatter.cpp
+	src/GraphLogStore.cpp
+	src/GraphSuffixStore.cpp
+	src/KeepInputSuccinctFile.cpp
+	src/KVLogStore.cpp
+	src/KVSuffixStore.cpp
+	src/partitioned_graph_formatter.cc
+	src/partitioners.cpp
+	src/StructuredEdgeTable.cpp
+	src/SuccinctGraph.cpp
+	src/SuccinctGraphSerde.cpp
+	src/ThreadedGraphEncoder.cpp)
 target_link_libraries(succinctgraph ${CMAKE_THREAD_LIBS_INIT})
 set_target_properties(succinctgraph PROPERTIES LINKER_LANGUAGE CXX)
 
