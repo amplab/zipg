@@ -6,9 +6,9 @@
 // Used in edge table layout only.
 const char SuccinctGraph::NODE_ID_DELIM = '\x02';
 const char SuccinctGraph::ATYPE_DELIM = '\x03';
-const char SuccinctGraph::TIMESTAMP_WIDTH_DELIM = '\x04'; // delim right before timestamp width
-const char SuccinctGraph::EDGE_WIDTH_DELIM = '\x05'; // delim right before edge width
-const char SuccinctGraph::METADATA_DELIM = '\x06'; // delim after all these header metadata
+const char SuccinctGraph::TIMESTAMP_WIDTH_DELIM = '\x04';  // delim right before timestamp width
+const char SuccinctGraph::EDGE_WIDTH_DELIM = '\x05';  // delim right before edge width
+const char SuccinctGraph::METADATA_DELIM = '\x06';  // delim after all these header metadata
 
 // Used in node table layout only.
 // *****Note that it is important the delim is not in DELIMITERS.*****
@@ -20,8 +20,7 @@ const std::vector<unsigned char> SuccinctGraph::DELIMITERS = {
     // ASCII delims that are not alphanumeric (unlikely to be used), ord < 128
     '\x02', '\x03', '\x04', '\x05', '\x06', '\x07', '\x08', '\x0C', '\x0D',
     '\x0E', '\x0F', '\x10', '\x11', '\x12', '\x13', '\x14', '\x15', '\x16',
-    '\x17', '\x18', '\x19', '\x1A', '\x1B', '\x1C', '\x1D', '\x1E'
-};
+    '\x17', '\x18', '\x19', '\x1A', '\x1B', '\x1C', '\x1D', '\x1E' };
 
 std::string pad_timestamp_width(int32_t x) {
   if (x < 10)
@@ -184,8 +183,7 @@ int main(int argc, char** argv) {
                // padded
                << pad_dst_id_width(dst_id_width)  // padded
                << assoc_list.size()  // not padded: so width unbounded
-               << SuccinctGraph::EDGE_WIDTH_DELIM
-               << std::to_string(edge_width)  // not padded: so width unbounded
+               << SuccinctGraph::EDGE_WIDTH_DELIM << std::to_string(edge_width)  // not padded: so width unbounded
                << SuccinctGraph::METADATA_DELIM;
 
       COND_LOG_E("timestamp width = %d, max timestamp = %lld\n", timestamp_width,
@@ -222,6 +220,11 @@ int main(int argc, char** argv) {
       for (auto it2 = assoc_list.begin(); it2 != assoc_list.end(); ++it2) {
         std::string attr = it2->attr;  // note: no encoding
         std::string attr_len = encode_node_id(attr.length(), edge_width);
+        if (std::to_string(attr.length()).length() > edge_width) {
+          LOG_E("Failed: attr = [%s], attrlen = [%d]\n", attr.c_str(),
+                attr.length());
+          exit(1);
+        }
         edge_out << attr_len << attr;
       }
     }
