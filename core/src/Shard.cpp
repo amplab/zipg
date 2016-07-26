@@ -4,14 +4,14 @@
 #include <unistd.h>
 #include <stdint.h>
 
-std::string Get(const std::string &s, uint32_t n) {
+uint64_t Get(const std::string &s, uint32_t n) {
   std::istringstream is(s);
   std::string field;
   do {
     if (!(is >> field))
       return "";
   } while (n-- != 0);
-  return field;
+  return std::stoll(field);
 }
 
 int main(int argc, char** argv) {
@@ -61,7 +61,7 @@ int main(int argc, char** argv) {
     if (line_num)
       (*out[i % num_shards]) << line << "\n";
     else
-      (*out[std::stoll(Get(line, col_id)) % num_shards]) << line << "\n";
+      (*out[Get(line, col_id) % num_shards]) << line << "\n";
     i++;
   }
 

@@ -51,6 +51,5 @@ add_executable(partitioned-graph-formatter src/partitioned_graph_formatter.cc)
 target_link_libraries(partitioned-graph-formatter succinctgraph)
 
 add_executable(linkbench-formatter src/LinkBenchFormatter.cpp)
-target_link_libraries(linkbench-formatter succinctgraph)
 
 add_executable(shard src/Shard.cpp)
