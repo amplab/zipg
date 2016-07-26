@@ -53,6 +53,7 @@ SuccinctGraph::SuccinctGraph(
     uint32_t sa_sampling_rate,
     uint32_t isa_sampling_rate,
     uint32_t npa_sampling_rate) {
+  this->edges = -1;
 }
 
 SuccinctGraph::SuccinctGraph(
