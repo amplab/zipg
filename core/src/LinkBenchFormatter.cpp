@@ -113,7 +113,7 @@ int32_t num_digits(int64_t number) {
 }
 
 int main(int argc, char** argv) {
-  if (argc != 2) {
+  if (argc != 3) {
     fprintf(stderr, "Usage: %s [input prefix] [output prefix]\n", argv[0]);
     return -1;
   }
