@@ -174,7 +174,7 @@ int main(int argc, char** argv) {
       }
 
       int32_t dst_id_width = num_digits(max_dst_id);
-      int32_t edge_width = assoc_list.begin()->attr.length();
+      int32_t edge_width = 3;
       int32_t timestamp_width = num_digits(max_timestamp);
 
       // output the metadata block:
@@ -184,7 +184,8 @@ int main(int argc, char** argv) {
                // padded
                << pad_dst_id_width(dst_id_width)  // padded
                << assoc_list.size()  // not padded: so width unbounded
-               << SuccinctGraph::EDGE_WIDTH_DELIM << std::to_string(edge_width)  // not padded: so width unbounded
+               << SuccinctGraph::EDGE_WIDTH_DELIM
+               << std::to_string(edge_width)  // not padded: so width unbounded
                << SuccinctGraph::METADATA_DELIM;
 
       COND_LOG_E("timestamp width = %d, max timestamp = %lld\n", timestamp_width,
@@ -220,19 +221,13 @@ int main(int argc, char** argv) {
       // edge attributes
       for (auto it2 = assoc_list.begin(); it2 != assoc_list.end(); ++it2) {
         std::string attr = it2->attr;  // note: no encoding
-        if (attr.length() != static_cast<size_t>(edge_width)) {
-          LOG_E("Failed: assumption that the edge attr width for each "
-                "assoc list is broken: src = %lld, atype = %lld, edge "
-                "width = %d, but found attr '%s' (length %d)\n",
-                it2->src_id, it2->atype, edge_width, attr.c_str(),
-                attr.length());
-          exit(1);
-        }
-        edge_out << attr;
+        std::string attr_len = encode_node_id(attr.length(), edge_width);
+        edge_out << attr_len << attr;
       }
     }
 
     edge_out << "\n";
+    edge_out.close();
   }
 
   return 0;
