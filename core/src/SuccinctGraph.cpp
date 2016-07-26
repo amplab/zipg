@@ -24,27 +24,6 @@
 // Hacky: represents not-specified query arguments
 #define NONE -1
 
-// Used in edge table layout only.
-const char SuccinctGraph::NODE_ID_DELIM = '\x02';
-const char SuccinctGraph::ATYPE_DELIM = '\x03';
-const char SuccinctGraph::TIMESTAMP_WIDTH_DELIM = '\x04'; // delim right before timestamp width
-const char SuccinctGraph::EDGE_WIDTH_DELIM = '\x05'; // delim right before edge width
-const char SuccinctGraph::METADATA_DELIM = '\x06'; // delim after all these header metadata
-
-// Used in node table layout only.
-// *****Note that it is important the delim is not in DELIMITERS.*****
-const char SuccinctGraph::NODE_TABLE_HEADER_DELIM = '\x1F';
-const std::vector<unsigned char> SuccinctGraph::DELIMITERS = {
-    // 20 non-ASCII delims (ord >= 128)
-    128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142,
-    143, 144, 145, 146, 147,
-    // ASCII delims that are not alphanumeric (unlikely to be used), ord < 128
-    '\x02', '\x03', '\x04', '\x05', '\x06', '\x07', '\x08', '\x0C', '\x0D',
-    '\x0E', '\x0F', '\x10', '\x11', '\x12', '\x13', '\x14', '\x15', '\x16',
-    '\x17', '\x18', '\x19', '\x1A', '\x1B', '\x1C', '\x1D', '\x1E'
-};
-
-
 // TODO: lots of code duplication among the TAO-like functions
 
 SuccinctGraph::SuccinctGraph(
