@@ -1,5 +1,6 @@
 #include <fstream>
 #include <sstream>
+#include <vector>
 #include <unistd.h>
 #include <stdint.h>
 
@@ -50,7 +51,7 @@ int main(int argc, char** argv) {
   std::string line;
   size_t i = 0;
 
-  for (uint32_t i = 0; i < num_shards; i++) {
+  for (int i = 0; i < num_shards; i++) {
     std::string partfile = input_file + "." + std::to_string(i);
     std::ofstream* o = new std::ofstream(partfile);
     out.push_back(o);
@@ -64,7 +65,7 @@ int main(int argc, char** argv) {
     i++;
   }
 
-  for (uint32_t i = 0; i < num_shards; i++) {
+  for (int i = 0; i < num_shards; i++) {
     out[i]->close();
   }
 }
