@@ -143,7 +143,7 @@ int main(int argc, char** argv) {
           + SuccinctGraph::NODE_TABLE_HEADER_DELIM
           + std::to_string(node_data.length())
           + SuccinctGraph::NODE_TABLE_HEADER_DELIM
-          + static_cast<char>(SuccinctGraph::DELIMITERS[0]) + node_data;
+          + static_cast<char>(SuccinctGraph::DELIMITERS[0]) + node_data + "\n";
       node_out << out_line;
     }
     node_out.close();
@@ -179,8 +179,7 @@ int main(int argc, char** argv) {
       // output the metadata block:
       // [padded timestamp width; padded dst id width; cnt; edge width]
       edge_out << SuccinctGraph::TIMESTAMP_WIDTH_DELIM
-               << pad_timestamp_width(timestamp_width)
-               // padded
+               << pad_timestamp_width(timestamp_width)  // padded
                << pad_dst_id_width(dst_id_width)  // padded
                << assoc_list.size()  // not padded: so width unbounded
                << SuccinctGraph::EDGE_WIDTH_DELIM << std::to_string(edge_width)  // not padded: so width unbounded
