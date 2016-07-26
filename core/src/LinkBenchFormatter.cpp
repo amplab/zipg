@@ -1,4 +1,5 @@
 #include <fstream>
+#include <sstream>
 #include "SuccinctGraph.hpp"
 #include "utils.h"
 
