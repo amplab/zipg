@@ -9,7 +9,7 @@ uint64_t Get(const std::string &s, uint32_t n) {
   std::string field;
   do {
     if (!(is >> field))
-      return "";
+      return 0;
   } while (n-- != 0);
   return std::stoll(field);
 }
