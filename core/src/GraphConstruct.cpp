@@ -4,13 +4,13 @@
 int main(int argc, char** argv) {
   if (argc != 6) {
     fprintf(stderr,
-            "Usage: %s [isa-sr] [sa-sr] [npa-sr] [node-file] [edge-file]\n",
+            "Usage: %s [sa-sr] [isa-sr] [npa-sr] [node-file] [edge-file]\n",
             argv[0]);
     return -1;
   }
 
-  uint32_t isa_sr = std::stoll(argv[1]);
-  uint32_t sa_sr = std::stoll(argv[2]);
+  uint32_t sa_sr = std::stoll(argv[1]);
+  uint32_t isa_sr = std::stoll(argv[2]);
   uint32_t npa_sr = std::stoll(argv[3]);
   std::string node_file = std::string(argv[4]);
   std::string edge_file = std::string(argv[5]);
