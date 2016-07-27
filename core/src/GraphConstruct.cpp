@@ -2,7 +2,7 @@
 #include "succinct_shard.h"
 
 int main(int argc, char** argv) {
-  if (argc != 3) {
+  if (argc != 6) {
     fprintf(stderr,
             "Usage: %s [isa-sr] [sa-sr] [npa-sr] [node-file] [edge-file]\n",
             argv[0]);
