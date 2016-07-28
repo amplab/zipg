@@ -1,3 +1,0 @@
-[submodule "external/succinct-cpp"]
-	path = external/succinct-cpp
-	url = git@github.com:concretevitamin/succinct-cpp.git
