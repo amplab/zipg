@@ -1,0 +1,5 @@
+#export SUCCINCT_DATA_PATH="/mnt"
+#export NUM_SHARDS="8"
+#export ISA_SAMPLING_RATE="8"
+#export SA_SAMPLING_RATE="8"
+#export REGEX_OPT="TRUE"
