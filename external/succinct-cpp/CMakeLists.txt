@@ -20,17 +20,3 @@ set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-modules)
 
 # Builds all of Succinct's sub-modules
 add_subdirectory(core)
-add_subdirectory(construct)
-add_subdirectory(sharded)
-add_subdirectory(sharded-kv)
-add_subdirectory(bench)
-
-# Testing framework
-# Build google testing framework
-add_subdirectory(external/gtest-1.7.0)
-
-# Build and run all tests for succinct
-add_subdirectory(test)
-
-enable_testing()
-add_test(CoreTest ${TESTS_PATH}/core_test ${PROJECT_SOURCE_DIR}/test/data)
