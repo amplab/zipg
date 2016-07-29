@@ -144,7 +144,7 @@ service GraphQueryAggregatorService {
       
       bool deleteNode(1: i64 id),
 
-      bool updateNode(1: i64 id, string data),
+      bool updateNode(1: i64 id, 2: string data),
 
       ThriftAssoc getLink(1: i64 id1, 2: i64 link_type, 3: i64 id2),
 
@@ -156,6 +156,6 @@ service GraphQueryAggregatorService {
 
       list<ThriftAssoc> getLinkList(1: i64 id1, 2: i64 link_type),
 
-      list<ThriftAssoc> getLinkList(1: i64 id1, 2: i64 link_type, 3: i64 min_timestamp, 4: i64 max_timestamp, 5: i64 offset, 6: i64 limit),
+      list<ThriftAssoc> getFilteredLinkList(1: i64 id1, 2: i64 link_type, 3: i64 min_timestamp, 4: i64 max_timestamp, 5: i64 offset, 6: i64 limit),
 
 }

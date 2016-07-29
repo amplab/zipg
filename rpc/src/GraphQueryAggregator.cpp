@@ -1000,7 +1000,7 @@ class GraphQueryAggregatorServiceHandler :
   void getLinkList(std::vector<Link>& assocs, int64_t id1, int64_t link_type) {
   }
 
-  void getLinkList(std::vector<Link>& assocs, int64_t id1, uint64_t link_type,
+  void getFilteredLinkList(std::vector<Link>& assocs, int64_t id1, uint64_t link_type,
                    int64_t min_timestamp, int64_t max_timestamp, int64_t offset,
                    int64_t limit) {
 
