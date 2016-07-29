@@ -1,15 +1,20 @@
 #ifndef SUCCINCT_GRAPH_H
 #define SUCCINCT_GRAPH_H
 
+#include <unordered_map>
+
 // FIXME: encouraged to include relative to project's include path
 #include "succinct_shard.h"
 #include "succinct_file.h"
 #include "KeepInputSuccinctFile.h"
+#include "bitmap.h"
 
 #include <sys/time.h>
 
 class SuccinctGraph {
  public:
+
+  typedef std::pair<int64_t, int64_t> edge_record_id_t;
 
   // TODO: get rid of this, currently succinct-create depends on it.
   // Constructor.  This doesn't actually build the internal data structures.
@@ -211,13 +216,9 @@ class SuccinctGraph {
 
   int64_t countLinks(int64_t id1, int64_t link_type);
 
-  bool deleteNode(int64_t id) {
-    return true;
-  }
+  bool deleteNode(int64_t id);
 
-  bool deleteLink(int64_t id1, int64_t link_type, int64_t id2) {
-    return true;
-  }
+  bool deleteLink(int64_t id1, int64_t link_type, int64_t id2);
 
   /**************** Fields ****************/
 
@@ -252,6 +253,10 @@ class SuccinctGraph {
 
   SuccinctShard* node_table = nullptr;
   SuccinctFile* edge_table = nullptr;
+
+  // Deleted edges
+  std::unordered_map<edge_record_id_t, bitmap::Bitmap*> deleted_edges;
+
   KeepInputSuccinctFile* edge_table_with_input_ = nullptr;
 
   std::string succinct_dir;

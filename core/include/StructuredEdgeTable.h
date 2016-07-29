@@ -17,63 +17,51 @@
 //#include <boost/serialization/version.hpp>
 
 class StructuredEdgeTable {
-public:
+ public:
 
-    StructuredEdgeTable(const std::string edge_file = "")
-        : edge_file_(edge_file),
-          num_edges_(0)
-    { }
+  StructuredEdgeTable(const std::string edge_file = "")
+      : edge_file_(edge_file),
+        num_edges_(0) {
+  }
 
-    // Reads in the `edge_file_`, convert the data into structured data (i.e.
-    // populate the `edges` map).
-    void construct();
+  // Reads in the `edge_file_`, convert the data into structured data (i.e.
+  // populate the `edges` map).
+  void construct();
 
-    void load();
+  void load();
 
-    // Limitation: we assume timestamp for a particular (src, atype) is
-    // monotonically increasing for now (think: social network).
-    //
-    // Thread-safe for concurrent writes.
-    void add_assoc(
-        int64_t src,
-        int64_t dst,
-        int64_t atype,
-        int64_t timestamp,
-        const std::string& attr);
+  // Limitation: we assume timestamp for a particular (src, atype) is
+  // monotonically increasing for now (think: social network).
+  //
+  // Thread-safe for concurrent writes.
+  void add_assoc(int64_t src, int64_t dst, int64_t atype, int64_t timestamp,
+                 const std::string& attr);
 
-    std::vector<SuccinctGraph::Assoc> assoc_range(
-        int64_t src,
-        int64_t atype,
-        int32_t off,
-        int32_t len);
+  std::vector<SuccinctGraph::Assoc> assoc_range(int64_t src, int64_t atype,
+                                                int32_t off, int32_t len);
 
-    int64_t assoc_count(int64_t src, int64_t atype) {
-        boost::shared_lock<boost::shared_mutex> lk(mutex_);
-        return edges[src][atype].size();
-    }
+  int64_t assoc_count(int64_t src, int64_t atype) {
+    boost::shared_lock<boost::shared_mutex> lk(mutex_);
+    return edges[std::make_pair(src, atype)].size();
+  }
 
-    std::vector<SuccinctGraph::Assoc> assoc_get(
-        int64_t src,
-        int64_t atype,
-        const std::set<int64_t>& dst_id_set,
-        int64_t t_low,
-        int64_t t_high);
+  std::vector<SuccinctGraph::Assoc> assoc_get(
+      int64_t src, int64_t atype, const std::set<int64_t>& dst_id_set,
+      int64_t t_low, int64_t t_high);
 
-    std::vector<SuccinctGraph::Assoc> assoc_time_range(
-        int64_t src,
-        int64_t atype,
-        int64_t t_low,
-        int64_t t_high,
-        int32_t len);
+  std::vector<SuccinctGraph::Assoc> assoc_time_range(int64_t src, int64_t atype,
+                                                     int64_t t_low,
+                                                     int64_t t_high,
+                                                     int32_t len);
 
-    void build_backfill_edge_updates(
-        std::unordered_map<int, GraphFormatter::AssocSet>& edge_updates,
-        int num_shards_to_mod);
+  void build_backfill_edge_updates(
+      std::unordered_map<int, GraphFormatter::AssocSet>& edge_updates,
+      int num_shards_to_mod);
 
-    int num_edges() {
-        boost::shared_lock<boost::shared_mutex> lk(mutex_);
-        return num_edges_;
-    }
+  int num_edges() {
+    boost::shared_lock<boost::shared_mutex> lk(mutex_);
+    return num_edges_;
+  }
 
 //    template<class Archive>
 //    void serialize(Archive & ar, const unsigned int version) {
@@ -96,25 +84,38 @@ public:
 //        }
 //    }
 
-private:
+  // LinkBench API
+  typedef SuccinctGraph::Assoc Link;
 
-    typedef struct {
-        int64_t dst;
-        int64_t timestamp;
-        std::string attr;
-    } EdgeData;
+  void getLink(Link& link, int64_t id1, int64_t link_type, int64_t id2);
 
-    // TODO: how inefficient is this?
-    // Assumes the vector<EdgeData>'s are sorted by descending timestamps.
-    std::unordered_map<
-        int64_t, std::unordered_map<int64_t, std::vector<EdgeData> > > edges;
+  void getLinkList(std::vector<Link>& assocs, int64_t id1, int64_t link_type);
 
-    std::string edge_file_;
+  void getLinkList(std::vector<Link>& assocs, int64_t id1, uint64_t link_type,
+                   int64_t min_timestamp, int64_t max_timestamp, int64_t offset,
+                   int64_t limit);
 
-    // Protects `edges` and `num_edges_`.
-    boost::shared_mutex mutex_;
+  bool deleteLink(int64_t id1, int64_t link_type, int64_t id2);
+ private:
 
-    int num_edges_;
+  typedef Link EdgeData;
+
+  struct EdgeDataComparator {
+    bool operator()(const EdgeData& lhs, const EdgeData& rhs) {
+      return lhs.time < rhs.time;
+    }
+  };
+
+  typedef std::set<EdgeData, EdgeDataComparator> EdgeDataSet;
+  typedef std::pair<int64_t, int64_t> EdgeRecordId;
+  std::unordered_map<EdgeRecordId, EdgeDataSet> edges;
+
+  std::string edge_file_;
+
+  // Protects `edges` and `num_edges_`.
+  boost::shared_mutex mutex_;
+
+  int num_edges_;
 };
 
 #endif

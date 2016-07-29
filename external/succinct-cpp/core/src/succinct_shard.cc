@@ -218,6 +218,14 @@ void SuccinctShard::Get(std::string& result, int64_t key) {
   }
 }
 
+bool SuccinctShard::Delete(int64_t key) {
+  int64_t pos = GetValueOffsetPos(key);
+  if (pos < 0)
+    return false;
+  SETBITVAL(invalid_offsets_, pos);
+  return true;
+}
+
 int64_t SuccinctShard::GetKeyPos(const int64_t value_offset) {
   int64_t pos = std::prev(
       std::upper_bound(value_offsets_.begin(), value_offsets_.end(),

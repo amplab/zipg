@@ -49,6 +49,8 @@ class SuccinctShard : public SuccinctCore {
 
   size_t GetNumKeys();
 
+  bool Delete(int64_t key);
+
   // Clears `result` for caller.
   void Get(std::string& result, int64_t key);
 

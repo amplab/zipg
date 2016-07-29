@@ -1189,8 +1189,7 @@ void SuccinctGraph::getNode(std::string& data, int64_t id) {
   int last_non_empty = -1;
   suf_arr_idx = -1ULL;
 
-  node_table->ExtractUntilHint(data, suf_arr_idx, curr_off,
-                               static_cast<char>(DELIMITERS[0]));
+  node_table->ExtractUntilHint(data, suf_arr_idx, curr_off, '\n');
 }
 
 void SuccinctGraph::getLink(Link& link, int64_t id1, int64_t link_type,
@@ -1427,7 +1426,7 @@ void SuccinctGraph::getLinkList(std::vector<Link>& assocs, int64_t id1,
       continue;
     }
 
-    // binary search: locates largest t s.t. t <= t_high
+    // binary search: locates largest timestamp t s.t. t <= max_timestamp
     // invariant: target in (l, r]
     range_left = time_range_binary_search_upper_bound(max_timestamp, cnt,
                                                       curr_off, str,
@@ -1484,4 +1483,85 @@ void SuccinctGraph::getLinkList(std::vector<Link>& assocs, int64_t id1,
 
 int64_t SuccinctGraph::countLinks(int64_t id1, int64_t link_type) {
   return assoc_count(id1, link_type);
+}
+
+bool SuccinctGraph::deleteNode(int64_t id) {
+  return node_table->Delete(id);
+}
+
+bool SuccinctGraph::deleteLink(int64_t id1, int64_t link_type, int64_t id2) {
+  COND_LOG_E("deleteLink(id1=%lld, link_type=%lld, id2=%lld)\n",
+      id1, link_type, id2);
+
+  std::vector<int64_t> eoffs = get_edge_table_offsets(id1, link_type);
+  std::vector<Assoc> result;
+  std::string str;
+
+  int32_t edge_data_len_width, dst_id_width, timestamp_width;
+  int64_t cnt;
+  uint64_t idx_hint;
+
+  for (int64_t curr_off : eoffs) {
+    LOG("edge table offset = %llu\n", curr_off);
+    idx_hint = -1ULL;
+
+    // Since the passed-in src and atype can be None, extract nonetheless
+    curr_off = edge_table->ExtractUntil(str, idx_hint, curr_off + 1,
+                                        ATYPE_DELIM);  // +1 for skip NODE_DELIM
+    int64_t id1_extracted = std::stoll(str);
+
+    curr_off = edge_table->ExtractUntil(str, idx_hint, curr_off,
+                                        TIMESTAMP_WIDTH_DELIM);
+    int64_t link_type_extracted = std::stoll(str);
+
+    edge_table->Extract(str, idx_hint, curr_off,
+                        SuccinctGraphSerde::WIDTH_TIMESTAMP_WIDTH_PADDED);
+    LOG("extracted timestamp width = '%s', suf_arr_idx = %llu\n",
+        str.c_str(), sa_idx);
+    timestamp_width = std::stoi(str);
+
+    edge_table->Extract(
+        str, idx_hint,
+        curr_off + SuccinctGraphSerde::WIDTH_TIMESTAMP_WIDTH_PADDED,
+        SuccinctGraphSerde::WIDTH_DST_ID_WIDTH_PADDED);
+    LOG("extracted dst id width = '%s'\n", str.c_str());
+    dst_id_width = std::stoi(str);
+
+    curr_off = edge_table->ExtractUntil(
+        str,
+        idx_hint,
+        curr_off + SuccinctGraphSerde::WIDTH_TIMESTAMP_WIDTH_PADDED
+            + SuccinctGraphSerde::WIDTH_DST_ID_WIDTH_PADDED,
+        EDGE_WIDTH_DELIM);
+    LOG("extracted cnt = '%s'\n", str.c_str());
+    cnt = std::stoll(str);
+
+    curr_off = edge_table->ExtractUntil(str, idx_hint, curr_off,
+                                        METADATA_DELIM);
+    edge_data_len_width = std::stoi(str);
+    LOG("extracted edge data length width = '%s'\n", str.c_str());
+
+    // Save timestamp offset
+    uint64_t timestamp_off = curr_off;
+
+    // Skip to dst-ids
+    curr_off += (cnt * timestamp_width);
+
+    int64_t idx;
+    for (idx = 0; idx < cnt; idx++) {
+      edge_table->Extract(str, curr_off + idx * dst_id_width, dst_id_width);
+      if (std::stoll(str) == id2)
+        break;
+    }
+
+    if (idx == cnt)
+      continue;
+
+    if (!deleted_edges[edge_record_id_t(id1, link_type)]->GetBit(idx)) {
+      deleted_edges[edge_record_id_t(id1, link_type)]->SetBit(idx);
+      return true;
+    }
+  }
+
+  return false;
 }

@@ -971,6 +971,45 @@ class GraphQueryAggregatorServiceHandler :
     }
   }
 
+  // LinkBench API
+  typedef ThriftAssoc Link;
+
+  void getNode(std::string& data, int64_t id) {
+
+  }
+
+  int64_t addNode(int64_t key, std::string& data) {
+    return 0;
+  }
+
+  bool deleteNode(int64_t id) {
+    return false;
+  }
+
+  void getLink(Link& link, int64_t id1, int64_t link_type, int64_t id2) {
+
+  }
+
+  void addLink(const Link& link) {
+  }
+
+  bool deleteLink(int64_t id1, int64_t link_type, int64_t id2) {
+    return false;
+  }
+
+  void getLinkList(std::vector<Link>& assocs, int64_t id1, int64_t link_type) {
+  }
+
+  void getLinkList(std::vector<Link>& assocs, int64_t id1, uint64_t link_type,
+                   int64_t min_timestamp, int64_t max_timestamp, int64_t offset,
+                   int64_t limit) {
+
+  }
+
+  int64_t countLinks(int64_t id1, int64_t link_type) {
+    return 0;
+  }
+
  private:
 
   // globalKey = localKey * numShards + shardId

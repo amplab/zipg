@@ -92,34 +92,54 @@ class GraphLogStore {
     edge_table_.build_backfill_edge_updates(edge_updates, num_shards_to_mod);
   }
 
+  inline int32_t num_digits(int64_t number) {
+    if (number == 0)
+      return 1;
+    int32_t digits = 0;
+    while (number != 0) {
+      number /= 10;
+      ++digits;
+    }
+    return digits;
+  }
+
   // LinkBench API
   typedef SuccinctGraph::Assoc Link;
 
   void getNode(std::string& data, int64_t id);
 
-  void getLink(Link& link, int64_t id1, int64_t link_type, int64_t id2);
-
-  void getLinkList(std::vector<Link>& assocs, int64_t id1, int64_t link_type);
-
-  void getLinkList(std::vector<Link>& assocs, int64_t id1, uint64_t link_type,
-                   int64_t min_timestamp, int64_t max_timestamp, int64_t offset,
-                   int64_t limit);
-
-  int64_t countLinks(int64_t id1, int64_t link_type) {
-    return assoc_count(id1, link_type);
-  }
-
-  int64_t addNode(std::string& data) {
-    std::vector<std::string> attrs { data };
-    return append_node(attrs);
-  }
+  int64_t addNode(int64_t key, std::string& data);
 
   bool deleteNode(int64_t id) {
-    return true;
+    return node_table_->remove(id);
+  }
+
+  void getLink(Link& link, int64_t id1, int64_t link_type, int64_t id2) {
+    return edge_table_.getLink(link, id1, link_type, id2);
+  }
+
+  bool addLink(const Link& link) {
+    return append_edge(link.src_id, link.dst_id, link.atype, link.time,
+                       link.attr) == 0;
   }
 
   bool deleteLink(int64_t id1, int64_t link_type, int64_t id2) {
-    return true;
+    return edge_table_.deleteLink(id1, link_type, id2);
+  }
+
+  void getLinkList(std::vector<Link>& assocs, int64_t id1, int64_t link_type) {
+    return edge_table_.getLinkList(assocs, id1, link_type);
+  }
+
+  void getLinkList(std::vector<Link>& assocs, int64_t id1, uint64_t link_type,
+                   int64_t min_timestamp, int64_t max_timestamp, int64_t offset,
+                   int64_t limit) {
+    return edge_table_.getLinkList(assocs, id1, link_type, min_timestamp,
+                                   max_timestamp, offset, limit);
+  }
+
+  int64_t countLinks(int64_t id1, int64_t link_type) {
+    return assoc_count(id1, link_type);
   }
 
  private:

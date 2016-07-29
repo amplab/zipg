@@ -35,51 +35,55 @@ class Hash {
 // LogStore with a key-value interface.
 // FIXME: search() has the prefix-match bug.
 class KVLogStore {
-public:
-	static const uint32_t kLogStoreSize = 125 * 1024 * 1024; // 125MB
-	typedef std::unordered_map<uint32_t, std::vector<uint32_t>> NGramIdx;
+ public:
+  static const uint32_t kLogStoreSize = 125 * 1024 * 1024;  // 125MB
+  static const uint32_t kMaxKeys = 16384000;
+  typedef std::unordered_map<uint32_t, std::vector<uint32_t>> NGramIdx;
 
-    KVLogStore(int64_t start_key) {
-    	cur_key_ = start_key;
-    	data_ = new char[kLogStoreSize];
+  KVLogStore(int64_t start_key) {
+    cur_key_ = start_key;
+    data_ = new char[kLogStoreSize];
+  }
+
+  ~KVLogStore() {
+    if (data_ != nullptr) {
+      delete[] data_;
     }
+  }
 
-    ~KVLogStore() {
-        if (data_ != nullptr) {
-            delete [] data_;
-        }
-    }
+  // Thread-safe for concurrent writes.
+  int64_t append(const std::string& value);
 
-    // Thread-safe for concurrent writes.
-    int64_t append(const std::string& value);
+  int64_t insert(const int64_t key, const std::string& value);
 
-    // Clears `_return` for caller.
-    void search(std::set<int64_t> &_return, const std::string& substring);
+  // Clears `_return` for caller.
+  void search(std::set<int64_t> &_return, const std::string& substring);
 
-    // Clears `value` for caller.
-    void get_value(std::string &value, uint64_t key);
+  // Clears `value` for caller.
+  void get_value(std::string &value, uint64_t key);
 
-private:
-    int64_t get_value_offset_pos(const int64_t key);
+  bool remove(const int64_t key);
 
-    int64_t get_key_pos(const int64_t value_offset);
+ private:
+  char* data_;
 
-    char* data_;
+  // Only for log store
+  uint64_t tail_ = static_cast<uint64_t>(0);
 
-    // Only for log store
-    uint64_t tail_ = static_cast<uint64_t>(0);
+  // Index to speed up searches
+  // Note: Index only works when logstore data is < 2GB; for larger log
+  // stores, switch to long offsets.
+  NGramIdx ngram_idx_;
+  uint32_t ngram_n_ = 3;
 
-    // Index to speed up searches
-    // Note: Index only works when logstore data is < 2GB; for larger log
-    // stores, switch to long offsets.
-    NGramIdx ngram_idx_;
-    uint32_t ngram_n_ = 3;
+  typedef std::map<int64_t, int32_t> FwdMap;
+  typedef std::map<int32_t, int64_t> BwdMap;
+  FwdMap k2v;
+  BwdMap v2k;
 
-    std::vector<int64_t> keys_;
-    std::vector<int32_t> value_offsets_;
-    int64_t cur_key_;
+  int64_t cur_key_;
 
-    boost::shared_mutex mutex_;
+  boost::shared_mutex mutex_;
 };
 
 #endif
