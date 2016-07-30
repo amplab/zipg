@@ -204,9 +204,9 @@ class SuccinctGraph {
   /**************** LinkBench Read-Only API ****************/
   typedef Assoc Link;
 
-  void getNode(std::string& data, int64_t id);
+  bool getNode(std::string& data, int64_t id);
 
-  void getLink(Link& link, int64_t id1, int64_t link_type, int64_t id2);
+  bool getLink(Link& link, int64_t id1, int64_t link_type, int64_t id2);
 
   void getLinkList(std::vector<Link>& assocs, int64_t id1, int64_t link_type);
 

@@ -70,15 +70,16 @@ void StructuredEdgeTable::build_backfill_edge_updates(
 }
 
 // LinkBench API
-void StructuredEdgeTable::getLink(Link& link, int64_t id1, int64_t link_type,
+bool StructuredEdgeTable::getLink(Link& link, int64_t id1, int64_t link_type,
                                   int64_t id2) {
   boost::shared_lock<boost::shared_mutex> lk(mutex_);
   for (EdgeData edge_data : edges[std::make_pair(id1, link_type)]) {
     if (edge_data.dst_id == id2) {
       link = edge_data;
-      return;
+      return true;
     }
   }
+  return false;
 }
 
 void StructuredEdgeTable::getLinkList(std::vector<Link>& assocs, int64_t id1,

@@ -7973,6 +7973,209 @@ uint32_t GraphQueryAggregatorService_getNode_presult::read(::apache::thrift::pro
 }
 
 
+GraphQueryAggregatorService_getNodeLocal_args::~GraphQueryAggregatorService_getNodeLocal_args() throw() {
+}
+
+
+uint32_t GraphQueryAggregatorService_getNodeLocal_args::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->shard_id);
+          this->__isset.shard_id = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->id);
+          this->__isset.id = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t GraphQueryAggregatorService_getNodeLocal_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("GraphQueryAggregatorService_getNodeLocal_args");
+
+  xfer += oprot->writeFieldBegin("shard_id", ::apache::thrift::protocol::T_I64, 1);
+  xfer += oprot->writeI64(this->shard_id);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("id", ::apache::thrift::protocol::T_I64, 2);
+  xfer += oprot->writeI64(this->id);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+
+GraphQueryAggregatorService_getNodeLocal_pargs::~GraphQueryAggregatorService_getNodeLocal_pargs() throw() {
+}
+
+
+uint32_t GraphQueryAggregatorService_getNodeLocal_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("GraphQueryAggregatorService_getNodeLocal_pargs");
+
+  xfer += oprot->writeFieldBegin("shard_id", ::apache::thrift::protocol::T_I64, 1);
+  xfer += oprot->writeI64((*(this->shard_id)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("id", ::apache::thrift::protocol::T_I64, 2);
+  xfer += oprot->writeI64((*(this->id)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+
+GraphQueryAggregatorService_getNodeLocal_result::~GraphQueryAggregatorService_getNodeLocal_result() throw() {
+}
+
+
+uint32_t GraphQueryAggregatorService_getNodeLocal_result::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 0:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->success);
+          this->__isset.success = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t GraphQueryAggregatorService_getNodeLocal_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
+
+  uint32_t xfer = 0;
+
+  xfer += oprot->writeStructBegin("GraphQueryAggregatorService_getNodeLocal_result");
+
+  if (this->__isset.success) {
+    xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_STRING, 0);
+    xfer += oprot->writeString(this->success);
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+
+GraphQueryAggregatorService_getNodeLocal_presult::~GraphQueryAggregatorService_getNodeLocal_presult() throw() {
+}
+
+
+uint32_t GraphQueryAggregatorService_getNodeLocal_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 0:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString((*(this->success)));
+          this->__isset.success = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+
 GraphQueryAggregatorService_addNode_args::~GraphQueryAggregatorService_addNode_args() throw() {
 }
 
@@ -8322,6 +8525,209 @@ GraphQueryAggregatorService_deleteNode_presult::~GraphQueryAggregatorService_del
 
 
 uint32_t GraphQueryAggregatorService_deleteNode_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 0:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool((*(this->success)));
+          this->__isset.success = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+
+GraphQueryAggregatorService_deleteNodeLocal_args::~GraphQueryAggregatorService_deleteNodeLocal_args() throw() {
+}
+
+
+uint32_t GraphQueryAggregatorService_deleteNodeLocal_args::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->shard_id);
+          this->__isset.shard_id = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->id);
+          this->__isset.id = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t GraphQueryAggregatorService_deleteNodeLocal_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("GraphQueryAggregatorService_deleteNodeLocal_args");
+
+  xfer += oprot->writeFieldBegin("shard_id", ::apache::thrift::protocol::T_I64, 1);
+  xfer += oprot->writeI64(this->shard_id);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("id", ::apache::thrift::protocol::T_I64, 2);
+  xfer += oprot->writeI64(this->id);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+
+GraphQueryAggregatorService_deleteNodeLocal_pargs::~GraphQueryAggregatorService_deleteNodeLocal_pargs() throw() {
+}
+
+
+uint32_t GraphQueryAggregatorService_deleteNodeLocal_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("GraphQueryAggregatorService_deleteNodeLocal_pargs");
+
+  xfer += oprot->writeFieldBegin("shard_id", ::apache::thrift::protocol::T_I64, 1);
+  xfer += oprot->writeI64((*(this->shard_id)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("id", ::apache::thrift::protocol::T_I64, 2);
+  xfer += oprot->writeI64((*(this->id)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+
+GraphQueryAggregatorService_deleteNodeLocal_result::~GraphQueryAggregatorService_deleteNodeLocal_result() throw() {
+}
+
+
+uint32_t GraphQueryAggregatorService_deleteNodeLocal_result::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 0:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool(this->success);
+          this->__isset.success = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t GraphQueryAggregatorService_deleteNodeLocal_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
+
+  uint32_t xfer = 0;
+
+  xfer += oprot->writeStructBegin("GraphQueryAggregatorService_deleteNodeLocal_result");
+
+  if (this->__isset.success) {
+    xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_BOOL, 0);
+    xfer += oprot->writeBool(this->success);
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+
+GraphQueryAggregatorService_deleteNodeLocal_presult::~GraphQueryAggregatorService_deleteNodeLocal_presult() throw() {
+}
+
+
+uint32_t GraphQueryAggregatorService_deleteNodeLocal_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -8785,6 +9191,241 @@ uint32_t GraphQueryAggregatorService_getLink_presult::read(::apache::thrift::pro
 }
 
 
+GraphQueryAggregatorService_getLinkLocal_args::~GraphQueryAggregatorService_getLinkLocal_args() throw() {
+}
+
+
+uint32_t GraphQueryAggregatorService_getLinkLocal_args::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->shard_id);
+          this->__isset.shard_id = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->id1);
+          this->__isset.id1 = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->link_type);
+          this->__isset.link_type = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->id2);
+          this->__isset.id2 = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t GraphQueryAggregatorService_getLinkLocal_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("GraphQueryAggregatorService_getLinkLocal_args");
+
+  xfer += oprot->writeFieldBegin("shard_id", ::apache::thrift::protocol::T_I64, 1);
+  xfer += oprot->writeI64(this->shard_id);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("id1", ::apache::thrift::protocol::T_I64, 2);
+  xfer += oprot->writeI64(this->id1);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("link_type", ::apache::thrift::protocol::T_I64, 3);
+  xfer += oprot->writeI64(this->link_type);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("id2", ::apache::thrift::protocol::T_I64, 4);
+  xfer += oprot->writeI64(this->id2);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+
+GraphQueryAggregatorService_getLinkLocal_pargs::~GraphQueryAggregatorService_getLinkLocal_pargs() throw() {
+}
+
+
+uint32_t GraphQueryAggregatorService_getLinkLocal_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("GraphQueryAggregatorService_getLinkLocal_pargs");
+
+  xfer += oprot->writeFieldBegin("shard_id", ::apache::thrift::protocol::T_I64, 1);
+  xfer += oprot->writeI64((*(this->shard_id)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("id1", ::apache::thrift::protocol::T_I64, 2);
+  xfer += oprot->writeI64((*(this->id1)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("link_type", ::apache::thrift::protocol::T_I64, 3);
+  xfer += oprot->writeI64((*(this->link_type)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("id2", ::apache::thrift::protocol::T_I64, 4);
+  xfer += oprot->writeI64((*(this->id2)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+
+GraphQueryAggregatorService_getLinkLocal_result::~GraphQueryAggregatorService_getLinkLocal_result() throw() {
+}
+
+
+uint32_t GraphQueryAggregatorService_getLinkLocal_result::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 0:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->success.read(iprot);
+          this->__isset.success = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t GraphQueryAggregatorService_getLinkLocal_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
+
+  uint32_t xfer = 0;
+
+  xfer += oprot->writeStructBegin("GraphQueryAggregatorService_getLinkLocal_result");
+
+  if (this->__isset.success) {
+    xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_STRUCT, 0);
+    xfer += this->success.write(oprot);
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+
+GraphQueryAggregatorService_getLinkLocal_presult::~GraphQueryAggregatorService_getLinkLocal_presult() throw() {
+}
+
+
+uint32_t GraphQueryAggregatorService_getLinkLocal_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 0:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += (*(this->success)).read(iprot);
+          this->__isset.success = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+
 GraphQueryAggregatorService_addLink_args::~GraphQueryAggregatorService_addLink_args() throw() {
 }
 
@@ -8887,7 +9528,20 @@ uint32_t GraphQueryAggregatorService_addLink_result::read(::apache::thrift::prot
     if (ftype == ::apache::thrift::protocol::T_STOP) {
       break;
     }
-    xfer += iprot->skip(ftype);
+    switch (fid)
+    {
+      case 0:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool(this->success);
+          this->__isset.success = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
     xfer += iprot->readFieldEnd();
   }
 
@@ -8902,6 +9556,11 @@ uint32_t GraphQueryAggregatorService_addLink_result::write(::apache::thrift::pro
 
   xfer += oprot->writeStructBegin("GraphQueryAggregatorService_addLink_result");
 
+  if (this->__isset.success) {
+    xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_BOOL, 0);
+    xfer += oprot->writeBool(this->success);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -8931,7 +9590,20 @@ uint32_t GraphQueryAggregatorService_addLink_presult::read(::apache::thrift::pro
     if (ftype == ::apache::thrift::protocol::T_STOP) {
       break;
     }
-    xfer += iprot->skip(ftype);
+    switch (fid)
+    {
+      case 0:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool((*(this->success)));
+          this->__isset.success = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
     xfer += iprot->readFieldEnd();
   }
 
@@ -9119,6 +9791,241 @@ GraphQueryAggregatorService_deleteLink_presult::~GraphQueryAggregatorService_del
 
 
 uint32_t GraphQueryAggregatorService_deleteLink_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 0:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool((*(this->success)));
+          this->__isset.success = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+
+GraphQueryAggregatorService_deleteLinkLocal_args::~GraphQueryAggregatorService_deleteLinkLocal_args() throw() {
+}
+
+
+uint32_t GraphQueryAggregatorService_deleteLinkLocal_args::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->shard_id);
+          this->__isset.shard_id = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->id1);
+          this->__isset.id1 = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->link_type);
+          this->__isset.link_type = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->id2);
+          this->__isset.id2 = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t GraphQueryAggregatorService_deleteLinkLocal_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("GraphQueryAggregatorService_deleteLinkLocal_args");
+
+  xfer += oprot->writeFieldBegin("shard_id", ::apache::thrift::protocol::T_I64, 1);
+  xfer += oprot->writeI64(this->shard_id);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("id1", ::apache::thrift::protocol::T_I64, 2);
+  xfer += oprot->writeI64(this->id1);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("link_type", ::apache::thrift::protocol::T_I64, 3);
+  xfer += oprot->writeI64(this->link_type);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("id2", ::apache::thrift::protocol::T_I64, 4);
+  xfer += oprot->writeI64(this->id2);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+
+GraphQueryAggregatorService_deleteLinkLocal_pargs::~GraphQueryAggregatorService_deleteLinkLocal_pargs() throw() {
+}
+
+
+uint32_t GraphQueryAggregatorService_deleteLinkLocal_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("GraphQueryAggregatorService_deleteLinkLocal_pargs");
+
+  xfer += oprot->writeFieldBegin("shard_id", ::apache::thrift::protocol::T_I64, 1);
+  xfer += oprot->writeI64((*(this->shard_id)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("id1", ::apache::thrift::protocol::T_I64, 2);
+  xfer += oprot->writeI64((*(this->id1)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("link_type", ::apache::thrift::protocol::T_I64, 3);
+  xfer += oprot->writeI64((*(this->link_type)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("id2", ::apache::thrift::protocol::T_I64, 4);
+  xfer += oprot->writeI64((*(this->id2)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+
+GraphQueryAggregatorService_deleteLinkLocal_result::~GraphQueryAggregatorService_deleteLinkLocal_result() throw() {
+}
+
+
+uint32_t GraphQueryAggregatorService_deleteLinkLocal_result::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 0:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool(this->success);
+          this->__isset.success = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t GraphQueryAggregatorService_deleteLinkLocal_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
+
+  uint32_t xfer = 0;
+
+  xfer += oprot->writeStructBegin("GraphQueryAggregatorService_deleteLinkLocal_result");
+
+  if (this->__isset.success) {
+    xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_BOOL, 0);
+    xfer += oprot->writeBool(this->success);
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+
+GraphQueryAggregatorService_deleteLinkLocal_presult::~GraphQueryAggregatorService_deleteLinkLocal_presult() throw() {
+}
+
+
+uint32_t GraphQueryAggregatorService_deleteLinkLocal_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -9582,6 +10489,257 @@ uint32_t GraphQueryAggregatorService_getLinkList_presult::read(::apache::thrift:
 }
 
 
+GraphQueryAggregatorService_getLinkListLocal_args::~GraphQueryAggregatorService_getLinkListLocal_args() throw() {
+}
+
+
+uint32_t GraphQueryAggregatorService_getLinkListLocal_args::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->shard_id);
+          this->__isset.shard_id = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->id1);
+          this->__isset.id1 = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->link_type);
+          this->__isset.link_type = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t GraphQueryAggregatorService_getLinkListLocal_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("GraphQueryAggregatorService_getLinkListLocal_args");
+
+  xfer += oprot->writeFieldBegin("shard_id", ::apache::thrift::protocol::T_I64, 1);
+  xfer += oprot->writeI64(this->shard_id);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("id1", ::apache::thrift::protocol::T_I64, 2);
+  xfer += oprot->writeI64(this->id1);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("link_type", ::apache::thrift::protocol::T_I64, 3);
+  xfer += oprot->writeI64(this->link_type);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+
+GraphQueryAggregatorService_getLinkListLocal_pargs::~GraphQueryAggregatorService_getLinkListLocal_pargs() throw() {
+}
+
+
+uint32_t GraphQueryAggregatorService_getLinkListLocal_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("GraphQueryAggregatorService_getLinkListLocal_pargs");
+
+  xfer += oprot->writeFieldBegin("shard_id", ::apache::thrift::protocol::T_I64, 1);
+  xfer += oprot->writeI64((*(this->shard_id)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("id1", ::apache::thrift::protocol::T_I64, 2);
+  xfer += oprot->writeI64((*(this->id1)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("link_type", ::apache::thrift::protocol::T_I64, 3);
+  xfer += oprot->writeI64((*(this->link_type)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+
+GraphQueryAggregatorService_getLinkListLocal_result::~GraphQueryAggregatorService_getLinkListLocal_result() throw() {
+}
+
+
+uint32_t GraphQueryAggregatorService_getLinkListLocal_result::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 0:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->success.clear();
+            uint32_t _size293;
+            ::apache::thrift::protocol::TType _etype296;
+            xfer += iprot->readListBegin(_etype296, _size293);
+            this->success.resize(_size293);
+            uint32_t _i297;
+            for (_i297 = 0; _i297 < _size293; ++_i297)
+            {
+              xfer += this->success[_i297].read(iprot);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.success = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t GraphQueryAggregatorService_getLinkListLocal_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
+
+  uint32_t xfer = 0;
+
+  xfer += oprot->writeStructBegin("GraphQueryAggregatorService_getLinkListLocal_result");
+
+  if (this->__isset.success) {
+    xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
+    {
+      xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->success.size()));
+      std::vector<ThriftAssoc> ::const_iterator _iter298;
+      for (_iter298 = this->success.begin(); _iter298 != this->success.end(); ++_iter298)
+      {
+        xfer += (*_iter298).write(oprot);
+      }
+      xfer += oprot->writeListEnd();
+    }
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+
+GraphQueryAggregatorService_getLinkListLocal_presult::~GraphQueryAggregatorService_getLinkListLocal_presult() throw() {
+}
+
+
+uint32_t GraphQueryAggregatorService_getLinkListLocal_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 0:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            (*(this->success)).clear();
+            uint32_t _size299;
+            ::apache::thrift::protocol::TType _etype302;
+            xfer += iprot->readListBegin(_etype302, _size299);
+            (*(this->success)).resize(_size299);
+            uint32_t _i303;
+            for (_i303 = 0; _i303 < _size299; ++_i303)
+            {
+              xfer += (*(this->success))[_i303].read(iprot);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.success = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+
 GraphQueryAggregatorService_getFilteredLinkList_args::~GraphQueryAggregatorService_getFilteredLinkList_args() throw() {
 }
 
@@ -9770,14 +10928,14 @@ uint32_t GraphQueryAggregatorService_getFilteredLinkList_result::read(::apache::
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->success.clear();
-            uint32_t _size293;
-            ::apache::thrift::protocol::TType _etype296;
-            xfer += iprot->readListBegin(_etype296, _size293);
-            this->success.resize(_size293);
-            uint32_t _i297;
-            for (_i297 = 0; _i297 < _size293; ++_i297)
+            uint32_t _size304;
+            ::apache::thrift::protocol::TType _etype307;
+            xfer += iprot->readListBegin(_etype307, _size304);
+            this->success.resize(_size304);
+            uint32_t _i308;
+            for (_i308 = 0; _i308 < _size304; ++_i308)
             {
-              xfer += this->success[_i297].read(iprot);
+              xfer += this->success[_i308].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -9808,10 +10966,10 @@ uint32_t GraphQueryAggregatorService_getFilteredLinkList_result::write(::apache:
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->success.size()));
-      std::vector<ThriftAssoc> ::const_iterator _iter298;
-      for (_iter298 = this->success.begin(); _iter298 != this->success.end(); ++_iter298)
+      std::vector<ThriftAssoc> ::const_iterator _iter309;
+      for (_iter309 = this->success.begin(); _iter309 != this->success.end(); ++_iter309)
       {
-        xfer += (*_iter298).write(oprot);
+        xfer += (*_iter309).write(oprot);
       }
       xfer += oprot->writeListEnd();
     }
@@ -9852,14 +11010,329 @@ uint32_t GraphQueryAggregatorService_getFilteredLinkList_presult::read(::apache:
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             (*(this->success)).clear();
-            uint32_t _size299;
-            ::apache::thrift::protocol::TType _etype302;
-            xfer += iprot->readListBegin(_etype302, _size299);
-            (*(this->success)).resize(_size299);
-            uint32_t _i303;
-            for (_i303 = 0; _i303 < _size299; ++_i303)
+            uint32_t _size310;
+            ::apache::thrift::protocol::TType _etype313;
+            xfer += iprot->readListBegin(_etype313, _size310);
+            (*(this->success)).resize(_size310);
+            uint32_t _i314;
+            for (_i314 = 0; _i314 < _size310; ++_i314)
             {
-              xfer += (*(this->success))[_i303].read(iprot);
+              xfer += (*(this->success))[_i314].read(iprot);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.success = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+
+GraphQueryAggregatorService_getFilteredLinkListLocal_args::~GraphQueryAggregatorService_getFilteredLinkListLocal_args() throw() {
+}
+
+
+uint32_t GraphQueryAggregatorService_getFilteredLinkListLocal_args::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->shard_id);
+          this->__isset.shard_id = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->id1);
+          this->__isset.id1 = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->link_type);
+          this->__isset.link_type = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->min_timestamp);
+          this->__isset.min_timestamp = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 5:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->max_timestamp);
+          this->__isset.max_timestamp = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 6:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->offset);
+          this->__isset.offset = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 7:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->limit);
+          this->__isset.limit = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t GraphQueryAggregatorService_getFilteredLinkListLocal_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("GraphQueryAggregatorService_getFilteredLinkListLocal_args");
+
+  xfer += oprot->writeFieldBegin("shard_id", ::apache::thrift::protocol::T_I64, 1);
+  xfer += oprot->writeI64(this->shard_id);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("id1", ::apache::thrift::protocol::T_I64, 2);
+  xfer += oprot->writeI64(this->id1);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("link_type", ::apache::thrift::protocol::T_I64, 3);
+  xfer += oprot->writeI64(this->link_type);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("min_timestamp", ::apache::thrift::protocol::T_I64, 4);
+  xfer += oprot->writeI64(this->min_timestamp);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("max_timestamp", ::apache::thrift::protocol::T_I64, 5);
+  xfer += oprot->writeI64(this->max_timestamp);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("offset", ::apache::thrift::protocol::T_I64, 6);
+  xfer += oprot->writeI64(this->offset);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("limit", ::apache::thrift::protocol::T_I64, 7);
+  xfer += oprot->writeI64(this->limit);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+
+GraphQueryAggregatorService_getFilteredLinkListLocal_pargs::~GraphQueryAggregatorService_getFilteredLinkListLocal_pargs() throw() {
+}
+
+
+uint32_t GraphQueryAggregatorService_getFilteredLinkListLocal_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("GraphQueryAggregatorService_getFilteredLinkListLocal_pargs");
+
+  xfer += oprot->writeFieldBegin("shard_id", ::apache::thrift::protocol::T_I64, 1);
+  xfer += oprot->writeI64((*(this->shard_id)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("id1", ::apache::thrift::protocol::T_I64, 2);
+  xfer += oprot->writeI64((*(this->id1)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("link_type", ::apache::thrift::protocol::T_I64, 3);
+  xfer += oprot->writeI64((*(this->link_type)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("min_timestamp", ::apache::thrift::protocol::T_I64, 4);
+  xfer += oprot->writeI64((*(this->min_timestamp)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("max_timestamp", ::apache::thrift::protocol::T_I64, 5);
+  xfer += oprot->writeI64((*(this->max_timestamp)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("offset", ::apache::thrift::protocol::T_I64, 6);
+  xfer += oprot->writeI64((*(this->offset)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("limit", ::apache::thrift::protocol::T_I64, 7);
+  xfer += oprot->writeI64((*(this->limit)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+
+GraphQueryAggregatorService_getFilteredLinkListLocal_result::~GraphQueryAggregatorService_getFilteredLinkListLocal_result() throw() {
+}
+
+
+uint32_t GraphQueryAggregatorService_getFilteredLinkListLocal_result::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 0:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->success.clear();
+            uint32_t _size315;
+            ::apache::thrift::protocol::TType _etype318;
+            xfer += iprot->readListBegin(_etype318, _size315);
+            this->success.resize(_size315);
+            uint32_t _i319;
+            for (_i319 = 0; _i319 < _size315; ++_i319)
+            {
+              xfer += this->success[_i319].read(iprot);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.success = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t GraphQueryAggregatorService_getFilteredLinkListLocal_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
+
+  uint32_t xfer = 0;
+
+  xfer += oprot->writeStructBegin("GraphQueryAggregatorService_getFilteredLinkListLocal_result");
+
+  if (this->__isset.success) {
+    xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
+    {
+      xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->success.size()));
+      std::vector<ThriftAssoc> ::const_iterator _iter320;
+      for (_iter320 = this->success.begin(); _iter320 != this->success.end(); ++_iter320)
+      {
+        xfer += (*_iter320).write(oprot);
+      }
+      xfer += oprot->writeListEnd();
+    }
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+
+GraphQueryAggregatorService_getFilteredLinkListLocal_presult::~GraphQueryAggregatorService_getFilteredLinkListLocal_presult() throw() {
+}
+
+
+uint32_t GraphQueryAggregatorService_getFilteredLinkListLocal_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 0:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            (*(this->success)).clear();
+            uint32_t _size321;
+            ::apache::thrift::protocol::TType _etype324;
+            xfer += iprot->readListBegin(_etype324, _size321);
+            (*(this->success)).resize(_size321);
+            uint32_t _i325;
+            for (_i325 = 0; _i325 < _size321; ++_i325)
+            {
+              xfer += (*(this->success))[_i325].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -11890,6 +13363,65 @@ void GraphQueryAggregatorServiceClient::recv_getNode(std::string& _return)
   throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "getNode failed: unknown result");
 }
 
+void GraphQueryAggregatorServiceClient::getNodeLocal(std::string& _return, const int64_t shard_id, const int64_t id)
+{
+  send_getNodeLocal(shard_id, id);
+  recv_getNodeLocal(_return);
+}
+
+void GraphQueryAggregatorServiceClient::send_getNodeLocal(const int64_t shard_id, const int64_t id)
+{
+  int32_t cseqid = 0;
+  oprot_->writeMessageBegin("getNodeLocal", ::apache::thrift::protocol::T_CALL, cseqid);
+
+  GraphQueryAggregatorService_getNodeLocal_pargs args;
+  args.shard_id = &shard_id;
+  args.id = &id;
+  args.write(oprot_);
+
+  oprot_->writeMessageEnd();
+  oprot_->getTransport()->writeEnd();
+  oprot_->getTransport()->flush();
+}
+
+void GraphQueryAggregatorServiceClient::recv_getNodeLocal(std::string& _return)
+{
+
+  int32_t rseqid = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TMessageType mtype;
+
+  iprot_->readMessageBegin(fname, mtype, rseqid);
+  if (mtype == ::apache::thrift::protocol::T_EXCEPTION) {
+    ::apache::thrift::TApplicationException x;
+    x.read(iprot_);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+    throw x;
+  }
+  if (mtype != ::apache::thrift::protocol::T_REPLY) {
+    iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+  }
+  if (fname.compare("getNodeLocal") != 0) {
+    iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+  }
+  GraphQueryAggregatorService_getNodeLocal_presult result;
+  result.success = &_return;
+  result.read(iprot_);
+  iprot_->readMessageEnd();
+  iprot_->getTransport()->readEnd();
+
+  if (result.__isset.success) {
+    // _return pointer has now been filled
+    return;
+  }
+  throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "getNodeLocal failed: unknown result");
+}
+
 int64_t GraphQueryAggregatorServiceClient::addNode(const int64_t id, const std::string& data)
 {
   send_addNode(id, data);
@@ -12005,6 +13537,65 @@ bool GraphQueryAggregatorServiceClient::recv_deleteNode()
     return _return;
   }
   throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "deleteNode failed: unknown result");
+}
+
+bool GraphQueryAggregatorServiceClient::deleteNodeLocal(const int64_t shard_id, const int64_t id)
+{
+  send_deleteNodeLocal(shard_id, id);
+  return recv_deleteNodeLocal();
+}
+
+void GraphQueryAggregatorServiceClient::send_deleteNodeLocal(const int64_t shard_id, const int64_t id)
+{
+  int32_t cseqid = 0;
+  oprot_->writeMessageBegin("deleteNodeLocal", ::apache::thrift::protocol::T_CALL, cseqid);
+
+  GraphQueryAggregatorService_deleteNodeLocal_pargs args;
+  args.shard_id = &shard_id;
+  args.id = &id;
+  args.write(oprot_);
+
+  oprot_->writeMessageEnd();
+  oprot_->getTransport()->writeEnd();
+  oprot_->getTransport()->flush();
+}
+
+bool GraphQueryAggregatorServiceClient::recv_deleteNodeLocal()
+{
+
+  int32_t rseqid = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TMessageType mtype;
+
+  iprot_->readMessageBegin(fname, mtype, rseqid);
+  if (mtype == ::apache::thrift::protocol::T_EXCEPTION) {
+    ::apache::thrift::TApplicationException x;
+    x.read(iprot_);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+    throw x;
+  }
+  if (mtype != ::apache::thrift::protocol::T_REPLY) {
+    iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+  }
+  if (fname.compare("deleteNodeLocal") != 0) {
+    iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+  }
+  bool _return;
+  GraphQueryAggregatorService_deleteNodeLocal_presult result;
+  result.success = &_return;
+  result.read(iprot_);
+  iprot_->readMessageEnd();
+  iprot_->getTransport()->readEnd();
+
+  if (result.__isset.success) {
+    return _return;
+  }
+  throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "deleteNodeLocal failed: unknown result");
 }
 
 bool GraphQueryAggregatorServiceClient::updateNode(const int64_t id, const std::string& data)
@@ -12126,10 +13717,71 @@ void GraphQueryAggregatorServiceClient::recv_getLink(ThriftAssoc& _return)
   throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "getLink failed: unknown result");
 }
 
-void GraphQueryAggregatorServiceClient::addLink(const ThriftAssoc& link)
+void GraphQueryAggregatorServiceClient::getLinkLocal(ThriftAssoc& _return, const int64_t shard_id, const int64_t id1, const int64_t link_type, const int64_t id2)
+{
+  send_getLinkLocal(shard_id, id1, link_type, id2);
+  recv_getLinkLocal(_return);
+}
+
+void GraphQueryAggregatorServiceClient::send_getLinkLocal(const int64_t shard_id, const int64_t id1, const int64_t link_type, const int64_t id2)
+{
+  int32_t cseqid = 0;
+  oprot_->writeMessageBegin("getLinkLocal", ::apache::thrift::protocol::T_CALL, cseqid);
+
+  GraphQueryAggregatorService_getLinkLocal_pargs args;
+  args.shard_id = &shard_id;
+  args.id1 = &id1;
+  args.link_type = &link_type;
+  args.id2 = &id2;
+  args.write(oprot_);
+
+  oprot_->writeMessageEnd();
+  oprot_->getTransport()->writeEnd();
+  oprot_->getTransport()->flush();
+}
+
+void GraphQueryAggregatorServiceClient::recv_getLinkLocal(ThriftAssoc& _return)
+{
+
+  int32_t rseqid = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TMessageType mtype;
+
+  iprot_->readMessageBegin(fname, mtype, rseqid);
+  if (mtype == ::apache::thrift::protocol::T_EXCEPTION) {
+    ::apache::thrift::TApplicationException x;
+    x.read(iprot_);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+    throw x;
+  }
+  if (mtype != ::apache::thrift::protocol::T_REPLY) {
+    iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+  }
+  if (fname.compare("getLinkLocal") != 0) {
+    iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+  }
+  GraphQueryAggregatorService_getLinkLocal_presult result;
+  result.success = &_return;
+  result.read(iprot_);
+  iprot_->readMessageEnd();
+  iprot_->getTransport()->readEnd();
+
+  if (result.__isset.success) {
+    // _return pointer has now been filled
+    return;
+  }
+  throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "getLinkLocal failed: unknown result");
+}
+
+bool GraphQueryAggregatorServiceClient::addLink(const ThriftAssoc& link)
 {
   send_addLink(link);
-  recv_addLink();
+  return recv_addLink();
 }
 
 void GraphQueryAggregatorServiceClient::send_addLink(const ThriftAssoc& link)
@@ -12146,7 +13798,7 @@ void GraphQueryAggregatorServiceClient::send_addLink(const ThriftAssoc& link)
   oprot_->getTransport()->flush();
 }
 
-void GraphQueryAggregatorServiceClient::recv_addLink()
+bool GraphQueryAggregatorServiceClient::recv_addLink()
 {
 
   int32_t rseqid = 0;
@@ -12171,12 +13823,17 @@ void GraphQueryAggregatorServiceClient::recv_addLink()
     iprot_->readMessageEnd();
     iprot_->getTransport()->readEnd();
   }
+  bool _return;
   GraphQueryAggregatorService_addLink_presult result;
+  result.success = &_return;
   result.read(iprot_);
   iprot_->readMessageEnd();
   iprot_->getTransport()->readEnd();
 
-  return;
+  if (result.__isset.success) {
+    return _return;
+  }
+  throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "addLink failed: unknown result");
 }
 
 bool GraphQueryAggregatorServiceClient::deleteLink(const int64_t id1, const int64_t link_type, const int64_t id2)
@@ -12237,6 +13894,67 @@ bool GraphQueryAggregatorServiceClient::recv_deleteLink()
     return _return;
   }
   throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "deleteLink failed: unknown result");
+}
+
+bool GraphQueryAggregatorServiceClient::deleteLinkLocal(const int64_t shard_id, const int64_t id1, const int64_t link_type, const int64_t id2)
+{
+  send_deleteLinkLocal(shard_id, id1, link_type, id2);
+  return recv_deleteLinkLocal();
+}
+
+void GraphQueryAggregatorServiceClient::send_deleteLinkLocal(const int64_t shard_id, const int64_t id1, const int64_t link_type, const int64_t id2)
+{
+  int32_t cseqid = 0;
+  oprot_->writeMessageBegin("deleteLinkLocal", ::apache::thrift::protocol::T_CALL, cseqid);
+
+  GraphQueryAggregatorService_deleteLinkLocal_pargs args;
+  args.shard_id = &shard_id;
+  args.id1 = &id1;
+  args.link_type = &link_type;
+  args.id2 = &id2;
+  args.write(oprot_);
+
+  oprot_->writeMessageEnd();
+  oprot_->getTransport()->writeEnd();
+  oprot_->getTransport()->flush();
+}
+
+bool GraphQueryAggregatorServiceClient::recv_deleteLinkLocal()
+{
+
+  int32_t rseqid = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TMessageType mtype;
+
+  iprot_->readMessageBegin(fname, mtype, rseqid);
+  if (mtype == ::apache::thrift::protocol::T_EXCEPTION) {
+    ::apache::thrift::TApplicationException x;
+    x.read(iprot_);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+    throw x;
+  }
+  if (mtype != ::apache::thrift::protocol::T_REPLY) {
+    iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+  }
+  if (fname.compare("deleteLinkLocal") != 0) {
+    iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+  }
+  bool _return;
+  GraphQueryAggregatorService_deleteLinkLocal_presult result;
+  result.success = &_return;
+  result.read(iprot_);
+  iprot_->readMessageEnd();
+  iprot_->getTransport()->readEnd();
+
+  if (result.__isset.success) {
+    return _return;
+  }
+  throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "deleteLinkLocal failed: unknown result");
 }
 
 bool GraphQueryAggregatorServiceClient::updateLink(const ThriftAssoc& link)
@@ -12356,6 +14074,66 @@ void GraphQueryAggregatorServiceClient::recv_getLinkList(std::vector<ThriftAssoc
   throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "getLinkList failed: unknown result");
 }
 
+void GraphQueryAggregatorServiceClient::getLinkListLocal(std::vector<ThriftAssoc> & _return, const int64_t shard_id, const int64_t id1, const int64_t link_type)
+{
+  send_getLinkListLocal(shard_id, id1, link_type);
+  recv_getLinkListLocal(_return);
+}
+
+void GraphQueryAggregatorServiceClient::send_getLinkListLocal(const int64_t shard_id, const int64_t id1, const int64_t link_type)
+{
+  int32_t cseqid = 0;
+  oprot_->writeMessageBegin("getLinkListLocal", ::apache::thrift::protocol::T_CALL, cseqid);
+
+  GraphQueryAggregatorService_getLinkListLocal_pargs args;
+  args.shard_id = &shard_id;
+  args.id1 = &id1;
+  args.link_type = &link_type;
+  args.write(oprot_);
+
+  oprot_->writeMessageEnd();
+  oprot_->getTransport()->writeEnd();
+  oprot_->getTransport()->flush();
+}
+
+void GraphQueryAggregatorServiceClient::recv_getLinkListLocal(std::vector<ThriftAssoc> & _return)
+{
+
+  int32_t rseqid = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TMessageType mtype;
+
+  iprot_->readMessageBegin(fname, mtype, rseqid);
+  if (mtype == ::apache::thrift::protocol::T_EXCEPTION) {
+    ::apache::thrift::TApplicationException x;
+    x.read(iprot_);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+    throw x;
+  }
+  if (mtype != ::apache::thrift::protocol::T_REPLY) {
+    iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+  }
+  if (fname.compare("getLinkListLocal") != 0) {
+    iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+  }
+  GraphQueryAggregatorService_getLinkListLocal_presult result;
+  result.success = &_return;
+  result.read(iprot_);
+  iprot_->readMessageEnd();
+  iprot_->getTransport()->readEnd();
+
+  if (result.__isset.success) {
+    // _return pointer has now been filled
+    return;
+  }
+  throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "getLinkListLocal failed: unknown result");
+}
+
 void GraphQueryAggregatorServiceClient::getFilteredLinkList(std::vector<ThriftAssoc> & _return, const int64_t id1, const int64_t link_type, const int64_t min_timestamp, const int64_t max_timestamp, const int64_t offset, const int64_t limit)
 {
   send_getFilteredLinkList(id1, link_type, min_timestamp, max_timestamp, offset, limit);
@@ -12417,6 +14195,70 @@ void GraphQueryAggregatorServiceClient::recv_getFilteredLinkList(std::vector<Thr
     return;
   }
   throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "getFilteredLinkList failed: unknown result");
+}
+
+void GraphQueryAggregatorServiceClient::getFilteredLinkListLocal(std::vector<ThriftAssoc> & _return, const int64_t shard_id, const int64_t id1, const int64_t link_type, const int64_t min_timestamp, const int64_t max_timestamp, const int64_t offset, const int64_t limit)
+{
+  send_getFilteredLinkListLocal(shard_id, id1, link_type, min_timestamp, max_timestamp, offset, limit);
+  recv_getFilteredLinkListLocal(_return);
+}
+
+void GraphQueryAggregatorServiceClient::send_getFilteredLinkListLocal(const int64_t shard_id, const int64_t id1, const int64_t link_type, const int64_t min_timestamp, const int64_t max_timestamp, const int64_t offset, const int64_t limit)
+{
+  int32_t cseqid = 0;
+  oprot_->writeMessageBegin("getFilteredLinkListLocal", ::apache::thrift::protocol::T_CALL, cseqid);
+
+  GraphQueryAggregatorService_getFilteredLinkListLocal_pargs args;
+  args.shard_id = &shard_id;
+  args.id1 = &id1;
+  args.link_type = &link_type;
+  args.min_timestamp = &min_timestamp;
+  args.max_timestamp = &max_timestamp;
+  args.offset = &offset;
+  args.limit = &limit;
+  args.write(oprot_);
+
+  oprot_->writeMessageEnd();
+  oprot_->getTransport()->writeEnd();
+  oprot_->getTransport()->flush();
+}
+
+void GraphQueryAggregatorServiceClient::recv_getFilteredLinkListLocal(std::vector<ThriftAssoc> & _return)
+{
+
+  int32_t rseqid = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TMessageType mtype;
+
+  iprot_->readMessageBegin(fname, mtype, rseqid);
+  if (mtype == ::apache::thrift::protocol::T_EXCEPTION) {
+    ::apache::thrift::TApplicationException x;
+    x.read(iprot_);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+    throw x;
+  }
+  if (mtype != ::apache::thrift::protocol::T_REPLY) {
+    iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+  }
+  if (fname.compare("getFilteredLinkListLocal") != 0) {
+    iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+  }
+  GraphQueryAggregatorService_getFilteredLinkListLocal_presult result;
+  result.success = &_return;
+  result.read(iprot_);
+  iprot_->readMessageEnd();
+  iprot_->getTransport()->readEnd();
+
+  if (result.__isset.success) {
+    // _return pointer has now been filled
+    return;
+  }
+  throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "getFilteredLinkListLocal failed: unknown result");
 }
 
 bool GraphQueryAggregatorServiceProcessor::dispatchCall(::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, const std::string& fname, int32_t seqid, void* callContext) {
@@ -14270,6 +16112,60 @@ void GraphQueryAggregatorServiceProcessor::process_getNode(int32_t seqid, ::apac
   }
 }
 
+void GraphQueryAggregatorServiceProcessor::process_getNodeLocal(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
+{
+  void* ctx = NULL;
+  if (this->eventHandler_.get() != NULL) {
+    ctx = this->eventHandler_->getContext("GraphQueryAggregatorService.getNodeLocal", callContext);
+  }
+  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "GraphQueryAggregatorService.getNodeLocal");
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->preRead(ctx, "GraphQueryAggregatorService.getNodeLocal");
+  }
+
+  GraphQueryAggregatorService_getNodeLocal_args args;
+  args.read(iprot);
+  iprot->readMessageEnd();
+  uint32_t bytes = iprot->getTransport()->readEnd();
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->postRead(ctx, "GraphQueryAggregatorService.getNodeLocal", bytes);
+  }
+
+  GraphQueryAggregatorService_getNodeLocal_result result;
+  try {
+    iface_->getNodeLocal(result.success, args.shard_id, args.id);
+    result.__isset.success = true;
+  } catch (const std::exception& e) {
+    if (this->eventHandler_.get() != NULL) {
+      this->eventHandler_->handlerError(ctx, "GraphQueryAggregatorService.getNodeLocal");
+    }
+
+    ::apache::thrift::TApplicationException x(e.what());
+    oprot->writeMessageBegin("getNodeLocal", ::apache::thrift::protocol::T_EXCEPTION, seqid);
+    x.write(oprot);
+    oprot->writeMessageEnd();
+    oprot->getTransport()->writeEnd();
+    oprot->getTransport()->flush();
+    return;
+  }
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->preWrite(ctx, "GraphQueryAggregatorService.getNodeLocal");
+  }
+
+  oprot->writeMessageBegin("getNodeLocal", ::apache::thrift::protocol::T_REPLY, seqid);
+  result.write(oprot);
+  oprot->writeMessageEnd();
+  bytes = oprot->getTransport()->writeEnd();
+  oprot->getTransport()->flush();
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->postWrite(ctx, "GraphQueryAggregatorService.getNodeLocal", bytes);
+  }
+}
+
 void GraphQueryAggregatorServiceProcessor::process_addNode(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
 {
   void* ctx = NULL;
@@ -14375,6 +16271,60 @@ void GraphQueryAggregatorServiceProcessor::process_deleteNode(int32_t seqid, ::a
 
   if (this->eventHandler_.get() != NULL) {
     this->eventHandler_->postWrite(ctx, "GraphQueryAggregatorService.deleteNode", bytes);
+  }
+}
+
+void GraphQueryAggregatorServiceProcessor::process_deleteNodeLocal(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
+{
+  void* ctx = NULL;
+  if (this->eventHandler_.get() != NULL) {
+    ctx = this->eventHandler_->getContext("GraphQueryAggregatorService.deleteNodeLocal", callContext);
+  }
+  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "GraphQueryAggregatorService.deleteNodeLocal");
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->preRead(ctx, "GraphQueryAggregatorService.deleteNodeLocal");
+  }
+
+  GraphQueryAggregatorService_deleteNodeLocal_args args;
+  args.read(iprot);
+  iprot->readMessageEnd();
+  uint32_t bytes = iprot->getTransport()->readEnd();
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->postRead(ctx, "GraphQueryAggregatorService.deleteNodeLocal", bytes);
+  }
+
+  GraphQueryAggregatorService_deleteNodeLocal_result result;
+  try {
+    result.success = iface_->deleteNodeLocal(args.shard_id, args.id);
+    result.__isset.success = true;
+  } catch (const std::exception& e) {
+    if (this->eventHandler_.get() != NULL) {
+      this->eventHandler_->handlerError(ctx, "GraphQueryAggregatorService.deleteNodeLocal");
+    }
+
+    ::apache::thrift::TApplicationException x(e.what());
+    oprot->writeMessageBegin("deleteNodeLocal", ::apache::thrift::protocol::T_EXCEPTION, seqid);
+    x.write(oprot);
+    oprot->writeMessageEnd();
+    oprot->getTransport()->writeEnd();
+    oprot->getTransport()->flush();
+    return;
+  }
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->preWrite(ctx, "GraphQueryAggregatorService.deleteNodeLocal");
+  }
+
+  oprot->writeMessageBegin("deleteNodeLocal", ::apache::thrift::protocol::T_REPLY, seqid);
+  result.write(oprot);
+  oprot->writeMessageEnd();
+  bytes = oprot->getTransport()->writeEnd();
+  oprot->getTransport()->flush();
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->postWrite(ctx, "GraphQueryAggregatorService.deleteNodeLocal", bytes);
   }
 }
 
@@ -14486,6 +16436,60 @@ void GraphQueryAggregatorServiceProcessor::process_getLink(int32_t seqid, ::apac
   }
 }
 
+void GraphQueryAggregatorServiceProcessor::process_getLinkLocal(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
+{
+  void* ctx = NULL;
+  if (this->eventHandler_.get() != NULL) {
+    ctx = this->eventHandler_->getContext("GraphQueryAggregatorService.getLinkLocal", callContext);
+  }
+  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "GraphQueryAggregatorService.getLinkLocal");
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->preRead(ctx, "GraphQueryAggregatorService.getLinkLocal");
+  }
+
+  GraphQueryAggregatorService_getLinkLocal_args args;
+  args.read(iprot);
+  iprot->readMessageEnd();
+  uint32_t bytes = iprot->getTransport()->readEnd();
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->postRead(ctx, "GraphQueryAggregatorService.getLinkLocal", bytes);
+  }
+
+  GraphQueryAggregatorService_getLinkLocal_result result;
+  try {
+    iface_->getLinkLocal(result.success, args.shard_id, args.id1, args.link_type, args.id2);
+    result.__isset.success = true;
+  } catch (const std::exception& e) {
+    if (this->eventHandler_.get() != NULL) {
+      this->eventHandler_->handlerError(ctx, "GraphQueryAggregatorService.getLinkLocal");
+    }
+
+    ::apache::thrift::TApplicationException x(e.what());
+    oprot->writeMessageBegin("getLinkLocal", ::apache::thrift::protocol::T_EXCEPTION, seqid);
+    x.write(oprot);
+    oprot->writeMessageEnd();
+    oprot->getTransport()->writeEnd();
+    oprot->getTransport()->flush();
+    return;
+  }
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->preWrite(ctx, "GraphQueryAggregatorService.getLinkLocal");
+  }
+
+  oprot->writeMessageBegin("getLinkLocal", ::apache::thrift::protocol::T_REPLY, seqid);
+  result.write(oprot);
+  oprot->writeMessageEnd();
+  bytes = oprot->getTransport()->writeEnd();
+  oprot->getTransport()->flush();
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->postWrite(ctx, "GraphQueryAggregatorService.getLinkLocal", bytes);
+  }
+}
+
 void GraphQueryAggregatorServiceProcessor::process_addLink(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
 {
   void* ctx = NULL;
@@ -14509,7 +16513,8 @@ void GraphQueryAggregatorServiceProcessor::process_addLink(int32_t seqid, ::apac
 
   GraphQueryAggregatorService_addLink_result result;
   try {
-    iface_->addLink(args.link);
+    result.success = iface_->addLink(args.link);
+    result.__isset.success = true;
   } catch (const std::exception& e) {
     if (this->eventHandler_.get() != NULL) {
       this->eventHandler_->handlerError(ctx, "GraphQueryAggregatorService.addLink");
@@ -14590,6 +16595,60 @@ void GraphQueryAggregatorServiceProcessor::process_deleteLink(int32_t seqid, ::a
 
   if (this->eventHandler_.get() != NULL) {
     this->eventHandler_->postWrite(ctx, "GraphQueryAggregatorService.deleteLink", bytes);
+  }
+}
+
+void GraphQueryAggregatorServiceProcessor::process_deleteLinkLocal(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
+{
+  void* ctx = NULL;
+  if (this->eventHandler_.get() != NULL) {
+    ctx = this->eventHandler_->getContext("GraphQueryAggregatorService.deleteLinkLocal", callContext);
+  }
+  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "GraphQueryAggregatorService.deleteLinkLocal");
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->preRead(ctx, "GraphQueryAggregatorService.deleteLinkLocal");
+  }
+
+  GraphQueryAggregatorService_deleteLinkLocal_args args;
+  args.read(iprot);
+  iprot->readMessageEnd();
+  uint32_t bytes = iprot->getTransport()->readEnd();
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->postRead(ctx, "GraphQueryAggregatorService.deleteLinkLocal", bytes);
+  }
+
+  GraphQueryAggregatorService_deleteLinkLocal_result result;
+  try {
+    result.success = iface_->deleteLinkLocal(args.shard_id, args.id1, args.link_type, args.id2);
+    result.__isset.success = true;
+  } catch (const std::exception& e) {
+    if (this->eventHandler_.get() != NULL) {
+      this->eventHandler_->handlerError(ctx, "GraphQueryAggregatorService.deleteLinkLocal");
+    }
+
+    ::apache::thrift::TApplicationException x(e.what());
+    oprot->writeMessageBegin("deleteLinkLocal", ::apache::thrift::protocol::T_EXCEPTION, seqid);
+    x.write(oprot);
+    oprot->writeMessageEnd();
+    oprot->getTransport()->writeEnd();
+    oprot->getTransport()->flush();
+    return;
+  }
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->preWrite(ctx, "GraphQueryAggregatorService.deleteLinkLocal");
+  }
+
+  oprot->writeMessageBegin("deleteLinkLocal", ::apache::thrift::protocol::T_REPLY, seqid);
+  result.write(oprot);
+  oprot->writeMessageEnd();
+  bytes = oprot->getTransport()->writeEnd();
+  oprot->getTransport()->flush();
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->postWrite(ctx, "GraphQueryAggregatorService.deleteLinkLocal", bytes);
   }
 }
 
@@ -14701,6 +16760,60 @@ void GraphQueryAggregatorServiceProcessor::process_getLinkList(int32_t seqid, ::
   }
 }
 
+void GraphQueryAggregatorServiceProcessor::process_getLinkListLocal(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
+{
+  void* ctx = NULL;
+  if (this->eventHandler_.get() != NULL) {
+    ctx = this->eventHandler_->getContext("GraphQueryAggregatorService.getLinkListLocal", callContext);
+  }
+  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "GraphQueryAggregatorService.getLinkListLocal");
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->preRead(ctx, "GraphQueryAggregatorService.getLinkListLocal");
+  }
+
+  GraphQueryAggregatorService_getLinkListLocal_args args;
+  args.read(iprot);
+  iprot->readMessageEnd();
+  uint32_t bytes = iprot->getTransport()->readEnd();
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->postRead(ctx, "GraphQueryAggregatorService.getLinkListLocal", bytes);
+  }
+
+  GraphQueryAggregatorService_getLinkListLocal_result result;
+  try {
+    iface_->getLinkListLocal(result.success, args.shard_id, args.id1, args.link_type);
+    result.__isset.success = true;
+  } catch (const std::exception& e) {
+    if (this->eventHandler_.get() != NULL) {
+      this->eventHandler_->handlerError(ctx, "GraphQueryAggregatorService.getLinkListLocal");
+    }
+
+    ::apache::thrift::TApplicationException x(e.what());
+    oprot->writeMessageBegin("getLinkListLocal", ::apache::thrift::protocol::T_EXCEPTION, seqid);
+    x.write(oprot);
+    oprot->writeMessageEnd();
+    oprot->getTransport()->writeEnd();
+    oprot->getTransport()->flush();
+    return;
+  }
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->preWrite(ctx, "GraphQueryAggregatorService.getLinkListLocal");
+  }
+
+  oprot->writeMessageBegin("getLinkListLocal", ::apache::thrift::protocol::T_REPLY, seqid);
+  result.write(oprot);
+  oprot->writeMessageEnd();
+  bytes = oprot->getTransport()->writeEnd();
+  oprot->getTransport()->flush();
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->postWrite(ctx, "GraphQueryAggregatorService.getLinkListLocal", bytes);
+  }
+}
+
 void GraphQueryAggregatorServiceProcessor::process_getFilteredLinkList(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
 {
   void* ctx = NULL;
@@ -14752,6 +16865,60 @@ void GraphQueryAggregatorServiceProcessor::process_getFilteredLinkList(int32_t s
 
   if (this->eventHandler_.get() != NULL) {
     this->eventHandler_->postWrite(ctx, "GraphQueryAggregatorService.getFilteredLinkList", bytes);
+  }
+}
+
+void GraphQueryAggregatorServiceProcessor::process_getFilteredLinkListLocal(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
+{
+  void* ctx = NULL;
+  if (this->eventHandler_.get() != NULL) {
+    ctx = this->eventHandler_->getContext("GraphQueryAggregatorService.getFilteredLinkListLocal", callContext);
+  }
+  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "GraphQueryAggregatorService.getFilteredLinkListLocal");
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->preRead(ctx, "GraphQueryAggregatorService.getFilteredLinkListLocal");
+  }
+
+  GraphQueryAggregatorService_getFilteredLinkListLocal_args args;
+  args.read(iprot);
+  iprot->readMessageEnd();
+  uint32_t bytes = iprot->getTransport()->readEnd();
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->postRead(ctx, "GraphQueryAggregatorService.getFilteredLinkListLocal", bytes);
+  }
+
+  GraphQueryAggregatorService_getFilteredLinkListLocal_result result;
+  try {
+    iface_->getFilteredLinkListLocal(result.success, args.shard_id, args.id1, args.link_type, args.min_timestamp, args.max_timestamp, args.offset, args.limit);
+    result.__isset.success = true;
+  } catch (const std::exception& e) {
+    if (this->eventHandler_.get() != NULL) {
+      this->eventHandler_->handlerError(ctx, "GraphQueryAggregatorService.getFilteredLinkListLocal");
+    }
+
+    ::apache::thrift::TApplicationException x(e.what());
+    oprot->writeMessageBegin("getFilteredLinkListLocal", ::apache::thrift::protocol::T_EXCEPTION, seqid);
+    x.write(oprot);
+    oprot->writeMessageEnd();
+    oprot->getTransport()->writeEnd();
+    oprot->getTransport()->flush();
+    return;
+  }
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->preWrite(ctx, "GraphQueryAggregatorService.getFilteredLinkListLocal");
+  }
+
+  oprot->writeMessageBegin("getFilteredLinkListLocal", ::apache::thrift::protocol::T_REPLY, seqid);
+  result.write(oprot);
+  oprot->writeMessageEnd();
+  bytes = oprot->getTransport()->writeEnd();
+  oprot->getTransport()->flush();
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->postWrite(ctx, "GraphQueryAggregatorService.getFilteredLinkListLocal", bytes);
   }
 }
 
@@ -17652,6 +19819,91 @@ void GraphQueryAggregatorServiceConcurrentClient::recv_getNode(std::string& _ret
   } // end while(true)
 }
 
+void GraphQueryAggregatorServiceConcurrentClient::getNodeLocal(std::string& _return, const int64_t shard_id, const int64_t id)
+{
+  int32_t seqid = send_getNodeLocal(shard_id, id);
+  recv_getNodeLocal(_return, seqid);
+}
+
+int32_t GraphQueryAggregatorServiceConcurrentClient::send_getNodeLocal(const int64_t shard_id, const int64_t id)
+{
+  int32_t cseqid = this->sync_.generateSeqId();
+  ::apache::thrift::async::TConcurrentSendSentry sentry(&this->sync_);
+  oprot_->writeMessageBegin("getNodeLocal", ::apache::thrift::protocol::T_CALL, cseqid);
+
+  GraphQueryAggregatorService_getNodeLocal_pargs args;
+  args.shard_id = &shard_id;
+  args.id = &id;
+  args.write(oprot_);
+
+  oprot_->writeMessageEnd();
+  oprot_->getTransport()->writeEnd();
+  oprot_->getTransport()->flush();
+
+  sentry.commit();
+  return cseqid;
+}
+
+void GraphQueryAggregatorServiceConcurrentClient::recv_getNodeLocal(std::string& _return, const int32_t seqid)
+{
+
+  int32_t rseqid = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TMessageType mtype;
+
+  // the read mutex gets dropped and reacquired as part of waitForWork()
+  // The destructor of this sentry wakes up other clients
+  ::apache::thrift::async::TConcurrentRecvSentry sentry(&this->sync_, seqid);
+
+  while(true) {
+    if(!this->sync_.getPending(fname, mtype, rseqid)) {
+      iprot_->readMessageBegin(fname, mtype, rseqid);
+    }
+    if(seqid == rseqid) {
+      if (mtype == ::apache::thrift::protocol::T_EXCEPTION) {
+        ::apache::thrift::TApplicationException x;
+        x.read(iprot_);
+        iprot_->readMessageEnd();
+        iprot_->getTransport()->readEnd();
+        sentry.commit();
+        throw x;
+      }
+      if (mtype != ::apache::thrift::protocol::T_REPLY) {
+        iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+        iprot_->readMessageEnd();
+        iprot_->getTransport()->readEnd();
+      }
+      if (fname.compare("getNodeLocal") != 0) {
+        iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+        iprot_->readMessageEnd();
+        iprot_->getTransport()->readEnd();
+
+        // in a bad state, don't commit
+        using ::apache::thrift::protocol::TProtocolException;
+        throw TProtocolException(TProtocolException::INVALID_DATA);
+      }
+      GraphQueryAggregatorService_getNodeLocal_presult result;
+      result.success = &_return;
+      result.read(iprot_);
+      iprot_->readMessageEnd();
+      iprot_->getTransport()->readEnd();
+
+      if (result.__isset.success) {
+        // _return pointer has now been filled
+        sentry.commit();
+        return;
+      }
+      // in a bad state, don't commit
+      throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "getNodeLocal failed: unknown result");
+    }
+    // seqid != rseqid
+    this->sync_.updatePending(fname, mtype, rseqid);
+
+    // this will temporarily unlock the readMutex, and let other clients get work done
+    this->sync_.waitForWork(seqid);
+  } // end while(true)
+}
+
 int64_t GraphQueryAggregatorServiceConcurrentClient::addNode(const int64_t id, const std::string& data)
 {
   int32_t seqid = send_addNode(id, data);
@@ -17812,6 +20064,91 @@ bool GraphQueryAggregatorServiceConcurrentClient::recv_deleteNode(const int32_t 
       }
       // in a bad state, don't commit
       throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "deleteNode failed: unknown result");
+    }
+    // seqid != rseqid
+    this->sync_.updatePending(fname, mtype, rseqid);
+
+    // this will temporarily unlock the readMutex, and let other clients get work done
+    this->sync_.waitForWork(seqid);
+  } // end while(true)
+}
+
+bool GraphQueryAggregatorServiceConcurrentClient::deleteNodeLocal(const int64_t shard_id, const int64_t id)
+{
+  int32_t seqid = send_deleteNodeLocal(shard_id, id);
+  return recv_deleteNodeLocal(seqid);
+}
+
+int32_t GraphQueryAggregatorServiceConcurrentClient::send_deleteNodeLocal(const int64_t shard_id, const int64_t id)
+{
+  int32_t cseqid = this->sync_.generateSeqId();
+  ::apache::thrift::async::TConcurrentSendSentry sentry(&this->sync_);
+  oprot_->writeMessageBegin("deleteNodeLocal", ::apache::thrift::protocol::T_CALL, cseqid);
+
+  GraphQueryAggregatorService_deleteNodeLocal_pargs args;
+  args.shard_id = &shard_id;
+  args.id = &id;
+  args.write(oprot_);
+
+  oprot_->writeMessageEnd();
+  oprot_->getTransport()->writeEnd();
+  oprot_->getTransport()->flush();
+
+  sentry.commit();
+  return cseqid;
+}
+
+bool GraphQueryAggregatorServiceConcurrentClient::recv_deleteNodeLocal(const int32_t seqid)
+{
+
+  int32_t rseqid = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TMessageType mtype;
+
+  // the read mutex gets dropped and reacquired as part of waitForWork()
+  // The destructor of this sentry wakes up other clients
+  ::apache::thrift::async::TConcurrentRecvSentry sentry(&this->sync_, seqid);
+
+  while(true) {
+    if(!this->sync_.getPending(fname, mtype, rseqid)) {
+      iprot_->readMessageBegin(fname, mtype, rseqid);
+    }
+    if(seqid == rseqid) {
+      if (mtype == ::apache::thrift::protocol::T_EXCEPTION) {
+        ::apache::thrift::TApplicationException x;
+        x.read(iprot_);
+        iprot_->readMessageEnd();
+        iprot_->getTransport()->readEnd();
+        sentry.commit();
+        throw x;
+      }
+      if (mtype != ::apache::thrift::protocol::T_REPLY) {
+        iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+        iprot_->readMessageEnd();
+        iprot_->getTransport()->readEnd();
+      }
+      if (fname.compare("deleteNodeLocal") != 0) {
+        iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+        iprot_->readMessageEnd();
+        iprot_->getTransport()->readEnd();
+
+        // in a bad state, don't commit
+        using ::apache::thrift::protocol::TProtocolException;
+        throw TProtocolException(TProtocolException::INVALID_DATA);
+      }
+      bool _return;
+      GraphQueryAggregatorService_deleteNodeLocal_presult result;
+      result.success = &_return;
+      result.read(iprot_);
+      iprot_->readMessageEnd();
+      iprot_->getTransport()->readEnd();
+
+      if (result.__isset.success) {
+        sentry.commit();
+        return _return;
+      }
+      // in a bad state, don't commit
+      throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "deleteNodeLocal failed: unknown result");
     }
     // seqid != rseqid
     this->sync_.updatePending(fname, mtype, rseqid);
@@ -17992,10 +20329,97 @@ void GraphQueryAggregatorServiceConcurrentClient::recv_getLink(ThriftAssoc& _ret
   } // end while(true)
 }
 
-void GraphQueryAggregatorServiceConcurrentClient::addLink(const ThriftAssoc& link)
+void GraphQueryAggregatorServiceConcurrentClient::getLinkLocal(ThriftAssoc& _return, const int64_t shard_id, const int64_t id1, const int64_t link_type, const int64_t id2)
+{
+  int32_t seqid = send_getLinkLocal(shard_id, id1, link_type, id2);
+  recv_getLinkLocal(_return, seqid);
+}
+
+int32_t GraphQueryAggregatorServiceConcurrentClient::send_getLinkLocal(const int64_t shard_id, const int64_t id1, const int64_t link_type, const int64_t id2)
+{
+  int32_t cseqid = this->sync_.generateSeqId();
+  ::apache::thrift::async::TConcurrentSendSentry sentry(&this->sync_);
+  oprot_->writeMessageBegin("getLinkLocal", ::apache::thrift::protocol::T_CALL, cseqid);
+
+  GraphQueryAggregatorService_getLinkLocal_pargs args;
+  args.shard_id = &shard_id;
+  args.id1 = &id1;
+  args.link_type = &link_type;
+  args.id2 = &id2;
+  args.write(oprot_);
+
+  oprot_->writeMessageEnd();
+  oprot_->getTransport()->writeEnd();
+  oprot_->getTransport()->flush();
+
+  sentry.commit();
+  return cseqid;
+}
+
+void GraphQueryAggregatorServiceConcurrentClient::recv_getLinkLocal(ThriftAssoc& _return, const int32_t seqid)
+{
+
+  int32_t rseqid = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TMessageType mtype;
+
+  // the read mutex gets dropped and reacquired as part of waitForWork()
+  // The destructor of this sentry wakes up other clients
+  ::apache::thrift::async::TConcurrentRecvSentry sentry(&this->sync_, seqid);
+
+  while(true) {
+    if(!this->sync_.getPending(fname, mtype, rseqid)) {
+      iprot_->readMessageBegin(fname, mtype, rseqid);
+    }
+    if(seqid == rseqid) {
+      if (mtype == ::apache::thrift::protocol::T_EXCEPTION) {
+        ::apache::thrift::TApplicationException x;
+        x.read(iprot_);
+        iprot_->readMessageEnd();
+        iprot_->getTransport()->readEnd();
+        sentry.commit();
+        throw x;
+      }
+      if (mtype != ::apache::thrift::protocol::T_REPLY) {
+        iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+        iprot_->readMessageEnd();
+        iprot_->getTransport()->readEnd();
+      }
+      if (fname.compare("getLinkLocal") != 0) {
+        iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+        iprot_->readMessageEnd();
+        iprot_->getTransport()->readEnd();
+
+        // in a bad state, don't commit
+        using ::apache::thrift::protocol::TProtocolException;
+        throw TProtocolException(TProtocolException::INVALID_DATA);
+      }
+      GraphQueryAggregatorService_getLinkLocal_presult result;
+      result.success = &_return;
+      result.read(iprot_);
+      iprot_->readMessageEnd();
+      iprot_->getTransport()->readEnd();
+
+      if (result.__isset.success) {
+        // _return pointer has now been filled
+        sentry.commit();
+        return;
+      }
+      // in a bad state, don't commit
+      throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "getLinkLocal failed: unknown result");
+    }
+    // seqid != rseqid
+    this->sync_.updatePending(fname, mtype, rseqid);
+
+    // this will temporarily unlock the readMutex, and let other clients get work done
+    this->sync_.waitForWork(seqid);
+  } // end while(true)
+}
+
+bool GraphQueryAggregatorServiceConcurrentClient::addLink(const ThriftAssoc& link)
 {
   int32_t seqid = send_addLink(link);
-  recv_addLink(seqid);
+  return recv_addLink(seqid);
 }
 
 int32_t GraphQueryAggregatorServiceConcurrentClient::send_addLink(const ThriftAssoc& link)
@@ -18016,7 +20440,7 @@ int32_t GraphQueryAggregatorServiceConcurrentClient::send_addLink(const ThriftAs
   return cseqid;
 }
 
-void GraphQueryAggregatorServiceConcurrentClient::recv_addLink(const int32_t seqid)
+bool GraphQueryAggregatorServiceConcurrentClient::recv_addLink(const int32_t seqid)
 {
 
   int32_t rseqid = 0;
@@ -18054,13 +20478,19 @@ void GraphQueryAggregatorServiceConcurrentClient::recv_addLink(const int32_t seq
         using ::apache::thrift::protocol::TProtocolException;
         throw TProtocolException(TProtocolException::INVALID_DATA);
       }
+      bool _return;
       GraphQueryAggregatorService_addLink_presult result;
+      result.success = &_return;
       result.read(iprot_);
       iprot_->readMessageEnd();
       iprot_->getTransport()->readEnd();
 
-      sentry.commit();
-      return;
+      if (result.__isset.success) {
+        sentry.commit();
+        return _return;
+      }
+      // in a bad state, don't commit
+      throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "addLink failed: unknown result");
     }
     // seqid != rseqid
     this->sync_.updatePending(fname, mtype, rseqid);
@@ -18147,6 +20577,93 @@ bool GraphQueryAggregatorServiceConcurrentClient::recv_deleteLink(const int32_t 
       }
       // in a bad state, don't commit
       throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "deleteLink failed: unknown result");
+    }
+    // seqid != rseqid
+    this->sync_.updatePending(fname, mtype, rseqid);
+
+    // this will temporarily unlock the readMutex, and let other clients get work done
+    this->sync_.waitForWork(seqid);
+  } // end while(true)
+}
+
+bool GraphQueryAggregatorServiceConcurrentClient::deleteLinkLocal(const int64_t shard_id, const int64_t id1, const int64_t link_type, const int64_t id2)
+{
+  int32_t seqid = send_deleteLinkLocal(shard_id, id1, link_type, id2);
+  return recv_deleteLinkLocal(seqid);
+}
+
+int32_t GraphQueryAggregatorServiceConcurrentClient::send_deleteLinkLocal(const int64_t shard_id, const int64_t id1, const int64_t link_type, const int64_t id2)
+{
+  int32_t cseqid = this->sync_.generateSeqId();
+  ::apache::thrift::async::TConcurrentSendSentry sentry(&this->sync_);
+  oprot_->writeMessageBegin("deleteLinkLocal", ::apache::thrift::protocol::T_CALL, cseqid);
+
+  GraphQueryAggregatorService_deleteLinkLocal_pargs args;
+  args.shard_id = &shard_id;
+  args.id1 = &id1;
+  args.link_type = &link_type;
+  args.id2 = &id2;
+  args.write(oprot_);
+
+  oprot_->writeMessageEnd();
+  oprot_->getTransport()->writeEnd();
+  oprot_->getTransport()->flush();
+
+  sentry.commit();
+  return cseqid;
+}
+
+bool GraphQueryAggregatorServiceConcurrentClient::recv_deleteLinkLocal(const int32_t seqid)
+{
+
+  int32_t rseqid = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TMessageType mtype;
+
+  // the read mutex gets dropped and reacquired as part of waitForWork()
+  // The destructor of this sentry wakes up other clients
+  ::apache::thrift::async::TConcurrentRecvSentry sentry(&this->sync_, seqid);
+
+  while(true) {
+    if(!this->sync_.getPending(fname, mtype, rseqid)) {
+      iprot_->readMessageBegin(fname, mtype, rseqid);
+    }
+    if(seqid == rseqid) {
+      if (mtype == ::apache::thrift::protocol::T_EXCEPTION) {
+        ::apache::thrift::TApplicationException x;
+        x.read(iprot_);
+        iprot_->readMessageEnd();
+        iprot_->getTransport()->readEnd();
+        sentry.commit();
+        throw x;
+      }
+      if (mtype != ::apache::thrift::protocol::T_REPLY) {
+        iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+        iprot_->readMessageEnd();
+        iprot_->getTransport()->readEnd();
+      }
+      if (fname.compare("deleteLinkLocal") != 0) {
+        iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+        iprot_->readMessageEnd();
+        iprot_->getTransport()->readEnd();
+
+        // in a bad state, don't commit
+        using ::apache::thrift::protocol::TProtocolException;
+        throw TProtocolException(TProtocolException::INVALID_DATA);
+      }
+      bool _return;
+      GraphQueryAggregatorService_deleteLinkLocal_presult result;
+      result.success = &_return;
+      result.read(iprot_);
+      iprot_->readMessageEnd();
+      iprot_->getTransport()->readEnd();
+
+      if (result.__isset.success) {
+        sentry.commit();
+        return _return;
+      }
+      // in a bad state, don't commit
+      throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "deleteLinkLocal failed: unknown result");
     }
     // seqid != rseqid
     this->sync_.updatePending(fname, mtype, rseqid);
@@ -18325,6 +20842,92 @@ void GraphQueryAggregatorServiceConcurrentClient::recv_getLinkList(std::vector<T
   } // end while(true)
 }
 
+void GraphQueryAggregatorServiceConcurrentClient::getLinkListLocal(std::vector<ThriftAssoc> & _return, const int64_t shard_id, const int64_t id1, const int64_t link_type)
+{
+  int32_t seqid = send_getLinkListLocal(shard_id, id1, link_type);
+  recv_getLinkListLocal(_return, seqid);
+}
+
+int32_t GraphQueryAggregatorServiceConcurrentClient::send_getLinkListLocal(const int64_t shard_id, const int64_t id1, const int64_t link_type)
+{
+  int32_t cseqid = this->sync_.generateSeqId();
+  ::apache::thrift::async::TConcurrentSendSentry sentry(&this->sync_);
+  oprot_->writeMessageBegin("getLinkListLocal", ::apache::thrift::protocol::T_CALL, cseqid);
+
+  GraphQueryAggregatorService_getLinkListLocal_pargs args;
+  args.shard_id = &shard_id;
+  args.id1 = &id1;
+  args.link_type = &link_type;
+  args.write(oprot_);
+
+  oprot_->writeMessageEnd();
+  oprot_->getTransport()->writeEnd();
+  oprot_->getTransport()->flush();
+
+  sentry.commit();
+  return cseqid;
+}
+
+void GraphQueryAggregatorServiceConcurrentClient::recv_getLinkListLocal(std::vector<ThriftAssoc> & _return, const int32_t seqid)
+{
+
+  int32_t rseqid = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TMessageType mtype;
+
+  // the read mutex gets dropped and reacquired as part of waitForWork()
+  // The destructor of this sentry wakes up other clients
+  ::apache::thrift::async::TConcurrentRecvSentry sentry(&this->sync_, seqid);
+
+  while(true) {
+    if(!this->sync_.getPending(fname, mtype, rseqid)) {
+      iprot_->readMessageBegin(fname, mtype, rseqid);
+    }
+    if(seqid == rseqid) {
+      if (mtype == ::apache::thrift::protocol::T_EXCEPTION) {
+        ::apache::thrift::TApplicationException x;
+        x.read(iprot_);
+        iprot_->readMessageEnd();
+        iprot_->getTransport()->readEnd();
+        sentry.commit();
+        throw x;
+      }
+      if (mtype != ::apache::thrift::protocol::T_REPLY) {
+        iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+        iprot_->readMessageEnd();
+        iprot_->getTransport()->readEnd();
+      }
+      if (fname.compare("getLinkListLocal") != 0) {
+        iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+        iprot_->readMessageEnd();
+        iprot_->getTransport()->readEnd();
+
+        // in a bad state, don't commit
+        using ::apache::thrift::protocol::TProtocolException;
+        throw TProtocolException(TProtocolException::INVALID_DATA);
+      }
+      GraphQueryAggregatorService_getLinkListLocal_presult result;
+      result.success = &_return;
+      result.read(iprot_);
+      iprot_->readMessageEnd();
+      iprot_->getTransport()->readEnd();
+
+      if (result.__isset.success) {
+        // _return pointer has now been filled
+        sentry.commit();
+        return;
+      }
+      // in a bad state, don't commit
+      throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "getLinkListLocal failed: unknown result");
+    }
+    // seqid != rseqid
+    this->sync_.updatePending(fname, mtype, rseqid);
+
+    // this will temporarily unlock the readMutex, and let other clients get work done
+    this->sync_.waitForWork(seqid);
+  } // end while(true)
+}
+
 void GraphQueryAggregatorServiceConcurrentClient::getFilteredLinkList(std::vector<ThriftAssoc> & _return, const int64_t id1, const int64_t link_type, const int64_t min_timestamp, const int64_t max_timestamp, const int64_t offset, const int64_t limit)
 {
   int32_t seqid = send_getFilteredLinkList(id1, link_type, min_timestamp, max_timestamp, offset, limit);
@@ -18405,6 +21008,96 @@ void GraphQueryAggregatorServiceConcurrentClient::recv_getFilteredLinkList(std::
       }
       // in a bad state, don't commit
       throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "getFilteredLinkList failed: unknown result");
+    }
+    // seqid != rseqid
+    this->sync_.updatePending(fname, mtype, rseqid);
+
+    // this will temporarily unlock the readMutex, and let other clients get work done
+    this->sync_.waitForWork(seqid);
+  } // end while(true)
+}
+
+void GraphQueryAggregatorServiceConcurrentClient::getFilteredLinkListLocal(std::vector<ThriftAssoc> & _return, const int64_t shard_id, const int64_t id1, const int64_t link_type, const int64_t min_timestamp, const int64_t max_timestamp, const int64_t offset, const int64_t limit)
+{
+  int32_t seqid = send_getFilteredLinkListLocal(shard_id, id1, link_type, min_timestamp, max_timestamp, offset, limit);
+  recv_getFilteredLinkListLocal(_return, seqid);
+}
+
+int32_t GraphQueryAggregatorServiceConcurrentClient::send_getFilteredLinkListLocal(const int64_t shard_id, const int64_t id1, const int64_t link_type, const int64_t min_timestamp, const int64_t max_timestamp, const int64_t offset, const int64_t limit)
+{
+  int32_t cseqid = this->sync_.generateSeqId();
+  ::apache::thrift::async::TConcurrentSendSentry sentry(&this->sync_);
+  oprot_->writeMessageBegin("getFilteredLinkListLocal", ::apache::thrift::protocol::T_CALL, cseqid);
+
+  GraphQueryAggregatorService_getFilteredLinkListLocal_pargs args;
+  args.shard_id = &shard_id;
+  args.id1 = &id1;
+  args.link_type = &link_type;
+  args.min_timestamp = &min_timestamp;
+  args.max_timestamp = &max_timestamp;
+  args.offset = &offset;
+  args.limit = &limit;
+  args.write(oprot_);
+
+  oprot_->writeMessageEnd();
+  oprot_->getTransport()->writeEnd();
+  oprot_->getTransport()->flush();
+
+  sentry.commit();
+  return cseqid;
+}
+
+void GraphQueryAggregatorServiceConcurrentClient::recv_getFilteredLinkListLocal(std::vector<ThriftAssoc> & _return, const int32_t seqid)
+{
+
+  int32_t rseqid = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TMessageType mtype;
+
+  // the read mutex gets dropped and reacquired as part of waitForWork()
+  // The destructor of this sentry wakes up other clients
+  ::apache::thrift::async::TConcurrentRecvSentry sentry(&this->sync_, seqid);
+
+  while(true) {
+    if(!this->sync_.getPending(fname, mtype, rseqid)) {
+      iprot_->readMessageBegin(fname, mtype, rseqid);
+    }
+    if(seqid == rseqid) {
+      if (mtype == ::apache::thrift::protocol::T_EXCEPTION) {
+        ::apache::thrift::TApplicationException x;
+        x.read(iprot_);
+        iprot_->readMessageEnd();
+        iprot_->getTransport()->readEnd();
+        sentry.commit();
+        throw x;
+      }
+      if (mtype != ::apache::thrift::protocol::T_REPLY) {
+        iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+        iprot_->readMessageEnd();
+        iprot_->getTransport()->readEnd();
+      }
+      if (fname.compare("getFilteredLinkListLocal") != 0) {
+        iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+        iprot_->readMessageEnd();
+        iprot_->getTransport()->readEnd();
+
+        // in a bad state, don't commit
+        using ::apache::thrift::protocol::TProtocolException;
+        throw TProtocolException(TProtocolException::INVALID_DATA);
+      }
+      GraphQueryAggregatorService_getFilteredLinkListLocal_presult result;
+      result.success = &_return;
+      result.read(iprot_);
+      iprot_->readMessageEnd();
+      iprot_->getTransport()->readEnd();
+
+      if (result.__isset.success) {
+        // _return pointer has now been filled
+        sentry.commit();
+        return;
+      }
+      // in a bad state, don't commit
+      throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "getFilteredLinkListLocal failed: unknown result");
     }
     // seqid != rseqid
     this->sync_.updatePending(fname, mtype, rseqid);

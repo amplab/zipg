@@ -55,15 +55,21 @@ class GraphQueryAggregatorServiceIf {
   virtual void assoc_time_range_local(std::vector<ThriftAssoc> & _return, const int32_t shardId, const int64_t src, const int64_t atype, const int64_t tLow, const int64_t tHigh, const int32_t limit) = 0;
   virtual int32_t assoc_add(const int64_t src, const int64_t atype, const int64_t dst, const int64_t time, const std::string& attr) = 0;
   virtual void getNode(std::string& _return, const int64_t id) = 0;
+  virtual void getNodeLocal(std::string& _return, const int64_t shard_id, const int64_t id) = 0;
   virtual int64_t addNode(const int64_t id, const std::string& data) = 0;
   virtual bool deleteNode(const int64_t id) = 0;
+  virtual bool deleteNodeLocal(const int64_t shard_id, const int64_t id) = 0;
   virtual bool updateNode(const int64_t id, const std::string& data) = 0;
   virtual void getLink(ThriftAssoc& _return, const int64_t id1, const int64_t link_type, const int64_t id2) = 0;
-  virtual void addLink(const ThriftAssoc& link) = 0;
+  virtual void getLinkLocal(ThriftAssoc& _return, const int64_t shard_id, const int64_t id1, const int64_t link_type, const int64_t id2) = 0;
+  virtual bool addLink(const ThriftAssoc& link) = 0;
   virtual bool deleteLink(const int64_t id1, const int64_t link_type, const int64_t id2) = 0;
+  virtual bool deleteLinkLocal(const int64_t shard_id, const int64_t id1, const int64_t link_type, const int64_t id2) = 0;
   virtual bool updateLink(const ThriftAssoc& link) = 0;
   virtual void getLinkList(std::vector<ThriftAssoc> & _return, const int64_t id1, const int64_t link_type) = 0;
+  virtual void getLinkListLocal(std::vector<ThriftAssoc> & _return, const int64_t shard_id, const int64_t id1, const int64_t link_type) = 0;
   virtual void getFilteredLinkList(std::vector<ThriftAssoc> & _return, const int64_t id1, const int64_t link_type, const int64_t min_timestamp, const int64_t max_timestamp, const int64_t offset, const int64_t limit) = 0;
+  virtual void getFilteredLinkListLocal(std::vector<ThriftAssoc> & _return, const int64_t shard_id, const int64_t id1, const int64_t link_type, const int64_t min_timestamp, const int64_t max_timestamp, const int64_t offset, const int64_t limit) = 0;
 };
 
 class GraphQueryAggregatorServiceIfFactory {
@@ -201,11 +207,18 @@ class GraphQueryAggregatorServiceNull : virtual public GraphQueryAggregatorServi
   void getNode(std::string& /* _return */, const int64_t /* id */) {
     return;
   }
+  void getNodeLocal(std::string& /* _return */, const int64_t /* shard_id */, const int64_t /* id */) {
+    return;
+  }
   int64_t addNode(const int64_t /* id */, const std::string& /* data */) {
     int64_t _return = 0;
     return _return;
   }
   bool deleteNode(const int64_t /* id */) {
+    bool _return = false;
+    return _return;
+  }
+  bool deleteNodeLocal(const int64_t /* shard_id */, const int64_t /* id */) {
     bool _return = false;
     return _return;
   }
@@ -216,10 +229,18 @@ class GraphQueryAggregatorServiceNull : virtual public GraphQueryAggregatorServi
   void getLink(ThriftAssoc& /* _return */, const int64_t /* id1 */, const int64_t /* link_type */, const int64_t /* id2 */) {
     return;
   }
-  void addLink(const ThriftAssoc& /* link */) {
+  void getLinkLocal(ThriftAssoc& /* _return */, const int64_t /* shard_id */, const int64_t /* id1 */, const int64_t /* link_type */, const int64_t /* id2 */) {
     return;
   }
+  bool addLink(const ThriftAssoc& /* link */) {
+    bool _return = false;
+    return _return;
+  }
   bool deleteLink(const int64_t /* id1 */, const int64_t /* link_type */, const int64_t /* id2 */) {
+    bool _return = false;
+    return _return;
+  }
+  bool deleteLinkLocal(const int64_t /* shard_id */, const int64_t /* id1 */, const int64_t /* link_type */, const int64_t /* id2 */) {
     bool _return = false;
     return _return;
   }
@@ -230,7 +251,13 @@ class GraphQueryAggregatorServiceNull : virtual public GraphQueryAggregatorServi
   void getLinkList(std::vector<ThriftAssoc> & /* _return */, const int64_t /* id1 */, const int64_t /* link_type */) {
     return;
   }
+  void getLinkListLocal(std::vector<ThriftAssoc> & /* _return */, const int64_t /* shard_id */, const int64_t /* id1 */, const int64_t /* link_type */) {
+    return;
+  }
   void getFilteredLinkList(std::vector<ThriftAssoc> & /* _return */, const int64_t /* id1 */, const int64_t /* link_type */, const int64_t /* min_timestamp */, const int64_t /* max_timestamp */, const int64_t /* offset */, const int64_t /* limit */) {
+    return;
+  }
+  void getFilteredLinkListLocal(std::vector<ThriftAssoc> & /* _return */, const int64_t /* shard_id */, const int64_t /* id1 */, const int64_t /* link_type */, const int64_t /* min_timestamp */, const int64_t /* max_timestamp */, const int64_t /* offset */, const int64_t /* limit */) {
     return;
   }
 };
@@ -4085,6 +4112,117 @@ class GraphQueryAggregatorService_getNode_presult {
 
 };
 
+typedef struct _GraphQueryAggregatorService_getNodeLocal_args__isset {
+  _GraphQueryAggregatorService_getNodeLocal_args__isset() : shard_id(false), id(false) {}
+  bool shard_id :1;
+  bool id :1;
+} _GraphQueryAggregatorService_getNodeLocal_args__isset;
+
+class GraphQueryAggregatorService_getNodeLocal_args {
+ public:
+
+  GraphQueryAggregatorService_getNodeLocal_args(const GraphQueryAggregatorService_getNodeLocal_args&);
+  GraphQueryAggregatorService_getNodeLocal_args& operator=(const GraphQueryAggregatorService_getNodeLocal_args&);
+  GraphQueryAggregatorService_getNodeLocal_args() : shard_id(0), id(0) {
+  }
+
+  virtual ~GraphQueryAggregatorService_getNodeLocal_args() throw();
+  int64_t shard_id;
+  int64_t id;
+
+  _GraphQueryAggregatorService_getNodeLocal_args__isset __isset;
+
+  void __set_shard_id(const int64_t val);
+
+  void __set_id(const int64_t val);
+
+  bool operator == (const GraphQueryAggregatorService_getNodeLocal_args & rhs) const
+  {
+    if (!(shard_id == rhs.shard_id))
+      return false;
+    if (!(id == rhs.id))
+      return false;
+    return true;
+  }
+  bool operator != (const GraphQueryAggregatorService_getNodeLocal_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GraphQueryAggregatorService_getNodeLocal_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class GraphQueryAggregatorService_getNodeLocal_pargs {
+ public:
+
+
+  virtual ~GraphQueryAggregatorService_getNodeLocal_pargs() throw();
+  const int64_t* shard_id;
+  const int64_t* id;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _GraphQueryAggregatorService_getNodeLocal_result__isset {
+  _GraphQueryAggregatorService_getNodeLocal_result__isset() : success(false) {}
+  bool success :1;
+} _GraphQueryAggregatorService_getNodeLocal_result__isset;
+
+class GraphQueryAggregatorService_getNodeLocal_result {
+ public:
+
+  GraphQueryAggregatorService_getNodeLocal_result(const GraphQueryAggregatorService_getNodeLocal_result&);
+  GraphQueryAggregatorService_getNodeLocal_result& operator=(const GraphQueryAggregatorService_getNodeLocal_result&);
+  GraphQueryAggregatorService_getNodeLocal_result() : success() {
+  }
+
+  virtual ~GraphQueryAggregatorService_getNodeLocal_result() throw();
+  std::string success;
+
+  _GraphQueryAggregatorService_getNodeLocal_result__isset __isset;
+
+  void __set_success(const std::string& val);
+
+  bool operator == (const GraphQueryAggregatorService_getNodeLocal_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    return true;
+  }
+  bool operator != (const GraphQueryAggregatorService_getNodeLocal_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GraphQueryAggregatorService_getNodeLocal_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _GraphQueryAggregatorService_getNodeLocal_presult__isset {
+  _GraphQueryAggregatorService_getNodeLocal_presult__isset() : success(false) {}
+  bool success :1;
+} _GraphQueryAggregatorService_getNodeLocal_presult__isset;
+
+class GraphQueryAggregatorService_getNodeLocal_presult {
+ public:
+
+
+  virtual ~GraphQueryAggregatorService_getNodeLocal_presult() throw();
+  std::string* success;
+
+  _GraphQueryAggregatorService_getNodeLocal_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 typedef struct _GraphQueryAggregatorService_addNode_args__isset {
   _GraphQueryAggregatorService_addNode_args__isset() : id(false), data(false) {}
   bool id :1;
@@ -4295,6 +4433,117 @@ class GraphQueryAggregatorService_deleteNode_presult {
   bool* success;
 
   _GraphQueryAggregatorService_deleteNode_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _GraphQueryAggregatorService_deleteNodeLocal_args__isset {
+  _GraphQueryAggregatorService_deleteNodeLocal_args__isset() : shard_id(false), id(false) {}
+  bool shard_id :1;
+  bool id :1;
+} _GraphQueryAggregatorService_deleteNodeLocal_args__isset;
+
+class GraphQueryAggregatorService_deleteNodeLocal_args {
+ public:
+
+  GraphQueryAggregatorService_deleteNodeLocal_args(const GraphQueryAggregatorService_deleteNodeLocal_args&);
+  GraphQueryAggregatorService_deleteNodeLocal_args& operator=(const GraphQueryAggregatorService_deleteNodeLocal_args&);
+  GraphQueryAggregatorService_deleteNodeLocal_args() : shard_id(0), id(0) {
+  }
+
+  virtual ~GraphQueryAggregatorService_deleteNodeLocal_args() throw();
+  int64_t shard_id;
+  int64_t id;
+
+  _GraphQueryAggregatorService_deleteNodeLocal_args__isset __isset;
+
+  void __set_shard_id(const int64_t val);
+
+  void __set_id(const int64_t val);
+
+  bool operator == (const GraphQueryAggregatorService_deleteNodeLocal_args & rhs) const
+  {
+    if (!(shard_id == rhs.shard_id))
+      return false;
+    if (!(id == rhs.id))
+      return false;
+    return true;
+  }
+  bool operator != (const GraphQueryAggregatorService_deleteNodeLocal_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GraphQueryAggregatorService_deleteNodeLocal_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class GraphQueryAggregatorService_deleteNodeLocal_pargs {
+ public:
+
+
+  virtual ~GraphQueryAggregatorService_deleteNodeLocal_pargs() throw();
+  const int64_t* shard_id;
+  const int64_t* id;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _GraphQueryAggregatorService_deleteNodeLocal_result__isset {
+  _GraphQueryAggregatorService_deleteNodeLocal_result__isset() : success(false) {}
+  bool success :1;
+} _GraphQueryAggregatorService_deleteNodeLocal_result__isset;
+
+class GraphQueryAggregatorService_deleteNodeLocal_result {
+ public:
+
+  GraphQueryAggregatorService_deleteNodeLocal_result(const GraphQueryAggregatorService_deleteNodeLocal_result&);
+  GraphQueryAggregatorService_deleteNodeLocal_result& operator=(const GraphQueryAggregatorService_deleteNodeLocal_result&);
+  GraphQueryAggregatorService_deleteNodeLocal_result() : success(0) {
+  }
+
+  virtual ~GraphQueryAggregatorService_deleteNodeLocal_result() throw();
+  bool success;
+
+  _GraphQueryAggregatorService_deleteNodeLocal_result__isset __isset;
+
+  void __set_success(const bool val);
+
+  bool operator == (const GraphQueryAggregatorService_deleteNodeLocal_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    return true;
+  }
+  bool operator != (const GraphQueryAggregatorService_deleteNodeLocal_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GraphQueryAggregatorService_deleteNodeLocal_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _GraphQueryAggregatorService_deleteNodeLocal_presult__isset {
+  _GraphQueryAggregatorService_deleteNodeLocal_presult__isset() : success(false) {}
+  bool success :1;
+} _GraphQueryAggregatorService_deleteNodeLocal_presult__isset;
+
+class GraphQueryAggregatorService_deleteNodeLocal_presult {
+ public:
+
+
+  virtual ~GraphQueryAggregatorService_deleteNodeLocal_presult() throw();
+  bool* success;
+
+  _GraphQueryAggregatorService_deleteNodeLocal_presult__isset __isset;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
 
@@ -4529,6 +4778,131 @@ class GraphQueryAggregatorService_getLink_presult {
 
 };
 
+typedef struct _GraphQueryAggregatorService_getLinkLocal_args__isset {
+  _GraphQueryAggregatorService_getLinkLocal_args__isset() : shard_id(false), id1(false), link_type(false), id2(false) {}
+  bool shard_id :1;
+  bool id1 :1;
+  bool link_type :1;
+  bool id2 :1;
+} _GraphQueryAggregatorService_getLinkLocal_args__isset;
+
+class GraphQueryAggregatorService_getLinkLocal_args {
+ public:
+
+  GraphQueryAggregatorService_getLinkLocal_args(const GraphQueryAggregatorService_getLinkLocal_args&);
+  GraphQueryAggregatorService_getLinkLocal_args& operator=(const GraphQueryAggregatorService_getLinkLocal_args&);
+  GraphQueryAggregatorService_getLinkLocal_args() : shard_id(0), id1(0), link_type(0), id2(0) {
+  }
+
+  virtual ~GraphQueryAggregatorService_getLinkLocal_args() throw();
+  int64_t shard_id;
+  int64_t id1;
+  int64_t link_type;
+  int64_t id2;
+
+  _GraphQueryAggregatorService_getLinkLocal_args__isset __isset;
+
+  void __set_shard_id(const int64_t val);
+
+  void __set_id1(const int64_t val);
+
+  void __set_link_type(const int64_t val);
+
+  void __set_id2(const int64_t val);
+
+  bool operator == (const GraphQueryAggregatorService_getLinkLocal_args & rhs) const
+  {
+    if (!(shard_id == rhs.shard_id))
+      return false;
+    if (!(id1 == rhs.id1))
+      return false;
+    if (!(link_type == rhs.link_type))
+      return false;
+    if (!(id2 == rhs.id2))
+      return false;
+    return true;
+  }
+  bool operator != (const GraphQueryAggregatorService_getLinkLocal_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GraphQueryAggregatorService_getLinkLocal_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class GraphQueryAggregatorService_getLinkLocal_pargs {
+ public:
+
+
+  virtual ~GraphQueryAggregatorService_getLinkLocal_pargs() throw();
+  const int64_t* shard_id;
+  const int64_t* id1;
+  const int64_t* link_type;
+  const int64_t* id2;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _GraphQueryAggregatorService_getLinkLocal_result__isset {
+  _GraphQueryAggregatorService_getLinkLocal_result__isset() : success(false) {}
+  bool success :1;
+} _GraphQueryAggregatorService_getLinkLocal_result__isset;
+
+class GraphQueryAggregatorService_getLinkLocal_result {
+ public:
+
+  GraphQueryAggregatorService_getLinkLocal_result(const GraphQueryAggregatorService_getLinkLocal_result&);
+  GraphQueryAggregatorService_getLinkLocal_result& operator=(const GraphQueryAggregatorService_getLinkLocal_result&);
+  GraphQueryAggregatorService_getLinkLocal_result() {
+  }
+
+  virtual ~GraphQueryAggregatorService_getLinkLocal_result() throw();
+  ThriftAssoc success;
+
+  _GraphQueryAggregatorService_getLinkLocal_result__isset __isset;
+
+  void __set_success(const ThriftAssoc& val);
+
+  bool operator == (const GraphQueryAggregatorService_getLinkLocal_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    return true;
+  }
+  bool operator != (const GraphQueryAggregatorService_getLinkLocal_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GraphQueryAggregatorService_getLinkLocal_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _GraphQueryAggregatorService_getLinkLocal_presult__isset {
+  _GraphQueryAggregatorService_getLinkLocal_presult__isset() : success(false) {}
+  bool success :1;
+} _GraphQueryAggregatorService_getLinkLocal_presult__isset;
+
+class GraphQueryAggregatorService_getLinkLocal_presult {
+ public:
+
+
+  virtual ~GraphQueryAggregatorService_getLinkLocal_presult() throw();
+  ThriftAssoc* success;
+
+  _GraphQueryAggregatorService_getLinkLocal_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 typedef struct _GraphQueryAggregatorService_addLink_args__isset {
   _GraphQueryAggregatorService_addLink_args__isset() : link(false) {}
   bool link :1;
@@ -4578,19 +4952,30 @@ class GraphQueryAggregatorService_addLink_pargs {
 
 };
 
+typedef struct _GraphQueryAggregatorService_addLink_result__isset {
+  _GraphQueryAggregatorService_addLink_result__isset() : success(false) {}
+  bool success :1;
+} _GraphQueryAggregatorService_addLink_result__isset;
 
 class GraphQueryAggregatorService_addLink_result {
  public:
 
   GraphQueryAggregatorService_addLink_result(const GraphQueryAggregatorService_addLink_result&);
   GraphQueryAggregatorService_addLink_result& operator=(const GraphQueryAggregatorService_addLink_result&);
-  GraphQueryAggregatorService_addLink_result() {
+  GraphQueryAggregatorService_addLink_result() : success(0) {
   }
 
   virtual ~GraphQueryAggregatorService_addLink_result() throw();
+  bool success;
 
-  bool operator == (const GraphQueryAggregatorService_addLink_result & /* rhs */) const
+  _GraphQueryAggregatorService_addLink_result__isset __isset;
+
+  void __set_success(const bool val);
+
+  bool operator == (const GraphQueryAggregatorService_addLink_result & rhs) const
   {
+    if (!(success == rhs.success))
+      return false;
     return true;
   }
   bool operator != (const GraphQueryAggregatorService_addLink_result &rhs) const {
@@ -4604,12 +4989,19 @@ class GraphQueryAggregatorService_addLink_result {
 
 };
 
+typedef struct _GraphQueryAggregatorService_addLink_presult__isset {
+  _GraphQueryAggregatorService_addLink_presult__isset() : success(false) {}
+  bool success :1;
+} _GraphQueryAggregatorService_addLink_presult__isset;
 
 class GraphQueryAggregatorService_addLink_presult {
  public:
 
 
   virtual ~GraphQueryAggregatorService_addLink_presult() throw();
+  bool* success;
+
+  _GraphQueryAggregatorService_addLink_presult__isset __isset;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
 
@@ -4728,6 +5120,131 @@ class GraphQueryAggregatorService_deleteLink_presult {
   bool* success;
 
   _GraphQueryAggregatorService_deleteLink_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _GraphQueryAggregatorService_deleteLinkLocal_args__isset {
+  _GraphQueryAggregatorService_deleteLinkLocal_args__isset() : shard_id(false), id1(false), link_type(false), id2(false) {}
+  bool shard_id :1;
+  bool id1 :1;
+  bool link_type :1;
+  bool id2 :1;
+} _GraphQueryAggregatorService_deleteLinkLocal_args__isset;
+
+class GraphQueryAggregatorService_deleteLinkLocal_args {
+ public:
+
+  GraphQueryAggregatorService_deleteLinkLocal_args(const GraphQueryAggregatorService_deleteLinkLocal_args&);
+  GraphQueryAggregatorService_deleteLinkLocal_args& operator=(const GraphQueryAggregatorService_deleteLinkLocal_args&);
+  GraphQueryAggregatorService_deleteLinkLocal_args() : shard_id(0), id1(0), link_type(0), id2(0) {
+  }
+
+  virtual ~GraphQueryAggregatorService_deleteLinkLocal_args() throw();
+  int64_t shard_id;
+  int64_t id1;
+  int64_t link_type;
+  int64_t id2;
+
+  _GraphQueryAggregatorService_deleteLinkLocal_args__isset __isset;
+
+  void __set_shard_id(const int64_t val);
+
+  void __set_id1(const int64_t val);
+
+  void __set_link_type(const int64_t val);
+
+  void __set_id2(const int64_t val);
+
+  bool operator == (const GraphQueryAggregatorService_deleteLinkLocal_args & rhs) const
+  {
+    if (!(shard_id == rhs.shard_id))
+      return false;
+    if (!(id1 == rhs.id1))
+      return false;
+    if (!(link_type == rhs.link_type))
+      return false;
+    if (!(id2 == rhs.id2))
+      return false;
+    return true;
+  }
+  bool operator != (const GraphQueryAggregatorService_deleteLinkLocal_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GraphQueryAggregatorService_deleteLinkLocal_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class GraphQueryAggregatorService_deleteLinkLocal_pargs {
+ public:
+
+
+  virtual ~GraphQueryAggregatorService_deleteLinkLocal_pargs() throw();
+  const int64_t* shard_id;
+  const int64_t* id1;
+  const int64_t* link_type;
+  const int64_t* id2;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _GraphQueryAggregatorService_deleteLinkLocal_result__isset {
+  _GraphQueryAggregatorService_deleteLinkLocal_result__isset() : success(false) {}
+  bool success :1;
+} _GraphQueryAggregatorService_deleteLinkLocal_result__isset;
+
+class GraphQueryAggregatorService_deleteLinkLocal_result {
+ public:
+
+  GraphQueryAggregatorService_deleteLinkLocal_result(const GraphQueryAggregatorService_deleteLinkLocal_result&);
+  GraphQueryAggregatorService_deleteLinkLocal_result& operator=(const GraphQueryAggregatorService_deleteLinkLocal_result&);
+  GraphQueryAggregatorService_deleteLinkLocal_result() : success(0) {
+  }
+
+  virtual ~GraphQueryAggregatorService_deleteLinkLocal_result() throw();
+  bool success;
+
+  _GraphQueryAggregatorService_deleteLinkLocal_result__isset __isset;
+
+  void __set_success(const bool val);
+
+  bool operator == (const GraphQueryAggregatorService_deleteLinkLocal_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    return true;
+  }
+  bool operator != (const GraphQueryAggregatorService_deleteLinkLocal_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GraphQueryAggregatorService_deleteLinkLocal_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _GraphQueryAggregatorService_deleteLinkLocal_presult__isset {
+  _GraphQueryAggregatorService_deleteLinkLocal_presult__isset() : success(false) {}
+  bool success :1;
+} _GraphQueryAggregatorService_deleteLinkLocal_presult__isset;
+
+class GraphQueryAggregatorService_deleteLinkLocal_presult {
+ public:
+
+
+  virtual ~GraphQueryAggregatorService_deleteLinkLocal_presult() throw();
+  bool* success;
+
+  _GraphQueryAggregatorService_deleteLinkLocal_presult__isset __isset;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
 
@@ -4948,6 +5465,124 @@ class GraphQueryAggregatorService_getLinkList_presult {
 
 };
 
+typedef struct _GraphQueryAggregatorService_getLinkListLocal_args__isset {
+  _GraphQueryAggregatorService_getLinkListLocal_args__isset() : shard_id(false), id1(false), link_type(false) {}
+  bool shard_id :1;
+  bool id1 :1;
+  bool link_type :1;
+} _GraphQueryAggregatorService_getLinkListLocal_args__isset;
+
+class GraphQueryAggregatorService_getLinkListLocal_args {
+ public:
+
+  GraphQueryAggregatorService_getLinkListLocal_args(const GraphQueryAggregatorService_getLinkListLocal_args&);
+  GraphQueryAggregatorService_getLinkListLocal_args& operator=(const GraphQueryAggregatorService_getLinkListLocal_args&);
+  GraphQueryAggregatorService_getLinkListLocal_args() : shard_id(0), id1(0), link_type(0) {
+  }
+
+  virtual ~GraphQueryAggregatorService_getLinkListLocal_args() throw();
+  int64_t shard_id;
+  int64_t id1;
+  int64_t link_type;
+
+  _GraphQueryAggregatorService_getLinkListLocal_args__isset __isset;
+
+  void __set_shard_id(const int64_t val);
+
+  void __set_id1(const int64_t val);
+
+  void __set_link_type(const int64_t val);
+
+  bool operator == (const GraphQueryAggregatorService_getLinkListLocal_args & rhs) const
+  {
+    if (!(shard_id == rhs.shard_id))
+      return false;
+    if (!(id1 == rhs.id1))
+      return false;
+    if (!(link_type == rhs.link_type))
+      return false;
+    return true;
+  }
+  bool operator != (const GraphQueryAggregatorService_getLinkListLocal_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GraphQueryAggregatorService_getLinkListLocal_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class GraphQueryAggregatorService_getLinkListLocal_pargs {
+ public:
+
+
+  virtual ~GraphQueryAggregatorService_getLinkListLocal_pargs() throw();
+  const int64_t* shard_id;
+  const int64_t* id1;
+  const int64_t* link_type;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _GraphQueryAggregatorService_getLinkListLocal_result__isset {
+  _GraphQueryAggregatorService_getLinkListLocal_result__isset() : success(false) {}
+  bool success :1;
+} _GraphQueryAggregatorService_getLinkListLocal_result__isset;
+
+class GraphQueryAggregatorService_getLinkListLocal_result {
+ public:
+
+  GraphQueryAggregatorService_getLinkListLocal_result(const GraphQueryAggregatorService_getLinkListLocal_result&);
+  GraphQueryAggregatorService_getLinkListLocal_result& operator=(const GraphQueryAggregatorService_getLinkListLocal_result&);
+  GraphQueryAggregatorService_getLinkListLocal_result() {
+  }
+
+  virtual ~GraphQueryAggregatorService_getLinkListLocal_result() throw();
+  std::vector<ThriftAssoc>  success;
+
+  _GraphQueryAggregatorService_getLinkListLocal_result__isset __isset;
+
+  void __set_success(const std::vector<ThriftAssoc> & val);
+
+  bool operator == (const GraphQueryAggregatorService_getLinkListLocal_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    return true;
+  }
+  bool operator != (const GraphQueryAggregatorService_getLinkListLocal_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GraphQueryAggregatorService_getLinkListLocal_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _GraphQueryAggregatorService_getLinkListLocal_presult__isset {
+  _GraphQueryAggregatorService_getLinkListLocal_presult__isset() : success(false) {}
+  bool success :1;
+} _GraphQueryAggregatorService_getLinkListLocal_presult__isset;
+
+class GraphQueryAggregatorService_getLinkListLocal_presult {
+ public:
+
+
+  virtual ~GraphQueryAggregatorService_getLinkListLocal_presult() throw();
+  std::vector<ThriftAssoc> * success;
+
+  _GraphQueryAggregatorService_getLinkListLocal_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 typedef struct _GraphQueryAggregatorService_getFilteredLinkList_args__isset {
   _GraphQueryAggregatorService_getFilteredLinkList_args__isset() : id1(false), link_type(false), min_timestamp(false), max_timestamp(false), offset(false), limit(false) {}
   bool id1 :1;
@@ -5087,6 +5722,152 @@ class GraphQueryAggregatorService_getFilteredLinkList_presult {
 
 };
 
+typedef struct _GraphQueryAggregatorService_getFilteredLinkListLocal_args__isset {
+  _GraphQueryAggregatorService_getFilteredLinkListLocal_args__isset() : shard_id(false), id1(false), link_type(false), min_timestamp(false), max_timestamp(false), offset(false), limit(false) {}
+  bool shard_id :1;
+  bool id1 :1;
+  bool link_type :1;
+  bool min_timestamp :1;
+  bool max_timestamp :1;
+  bool offset :1;
+  bool limit :1;
+} _GraphQueryAggregatorService_getFilteredLinkListLocal_args__isset;
+
+class GraphQueryAggregatorService_getFilteredLinkListLocal_args {
+ public:
+
+  GraphQueryAggregatorService_getFilteredLinkListLocal_args(const GraphQueryAggregatorService_getFilteredLinkListLocal_args&);
+  GraphQueryAggregatorService_getFilteredLinkListLocal_args& operator=(const GraphQueryAggregatorService_getFilteredLinkListLocal_args&);
+  GraphQueryAggregatorService_getFilteredLinkListLocal_args() : shard_id(0), id1(0), link_type(0), min_timestamp(0), max_timestamp(0), offset(0), limit(0) {
+  }
+
+  virtual ~GraphQueryAggregatorService_getFilteredLinkListLocal_args() throw();
+  int64_t shard_id;
+  int64_t id1;
+  int64_t link_type;
+  int64_t min_timestamp;
+  int64_t max_timestamp;
+  int64_t offset;
+  int64_t limit;
+
+  _GraphQueryAggregatorService_getFilteredLinkListLocal_args__isset __isset;
+
+  void __set_shard_id(const int64_t val);
+
+  void __set_id1(const int64_t val);
+
+  void __set_link_type(const int64_t val);
+
+  void __set_min_timestamp(const int64_t val);
+
+  void __set_max_timestamp(const int64_t val);
+
+  void __set_offset(const int64_t val);
+
+  void __set_limit(const int64_t val);
+
+  bool operator == (const GraphQueryAggregatorService_getFilteredLinkListLocal_args & rhs) const
+  {
+    if (!(shard_id == rhs.shard_id))
+      return false;
+    if (!(id1 == rhs.id1))
+      return false;
+    if (!(link_type == rhs.link_type))
+      return false;
+    if (!(min_timestamp == rhs.min_timestamp))
+      return false;
+    if (!(max_timestamp == rhs.max_timestamp))
+      return false;
+    if (!(offset == rhs.offset))
+      return false;
+    if (!(limit == rhs.limit))
+      return false;
+    return true;
+  }
+  bool operator != (const GraphQueryAggregatorService_getFilteredLinkListLocal_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GraphQueryAggregatorService_getFilteredLinkListLocal_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class GraphQueryAggregatorService_getFilteredLinkListLocal_pargs {
+ public:
+
+
+  virtual ~GraphQueryAggregatorService_getFilteredLinkListLocal_pargs() throw();
+  const int64_t* shard_id;
+  const int64_t* id1;
+  const int64_t* link_type;
+  const int64_t* min_timestamp;
+  const int64_t* max_timestamp;
+  const int64_t* offset;
+  const int64_t* limit;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _GraphQueryAggregatorService_getFilteredLinkListLocal_result__isset {
+  _GraphQueryAggregatorService_getFilteredLinkListLocal_result__isset() : success(false) {}
+  bool success :1;
+} _GraphQueryAggregatorService_getFilteredLinkListLocal_result__isset;
+
+class GraphQueryAggregatorService_getFilteredLinkListLocal_result {
+ public:
+
+  GraphQueryAggregatorService_getFilteredLinkListLocal_result(const GraphQueryAggregatorService_getFilteredLinkListLocal_result&);
+  GraphQueryAggregatorService_getFilteredLinkListLocal_result& operator=(const GraphQueryAggregatorService_getFilteredLinkListLocal_result&);
+  GraphQueryAggregatorService_getFilteredLinkListLocal_result() {
+  }
+
+  virtual ~GraphQueryAggregatorService_getFilteredLinkListLocal_result() throw();
+  std::vector<ThriftAssoc>  success;
+
+  _GraphQueryAggregatorService_getFilteredLinkListLocal_result__isset __isset;
+
+  void __set_success(const std::vector<ThriftAssoc> & val);
+
+  bool operator == (const GraphQueryAggregatorService_getFilteredLinkListLocal_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    return true;
+  }
+  bool operator != (const GraphQueryAggregatorService_getFilteredLinkListLocal_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GraphQueryAggregatorService_getFilteredLinkListLocal_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _GraphQueryAggregatorService_getFilteredLinkListLocal_presult__isset {
+  _GraphQueryAggregatorService_getFilteredLinkListLocal_presult__isset() : success(false) {}
+  bool success :1;
+} _GraphQueryAggregatorService_getFilteredLinkListLocal_presult__isset;
+
+class GraphQueryAggregatorService_getFilteredLinkListLocal_presult {
+ public:
+
+
+  virtual ~GraphQueryAggregatorService_getFilteredLinkListLocal_presult() throw();
+  std::vector<ThriftAssoc> * success;
+
+  _GraphQueryAggregatorService_getFilteredLinkListLocal_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 class GraphQueryAggregatorServiceClient : virtual public GraphQueryAggregatorServiceIf {
  public:
   GraphQueryAggregatorServiceClient(boost::shared_ptr< ::apache::thrift::protocol::TProtocol> prot) {
@@ -5214,33 +5995,51 @@ class GraphQueryAggregatorServiceClient : virtual public GraphQueryAggregatorSer
   void getNode(std::string& _return, const int64_t id);
   void send_getNode(const int64_t id);
   void recv_getNode(std::string& _return);
+  void getNodeLocal(std::string& _return, const int64_t shard_id, const int64_t id);
+  void send_getNodeLocal(const int64_t shard_id, const int64_t id);
+  void recv_getNodeLocal(std::string& _return);
   int64_t addNode(const int64_t id, const std::string& data);
   void send_addNode(const int64_t id, const std::string& data);
   int64_t recv_addNode();
   bool deleteNode(const int64_t id);
   void send_deleteNode(const int64_t id);
   bool recv_deleteNode();
+  bool deleteNodeLocal(const int64_t shard_id, const int64_t id);
+  void send_deleteNodeLocal(const int64_t shard_id, const int64_t id);
+  bool recv_deleteNodeLocal();
   bool updateNode(const int64_t id, const std::string& data);
   void send_updateNode(const int64_t id, const std::string& data);
   bool recv_updateNode();
   void getLink(ThriftAssoc& _return, const int64_t id1, const int64_t link_type, const int64_t id2);
   void send_getLink(const int64_t id1, const int64_t link_type, const int64_t id2);
   void recv_getLink(ThriftAssoc& _return);
-  void addLink(const ThriftAssoc& link);
+  void getLinkLocal(ThriftAssoc& _return, const int64_t shard_id, const int64_t id1, const int64_t link_type, const int64_t id2);
+  void send_getLinkLocal(const int64_t shard_id, const int64_t id1, const int64_t link_type, const int64_t id2);
+  void recv_getLinkLocal(ThriftAssoc& _return);
+  bool addLink(const ThriftAssoc& link);
   void send_addLink(const ThriftAssoc& link);
-  void recv_addLink();
+  bool recv_addLink();
   bool deleteLink(const int64_t id1, const int64_t link_type, const int64_t id2);
   void send_deleteLink(const int64_t id1, const int64_t link_type, const int64_t id2);
   bool recv_deleteLink();
+  bool deleteLinkLocal(const int64_t shard_id, const int64_t id1, const int64_t link_type, const int64_t id2);
+  void send_deleteLinkLocal(const int64_t shard_id, const int64_t id1, const int64_t link_type, const int64_t id2);
+  bool recv_deleteLinkLocal();
   bool updateLink(const ThriftAssoc& link);
   void send_updateLink(const ThriftAssoc& link);
   bool recv_updateLink();
   void getLinkList(std::vector<ThriftAssoc> & _return, const int64_t id1, const int64_t link_type);
   void send_getLinkList(const int64_t id1, const int64_t link_type);
   void recv_getLinkList(std::vector<ThriftAssoc> & _return);
+  void getLinkListLocal(std::vector<ThriftAssoc> & _return, const int64_t shard_id, const int64_t id1, const int64_t link_type);
+  void send_getLinkListLocal(const int64_t shard_id, const int64_t id1, const int64_t link_type);
+  void recv_getLinkListLocal(std::vector<ThriftAssoc> & _return);
   void getFilteredLinkList(std::vector<ThriftAssoc> & _return, const int64_t id1, const int64_t link_type, const int64_t min_timestamp, const int64_t max_timestamp, const int64_t offset, const int64_t limit);
   void send_getFilteredLinkList(const int64_t id1, const int64_t link_type, const int64_t min_timestamp, const int64_t max_timestamp, const int64_t offset, const int64_t limit);
   void recv_getFilteredLinkList(std::vector<ThriftAssoc> & _return);
+  void getFilteredLinkListLocal(std::vector<ThriftAssoc> & _return, const int64_t shard_id, const int64_t id1, const int64_t link_type, const int64_t min_timestamp, const int64_t max_timestamp, const int64_t offset, const int64_t limit);
+  void send_getFilteredLinkListLocal(const int64_t shard_id, const int64_t id1, const int64_t link_type, const int64_t min_timestamp, const int64_t max_timestamp, const int64_t offset, const int64_t limit);
+  void recv_getFilteredLinkListLocal(std::vector<ThriftAssoc> & _return);
  protected:
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> piprot_;
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> poprot_;
@@ -5290,15 +6089,21 @@ class GraphQueryAggregatorServiceProcessor : public ::apache::thrift::TDispatchP
   void process_assoc_time_range_local(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_assoc_add(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_getNode(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_getNodeLocal(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_addNode(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_deleteNode(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_deleteNodeLocal(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_updateNode(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_getLink(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_getLinkLocal(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_addLink(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_deleteLink(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_deleteLinkLocal(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_updateLink(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_getLinkList(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_getLinkListLocal(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_getFilteredLinkList(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_getFilteredLinkListLocal(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
  public:
   GraphQueryAggregatorServiceProcessor(boost::shared_ptr<GraphQueryAggregatorServiceIf> iface) :
     iface_(iface) {
@@ -5336,15 +6141,21 @@ class GraphQueryAggregatorServiceProcessor : public ::apache::thrift::TDispatchP
     processMap_["assoc_time_range_local"] = &GraphQueryAggregatorServiceProcessor::process_assoc_time_range_local;
     processMap_["assoc_add"] = &GraphQueryAggregatorServiceProcessor::process_assoc_add;
     processMap_["getNode"] = &GraphQueryAggregatorServiceProcessor::process_getNode;
+    processMap_["getNodeLocal"] = &GraphQueryAggregatorServiceProcessor::process_getNodeLocal;
     processMap_["addNode"] = &GraphQueryAggregatorServiceProcessor::process_addNode;
     processMap_["deleteNode"] = &GraphQueryAggregatorServiceProcessor::process_deleteNode;
+    processMap_["deleteNodeLocal"] = &GraphQueryAggregatorServiceProcessor::process_deleteNodeLocal;
     processMap_["updateNode"] = &GraphQueryAggregatorServiceProcessor::process_updateNode;
     processMap_["getLink"] = &GraphQueryAggregatorServiceProcessor::process_getLink;
+    processMap_["getLinkLocal"] = &GraphQueryAggregatorServiceProcessor::process_getLinkLocal;
     processMap_["addLink"] = &GraphQueryAggregatorServiceProcessor::process_addLink;
     processMap_["deleteLink"] = &GraphQueryAggregatorServiceProcessor::process_deleteLink;
+    processMap_["deleteLinkLocal"] = &GraphQueryAggregatorServiceProcessor::process_deleteLinkLocal;
     processMap_["updateLink"] = &GraphQueryAggregatorServiceProcessor::process_updateLink;
     processMap_["getLinkList"] = &GraphQueryAggregatorServiceProcessor::process_getLinkList;
+    processMap_["getLinkListLocal"] = &GraphQueryAggregatorServiceProcessor::process_getLinkListLocal;
     processMap_["getFilteredLinkList"] = &GraphQueryAggregatorServiceProcessor::process_getFilteredLinkList;
+    processMap_["getFilteredLinkListLocal"] = &GraphQueryAggregatorServiceProcessor::process_getFilteredLinkListLocal;
   }
 
   virtual ~GraphQueryAggregatorServiceProcessor() {}
@@ -5703,6 +6514,16 @@ class GraphQueryAggregatorServiceMultiface : virtual public GraphQueryAggregator
     return;
   }
 
+  void getNodeLocal(std::string& _return, const int64_t shard_id, const int64_t id) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->getNodeLocal(_return, shard_id, id);
+    }
+    ifaces_[i]->getNodeLocal(_return, shard_id, id);
+    return;
+  }
+
   int64_t addNode(const int64_t id, const std::string& data) {
     size_t sz = ifaces_.size();
     size_t i = 0;
@@ -5719,6 +6540,15 @@ class GraphQueryAggregatorServiceMultiface : virtual public GraphQueryAggregator
       ifaces_[i]->deleteNode(id);
     }
     return ifaces_[i]->deleteNode(id);
+  }
+
+  bool deleteNodeLocal(const int64_t shard_id, const int64_t id) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->deleteNodeLocal(shard_id, id);
+    }
+    return ifaces_[i]->deleteNodeLocal(shard_id, id);
   }
 
   bool updateNode(const int64_t id, const std::string& data) {
@@ -5740,13 +6570,23 @@ class GraphQueryAggregatorServiceMultiface : virtual public GraphQueryAggregator
     return;
   }
 
-  void addLink(const ThriftAssoc& link) {
+  void getLinkLocal(ThriftAssoc& _return, const int64_t shard_id, const int64_t id1, const int64_t link_type, const int64_t id2) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->getLinkLocal(_return, shard_id, id1, link_type, id2);
+    }
+    ifaces_[i]->getLinkLocal(_return, shard_id, id1, link_type, id2);
+    return;
+  }
+
+  bool addLink(const ThriftAssoc& link) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
       ifaces_[i]->addLink(link);
     }
-    ifaces_[i]->addLink(link);
+    return ifaces_[i]->addLink(link);
   }
 
   bool deleteLink(const int64_t id1, const int64_t link_type, const int64_t id2) {
@@ -5756,6 +6596,15 @@ class GraphQueryAggregatorServiceMultiface : virtual public GraphQueryAggregator
       ifaces_[i]->deleteLink(id1, link_type, id2);
     }
     return ifaces_[i]->deleteLink(id1, link_type, id2);
+  }
+
+  bool deleteLinkLocal(const int64_t shard_id, const int64_t id1, const int64_t link_type, const int64_t id2) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->deleteLinkLocal(shard_id, id1, link_type, id2);
+    }
+    return ifaces_[i]->deleteLinkLocal(shard_id, id1, link_type, id2);
   }
 
   bool updateLink(const ThriftAssoc& link) {
@@ -5777,6 +6626,16 @@ class GraphQueryAggregatorServiceMultiface : virtual public GraphQueryAggregator
     return;
   }
 
+  void getLinkListLocal(std::vector<ThriftAssoc> & _return, const int64_t shard_id, const int64_t id1, const int64_t link_type) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->getLinkListLocal(_return, shard_id, id1, link_type);
+    }
+    ifaces_[i]->getLinkListLocal(_return, shard_id, id1, link_type);
+    return;
+  }
+
   void getFilteredLinkList(std::vector<ThriftAssoc> & _return, const int64_t id1, const int64_t link_type, const int64_t min_timestamp, const int64_t max_timestamp, const int64_t offset, const int64_t limit) {
     size_t sz = ifaces_.size();
     size_t i = 0;
@@ -5784,6 +6643,16 @@ class GraphQueryAggregatorServiceMultiface : virtual public GraphQueryAggregator
       ifaces_[i]->getFilteredLinkList(_return, id1, link_type, min_timestamp, max_timestamp, offset, limit);
     }
     ifaces_[i]->getFilteredLinkList(_return, id1, link_type, min_timestamp, max_timestamp, offset, limit);
+    return;
+  }
+
+  void getFilteredLinkListLocal(std::vector<ThriftAssoc> & _return, const int64_t shard_id, const int64_t id1, const int64_t link_type, const int64_t min_timestamp, const int64_t max_timestamp, const int64_t offset, const int64_t limit) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->getFilteredLinkListLocal(_return, shard_id, id1, link_type, min_timestamp, max_timestamp, offset, limit);
+    }
+    ifaces_[i]->getFilteredLinkListLocal(_return, shard_id, id1, link_type, min_timestamp, max_timestamp, offset, limit);
     return;
   }
 
@@ -5919,33 +6788,51 @@ class GraphQueryAggregatorServiceConcurrentClient : virtual public GraphQueryAgg
   void getNode(std::string& _return, const int64_t id);
   int32_t send_getNode(const int64_t id);
   void recv_getNode(std::string& _return, const int32_t seqid);
+  void getNodeLocal(std::string& _return, const int64_t shard_id, const int64_t id);
+  int32_t send_getNodeLocal(const int64_t shard_id, const int64_t id);
+  void recv_getNodeLocal(std::string& _return, const int32_t seqid);
   int64_t addNode(const int64_t id, const std::string& data);
   int32_t send_addNode(const int64_t id, const std::string& data);
   int64_t recv_addNode(const int32_t seqid);
   bool deleteNode(const int64_t id);
   int32_t send_deleteNode(const int64_t id);
   bool recv_deleteNode(const int32_t seqid);
+  bool deleteNodeLocal(const int64_t shard_id, const int64_t id);
+  int32_t send_deleteNodeLocal(const int64_t shard_id, const int64_t id);
+  bool recv_deleteNodeLocal(const int32_t seqid);
   bool updateNode(const int64_t id, const std::string& data);
   int32_t send_updateNode(const int64_t id, const std::string& data);
   bool recv_updateNode(const int32_t seqid);
   void getLink(ThriftAssoc& _return, const int64_t id1, const int64_t link_type, const int64_t id2);
   int32_t send_getLink(const int64_t id1, const int64_t link_type, const int64_t id2);
   void recv_getLink(ThriftAssoc& _return, const int32_t seqid);
-  void addLink(const ThriftAssoc& link);
+  void getLinkLocal(ThriftAssoc& _return, const int64_t shard_id, const int64_t id1, const int64_t link_type, const int64_t id2);
+  int32_t send_getLinkLocal(const int64_t shard_id, const int64_t id1, const int64_t link_type, const int64_t id2);
+  void recv_getLinkLocal(ThriftAssoc& _return, const int32_t seqid);
+  bool addLink(const ThriftAssoc& link);
   int32_t send_addLink(const ThriftAssoc& link);
-  void recv_addLink(const int32_t seqid);
+  bool recv_addLink(const int32_t seqid);
   bool deleteLink(const int64_t id1, const int64_t link_type, const int64_t id2);
   int32_t send_deleteLink(const int64_t id1, const int64_t link_type, const int64_t id2);
   bool recv_deleteLink(const int32_t seqid);
+  bool deleteLinkLocal(const int64_t shard_id, const int64_t id1, const int64_t link_type, const int64_t id2);
+  int32_t send_deleteLinkLocal(const int64_t shard_id, const int64_t id1, const int64_t link_type, const int64_t id2);
+  bool recv_deleteLinkLocal(const int32_t seqid);
   bool updateLink(const ThriftAssoc& link);
   int32_t send_updateLink(const ThriftAssoc& link);
   bool recv_updateLink(const int32_t seqid);
   void getLinkList(std::vector<ThriftAssoc> & _return, const int64_t id1, const int64_t link_type);
   int32_t send_getLinkList(const int64_t id1, const int64_t link_type);
   void recv_getLinkList(std::vector<ThriftAssoc> & _return, const int32_t seqid);
+  void getLinkListLocal(std::vector<ThriftAssoc> & _return, const int64_t shard_id, const int64_t id1, const int64_t link_type);
+  int32_t send_getLinkListLocal(const int64_t shard_id, const int64_t id1, const int64_t link_type);
+  void recv_getLinkListLocal(std::vector<ThriftAssoc> & _return, const int32_t seqid);
   void getFilteredLinkList(std::vector<ThriftAssoc> & _return, const int64_t id1, const int64_t link_type, const int64_t min_timestamp, const int64_t max_timestamp, const int64_t offset, const int64_t limit);
   int32_t send_getFilteredLinkList(const int64_t id1, const int64_t link_type, const int64_t min_timestamp, const int64_t max_timestamp, const int64_t offset, const int64_t limit);
   void recv_getFilteredLinkList(std::vector<ThriftAssoc> & _return, const int32_t seqid);
+  void getFilteredLinkListLocal(std::vector<ThriftAssoc> & _return, const int64_t shard_id, const int64_t id1, const int64_t link_type, const int64_t min_timestamp, const int64_t max_timestamp, const int64_t offset, const int64_t limit);
+  int32_t send_getFilteredLinkListLocal(const int64_t shard_id, const int64_t id1, const int64_t link_type, const int64_t min_timestamp, const int64_t max_timestamp, const int64_t offset, const int64_t limit);
+  void recv_getFilteredLinkListLocal(std::vector<ThriftAssoc> & _return, const int32_t seqid);
  protected:
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> piprot_;
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> poprot_;

@@ -106,15 +106,15 @@ class GraphLogStore {
   // LinkBench API
   typedef SuccinctGraph::Assoc Link;
 
-  void getNode(std::string& data, int64_t id);
+  bool getNode(std::string& data, int64_t id);
 
-  int64_t addNode(int64_t key, std::string& data);
+  int64_t addNode(const int64_t key, const std::string& data);
 
   bool deleteNode(int64_t id) {
     return node_table_->remove(id);
   }
 
-  void getLink(Link& link, int64_t id1, int64_t link_type, int64_t id2) {
+  bool getLink(Link& link, int64_t id1, int64_t link_type, int64_t id2) {
     return edge_table_.getLink(link, id1, link_type, id2);
   }
 

@@ -129,12 +129,12 @@ void GraphLogStore::obj_get(std::vector<std::string>& result, int64_t obj_id) {
 }
 
 // LinkBench API
-void GraphLogStore::getNode(std::string& data, int64_t id) {
+bool GraphLogStore::getNode(std::string& data, int64_t id) {
   std::string str = "";
   node_table_->get_value(str, id);
 
   if (str == "") {
-    return;
+    return false;
   }
 
   // get the initial dist first
@@ -153,10 +153,12 @@ void GraphLogStore::getNode(std::string& data, int64_t id) {
     ++i;
   }
   assert(i <= str.length());
+
   data.assign(str.substr(dist, i - dist));
+  return true;
 }
 
-int64_t GraphLogStore::addNode(int64_t key, std::string& data) {
+int64_t GraphLogStore::addNode(const int64_t key, const std::string& data) {
   size_t distance = num_digits(data.length()) + 1;
   std::string value = std::to_string(distance)
       + SuccinctGraph::NODE_TABLE_HEADER_DELIM

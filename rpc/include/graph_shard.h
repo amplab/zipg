@@ -315,13 +315,6 @@ class GraphShard {
         vec = std::move(
             graph_->assoc_time_range(src, atype, tLow, tHigh, limit));
         break;
-
-      case StoreMode::SuffixStore:
-        vec = std::move(
-            graph_suffix_store_->assoc_time_range(src, atype, tLow, tHigh,
-                                                  limit));
-        break;
-
       case StoreMode::LogStore:
         vec = std::move(
             graph_log_store_->assoc_time_range(src, atype, tLow, tHigh, limit));
@@ -346,7 +339,9 @@ class GraphShard {
 
   int assoc_add(const int64_t src, const int64_t atype, const int64_t dst,
                 const int64_t time, const std::string& attr) {
-    assert(store_mode_ == StoreMode::LogStore);COND_LOG_E("Handling assoc_add(%lld,%d,%lld,%lld...)",
+    assert(store_mode_ == StoreMode::LogStore);
+
+    COND_LOG_E("Handling assoc_add(%lld,%d,%lld,%lld...)",
         src, atype, dst, time);
 
     // Note the argument order is switched
@@ -360,12 +355,144 @@ class GraphShard {
     assert(store_mode_ == StoreMode::LogStore);
 
     // Note the argument order is switched
-    int64_t start, end;
-    start = get_timestamp();
-    int64_t ret = graph_log_store_->append_node(attrs);
-    end = get_timestamp();
-    COND_LOG_E("obj_add: Time taken at server = %lld\n", (end - start));
-    return ret;
+    return graph_log_store_->append_node(attrs);
+  }
+
+  // LinkBench API
+  typedef ThriftAssoc Link;
+
+  bool getNode(std::string& data, const int64_t id) {
+    switch (store_mode_) {
+      case StoreMode::SuccinctStore:
+        return graph_->getNode(data, id);
+      case StoreMode::LogStore:
+        return graph_log_store_->getNode(data, id);
+    }
+
+    return false;
+  }
+
+  int64_t addNode(const int64_t id, const std::string& data) {
+    switch (store_mode_) {
+      case StoreMode::SuccinctStore:
+        assert(false && "Cannot add node to SuccinctStore!");
+        return -1;
+      case StoreMode::LogStore:
+        return graph_log_store_->addNode(id, data);
+    }
+    return -1;
+  }
+
+  bool deleteNode(int64_t id) {
+    switch (store_mode_) {
+      case StoreMode::SuccinctStore:
+        return graph_->deleteNode(id);
+      case StoreMode::LogStore:
+        return graph_log_store_->deleteNode(id);
+    }
+    return false;
+  }
+
+  bool getLink(Link& link, const int64_t id1, const int64_t link_type,
+               const int64_t id2) {
+    SuccinctGraph::Assoc _link;
+    bool found = false;
+    switch (store_mode_) {
+      case StoreMode::SuccinctStore:
+        found = graph_->getLink(_link, id1, link_type, id2);
+        break;
+      case StoreMode::LogStore:
+        found = graph_log_store_->getLink(_link, id1, link_type, id2);
+        break;
+    }
+
+    if (found) {
+      link.__set_srcId(_link.src_id);
+      link.__set_dstId(_link.dst_id);
+      link.__set_atype(_link.atype);
+      link.__set_timestamp(_link.time);
+      link.__set_attr(_link.attr);
+    }
+
+    return found;
+  }
+
+  bool addLink(const Link& link) {
+    SuccinctGraph::Assoc _link = { link.srcId, link.dstId, link.atype, link
+        .timestamp, link.attr };
+
+    switch (store_mode_) {
+      case StoreMode::SuccinctStore:
+        assert(false && "Cannot add link to SuccinctStore!");
+        return false;
+      case StoreMode::LogStore:
+        return graph_log_store_->addLink(_link);
+    }
+
+    return false;
+  }
+
+  bool deleteLink(const int64_t id1, const int64_t link_type,
+                  const int64_t id2) {
+    switch (store_mode_) {
+      case StoreMode::SuccinctStore:
+        return graph_->deleteLink(id1, link_type, id2);
+      case StoreMode::LogStore:
+        return graph_log_store_->deleteLink(id1, link_type, id2);
+    }
+    return false;
+  }
+
+  void getLinkList(std::vector<Link>& assocs, const int64_t id1,
+                   const int64_t link_type) {
+    std::vector<SuccinctGraph::Assoc> _links;
+    switch (store_mode_) {
+      case StoreMode::SuccinctStore:
+        graph_->getLinkList(_links, id1, link_type);
+        break;
+      case StoreMode::LogStore:
+        graph_log_store_->getLinkList(_links, id1, link_type);
+        break;
+    }
+
+    assocs.resize(_links.size());
+    size_t i = 0;
+    for (auto _link : _links) {
+      assocs[i].__set_srcId(_link.src_id);
+      assocs[i].__set_dstId(_link.dst_id);
+      assocs[i].__set_atype(_link.atype);
+      assocs[i].__set_timestamp(_link.time);
+      assocs[i].__set_attr(_link.attr);
+      ++i;
+    }
+  }
+
+  void getFilteredLinkList(std::vector<Link>& assocs, const int64_t id1,
+                           const int64_t link_type, const int64_t min_timestamp,
+                           const int64_t max_timestamp, const int64_t offset,
+                           const int64_t limit) {
+    std::vector<SuccinctGraph::Assoc> _links;
+    switch (store_mode_) {
+      case StoreMode::SuccinctStore:
+        graph_->getLinkList(_links, id1, link_type, min_timestamp,
+                            max_timestamp, offset, limit);
+        break;
+      case StoreMode::LogStore:
+        graph_log_store_->getLinkList(_links, id1, link_type, min_timestamp,
+                                      max_timestamp, offset, limit);
+        break;
+    }
+
+    assocs.resize(_links.size());
+    size_t i = 0;
+    for (auto _link : _links) {
+      assocs[i].__set_srcId(_link.src_id);
+      assocs[i].__set_dstId(_link.dst_id);
+      assocs[i].__set_atype(_link.atype);
+      assocs[i].__set_timestamp(_link.time);
+      assocs[i].__set_attr(_link.attr);
+      ++i;
+    }
   }
 
  private:
@@ -461,6 +588,26 @@ class AsyncGraphShard : public GraphShard {
       assoc_time_range(res, src, atype, tLow, tHigh, limit);
       return res;
     });
+  }
+
+  std::future<std::vector<ThriftAssoc>> async_getLinkList(
+      const int64_t id1, const int64_t link_type) {
+    return pool_->enqueue([&] {
+      std::vector<ThriftAssoc> res;
+      getLinkList(res, id1, link_type);
+      return res;
+    });
+  }
+
+  std::future<std::vector<ThriftAssoc>> async_getFilteredLinkList(
+      const int64_t id1, const int64_t link_type, const int64_t min_timestamp,
+      const int64_t max_timestamp, const int64_t offset, const int64_t limit) {
+    return pool_->enqueue(
+        [&] {
+          std::vector<ThriftAssoc> res;
+          getFilteredLinkList(res, id1, link_type, min_timestamp, max_timestamp, offset, limit);
+          return res;
+        });
   }
 
   // TODO: Add more async functions

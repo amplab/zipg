@@ -87,7 +87,7 @@ class StructuredEdgeTable {
   // LinkBench API
   typedef SuccinctGraph::Assoc Link;
 
-  void getLink(Link& link, int64_t id1, int64_t link_type, int64_t id2);
+  bool getLink(Link& link, int64_t id1, int64_t link_type, int64_t id2);
 
   void getLinkList(std::vector<Link>& assocs, int64_t id1, int64_t link_type);
 

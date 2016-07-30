@@ -139,23 +139,31 @@ service GraphQueryAggregatorService {
 
       // LinkBench API
       string getNode(1: i64 id),
+      string getNodeLocal(1: i64 shard_id, 2: i64 id),
 
       i64 addNode(1: i64 id, 2: string data),
+      // i64 addNodeLocal(1: i64 shard_id, 2: i64 id, 3: string data),
       
       bool deleteNode(1: i64 id),
+      bool deleteNodeLocal(1: i64 shard_id, 2: i64 id),
 
       bool updateNode(1: i64 id, 2: string data),
 
       ThriftAssoc getLink(1: i64 id1, 2: i64 link_type, 3: i64 id2),
+      ThriftAssoc getLinkLocal(1: i64 shard_id, 2: i64 id1, 3: i64 link_type, 4: i64 id2),
 
-      void addLink(1: ThriftAssoc link),
+      bool addLink(1: ThriftAssoc link),
+      // bool addLinkLocal(1: i64 shard_id, 2: ThriftAssoc link),
       
       bool deleteLink(1: i64 id1, 2: i64 link_type, 3: i64 id2),
+      bool deleteLinkLocal(1: i64 shard_id, 2: i64 id1, 3: i64 link_type, 4: i64 id2),
 
       bool updateLink(1: ThriftAssoc link),
 
       list<ThriftAssoc> getLinkList(1: i64 id1, 2: i64 link_type),
+      list<ThriftAssoc> getLinkListLocal(1: i64 shard_id, 2: i64 id1, 3: i64 link_type),
 
       list<ThriftAssoc> getFilteredLinkList(1: i64 id1, 2: i64 link_type, 3: i64 min_timestamp, 4: i64 max_timestamp, 5: i64 offset, 6: i64 limit),
+      list<ThriftAssoc> getFilteredLinkListLocal(1: i64 shard_id, 2: i64 id1, 3: i64 link_type, 4: i64 min_timestamp, 5: i64 max_timestamp, 6: i64 offset, 7: i64 limit),
 
 }

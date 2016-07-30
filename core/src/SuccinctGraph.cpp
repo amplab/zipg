@@ -1171,7 +1171,7 @@ void SuccinctGraph::get_nodes(std::set<int64_t>& result, int attr1,
 }
 
 // LinkBench API
-void SuccinctGraph::getNode(std::string& data, int64_t id) {
+bool SuccinctGraph::getNode(std::string& data, int64_t id) {
   std::string token;
   uint64_t suf_arr_idx = -1ULL;
   int64_t start_offset = this->node_table->ExtractUntil(
@@ -1181,7 +1181,7 @@ void SuccinctGraph::getNode(std::string& data, int64_t id) {
   // `num_nodes()` will incorrectly have an entry (empty string). Therefore we
   // special-case for now.
   if (start_offset == -1 || id == num_nodes()) {
-    return;  // key doesn't exist
+    return false;  // key doesn't exist
   }
 
   int32_t dist = std::stoi(token) + 1;  // +1 for delim
@@ -1190,9 +1190,11 @@ void SuccinctGraph::getNode(std::string& data, int64_t id) {
   suf_arr_idx = -1ULL;
 
   node_table->ExtractUntilHint(data, suf_arr_idx, curr_off, '\n');
+
+  return true;
 }
 
-void SuccinctGraph::getLink(Link& link, int64_t id1, int64_t link_type,
+bool SuccinctGraph::getLink(Link& link, int64_t id1, int64_t link_type,
                             int64_t id2) {
   COND_LOG_E("getLink(id1=%lld, link_type=%lld, id2=%lld)\n",
       id1, link_type, id2);
@@ -1276,7 +1278,11 @@ void SuccinctGraph::getLink(Link& link, int64_t id1, int64_t link_type,
     edge_table->Extract(str, curr_off, edge_data_len_width);
     int64_t prop_len = std::stoll(str);
     edge_table->Extract(link.attr, curr_off + edge_data_len_width, prop_len);
+
+    return true;
   }
+
+  return false;
 }
 
 void SuccinctGraph::getLinkList(std::vector<Link>& assocs, int64_t id1,

@@ -874,13 +874,17 @@ class GraphQueryAggregatorServiceHandler :
             _return.end(), assocs.begin(),
             assocs.begin() + std::min(assocs.size(), limit - _return.size()));
       }
-    }COND_LOG_E("assoc_time_range done, returning %d assocs (limit %d)!\n",
+    }
+
+    COND_LOG_E("assoc_time_range done, returning %d assocs (limit %d)!\n",
         _return.size(), limit);
   }
 
   int64_t obj_add(const std::vector<std::string>& attrs) {
     // Currently on host holding log store shard
-    assert(multistore_enabled_ && "multistore not enabled but obj_add called");COND_LOG_E("Received obj_add(...)\n");
+    assert(multistore_enabled_ && "multistore not enabled but obj_add called");
+
+    COND_LOG_E("Received obj_add(...)\n");
 
     int64_t start, end;
 
@@ -926,7 +930,9 @@ class GraphQueryAggregatorServiceHandler :
   int assoc_add(const int64_t src, const int64_t atype, const int64_t dst,
                 const int64_t time, const std::string& attr) {
     assert(
-        multistore_enabled_ && "multistore not enabled but assoc_add called");COND_LOG_E("Received assoc_add(%lld,%d,%lld,...)\n", src, atype, dst);
+        multistore_enabled_ && "multistore not enabled but assoc_add called");
+
+    COND_LOG_E("Received assoc_add(%lld,%d,%lld,...)\n", src, atype, dst);
 
     // NOTE: this hard-codes the knowledge that:
     // (1) the last machine is LogStore machine, and
@@ -974,114 +980,484 @@ class GraphQueryAggregatorServiceHandler :
   // LinkBench API
   typedef ThriftAssoc Link;
 
-  void getNode(std::string& data, int64_t id) {
+  void getNodeLocal(std::string& data, int64_t shard_id, int64_t id) {
+    data = "";
 
+    COND_LOG_E("Received local request for getNodeLocal node_id = %lld\n", id);
+    int shard_idx = shard_id_to_shard_idx(id);
+    assert(
+        shard_idx < local_shards_.size()
+            && "shard_idx >= local_shards_.size()");
+
+    COND_LOG_E("Shard index = %d, number of shards on this server = %zu\n", shard_idx, local_shards_.size());
+    int64_t local_id = global_to_local_node_id(id, shard_id);
+    local_shards_.at(shard_idx)->getNode(data, local_id);
   }
 
-  int64_t addNode(int64_t key, std::string& data) {
+  void getNode(std::string& data, int64_t id) {
+    assert(total_num_shards_ > 0 && "total_num_shards_ <= 0");
+    assert(num_succinctstore_hosts_ > 0 && "num_succinctstore_hosts_ <= 0");
+
+    data = "";
+
+    int shard_id = id % total_num_shards_;
+    int host_id = shard_id % num_succinctstore_hosts_;
+
+    COND_LOG_E("Received obj_get for nodeId = %lld\n", nodeId);
+
+    if (host_id == local_host_id_) {
+      COND_LOG_E("Shard %d is local.\n", shard_id);
+      getNodeLocal(data, shard_id, id);
+    } else {
+      COND_LOG_E("Forwarding to shard %d on host %d.\n", shard_id, host_id);
+      aggregators_.at(host_id).getNodeLocal(data, shard_id, id);
+    }
+
+    // If the regular lookup did not yield results, search the log store.
+    if (data == "") {
+      COND_LOG_E("Not found in SuccinctStore, forwarding to LogStore.\n");
+      if (host_id == total_num_hosts_ - 1) {
+        getNodeLocal(data, total_num_shards_, id);
+      } else {
+        aggregators_.at(total_num_hosts_ - 1).getNodeLocal(data,
+                                                           total_num_shards_,
+                                                           id);
+      }
+    }
+  }
+
+  int64_t addNode(const int64_t id, const std::string& data) {
+    // Currently on host holding log store shard
+    assert(multistore_enabled_ && "multistore not enabled but obj_add called");
+
+    COND_LOG_E("Received obj_add(...)\n");
+
+    if (local_host_id_ == total_num_hosts_ - 1) {
+      COND_LOG_E("Updating local logstore.\n");
+      int64_t obj = local_shards_.back()->addNode(id, data);
+    } else {
+      COND_LOG_E("Forwarding assoc_add to host %d\n", (total_num_hosts_ - 1));
+      return aggregators_.at(total_num_hosts_ - 1).addNode(id, data);
+    }
+
     return 0;
+  }
+
+  bool deleteNodeLocal(int64_t shard_id, int64_t id) {
+    COND_LOG_E("Received local request for getNodeLocal node_id = %lld\n", id);
+    int shard_idx = shard_id_to_shard_idx(id);
+    assert(
+        shard_idx < local_shards_.size()
+            && "shard_idx >= local_shards_.size()");
+
+    COND_LOG_E("Shard index = %d, number of shards on this server = %zu\n", shard_idx, local_shards_.size());
+    int64_t local_id = global_to_local_node_id(id, shard_id);
+    return local_shards_.at(shard_idx)->deleteNode(local_id);
   }
 
   bool deleteNode(int64_t id) {
+    assert(total_num_shards_ > 0 && "total_num_shards_ <= 0");
+    assert(num_succinctstore_hosts_ > 0 && "num_succinctstore_hosts_ <= 0");
+
+    int shard_id = id % total_num_shards_;
+    int host_id = shard_id % num_succinctstore_hosts_;
+
+    COND_LOG_E("Received obj_get for nodeId = %lld\n", nodeId);
+
+    bool deleted = false;
+    if (host_id == local_host_id_) {
+      COND_LOG_E("Shard %d is local.\n", shard_id);
+      deleted = deleteNodeLocal(shard_id, id);
+    } else {
+      COND_LOG_E("Forwarding to shard %d on host %d.\n", shard_id, host_id);
+      deleted = aggregators_.at(host_id).deleteNodeLocal(shard_id, id);
+    }
+
+    // If the regular lookup did not yield results, search the log store.
+    if (!deleted) {
+      COND_LOG_E("Not found in SuccinctStore, forwarding to LogStore.\n");
+      if (host_id == total_num_hosts_ - 1) {
+        return deleteNodeLocal(total_num_shards_, id);
+      } else {
+        aggregators_.at(total_num_hosts_ - 1).deleteNodeLocal(total_num_shards_,
+                                                              id);
+      }
+    }
     return false;
   }
 
-  void getLink(Link& link, int64_t id1, int64_t link_type, int64_t id2) {
-
-  }
-
-  void addLink(const Link& link) {
-  }
-
-  bool deleteLink(int64_t id1, int64_t link_type, int64_t id2) {
+  bool updateNode(const int64_t id, const std::string& data) {
+    bool deleted = deleteNode(id);
+    if (deleted) {
+      int64_t ret = addNode(id, data);
+      assert(ret == id);
+      return true;
+    }
     return false;
   }
 
-  void getLinkList(std::vector<Link>& assocs, int64_t id1, int64_t link_type) {
+  void getLinkLocal(Link& link, int64_t shard_id, const int64_t id1,
+                    const int64_t link_type, const int64_t id2) {
+
+    int shard_idx = shard_id_to_shard_idx(shard_id);
+    assert(
+        shard_idx < local_shards_.size()
+            && "shard_idx >= local_shards_.size()");
+
+    COND_LOG_E("getLinkLocal(src %lld, atype %lld, dst %lld)\n", id1, link_type, id2);
+
+    // First try designated shard
+    bool found = local_shards_.at(shard_idx)->getLink(link, id1, link_type,
+                                                      id2);
+    if (!found) {
+      std::vector<ThriftEdgeUpdatePtr> ptrs;
+      get_edge_update_ptrs(ptrs, shard_idx, id1, link_type);
+
+      COND_LOG_E("# update ptrs: %d\n", ptrs.size());
+      assert(ptrs.size() == 1);
+      ThriftEdgeUpdatePtr ptr = ptrs.back();
+      int next_host_id = host_id_for_shard(ptr.shardId);
+      if (next_host_id == local_host_id_) {
+        int shard_idx_local = shard_id_to_shard_idx(ptr.shardId);
+        local_shards_.at(shard_idx_local)->getLink(link, id1, link_type, id2);
+      } else {
+        aggregators_.at(next_host_id).getLinkLocal(link, ptr.shardId, id1,
+                                                   link_type, id2);
+      }
+    }
+
+    COND_LOG_E("getLink done!\n");
   }
 
-  void getFilteredLinkList(std::vector<Link>& assocs, int64_t id1, uint64_t link_type,
-                   int64_t min_timestamp, int64_t max_timestamp, int64_t offset,
-                   int64_t limit) {
+  void getLink(Link& link, const int64_t id1, const int64_t link_type,
+               const int64_t id2) {
+    assert(total_num_shards_ > 0 && "total_num_shards_ <= 0");
+    assert(num_succinctstore_hosts_ > 0 && "num_succinctstore_hosts_ <= 0");
 
+    int shard_id = id1 % total_num_shards_;
+    int host_id = shard_id % num_succinctstore_hosts_;
+
+    if (host_id == local_host_id_) {
+      getLinkLocal(link, shard_id, id1, link_type, id2);
+    } else {
+      aggregators_.at(host_id).getLinkLocal(link, shard_id, id1, link_type,
+                                            id2);
+    }
+  }
+
+  bool addLink(const Link& link) {
+    assert(
+        multistore_enabled_ && "multistore not enabled but assoc_add called");
+
+    COND_LOG_E("Received addLink(%lld,%d,%lld)\n", link.srcId, link.atype, link.dstId);
+
+    // NOTE: this hard-codes the knowledge that:
+    // (1) the last machine is LogStore machine, and
+    // (2) its last shard is the append-only store
+    if (local_host_id_ == total_num_hosts_ - 1) {
+      COND_LOG_E("Updating local logstore.\n");
+      bool added = local_shards_.back()->addLink(link);
+
+      if (added) {
+        int primary_shard_id = link.srcId % num_succinctstore_shards_;
+        int primary_host_id = host_id_for_shard(primary_shard_id);
+        // assert(local_host_id_ != primary_host_id); // No loger holds
+
+        ThriftSrcAtype src_atype;
+        src_atype.src = link.srcId;
+        src_atype.atype = link.atype;
+
+        COND_LOG_E("Updating host %d, shard %d about (%lld,%d)\n",
+            primary_host_id, primary_shard_id, link.srcId, link.atype);
+
+        if (primary_host_id == local_host_id_) {
+          record_edge_updates(
+              num_succinctstore_shards_ + num_suffixstore_shards_
+                  + num_logstore_shards_ - 1,
+              primary_shard_id, { src_atype });
+        } else {
+          aggregators_.at(primary_host_id).record_edge_updates(
+              num_succinctstore_shards_ + num_suffixstore_shards_
+                  + num_logstore_shards_ - 1,
+              primary_shard_id, { src_atype });
+        }
+      }
+
+      return added;
+
+      COND_LOG_E("Finished update!\n");
+    } else {
+      COND_LOG_E("Forwarding assoc_add to host %d\n", (total_num_hosts_ - 1));
+      return aggregators_.at(total_num_hosts_ - 1).addLink(link);
+    }
+  }
+
+  bool deleteLinkLocal(const int64_t shard_id, const int64_t id1,
+                       const int64_t link_type, const int64_t id2) {
+    int shard_idx = shard_id_to_shard_idx(shard_id);
+    assert(
+        shard_idx < local_shards_.size()
+            && "shard_idx >= local_shards_.size()");
+
+    COND_LOG_E("deleteLinkLocal(src %lld, atype %lld, dst %lld)\n", id1, link_type, id2);
+
+    // First try designated shard
+    bool deleted = local_shards_.at(shard_idx)->deleteLink(id1, link_type, id2);
+    if (!deleted) {
+      std::vector<ThriftEdgeUpdatePtr> ptrs;
+      get_edge_update_ptrs(ptrs, shard_idx, id1, link_type);
+
+      COND_LOG_E("# update ptrs: %d\n", ptrs.size());
+      assert(ptrs.size() == 1);
+      ThriftEdgeUpdatePtr ptr = ptrs.back();
+      int next_host_id = host_id_for_shard(ptr.shardId);
+      if (next_host_id == local_host_id_) {
+        int shard_idx_local = shard_id_to_shard_idx(ptr.shardId);
+        deleted = local_shards_.at(shard_idx_local)->deleteLink(id1, link_type,
+                                                                id2);
+      } else {
+        deleted = aggregators_.at(next_host_id).deleteLinkLocal(ptr.shardId,
+                                                                id1, link_type,
+                                                                id2);
+      }
+    }
+
+    COND_LOG_E("deleteLink done!\n");
+    return deleted;
+  }
+
+  bool deleteLink(const int64_t id1, const int64_t link_type,
+                  const int64_t id2) {
+    assert(total_num_shards_ > 0 && "total_num_shards_ <= 0");
+    assert(num_succinctstore_hosts_ > 0 && "num_succinctstore_hosts_ <= 0");
+
+    int shard_id = id1 % total_num_shards_;
+    int host_id = shard_id % num_succinctstore_hosts_;
+
+    if (host_id == local_host_id_) {
+      return deleteLinkLocal(shard_id, id1, link_type, id2);
+    } else {
+      return aggregators_.at(host_id).deleteLinkLocal(shard_id, id1, link_type,
+                                                      id2);
+    }
+  }
+
+  bool updateLink(const Link& link) {
+    bool deleted = deleteLink(link.srcId, link.atype, link.dstId);
+    bool added = false;
+    if (deleted) {
+      added = addLink(link);
+    }
+
+    return deleted && added;
+  }
+
+  void getLinkListLocal(std::vector<Link>& assocs, const int64_t shard_id,
+                        const int64_t id1, const int64_t link_type) {
+
+    int shard_idx = shard_id_to_shard_idx(shard_id);
+    assert(
+        shard_idx < local_shards_.size()
+            && "shard_idx >= local_shards_.size()");
+
+    // get update ptr; there should only be one
+    std::vector<ThriftEdgeUpdatePtr> ptrs;
+    get_edge_update_ptrs(ptrs, shard_idx, id1, link_type);
+    COND_LOG_E("# update ptrs: %d\n", ptrs.size());
+    ThriftEdgeUpdatePtr ptr = ptrs.back();
+
+    typedef std::future<std::vector<ThriftAssoc>> future_t;
+    future_t update_future;
+
+    // First send out request to LogStore shard.
+    int update_host_id = host_id_for_shard(ptr.shardId);
+    if (update_host_id == local_host_id_) {
+      int shard_idx_local = shard_id_to_shard_idx(ptr.shardId);
+      update_future = local_shards_.at(shard_idx_local)->async_getLinkList(
+          id1, link_type);
+    } else {
+      aggregators_.at(update_host_id).send_getLinkListLocal(ptr.shardId, id1,
+                                                            link_type);
+    }
+
+    // Then process query at designated shard.
+    local_shards_.at(shard_idx)->getLinkList(assocs, id1, link_type);
+
+    // Finally process the responce from LogStore shard.
+    std::vector<ThriftAssoc> update_assocs;
+    if (update_host_id == local_host_id_) {
+      update_assocs = update_future.get();
+    } else {
+      aggregators_.at(update_host_id).recv_getLinkListLocal(update_assocs);
+    }
+
+    // Add responses from LogStore to result
+    assocs.insert(assocs.begin(), update_assocs.begin(), update_assocs.end());
+
+    COND_LOG_E("getLinkList done, returning %d links!\n", assocs.size());
+
+  }
+
+  void getLinkList(std::vector<Link>& assocs, const int64_t id1,
+                   const int64_t link_type) {
+    assert(total_num_shards_ > 0 && "total_num_shards_ <= 0");
+    assert(num_succinctstore_hosts_ > 0 && "num_succinctstore_hosts_ <= 0");
+
+    int shard_id = id1 % total_num_shards_;
+    int host_id = shard_id % num_succinctstore_hosts_;
+
+    if (host_id == local_host_id_) {
+      getLinkListLocal(assocs, shard_id, id1, link_type);
+    } else {
+      aggregators_.at(host_id).getLinkListLocal(assocs, shard_id, id1,
+                                                link_type);
+    }
+  }
+
+  void getFilteredLinkListLocal(std::vector<Link>& assocs,
+                                const int64_t shard_id, const int64_t id1,
+                                const int64_t link_type,
+                                const int64_t min_timestamp,
+                                const int64_t max_timestamp,
+                                const int64_t offset, const int64_t limit) {
+
+    int shard_idx = shard_id_to_shard_idx(shard_id);
+    assert(
+        shard_idx < local_shards_.size()
+            && "shard_idx >= local_shards_.size()");
+
+    // get update ptr; there should only be one
+    std::vector<ThriftEdgeUpdatePtr> ptrs;
+    get_edge_update_ptrs(ptrs, shard_idx, id1, link_type);
+    COND_LOG_E("# update ptrs: %d\n", ptrs.size());
+    ThriftEdgeUpdatePtr ptr = ptrs.back();
+
+    typedef std::future<std::vector<ThriftAssoc>> future_t;
+    future_t update_future;
+
+    // First send out request to LogStore shard.
+    int update_host_id = host_id_for_shard(ptr.shardId);
+    if (update_host_id == local_host_id_) {
+      int shard_idx_local = shard_id_to_shard_idx(ptr.shardId);
+      update_future = local_shards_.at(shard_idx_local)
+          ->async_getFilteredLinkList(id1, link_type, min_timestamp,
+                                      max_timestamp, offset, limit);
+    } else {
+      aggregators_.at(update_host_id).send_getFilteredLinkListLocal(
+          ptr.shardId, id1, link_type, min_timestamp, max_timestamp, offset,
+          limit);
+    }
+
+    // Then process query at designated shard.
+    local_shards_.at(shard_idx)->getFilteredLinkList(assocs, id1, link_type,
+                                                     min_timestamp,
+                                                     max_timestamp, offset,
+                                                     limit);
+
+    // Finally process the responce from LogStore shard.
+    std::vector<ThriftAssoc> update_assocs;
+    if (update_host_id == local_host_id_) {
+      update_assocs = update_future.get();
+    } else {
+      aggregators_.at(update_host_id).recv_getFilteredLinkListLocal(
+          update_assocs);
+    }
+
+    // Add responses from LogStore to result
+    if (assocs.size() < limit) {
+      size_t deficit = limit - assocs.size();
+      std::vector<ThriftAssoc>::iterator begin, end;
+      begin = update_assocs.begin();
+      if (update_assocs.size() < deficit) {
+        end = update_assocs.end();
+      } else {
+        end = update_assocs.begin() + deficit;
+      }
+      assocs.insert(assocs.begin(), begin, end);
+    }
+
+    COND_LOG_E("getLinkList done, returning %d links!\n", assocs.size());
+
+  }
+
+  void getFilteredLinkList(std::vector<Link>& assocs, const int64_t id1,
+                           const int64_t link_type, const int64_t min_timestamp,
+                           const int64_t max_timestamp, const int64_t offset,
+                           const int64_t limit) {
+    assert(total_num_shards_ > 0 && "total_num_shards_ <= 0");
+    assert(num_succinctstore_hosts_ > 0 && "num_succinctstore_hosts_ <= 0");
+
+    int shard_id = id1 % total_num_shards_;
+    int host_id = shard_id % num_succinctstore_hosts_;
+
+    if (host_id == local_host_id_) {
+      getFilteredLinkListLocal(assocs, shard_id, id1, link_type, min_timestamp,
+                               max_timestamp, offset, limit);
+    } else {
+      aggregators_.at(host_id).getFilteredLinkListLocal(assocs, shard_id, id1,
+                                                        link_type,
+                                                        min_timestamp,
+                                                        max_timestamp, offset,
+                                                        limit);
+    }
   }
 
   int64_t countLinks(int64_t id1, int64_t link_type) {
-    return 0;
+    return assoc_count(id1, link_type);
   }
 
  private:
 
-  // globalKey = localKey * numShards + shardId
-  // localKey = (globalKey - shardId) / numShards
+// globalKey = localKey * numShards + shardId
+// localKey = (globalKey - shardId) / numShards
   inline int64_t global_to_local_node_id(int64_t global_node_id, int shard_id) {
     assert(total_num_shards_ > 0 && "total_num_shards_ <= 0");
     return (global_node_id - shard_id) / total_num_shards_;
   }
 
-  // Host 0 to n 1: the SuccinctStores, hash-partitioned
-  // Host n - 1: the empty LogStore
+// Host 0 to n 1: the SuccinctStores, hash-partitioned
+// Host n - 1: the empty LogStore
   inline int host_id_for_shard(int shard_id) {
     if (!multistore_enabled_ || shard_id < num_succinctstore_shards_) {
       assert(num_succinctstore_hosts_ > 0 && "num_succinctstore_hosts_ <= 0");
       return shard_id % num_succinctstore_hosts_;
     }
-//        if (shard_id - num_succinctstore_shards_ < num_suffixstore_shards_) {
-//            return num_succinctstore_hosts_; // host n - 2
-//        } else {
-//            return num_succinctstore_hosts_ + 1; // host n - 1
-//        }
     // FIXME
     COND_LOG_E("LogStore shard %d resides on host %d\n", shard_id, num_succinctstore_hosts_ - 1);
     return num_succinctstore_hosts_ - 1;
   }
 
-  // Limitation: this assumes 1 SuffixStore machine and 1 LogStore machine.
+// Limitation: this assumes 1 LogStore machine.
   inline int shard_id_to_shard_idx(int shard_id) {
     if (!multistore_enabled_) {
       assert(total_num_hosts_ > 0 && "total_num_hosts_ <= 0");
       return shard_id / total_num_hosts_;
     }
-    int diff = shard_id - num_succinctstore_shards_ - num_suffixstore_shards_;
+    int diff = shard_id - num_succinctstore_shards_;
     if (diff >= 0) {
-      return diff;  // log store
+      return local_shards_.size() - 1;  // log store
     }
-//        diff = shard_id - num_succinctstore_shards_;
-//        return diff >= 0
-//            ? diff // suffix store
-//            : shard_id / num_succinctstore_hosts_; // succinct st., round-robin
     return shard_id / num_succinctstore_hosts_;  // succinct st., round-robin
   }
 
-  // Limitation: this assumes 1 SuffixStore machine and 1 LogStore machine.
+// Limitation: this assumes 1 SuffixStore machine and 1 LogStore machine.
   inline int shard_idx_to_shard_id(int shard_idx) {
-//        if (local_host_id_ < num_succinctstore_hosts_) {
-//            return shard_idx * num_succinctstore_hosts_ + local_host_id_;
-//        } else if (local_host_id_ == num_succinctstore_hosts_) {
-//            // case: suffix store machine
-//            return shard_idx + num_succinctstore_shards_;
-//        } else {
-//            // case: log store machine
-//            assert(local_host_id_ == num_succinctstore_hosts_ + 1);
-//            return shard_idx +
-//                num_succinctstore_shards_ + num_suffixstore_shards_;
-//        }
     if (local_host_id_ < num_succinctstore_hosts_
         && shard_idx < local_num_shards_) {
       return shard_idx * num_succinctstore_hosts_ + local_host_id_;
     } else {
       // case: log store machine
       assert(local_host_id_ == num_succinctstore_hosts_ - 1);
-      return shard_idx + num_succinctstore_shards_ + num_suffixstore_shards_;
+      return shard_idx + num_succinctstore_shards_;
     }
   }
 
   const int total_num_shards_;  // total # of logical shards
   const int local_num_shards_;
 
-  // id of this physical node
+// id of this physical node
   const int local_host_id_;
-  // all aggregators in the cluster, hostnames used for opening sockets
+// all aggregators in the cluster, hostnames used for opening sockets
   std::vector<std::string> hostnames_;
   const int total_num_hosts_;
   bool initiated_, multistore_enabled_;
@@ -1094,7 +1470,7 @@ class GraphQueryAggregatorServiceHandler :
 
   std::vector<AsyncGraphShard*> local_shards_;
 
-  // Maps host id to aggregator handle.  Does not contain self.
+// Maps host id to aggregator handle.  Does not contain self.
   std::unordered_map<int, GraphQueryAggregatorServiceClient> aggregators_;
   std::vector<shared_ptr<TTransport>> aggregator_transports_;
 
