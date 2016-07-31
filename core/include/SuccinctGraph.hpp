@@ -69,6 +69,7 @@ class SuccinctGraph {
   void load(std::string node_succinct_dir, std::string edge_succinct_dir);
   void load_node_table(std::string node_succinct_dir);
   void load_edge_table(std::string edge_succinct_dir);
+  void load_deleted_edges(std::string deleted_edges_file);
 
   std::string succinct_directory();
 

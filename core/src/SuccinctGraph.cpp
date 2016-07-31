@@ -76,13 +76,28 @@ void SuccinctGraph::load_edge_table(std::string edge_succinct_dir) {
   LOG_E("In SuccinctGraph::load_edge_table\n");
 #ifdef ENOUGH_MEMORY
   LOG_E("Keep-input is enabled");
-  EDGE_TABLE = new KeepInputSuccinctFile(
+  edge_table = new KeepInputSuccinctFile(
       edge_succinct_dir, SuccinctMode::LOAD_MEMORY_MAPPED);
 #else
-  EDGE_TABLE = new SuccinctFile(edge_succinct_dir,
+  edge_table = new SuccinctFile(edge_succinct_dir,
                                 SuccinctMode::LOAD_MEMORY_MAPPED);
+  load_deleted_edges(edge_succinct_dir + ".deletes");
+  // Deserialize deleted edges bitmaps
 #endif
   LOG_E("Done SuccinctGraph::load_edge_table\n");
+}
+
+void SuccinctGraph::load_deleted_edges(std::string deleted_edges_file) {
+  std::ifstream in(deleted_edges_file);
+  size_t num_edge_records;
+  in.read(reinterpret_cast<char *>(&num_edge_records), sizeof(size_t));
+  for (size_t i = 0; i < num_edge_records; i++) {
+    int64_t src, atype;
+    in.read(reinterpret_cast<char *>(&src), sizeof(int64_t));
+    in.read(reinterpret_cast<char *>(&atype), sizeof(int64_t));
+    deleted_edges[std::make_pair(src, atype)] = new bitmap::Bitmap();
+    deleted_edges[std::make_pair(src, atype)]->Deserialize(in);
+  }
 }
 
 SuccinctGraph& SuccinctGraph::set_npa_sampling_rate(uint32_t sampling_rate) {

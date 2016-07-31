@@ -158,7 +158,8 @@ int main(int argc, char** argv) {
     std::ofstream edge_deletes_out(edge_file_out + ".deletes");
     // Output total number of edge records in the shard
     size_t num_edge_records = assoc_map.size();
-    edge_deletes_out.write(reinterpret_cast<const char *>(&num_edge_records), sizeof(size_t));
+    edge_deletes_out.write(reinterpret_cast<const char *>(&num_edge_records),
+                           sizeof(size_t));
 
     int64_t max_dst_id = -1, max_timestamp = -1;
 
@@ -172,8 +173,12 @@ int main(int argc, char** argv) {
       std::vector<Assoc> assoc_list = it->second;
 
       // Write deletes bitmap to file
-      edge_deletes_out.write(reinterpret_cast<const char *>(&src_id_and_atype.first), sizeof(int64_t));
-      edge_deletes_out.write(reinterpret_cast<const char *>(&src_id_and_atype.second), sizeof(int64_t));
+      edge_deletes_out.write(
+          reinterpret_cast<const char *>(&src_id_and_atype.first),
+          sizeof(int64_t));
+      edge_deletes_out.write(
+          reinterpret_cast<const char *>(&src_id_and_atype.second),
+          sizeof(int64_t));
       bitmap::Bitmap invalid_edges(assoc_list.size());
       invalid_edges.Serialize(edge_deletes_out, assoc_list.size());
 
