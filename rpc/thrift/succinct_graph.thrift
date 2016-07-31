@@ -1,3 +1,5 @@
+namespace java edu.berkeley.cs.zipg
+
 // An association. The included fields are the same as SuccinctGraph::Assoc.
 struct ThriftAssoc {
 1: i64 srcId,

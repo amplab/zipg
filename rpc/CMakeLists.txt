@@ -23,9 +23,11 @@ file(MAKE_DIRECTORY ${EXECUTABLE_OUTPUT_PATH})
 set(SOURCES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 set(INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(CORE_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../core/include)
+set(JAVA_CLIENT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../client/java/src/main/java)
 
 set(THRIFT_SERVICE_FILE ${CMAKE_CURRENT_SOURCE_DIR}/thrift/succinct_graph.thrift)
 thrift_gen_cpp(${THRIFT_SERVICE_FILE} ${SOURCES_DIR} ${INCLUDE_DIR} HANDLER_SOURCES)
+thrift_gen_java(${THRIFT_SERVICE_FILE} ${JAVA_CLIENT_DIR})
 
 set(GENERAL_SOURCES ${SOURCES_DIR}/succinct_graph_constants.cpp
     ${SOURCES_DIR}/succinct_graph_types.cpp)

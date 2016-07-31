@@ -38,6 +38,12 @@
 *.sw*
 .DS_STORE
 
+# CMake Files
+CMakeCache.txt
+Makefile
+cmake_install.cmake
+CTestTestfile.cmake
+
 # Eclipse files
 .cproject
 .project
@@ -46,6 +52,7 @@
 # Idea files
 .idea/
 .idea_modules/
+*.iml
 
 project/target/
 project/project/
