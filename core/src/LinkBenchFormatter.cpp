@@ -156,6 +156,10 @@ int main(int argc, char** argv) {
 
     std::ofstream edge_out(edge_file_out);
     std::ofstream edge_deletes_out(edge_file_out + ".deletes");
+    // Output total number of edge records in the shard
+    size_t num_edge_records = assoc_map.size();
+    edge_deletes_out.write(reinterpret_cast<const char *>(&num_edge_records), sizeof(size_t));
+
     int64_t max_dst_id = -1, max_timestamp = -1;
 
     for (auto it = assoc_map.begin(); it != assoc_map.end(); ++it) {
