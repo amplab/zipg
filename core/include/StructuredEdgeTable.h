@@ -108,7 +108,15 @@ class StructuredEdgeTable {
 
   typedef std::set<EdgeData, EdgeDataComparator> EdgeDataSet;
   typedef std::pair<int64_t, int64_t> EdgeRecordId;
-  std::unordered_map<EdgeRecordId, EdgeDataSet> edges;
+  struct pairhash {
+   public:
+    template<typename T, typename U>
+    std::size_t operator()(const std::pair<T, U> &x) const {
+      return std::hash<T>()(x.first) ^ std::hash<U>()(x.second);
+    }
+  };
+
+  std::unordered_map<EdgeRecordId, EdgeDataSet, pairhash> edges;
 
   std::string edge_file_;
 
