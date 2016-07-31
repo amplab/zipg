@@ -31,8 +31,7 @@ std::vector<SuccinctGraph::Assoc> StructuredEdgeTable::assoc_range(
       src, atype, off, len);
 
   assert(false && "Should not be here.");
-  std::vector<SuccinctGraph::Assoc> assocs;
-  return assocs;
+  return std::vector<SuccinctGraph::Assoc>();
 }
 
 // FIXME: scan for now...
@@ -44,8 +43,7 @@ std::vector<SuccinctGraph::Assoc> StructuredEdgeTable::assoc_get(
       src, atype, t_low, t_high);
 
   assert(false && "Should not be here.");
-  std::vector<SuccinctGraph::Assoc> assocs;
-  return assocs;
+  return std::vector<SuccinctGraph::Assoc>();
 }
 
 // FIXME: scan for now...
@@ -55,10 +53,8 @@ std::vector<SuccinctGraph::Assoc> StructuredEdgeTable::assoc_time_range(
       "tHigh = %lld, len = %d)\n",
       src, atype, t_low, t_high, len);
 
-  std::vector<SuccinctGraph::Assoc> assocs;
   assert(false && "Should not be here.");
-  std::vector<SuccinctGraph::Assoc> assocs;
-  return assocs;
+  return std::vector<SuccinctGraph::Assoc>();
 }
 
 void StructuredEdgeTable::build_backfill_edge_updates(
