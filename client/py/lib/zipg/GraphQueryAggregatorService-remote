@@ -16,8 +16,8 @@ from thrift.transport import TSSLSocket
 from thrift.transport import THttpClient
 from thrift.protocol import TBinaryProtocol
 
-from succinct_graph import GraphQueryAggregatorService
-from succinct_graph.ttypes import *
+from zipg import GraphQueryAggregatorService
+from zipg.ttypes import *
 
 if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('')

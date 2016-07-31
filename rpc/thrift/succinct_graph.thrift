@@ -1,4 +1,5 @@
 namespace java edu.berkeley.cs.zipg
+namespace py zipg
 
 // An association. The included fields are the same as SuccinctGraph::Assoc.
 struct ThriftAssoc {
