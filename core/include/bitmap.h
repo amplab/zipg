@@ -193,6 +193,35 @@ class Bitmap {
     }
   }
 
+  // Serialization/De-serialization
+  virtual size_type Serialize(std::ostream& out, size_type size) {
+    size_t out_size = 0;
+
+    out.write(reinterpret_cast<const char *>(&size), sizeof(size_type));
+    out_size += sizeof(size_type);
+
+    out.write(reinterpret_cast<const char *>(data_),
+              sizeof(data_type) * BITS2BLOCKS(size));
+    out_size += (BITS2BLOCKS(size) * sizeof(uint64_t));
+
+    return out_size;
+  }
+
+  virtual size_type Deserialize(std::istream& in) {
+    size_t in_size = 0;
+
+    size_type size;
+    in.read(reinterpret_cast<char *>(&size), sizeof(size_type));
+    in_size += sizeof(size_type);
+
+    data_ = new data_type[BITS2BLOCKS(size)];
+    in.read(reinterpret_cast<char *>(data_),
+    BITS2BLOCKS(size) * sizeof(data_type));
+    in_size += (BITS2BLOCKS(size) * sizeof(data_type));
+
+    return in_size;
+  }
+
  protected:
   // Data members
   data_type *data_;

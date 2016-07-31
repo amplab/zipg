@@ -155,7 +155,7 @@ int main(int argc, char** argv) {
     build_assoc_map(assoc_map, edge_file_in);
 
     std::ofstream edge_out(edge_file_out);
-    std::ofstream edge_counts_out(edge_file_out + ".counts");
+    std::ofstream edge_deletes_out(edge_file_out + ".deletes");
     int64_t max_dst_id = -1, max_timestamp = -1;
 
     for (auto it = assoc_map.begin(); it != assoc_map.end(); ++it) {
@@ -167,8 +167,11 @@ int main(int argc, char** argv) {
 
       std::vector<Assoc> assoc_list = it->second;
 
-      edge_counts_out << src_id_and_atype.first << "\t"
-          << src_id_and_atype.second << "\t" << it->second.count() << "\n";
+      // Write deletes bitmap to file
+      edge_deletes_out.write(reinterpret_cast<const char *>(&src_id_and_atype.first), sizeof(int64_t));
+      edge_deletes_out.write(reinterpret_cast<const char *>(&src_id_and_atype.second), sizeof(int64_t));
+      bitmap::Bitmap invalid_edges(assoc_list.size());
+      invalid_edges.Serialize(edge_deletes_out, assoc_list.size());
 
       max_dst_id = max_timestamp = -1;
       for (auto it2 = assoc_list.begin(); it2 != assoc_list.end(); ++it2) {
@@ -234,7 +237,7 @@ int main(int argc, char** argv) {
 
     edge_out << "\n";
     edge_out.close();
-    edge_counts_out.close();
+    edge_deletes_out.close();
   }
 
   return 0;
