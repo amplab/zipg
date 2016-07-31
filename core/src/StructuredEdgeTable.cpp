@@ -117,7 +117,7 @@ void StructuredEdgeTable::getLinkList(std::vector<Link>& assocs, int64_t id1,
 bool StructuredEdgeTable::deleteLink(int64_t id1, int64_t link_type,
                                      int64_t id2) {
   boost::shared_lock<boost::shared_mutex> lk(mutex_);
-  EdgeDataSet::iterator it = edges[std::make_pair(id1, link_type)];
+  EdgeDataSet::iterator it = edges[std::make_pair(id1, link_type)].begin();
   bool deleted = false;
   while (it != edges[std::make_pair(id1, link_type)].end()) {
     EdgeDataSet::iterator current = it++;
