@@ -1275,7 +1275,8 @@ bool SuccinctGraph::getLink(Link& link, int64_t id1, int64_t link_type,
         break;
     }
 
-    if (idx == cnt)
+    if (idx == cnt
+        || deleted_edges[std::make_pair(id1, link_type)]->GetBit(idx))
       continue;
 
     // Populate link data
@@ -1305,7 +1306,6 @@ void SuccinctGraph::getLinkList(std::vector<Link>& assocs, int64_t id1,
   COND_LOG_E("getLinkList(id1=%lld, link_type=%lld)\n", id1, link_type);
 
   std::vector<int64_t> eoffs = get_edge_table_offsets(id1, link_type);
-  std::vector<Assoc> result;
   std::string str;
 
   int32_t edge_data_len_width, dst_id_width, timestamp_width;
@@ -1369,16 +1369,20 @@ void SuccinctGraph::getLinkList(std::vector<Link>& assocs, int64_t id1,
 
     curr_off += cnt * dst_id_width;
     for (size_t i = 0; i < cnt; ++i) {
-      result.emplace_back();
-      result.back().src_id = id1;
-      result.back().dst_id = decoded_dst_ids[i];
-      result.back().atype = link_type;
-      result.back().time = decoded_timestamps[i];
+      assocs.emplace_back();
+      assocs.back().src_id = id1;
+      assocs.back().dst_id = decoded_dst_ids[i];
+      assocs.back().atype = link_type;
+      assocs.back().time = decoded_timestamps[i];
       edge_table->Extract(str, curr_off, edge_data_len_width);
       int64_t prop_len = std::stoll(str);
-      edge_table->Extract(result.back().attr, curr_off + edge_data_len_width,
+      edge_table->Extract(assocs.back().attr, curr_off + edge_data_len_width,
                           prop_len);
       curr_off += (edge_data_len_width + prop_len);
+
+      if (deleted_edges[std::make_pair(id1, link_type)]->GetBit(i)) {
+        assocs.pop_back();
+      }
     }
   }
 }
@@ -1391,7 +1395,6 @@ void SuccinctGraph::getLinkList(std::vector<Link>& assocs, int64_t id1,
       id1, link_type, min_timestamp, max_timestamp, offset, limit);
 
   std::vector<int64_t> eoffs = get_edge_table_offsets(id1, link_type);
-  std::vector<Assoc> result;
   std::string str;
 
   int32_t edge_data_len_width, dst_id_width, timestamp_width;
@@ -1460,7 +1463,7 @@ void SuccinctGraph::getLinkList(std::vector<Link>& assocs, int64_t id1,
         range_left, range_right, cnt);
 
     int64_t lo = range_left + offset;
-    int64_t hi = std::min(lo + limit - 1, range_right);
+    int64_t hi = range_right;
     if (range_left > range_right) {
       continue;
     }
@@ -1482,21 +1485,23 @@ void SuccinctGraph::getLinkList(std::vector<Link>& assocs, int64_t id1,
         SuccinctGraphSerde::decode_multi_node_ids(str, dst_id_width);
 
     curr_off += cnt * dst_id_width;
-    for (size_t i = 0; i <= hi; ++i) {
+    for (size_t i = 0; i <= hi && assocs.size() < limit; ++i) {
       if (i < lo) {
         edge_table->Extract(str, curr_off, edge_data_len_width);
         curr_off += (edge_data_len_width + std::stoll(str));
       } else {
-        result.emplace_back();
-        result.back().src_id = id1;
-        result.back().dst_id = decoded_dst_ids[i];
-        result.back().atype = link_type;
-        result.back().time = decoded_timestamps[i];
+        assocs.emplace_back();
+        assocs.back().src_id = id1;
+        assocs.back().dst_id = decoded_dst_ids[i];
+        assocs.back().atype = link_type;
+        assocs.back().time = decoded_timestamps[i];
         edge_table->Extract(str, curr_off, edge_data_len_width);
         int64_t prop_len = std::stoll(str);
-        edge_table->Extract(result.back().attr, curr_off + edge_data_len_width,
+        edge_table->Extract(assocs.back().attr, curr_off + edge_data_len_width,
                             prop_len);
         curr_off += (edge_data_len_width + prop_len);
+        if (deleted_edges[std::make_pair(id1, link_type)]->GetBit(i))
+          assocs.pop_back();
       }
     }
   }
