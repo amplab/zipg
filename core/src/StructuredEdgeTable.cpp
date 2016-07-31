@@ -90,6 +90,10 @@ void StructuredEdgeTable::getLinkList(std::vector<Link>& assocs, int64_t id1,
                                       uint64_t link_type, int64_t min_timestamp,
                                       int64_t max_timestamp, int64_t offset,
                                       int64_t limit) {
+
+  if (min_timestamp > max_timestamp)
+    return;
+
   EdgeData min, max;
   min.src_id = max.src_id = id1;
   min.atype = max.atype = link_type;
@@ -102,12 +106,9 @@ void StructuredEdgeTable::getLinkList(std::vector<Link>& assocs, int64_t id1,
   }
   EdgeDataSet::iterator begin = edge_set.lower_bound(min);
   EdgeDataSet::iterator end = edge_set.upper_bound(max);
-  if (begin + offset == edge_set.end()) {
-    return;
-  }
 
   EdgeDataSet::iterator it = begin;
-  while (offset--) {
+  while (offset-- && it != end) {
     it++;
   }
 
