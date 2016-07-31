@@ -106,8 +106,12 @@ void StructuredEdgeTable::getLinkList(std::vector<Link>& assocs, int64_t id1,
     return;
   }
 
-  for (EdgeDataSet::iterator it = begin + offset;
-      it != end && assocs.size() <= limit; it++) {
+  EdgeDataSet::iterator it = begin;
+  while (offset--) {
+    it++;
+  }
+
+  for (; it != end && assocs.size() <= limit; it++) {
     if (it->time > max_timestamp)
       break;
     assocs.push_back(*it);
