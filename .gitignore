@@ -6,6 +6,7 @@
 *.class
 *.cmi
 *.cmx
+*.pyc
 
 # Precompiled Headers
 *.gch
