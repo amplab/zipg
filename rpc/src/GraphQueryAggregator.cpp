@@ -1022,8 +1022,10 @@ class GraphQueryAggregatorServiceHandler :
     if (data == "") {
       COND_LOG_E("Not found in SuccinctStore, forwarding to LogStore.\n");
       if (host_id == total_num_hosts_ - 1) {
+        COND_LOG_E("LogStore shard is local.\n");
         getNodeLocal(data, total_num_shards_, id);
       } else {
+        COND_LOG_E("LogStore shard is not local, forwarding to remote host.\n");
         aggregators_.at(total_num_hosts_ - 1).getNodeLocal(data,
                                                            total_num_shards_,
                                                            id);
