@@ -1074,6 +1074,8 @@ class GraphQueryAggregatorServiceHandler :
     } else {
       local_id = global_to_local_node_id(id, shard_id);
     }
+
+    COND_LOG_E("Final deleteNode request with local_id = %lld\n", local_id);
     return local_shards_.at(shard_idx)->deleteNode(local_id);
   }
 

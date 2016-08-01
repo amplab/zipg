@@ -219,9 +219,14 @@ void SuccinctShard::Get(std::string& result, int64_t key) {
 }
 
 bool SuccinctShard::Delete(int64_t key) {
+  COND_LOG_E("Received delete request for key=%lld\n", key);
   int64_t pos = GetValueOffsetPos(key);
-  if (pos < 0)
+  if (pos < 0) {
+    COND_LOG_E("Invalid pos=%lld; key not present or deleted.\n", pos);
     return false;
+  }
+
+  COND_LOG_E("Found key at pos=%lld\n", pos);
   SETBITVAL(invalid_offsets_, pos);
   return true;
 }

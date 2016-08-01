@@ -17,6 +17,7 @@
 #include <fstream>
 #include <streambuf>
 
+#include "utils.h"
 #include "regex/regex.h"
 #include "succinct_core.h"
 
