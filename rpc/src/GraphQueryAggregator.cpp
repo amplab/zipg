@@ -1445,8 +1445,13 @@ class GraphQueryAggregatorServiceHandler :
       assert(total_num_hosts_ > 0 && "total_num_hosts_ <= 0");
       return shard_id / total_num_hosts_;
     }
+    COND_LOG_E("Converting shard id %d to shard idx\n", shard_id);
     int diff = shard_id - num_succinctstore_shards_;
+
     if (diff >= 0) {
+      COND_LOG_E(
+          "Shard id %d >= number of SuccinctStore shards %d, returning LogStore shard id.\n",
+          shard_id, num_succinctstore_shards_);
       return local_shards_.size() - 1;  // log store
     }
     return shard_id / num_succinctstore_hosts_;  // succinct st., round-robin
