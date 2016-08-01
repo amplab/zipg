@@ -201,13 +201,10 @@ int main(int argc, char** argv) {
                << SuccinctGraph::EDGE_WIDTH_DELIM << std::to_string(edge_width)  // not padded: so width unbounded
                << SuccinctGraph::METADATA_DELIM;
 
-      COND_LOG_E("timestamp width = %d, max timestamp = %lld\n", timestamp_width,
-          max_timestamp);
 
       // timestamps
       for (auto it2 = assoc_list.begin(); it2 != assoc_list.end(); ++it2) {
         std::string encoded(encode_timestamp(it2->time, timestamp_width));
-        COND_LOG_E("encoded = '%s'\n", encoded.c_str());
 
         if (decode_timestamp(encoded) != it2->time) {
           LOG_E("Failed: time = [%lld], encoded = [%s], decoded = "
