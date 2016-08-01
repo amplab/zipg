@@ -1238,7 +1238,7 @@ bool SuccinctGraph::getLink(Link& link, int64_t id1, int64_t link_type,
     edge_table->Extract(str, idx_hint, curr_off,
                         SuccinctGraphSerde::WIDTH_TIMESTAMP_WIDTH_PADDED);
     LOG("extracted timestamp width = '%s', suf_arr_idx = %llu\n",
-        str.c_str(), sa_idx);
+        str.c_str(), idx_hint);
     timestamp_width = std::stoi(str);
 
     edge_table->Extract(
@@ -1328,7 +1328,7 @@ void SuccinctGraph::getLinkList(std::vector<Link>& assocs, int64_t id1,
     edge_table->Extract(str, idx_hint, curr_off,
                         SuccinctGraphSerde::WIDTH_TIMESTAMP_WIDTH_PADDED);
     LOG("extracted timestamp width = '%s', suf_arr_idx = %llu\n",
-        str.c_str(), sa_idx);
+        str.c_str(), idx_hint);
     timestamp_width = std::stoi(str);
 
     edge_table->Extract(
@@ -1417,7 +1417,7 @@ void SuccinctGraph::getLinkList(std::vector<Link>& assocs, int64_t id1,
     edge_table->Extract(str, idx_hint, curr_off,
                         SuccinctGraphSerde::WIDTH_TIMESTAMP_WIDTH_PADDED);
     LOG("extracted timestamp width = '%s', suf_arr_idx = %llu\n",
-        str.c_str(), sa_idx);
+        str.c_str(), idx_hint);
     timestamp_width = std::stoi(str);
 
     edge_table->Extract(
@@ -1543,7 +1543,7 @@ bool SuccinctGraph::deleteLink(int64_t id1, int64_t link_type, int64_t id2) {
     edge_table->Extract(str, idx_hint, curr_off,
                         SuccinctGraphSerde::WIDTH_TIMESTAMP_WIDTH_PADDED);
     LOG("extracted timestamp width = '%s', suf_arr_idx = %llu\n",
-        str.c_str(), sa_idx);
+        str.c_str(), idx_hint);
     timestamp_width = std::stoi(str);
 
     edge_table->Extract(
