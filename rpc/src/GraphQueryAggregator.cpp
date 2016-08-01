@@ -995,7 +995,14 @@ class GraphQueryAggregatorServiceHandler :
 
     COND_LOG_E("Shard index = %d, number of shards on this server = %zu\n",
                shard_idx, local_shards_.size());
-    int64_t local_id = global_to_local_node_id(id, shard_id);
+    int64_t local_id;
+    if (local_host_id_ == total_num_hosts_ - 1
+        && shard_idx == local_shards_.size() - 1) {
+      // This request is for the LogStore shard, don't mess with id.
+      local_id = id;
+    } else {
+      local_id = global_to_local_node_id(id, shard_id);
+    }
     local_shards_.at(shard_idx)->getNode(data, local_id);
   }
 
