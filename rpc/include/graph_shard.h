@@ -412,6 +412,7 @@ class GraphShard {
     }
 
     if (found) {
+      COND_LOG_E("Found link\n");
       link.__set_srcId(_link.src_id);
       link.__set_dstId(_link.dst_id);
       link.__set_atype(_link.atype);
