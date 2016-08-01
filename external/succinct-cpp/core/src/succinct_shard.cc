@@ -228,8 +228,8 @@ bool SuccinctShard::Delete(int64_t key) {
 
   COND_LOG_E("Found key at pos=%lld (key=%lld); total num keys = %zu\n", pos, keys_.at(pos), keys_.size());
   COND_LOG_E("Number of bits in invalid_offsets_ = %llu (%llu blocks)\n", invalid_offsets_->size, BITS2BLOCKS(invalid_offsets_->size));
-  COND_LOG_E("invalid_offsets_->bitmap = %p", invalid_offsets_->bitmap);
-  SETBITVAL(invalid_offsets_, pos);
+  COND_LOG_E("invalid_offsets_->bitmap = %p\n", invalid_offsets_->bitmap);
+  invalid_offsets_->bitmap[pos / 64] |= (1UL << (63UL - (pos % 64)));
   COND_LOG_E("Set invalid bit in bitmap.\n");
   return true;
 }
