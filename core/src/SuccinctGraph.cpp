@@ -1466,7 +1466,7 @@ void SuccinctGraph::getLinkList(std::vector<Link>& assocs, int64_t id1,
 
     int64_t lo = range_left + offset;
     int64_t hi = range_right;
-    if (range_left > range_right) {
+    if (lo > range_right) {
       continue;
     }
 
