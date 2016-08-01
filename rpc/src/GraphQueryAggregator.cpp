@@ -1206,11 +1206,11 @@ class GraphQueryAggregatorServiceHandler :
         src_atype.src = link.srcId;
         src_atype.atype = link.atype;
 
-        COND_LOG_E("Updating host %d, shard %d about (%lld,%d)\n",
-                   primary_host_id, primary_shard_id, link.srcId, link.atype);
+        int32_t logstore_shard_id = total_num_shards_;
+        COND_LOG_E(
+            "Adding update ptr to shard %lld for edge-record identified by (id1=%lld, link_type=%lld) at primary shard %lld, host %lld\n",
+            logstore_shard_id, link.srcId, link.atype, primary_host_id, primary_shard_id);
 
-        int32_t logstore_shard_id = num_succinctstore_shards_
-            + num_logstore_shards_ - 1;
         if (primary_host_id == local_host_id_) {
           record_edge_updates(logstore_shard_id, primary_shard_id,
                               { src_atype });
