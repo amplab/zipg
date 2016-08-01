@@ -22,9 +22,8 @@ int main(int argc, char** argv) {
   std::ifstream in(input);
   // std::ofstream out(output);
   std::string buf; // Buffer
-  while (!in.eof()) {
+  while (std::getline(in, buf, SuccinctGraph::NODE_ID_DELIM)) {
     int64_t src, atype, count;
-    std::getline(in, buf, SuccinctGraph::NODE_ID_DELIM);
     std::getline(in, buf, SuccinctGraph::ATYPE_DELIM);
     src = std::stoll(buf);
     std::cout << src << "\t";
