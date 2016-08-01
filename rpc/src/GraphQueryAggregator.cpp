@@ -1139,18 +1139,25 @@ class GraphQueryAggregatorServiceHandler :
     bool found = local_shards_.at(shard_idx)->getLink(link, id1, link_type,
                                                       id2);
     if (!found) {
+      COND_LOG_E(
+          "Edge not found in SuccinctStore, perhaps it exists in the LogStore.\n");
       std::vector<ThriftEdgeUpdatePtr> ptrs;
       get_edge_update_ptrs(ptrs, shard_idx, id1, link_type);
 
       COND_LOG_E("# update ptrs: %d\n", ptrs.size());
       if (!ptrs.empty()) {
+        COND_LOG_E(
+            "Update ptrs present for edge, checking if LogStore has requested edge.")
         assert(ptrs.size() == 1);
         ThriftEdgeUpdatePtr ptr = ptrs.back();
         int next_host_id = host_id_for_shard(ptr.shardId);
         if (next_host_id == local_host_id_) {
           int shard_idx_local = shard_id_to_shard_idx(ptr.shardId);
+          COND_LOG_E("LogStore is local at shard idx=%lld\n", shard_idx_local);
           local_shards_.at(shard_idx_local)->getLink(link, id1, link_type, id2);
         } else {
+          COND_LOG_E("LogStore is remote at host id = %lld, shard id=%lld\n",
+                     next_host_id, ptr.shardId);
           aggregators_.at(next_host_id).getLinkLocal(link, ptr.shardId, id1,
                                                      link_type, id2);
         }
