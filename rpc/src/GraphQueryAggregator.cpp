@@ -988,7 +988,7 @@ class GraphQueryAggregatorServiceHandler :
     data = "";
 
     COND_LOG_E("Received local request for getNodeLocal node_id = %lld\n", id);
-    int shard_idx = shard_id_to_shard_idx(id);
+    int shard_idx = shard_id_to_shard_idx(shard_id);
     assert(
         shard_idx < local_shards_.size()
             && "shard_idx >= local_shards_.size()");
