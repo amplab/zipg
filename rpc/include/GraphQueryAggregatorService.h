@@ -70,6 +70,7 @@ class GraphQueryAggregatorServiceIf {
   virtual void getLinkListLocal(std::vector<ThriftAssoc> & _return, const int64_t shard_id, const int64_t id1, const int64_t link_type) = 0;
   virtual void getFilteredLinkList(std::vector<ThriftAssoc> & _return, const int64_t id1, const int64_t link_type, const int64_t min_timestamp, const int64_t max_timestamp, const int64_t offset, const int64_t limit) = 0;
   virtual void getFilteredLinkListLocal(std::vector<ThriftAssoc> & _return, const int64_t shard_id, const int64_t id1, const int64_t link_type, const int64_t min_timestamp, const int64_t max_timestamp, const int64_t offset, const int64_t limit) = 0;
+  virtual int64_t countLinks(const int64_t id1, const int64_t link_type) = 0;
 };
 
 class GraphQueryAggregatorServiceIfFactory {
@@ -259,6 +260,10 @@ class GraphQueryAggregatorServiceNull : virtual public GraphQueryAggregatorServi
   }
   void getFilteredLinkListLocal(std::vector<ThriftAssoc> & /* _return */, const int64_t /* shard_id */, const int64_t /* id1 */, const int64_t /* link_type */, const int64_t /* min_timestamp */, const int64_t /* max_timestamp */, const int64_t /* offset */, const int64_t /* limit */) {
     return;
+  }
+  int64_t countLinks(const int64_t /* id1 */, const int64_t /* link_type */) {
+    int64_t _return = 0;
+    return _return;
   }
 };
 
@@ -5868,6 +5873,117 @@ class GraphQueryAggregatorService_getFilteredLinkListLocal_presult {
 
 };
 
+typedef struct _GraphQueryAggregatorService_countLinks_args__isset {
+  _GraphQueryAggregatorService_countLinks_args__isset() : id1(false), link_type(false) {}
+  bool id1 :1;
+  bool link_type :1;
+} _GraphQueryAggregatorService_countLinks_args__isset;
+
+class GraphQueryAggregatorService_countLinks_args {
+ public:
+
+  GraphQueryAggregatorService_countLinks_args(const GraphQueryAggregatorService_countLinks_args&);
+  GraphQueryAggregatorService_countLinks_args& operator=(const GraphQueryAggregatorService_countLinks_args&);
+  GraphQueryAggregatorService_countLinks_args() : id1(0), link_type(0) {
+  }
+
+  virtual ~GraphQueryAggregatorService_countLinks_args() throw();
+  int64_t id1;
+  int64_t link_type;
+
+  _GraphQueryAggregatorService_countLinks_args__isset __isset;
+
+  void __set_id1(const int64_t val);
+
+  void __set_link_type(const int64_t val);
+
+  bool operator == (const GraphQueryAggregatorService_countLinks_args & rhs) const
+  {
+    if (!(id1 == rhs.id1))
+      return false;
+    if (!(link_type == rhs.link_type))
+      return false;
+    return true;
+  }
+  bool operator != (const GraphQueryAggregatorService_countLinks_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GraphQueryAggregatorService_countLinks_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class GraphQueryAggregatorService_countLinks_pargs {
+ public:
+
+
+  virtual ~GraphQueryAggregatorService_countLinks_pargs() throw();
+  const int64_t* id1;
+  const int64_t* link_type;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _GraphQueryAggregatorService_countLinks_result__isset {
+  _GraphQueryAggregatorService_countLinks_result__isset() : success(false) {}
+  bool success :1;
+} _GraphQueryAggregatorService_countLinks_result__isset;
+
+class GraphQueryAggregatorService_countLinks_result {
+ public:
+
+  GraphQueryAggregatorService_countLinks_result(const GraphQueryAggregatorService_countLinks_result&);
+  GraphQueryAggregatorService_countLinks_result& operator=(const GraphQueryAggregatorService_countLinks_result&);
+  GraphQueryAggregatorService_countLinks_result() : success(0) {
+  }
+
+  virtual ~GraphQueryAggregatorService_countLinks_result() throw();
+  int64_t success;
+
+  _GraphQueryAggregatorService_countLinks_result__isset __isset;
+
+  void __set_success(const int64_t val);
+
+  bool operator == (const GraphQueryAggregatorService_countLinks_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    return true;
+  }
+  bool operator != (const GraphQueryAggregatorService_countLinks_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GraphQueryAggregatorService_countLinks_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _GraphQueryAggregatorService_countLinks_presult__isset {
+  _GraphQueryAggregatorService_countLinks_presult__isset() : success(false) {}
+  bool success :1;
+} _GraphQueryAggregatorService_countLinks_presult__isset;
+
+class GraphQueryAggregatorService_countLinks_presult {
+ public:
+
+
+  virtual ~GraphQueryAggregatorService_countLinks_presult() throw();
+  int64_t* success;
+
+  _GraphQueryAggregatorService_countLinks_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 class GraphQueryAggregatorServiceClient : virtual public GraphQueryAggregatorServiceIf {
  public:
   GraphQueryAggregatorServiceClient(boost::shared_ptr< ::apache::thrift::protocol::TProtocol> prot) {
@@ -6040,6 +6156,9 @@ class GraphQueryAggregatorServiceClient : virtual public GraphQueryAggregatorSer
   void getFilteredLinkListLocal(std::vector<ThriftAssoc> & _return, const int64_t shard_id, const int64_t id1, const int64_t link_type, const int64_t min_timestamp, const int64_t max_timestamp, const int64_t offset, const int64_t limit);
   void send_getFilteredLinkListLocal(const int64_t shard_id, const int64_t id1, const int64_t link_type, const int64_t min_timestamp, const int64_t max_timestamp, const int64_t offset, const int64_t limit);
   void recv_getFilteredLinkListLocal(std::vector<ThriftAssoc> & _return);
+  int64_t countLinks(const int64_t id1, const int64_t link_type);
+  void send_countLinks(const int64_t id1, const int64_t link_type);
+  int64_t recv_countLinks();
  protected:
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> piprot_;
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> poprot_;
@@ -6104,6 +6223,7 @@ class GraphQueryAggregatorServiceProcessor : public ::apache::thrift::TDispatchP
   void process_getLinkListLocal(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_getFilteredLinkList(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_getFilteredLinkListLocal(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_countLinks(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
  public:
   GraphQueryAggregatorServiceProcessor(boost::shared_ptr<GraphQueryAggregatorServiceIf> iface) :
     iface_(iface) {
@@ -6156,6 +6276,7 @@ class GraphQueryAggregatorServiceProcessor : public ::apache::thrift::TDispatchP
     processMap_["getLinkListLocal"] = &GraphQueryAggregatorServiceProcessor::process_getLinkListLocal;
     processMap_["getFilteredLinkList"] = &GraphQueryAggregatorServiceProcessor::process_getFilteredLinkList;
     processMap_["getFilteredLinkListLocal"] = &GraphQueryAggregatorServiceProcessor::process_getFilteredLinkListLocal;
+    processMap_["countLinks"] = &GraphQueryAggregatorServiceProcessor::process_countLinks;
   }
 
   virtual ~GraphQueryAggregatorServiceProcessor() {}
@@ -6656,6 +6777,15 @@ class GraphQueryAggregatorServiceMultiface : virtual public GraphQueryAggregator
     return;
   }
 
+  int64_t countLinks(const int64_t id1, const int64_t link_type) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->countLinks(id1, link_type);
+    }
+    return ifaces_[i]->countLinks(id1, link_type);
+  }
+
 };
 
 // The 'concurrent' client is a thread safe client that correctly handles
@@ -6833,6 +6963,9 @@ class GraphQueryAggregatorServiceConcurrentClient : virtual public GraphQueryAgg
   void getFilteredLinkListLocal(std::vector<ThriftAssoc> & _return, const int64_t shard_id, const int64_t id1, const int64_t link_type, const int64_t min_timestamp, const int64_t max_timestamp, const int64_t offset, const int64_t limit);
   int32_t send_getFilteredLinkListLocal(const int64_t shard_id, const int64_t id1, const int64_t link_type, const int64_t min_timestamp, const int64_t max_timestamp, const int64_t offset, const int64_t limit);
   void recv_getFilteredLinkListLocal(std::vector<ThriftAssoc> & _return, const int32_t seqid);
+  int64_t countLinks(const int64_t id1, const int64_t link_type);
+  int32_t send_countLinks(const int64_t id1, const int64_t link_type);
+  int64_t recv_countLinks(const int32_t seqid);
  protected:
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> piprot_;
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> poprot_;
