@@ -1058,15 +1058,22 @@ class GraphQueryAggregatorServiceHandler :
   }
 
   bool deleteNodeLocal(int64_t shard_id, int64_t id) {
-    COND_LOG_E("Received local request for getNodeLocal node_id = %lld\n", id);
-    int shard_idx = shard_id_to_shard_idx(id);
+    COND_LOG_E("Received local request for deleteNodeLocal node_id = %lld\n", id);
+    int shard_idx = shard_id_to_shard_idx(shard_id);
     assert(
         shard_idx < local_shards_.size()
             && "shard_idx >= local_shards_.size()");
 
     COND_LOG_E("Shard index = %d, number of shards on this server = %zu\n",
                shard_idx, local_shards_.size());
-    int64_t local_id = global_to_local_node_id(id, shard_id);
+    int64_t local_id;
+    if (local_host_id_ == total_num_hosts_ - 1
+        && shard_idx == local_shards_.size() - 1) {
+      // This request is for the LogStore shard, don't mess with id.
+      local_id = id;
+    } else {
+      local_id = global_to_local_node_id(id, shard_id);
+    }
     return local_shards_.at(shard_idx)->deleteNode(local_id);
   }
 
@@ -1092,8 +1099,10 @@ class GraphQueryAggregatorServiceHandler :
     if (!deleted) {
       COND_LOG_E("Not found in SuccinctStore, forwarding to LogStore.\n");
       if (host_id == total_num_hosts_ - 1) {
+        COND_LOG_E("LogStore shard is local.\n");
         return deleteNodeLocal(total_num_shards_, id);
       } else {
+        COND_LOG_E("LogStore shard is not local, forwarding to remote host.\n");
         aggregators_.at(total_num_hosts_ - 1).deleteNodeLocal(total_num_shards_,
                                                               id);
       }
