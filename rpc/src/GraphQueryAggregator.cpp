@@ -1034,7 +1034,7 @@ class GraphQueryAggregatorServiceHandler :
 
     if (local_host_id_ == total_num_hosts_ - 1) {
       COND_LOG_E("Updating local logstore.\n");
-      int64_t obj = local_shards_.back()->addNode(id, data);
+      return local_shards_.back()->addNode(id, data);
     } else {
       COND_LOG_E("Forwarding assoc_add to host %d\n", (total_num_hosts_ - 1));
       return aggregators_.at(total_num_hosts_ - 1).addNode(id, data);
