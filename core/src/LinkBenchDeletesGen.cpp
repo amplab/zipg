@@ -17,23 +17,32 @@ int main(int argc, char** argv) {
   }
 
   std::string input = std::string(argv[1]);
-  // std::string output = input + ".deletes";
+  std::string output = input + ".deletes";
 
   std::ifstream in(input);
-  // std::ofstream out(output);
-  std::string buf; // Buffer
+  std::ofstream out(output);
+  std::string buf;  // Buffer
   while (std::getline(in, buf, SuccinctGraph::NODE_ID_DELIM) && !in.eof()) {
     int64_t src, atype, count;
+
     std::getline(in, buf, SuccinctGraph::ATYPE_DELIM);
     src = std::stoll(buf);
-    std::cout << src << "\t";
+
     std::getline(in, buf, SuccinctGraph::TIMESTAMP_WIDTH_DELIM);
     atype = std::stoll(buf);
-    std::cout << atype << "\t";
+
     std::getline(in, buf, SuccinctGraph::EDGE_WIDTH_DELIM);
     count = std::stoll(buf.substr(4));
-    std::cout << count << std::endl;
+
+    // Write deletes bitmap to file
+    out.write(reinterpret_cast<const char *>(&src), sizeof(int64_t));
+    out.write(reinterpret_cast<const char *>(&atype), sizeof(int64_t));
+    bitmap::Bitmap invalid_edges(count);
+    invalid_edges.Serialize(out, count);
   }
+
+  in.close();
+  out.close();
 
   return 0;
 }
