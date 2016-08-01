@@ -7,7 +7,7 @@
   <groupId>amplab</groupId>
   <artifactId>zipg-client</artifactId>
   <version>0.1.0</version>
-  <packaging>pom</packaging>
+  <packaging>jar</packaging>
   <name>ZipG</name>
 
   <developers>
