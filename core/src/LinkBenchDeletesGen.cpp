@@ -22,7 +22,7 @@ int main(int argc, char** argv) {
   std::ifstream in(input);
   // std::ofstream out(output);
   std::string buf; // Buffer
-  while (std::getline(in, buf, SuccinctGraph::NODE_ID_DELIM)) {
+  while (std::getline(in, buf, SuccinctGraph::NODE_ID_DELIM) && !in.eof()) {
     int64_t src, atype, count;
     std::getline(in, buf, SuccinctGraph::ATYPE_DELIM);
     src = std::stoll(buf);
