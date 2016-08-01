@@ -1514,6 +1514,7 @@ int64_t SuccinctGraph::countLinks(int64_t id1, int64_t link_type) {
 }
 
 bool SuccinctGraph::deleteNode(int64_t id) {
+  COND_LOG_E("[SUCCINCTSTORE] Received request for delete node, forwarding to node table.\n");
   return node_table->Delete(id);
 }
 

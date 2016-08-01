@@ -164,7 +164,7 @@ int64_t SuccinctShard::GetValueOffsetPos(const int64_t key) {
   size_t pos = std::lower_bound(keys_.begin(), keys_.end(), key)
       - keys_.begin();
   return
-      (keys_[pos] != key || pos >= keys_.size()
+      (pos >= keys_.size() || keys_[pos] != key
           || ACCESSBIT(invalid_offsets_, pos) == 1) ? -1 : pos;
 }
 
@@ -292,43 +292,35 @@ void SuccinctShard::FlatSearch(std::vector<int64_t>& result,
   }
 }
 
-int64_t SuccinctShard::ExtractUntil(
-    std::string& result,
-    uint64_t& suf_arr_idx,
-    int64_t key,
-    char end_char)
-{
-    result.clear();
-    uint64_t idx = suf_arr_idx;
-    int64_t pos = 0;
+int64_t SuccinctShard::ExtractUntil(std::string& result, uint64_t& suf_arr_idx,
+                                    int64_t key, char end_char) {
+  result.clear();
+  uint64_t idx = suf_arr_idx;
+  int64_t pos = 0;
 
-    if (idx == -1ULL) { // FIXME: signed vs. unsigned
-        pos = GetValueOffsetPos(key);
-        if (pos < 0) {
-          return -1;
-        }
-        pos = value_offsets_[pos];
-        idx = LookupISA(pos);
+  if (idx == -1ULL) {  // FIXME: signed vs. unsigned
+    pos = GetValueOffsetPos(key);
+    if (pos < 0) {
+      return -1;
     }
+    pos = value_offsets_[pos];
+    idx = LookupISA(pos);
+  }
 
-    char curr_char = alphabet_[LookupC(idx)];
-    while (curr_char != end_char) {
-        result += curr_char;
-        ++pos;
-        idx = LookupNPA(idx);
-        curr_char = alphabet_[LookupC(idx)];
-    }
-    suf_arr_idx = LookupNPA(idx);
+  char curr_char = alphabet_[LookupC(idx)];
+  while (curr_char != end_char) {
+    result += curr_char;
     ++pos;
-    return pos;
+    idx = LookupNPA(idx);
+    curr_char = alphabet_[LookupC(idx)];
+  }
+  suf_arr_idx = LookupNPA(idx);
+  ++pos;
+  return pos;
 }
 
-void SuccinctShard::ExtractUntilHint(
-    std::string& result,
-    uint64_t& suf_arr_idx,
-    int64_t raw_offset,
-    char end_char)
-{
+void SuccinctShard::ExtractUntilHint(std::string& result, uint64_t& suf_arr_idx,
+                                     int64_t raw_offset, char end_char) {
   result.clear();
   uint64_t idx = (suf_arr_idx == -1) ? LookupISA(raw_offset) : suf_arr_idx;
   char curr_char = alphabet_[LookupC(idx)];
@@ -340,40 +332,36 @@ void SuccinctShard::ExtractUntilHint(
   suf_arr_idx = LookupNPA(idx);
 }
 
-bool SuccinctShard::ExtractCompareUntil(
-    int64_t raw_offset,
-    char end_char,
-    const std::string& compare_key) {
+bool SuccinctShard::ExtractCompareUntil(int64_t raw_offset, char end_char,
+                                        const std::string& compare_key) {
 
-    int64_t compare_len = compare_key.length();
-    uint64_t idx = LookupISA(raw_offset);
-    char curr_char;
+  int64_t compare_len = compare_key.length();
+  uint64_t idx = LookupISA(raw_offset);
+  char curr_char;
 
-    for (int64_t i = 0; i < compare_len; ++i) {
-        curr_char = alphabet_[LookupC(idx)];
-        idx = LookupNPA(idx);
-        if (curr_char == end_char || curr_char != compare_key[i]) return false;
-    }
-    return alphabet_[LookupC(idx)] == end_char;
+  for (int64_t i = 0; i < compare_len; ++i) {
+    curr_char = alphabet_[LookupC(idx)];
+    idx = LookupNPA(idx);
+    if (curr_char == end_char || curr_char != compare_key[i])
+      return false;
+  }
+  return alphabet_[LookupC(idx)] == end_char;
 }
 
-void SuccinctShard::ExtractUntil(
-    std::string& result,
-    int64_t raw_offset,
-    char end_char)
-{
-    uint64_t idx = LookupISA(raw_offset);
-    char curr_char;
-    result.clear();
+void SuccinctShard::ExtractUntil(std::string& result, int64_t raw_offset,
+                                 char end_char) {
+  uint64_t idx = LookupISA(raw_offset);
+  char curr_char;
+  result.clear();
 
-    for ( ; ; ) {
-        curr_char = alphabet_[LookupC(idx)];
-        idx = LookupNPA(idx);
-        if (curr_char == end_char) {
-            break;
-        }
-        result += curr_char;
+  for (;;) {
+    curr_char = alphabet_[LookupC(idx)];
+    idx = LookupNPA(idx);
+    if (curr_char == end_char) {
+      break;
     }
+    result += curr_char;
+  }
 }
 
 size_t SuccinctShard::Serialize() {
