@@ -103,7 +103,7 @@ class SuccinctUtils {
       fprintf(
           stderr,
           "mmap with MAP_HUGETLB option failed; trying without MAP_HUGETLB flag...\n");
-      data = mmap(NULL, st.st_size, PROT_READ, MAP_PRIVATE | MAP_POPULATE, fd,
+      data = mmap(NULL, st.st_size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_POPULATE, fd,
                   0);
     }
     madvise(data, st.st_size, POSIX_MADV_RANDOM);
