@@ -1109,7 +1109,7 @@ class GraphQueryAggregatorServiceHandler :
                                                               id);
       }
     }
-    return false;
+    return deleted;
   }
 
   bool updateNode(const int64_t id, const std::string& data) {

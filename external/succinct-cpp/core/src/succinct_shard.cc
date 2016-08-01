@@ -164,7 +164,7 @@ int64_t SuccinctShard::GetValueOffsetPos(const int64_t key) {
   size_t pos = std::lower_bound(keys_.begin(), keys_.end(), key)
       - keys_.begin();
   return
-      (pos >= keys_.size() || keys_[pos] != key
+      (pos >= keys_.size() - 1 || keys_[pos] != key
           || ACCESSBIT(invalid_offsets_, pos) == 1) ? -1 : pos;
 }
 
@@ -227,8 +227,6 @@ bool SuccinctShard::Delete(int64_t key) {
   }
 
   COND_LOG_E("Found key at pos=%lld (key=%lld); total num keys = %zu\n", pos, keys_.at(pos), keys_.size());
-  COND_LOG_E("Number of bits in invalid_offsets_ = %llu (%llu blocks)\n", invalid_offsets_->size, BITS2BLOCKS(invalid_offsets_->size));
-  COND_LOG_E("invalid_offsets_->bitmap = %p\n", invalid_offsets_->bitmap);
   invalid_offsets_->bitmap[pos / 64] |= (1UL << (63UL - (pos % 64)));
   COND_LOG_E("Set invalid bit in bitmap.\n");
   return true;
@@ -467,6 +465,10 @@ size_t SuccinctShard::MemoryMap() {
 
   // Read bitmap
   data += SuccinctBase::MemoryMapBitmap(&invalid_offsets_, data);
+
+
+  // Un-delete all keys; TODO: remove
+  SuccinctBase::ClearBitmap(&invalid_offsets_, s_allocator);
 
   return core_size + (data - data_beg);
 }
