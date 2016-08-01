@@ -75,7 +75,9 @@ void KVLogStore::search(std::set<int64_t> &_return, const std::string& query) {
         || strncmp(data_ + idx_off[i] + ngram_n_, suffix, suffix_len) == 0) {
       // TODO: Take care of query.length() < ngram_n_ case
       BwdMap::iterator it = std::prev(v2k.upper_bound(idx_off[i]));
-      _return.insert(it->second);
+      if (it->second > 0) {
+        _return.insert(it->second);
+      }
     }
   }
 }
@@ -94,9 +96,12 @@ void KVLogStore::get_value(std::string &value, uint64_t key) {
   }
 
   int32_t start = it->second;
-  int32_t end = (++it == k2v.end()) ? tail_ : it->second;
+  BwdMap::iterator bwd_it = v2k.find(start);
+  bwd_it++;
+  int32_t end = bwd_it->first;
   int32_t len = end - start;
-  COND_LOG_E("[LOGSTORE] start = %u, end = %u, len = %u, tail_ = %u\n", start, end, len, tail_);
+  COND_LOG_E("[LOGSTORE] start = %u, end = %u, len = %u, tail_ = %u\n", start,
+             end, len, tail_);
 
   value.assign(data_ + start, len);
 }
@@ -113,7 +118,7 @@ bool KVLogStore::remove(int64_t key) {
   }
 
   boost::unique_lock<boost::shared_mutex> lk(mutex_);
+  v2k[fwd_it->second] = -1;
   k2v.erase(fwd_it);
-  v2k.erase(bwd_it);
   return true;
 }
