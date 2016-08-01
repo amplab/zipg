@@ -1058,7 +1058,8 @@ class GraphQueryAggregatorServiceHandler :
   }
 
   bool deleteNodeLocal(int64_t shard_id, int64_t id) {
-    COND_LOG_E("Received local request for deleteNodeLocal node_id = %lld\n", id);
+    COND_LOG_E("Received local request for deleteNodeLocal node_id = %lld\n",
+               id);
     int shard_idx = shard_id_to_shard_idx(shard_id);
     assert(
         shard_idx < local_shards_.size()
@@ -1109,6 +1110,7 @@ class GraphQueryAggregatorServiceHandler :
                                                               id);
       }
     }
+
     return deleted;
   }
 

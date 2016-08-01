@@ -93,10 +93,10 @@ void KVLogStore::get_value(std::string &value, uint64_t key) {
     return;
   }
 
-  uint32_t start = it->second;
-  uint32_t end = (++it == k2v.end()) ? tail_ : it->second;
-  size_t len = end - start;
-  COND_LOG_E("[LOGSTORE] start = %u, end = %u, len = %u\n", start, end, len);
+  int32_t start = it->second;
+  int32_t end = (++it == k2v.end()) ? tail_ : it->second;
+  int32_t len = end - start;
+  COND_LOG_E("[LOGSTORE] start = %u, end = %u, len = %u, tail_ = %u\n", start, end, len, tail_);
 
   value.assign(data_ + start, len);
 }
