@@ -98,7 +98,11 @@ void KVLogStore::get_value(std::string &value, uint64_t key) {
   int32_t start = it->second;
   BwdMap::iterator bwd_it = v2k.find(start);
   bwd_it++;
-  int32_t end = bwd_it->first;
+  int32_t end;
+  if (bwd_it != v2k.end())
+    end = bwd_it->first;
+  else
+    end = tail_;
   int32_t len = end - start;
   COND_LOG_E("[LOGSTORE] start = %u, end = %u, len = %u, tail_ = %u\n", start,
              end, len, tail_);
