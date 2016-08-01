@@ -1147,7 +1147,8 @@ class GraphQueryAggregatorServiceHandler :
       COND_LOG_E("# update ptrs: %d\n", ptrs.size());
       if (!ptrs.empty()) {
         COND_LOG_E(
-            "Update ptrs present for edge, checking if LogStore has requested edge.")
+            "Update ptrs present for edge, checking if LogStore has requested edge.");
+        assert(ptrs.size() == 1);
         ThriftEdgeUpdatePtr ptr = ptrs.back();
         int next_host_id = host_id_for_shard(ptr.shardId);
         if (next_host_id == local_host_id_) {
