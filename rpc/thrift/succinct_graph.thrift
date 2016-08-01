@@ -169,4 +169,6 @@ service GraphQueryAggregatorService {
       list<ThriftAssoc> getFilteredLinkList(1: i64 id1, 2: i64 link_type, 3: i64 min_timestamp, 4: i64 max_timestamp, 5: i64 offset, 6: i64 limit),
       list<ThriftAssoc> getFilteredLinkListLocal(1: i64 shard_id, 2: i64 id1, 3: i64 link_type, 4: i64 min_timestamp, 5: i64 max_timestamp, 6: i64 offset, 7: i64 limit),
 
+      i64 countLinks(1: i64 id1, 2: i64 link_type),
+
 }
