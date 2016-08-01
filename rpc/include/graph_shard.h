@@ -244,8 +244,6 @@ class GraphShard {
     switch (store_mode_) {
       case StoreMode::SuccinctStore:
         return graph_->assoc_count(src, atype);
-      case StoreMode::SuffixStore:
-        return graph_suffix_store_->assoc_count(src, atype);
       case StoreMode::LogStore:
         return graph_log_store_->assoc_count(src, atype);
     }
@@ -364,8 +362,10 @@ class GraphShard {
   bool getNode(std::string& data, const int64_t id) {
     switch (store_mode_) {
       case StoreMode::SuccinctStore:
+        COND_LOG_E("getNode on SuccinctStore shard.\n");
         return graph_->getNode(data, id);
       case StoreMode::LogStore:
+        COND_LOG_E("getNode on LogStore shard.\n");
         return graph_log_store_->getNode(data, id);
     }
 
@@ -378,6 +378,7 @@ class GraphShard {
         assert(false && "Cannot add node to SuccinctStore!");
         return -1;
       case StoreMode::LogStore:
+        COND_LOG_E("addNode on LogStore shard.\n");
         return graph_log_store_->addNode(id, data);
     }
     return -1;
@@ -386,8 +387,10 @@ class GraphShard {
   bool deleteNode(int64_t id) {
     switch (store_mode_) {
       case StoreMode::SuccinctStore:
+        COND_LOG_E("deleteNode on SuccinctStore shard.\n");
         return graph_->deleteNode(id);
       case StoreMode::LogStore:
+        COND_LOG_E("deleteNode on LogStore shard.\n");
         return graph_log_store_->deleteNode(id);
     }
     return false;
@@ -399,9 +402,11 @@ class GraphShard {
     bool found = false;
     switch (store_mode_) {
       case StoreMode::SuccinctStore:
+        COND_LOG_E("getLink on SuccinctStore shard.\n");
         found = graph_->getLink(_link, id1, link_type, id2);
         break;
       case StoreMode::LogStore:
+        COND_LOG_E("getLink on LogStore shard.\n");
         found = graph_log_store_->getLink(_link, id1, link_type, id2);
         break;
     }
@@ -426,6 +431,7 @@ class GraphShard {
         assert(false && "Cannot add link to SuccinctStore!");
         return false;
       case StoreMode::LogStore:
+        COND_LOG_E("addLink on LogStore shard.\n");
         return graph_log_store_->addLink(_link);
     }
 
@@ -436,8 +442,10 @@ class GraphShard {
                   const int64_t id2) {
     switch (store_mode_) {
       case StoreMode::SuccinctStore:
+        COND_LOG_E("deleteLink on SuccinctStore shard.\n");
         return graph_->deleteLink(id1, link_type, id2);
       case StoreMode::LogStore:
+        COND_LOG_E("deleteLink on LogStore shard.\n");
         return graph_log_store_->deleteLink(id1, link_type, id2);
     }
     return false;
@@ -448,9 +456,11 @@ class GraphShard {
     std::vector<SuccinctGraph::Assoc> _links;
     switch (store_mode_) {
       case StoreMode::SuccinctStore:
+        COND_LOG_E("getLinkList on SuccinctStore shard.\n");
         graph_->getLinkList(_links, id1, link_type);
         break;
       case StoreMode::LogStore:
+        COND_LOG_E("getLinkList on LogStore shard.\n");
         graph_log_store_->getLinkList(_links, id1, link_type);
         break;
     }
@@ -474,10 +484,12 @@ class GraphShard {
     std::vector<SuccinctGraph::Assoc> _links;
     switch (store_mode_) {
       case StoreMode::SuccinctStore:
+        COND_LOG_E("getLinkList(...) on SuccinctStore shard.\n");
         graph_->getLinkList(_links, id1, link_type, min_timestamp,
                             max_timestamp, offset, limit);
         break;
       case StoreMode::LogStore:
+        COND_LOG_E("getLinkList(...) on LogStore shard.\n");
         graph_log_store_->getLinkList(_links, id1, link_type, min_timestamp,
                                       max_timestamp, offset, limit);
         break;
