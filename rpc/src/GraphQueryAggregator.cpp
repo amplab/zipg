@@ -1037,13 +1037,13 @@ class GraphQueryAggregatorServiceHandler :
     // Currently on host holding log store shard
     assert(multistore_enabled_ && "multistore not enabled but obj_add called");
 
-    COND_LOG_E("Received obj_add(...)\n");
+    COND_LOG_E("Received addNode(%lld, ...)\n", id);
 
     if (local_host_id_ == total_num_hosts_ - 1) {
       COND_LOG_E("Updating local logstore.\n");
       return local_shards_.back()->addNode(id, data);
     } else {
-      COND_LOG_E("Forwarding assoc_add to host %d\n", (total_num_hosts_ - 1));
+      COND_LOG_E("Forwarding addNode to host %d\n", (total_num_hosts_ - 1));
       return aggregators_.at(total_num_hosts_ - 1).addNode(id, data);
     }
 

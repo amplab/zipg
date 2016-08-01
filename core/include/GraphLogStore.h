@@ -108,7 +108,7 @@ class GraphLogStore {
 
   bool getNode(std::string& data, int64_t id);
 
-  int64_t addNode(const int64_t key, const std::string& data);
+  int64_t addNode(const int64_t id, const std::string& data);
 
   bool deleteNode(int64_t id) {
     return node_table_->remove(id);

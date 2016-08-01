@@ -16,7 +16,7 @@ int64_t KVLogStore::append(const std::string& value) {
   memcpy(data_ + end, value.c_str(), value.length());
 
   k2v[key] = end;
-  v2k[key] = key;
+  v2k[end] = key;
 
   // min with 0, since data_pos can be small (or zero) initially
   for (int64_t i = std::max(static_cast<int64_t>(0),
@@ -36,8 +36,11 @@ int64_t KVLogStore::insert(const int64_t key, const std::string& value) {
   uint64_t end = tail_;
   memcpy(data_ + end, value.c_str(), value.length());
 
+  COND_LOG_E("[LOGSTORE] K2V mapping (%lld, %llu)\n", key, end);
+  COND_LOG_E("[LOGSTORE] V2K mapping (%llu, %lld)\n", end, key);
+
   k2v[key] = end;
-  v2k[key] = key;
+  v2k[end] = key;
 
   // min with 0, since data_pos can be small (or zero) initially
   for (int64_t i = std::max(static_cast<int64_t>(0),
@@ -53,8 +56,8 @@ int64_t KVLogStore::insert(const int64_t key, const std::string& value) {
 
 void KVLogStore::search(std::set<int64_t> &_return, const std::string& query) {
   _return.clear();
-  COND_LOG_E("search string '%s' (size %d)\n",
-      query.c_str(), query.length());
+  COND_LOG_E("[LOGSTORE] search string '%s' (size %d)\n", query.c_str(),
+             query.length());
 
   char *substr = (char *) query.c_str();
   char *suffix = substr + ngram_n_;
@@ -65,7 +68,8 @@ void KVLogStore::search(std::set<int64_t> &_return, const std::string& query) {
   boost::shared_lock<boost::shared_mutex> lk(mutex_);
   std::vector<uint32_t> idx_off = ngram_idx_[prefix_ngram];
 
-  COND_LOG_E("idx sizes: %d, substring '%s'\n", idx_off.size(), substr);
+  COND_LOG_E("[LOGSTORE] idx sizes: %d, substring '%s'\n", idx_off.size(),
+             substr);
   for (uint32_t i = 0; i < idx_off.size(); i++) {
     if (skip_filter
         || strncmp(data_ + idx_off[i] + ngram_n_, suffix, suffix_len) == 0) {
@@ -81,14 +85,18 @@ void KVLogStore::get_value(std::string &value, uint64_t key) {
 
   boost::shared_lock<boost::shared_mutex> lk(mutex_);
 
+  COND_LOG_E("[LOGSTORE] Get request for key %llu\n", key);
+
   FwdMap::iterator it = k2v.find(key);
   if (it == k2v.end()) {
+    COND_LOG_E("[LOGSTORE] Key not found!\n", key);
     return;
   }
 
   uint32_t start = it->second;
-  int64_t end = (++it == k2v.end()) ? tail_ : it->second;
+  uint32_t end = (++it == k2v.end()) ? tail_ : it->second;
   size_t len = end - start;
+  COND_LOG_E("[LOGSTORE] start = %u, end = %u, len = %u\n", start, end, len);
 
   value.assign(data_ + start, len);
 }

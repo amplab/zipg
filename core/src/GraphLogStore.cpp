@@ -158,12 +158,13 @@ bool GraphLogStore::getNode(std::string& data, int64_t id) {
   return true;
 }
 
-int64_t GraphLogStore::addNode(const int64_t key, const std::string& data) {
+int64_t GraphLogStore::addNode(const int64_t id, const std::string& data) {
+  COND_LOG_E("Adding new node (id=%lld) to LogStore.\n", id);
   size_t distance = num_digits(data.length()) + 1;
   std::string value = std::to_string(distance)
       + SuccinctGraph::NODE_TABLE_HEADER_DELIM
       + std::to_string(data.length())
       + SuccinctGraph::NODE_TABLE_HEADER_DELIM
       + static_cast<char>(SuccinctGraph::DELIMITERS[0]) + data + "\n";
-  return node_table_->insert(key, value);
+  return node_table_->insert(id, value);
 }
