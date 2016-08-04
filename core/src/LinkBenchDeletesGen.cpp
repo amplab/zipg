@@ -62,7 +62,7 @@ int main(int argc, char** argv) {
       delete[] prop_buf;
     }
     delete[] prop_len;
-    std::cout << "\n";
+    std::cout << ")\n";
 
     std::cout << src << "\t" << atype << "\t" << count << "\n";
 
