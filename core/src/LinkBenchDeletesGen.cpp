@@ -47,7 +47,7 @@ int main(int argc, char** argv) {
   std::ofstream out(output);
   size_t num_entries = counts.size();
   out.write(reinterpret_cast<const char*>(&num_entries), sizeof(size_t));
-  for (std::tuple tup : counts) {
+  for (auto tup : counts) {
     int64_t src, atype, count;
     std::tie(src, atype, count) = tup;
     // Write deletes bitmap to file
