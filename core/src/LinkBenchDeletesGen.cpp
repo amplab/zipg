@@ -23,16 +23,12 @@ int main(int argc, char** argv) {
   std::ofstream out(output);
   std::string buf;  // Buffer
   char c;
-  std::vector<int32_t> prop_sizes;
+  std::vector<int32_t> psizes;
+  int64_t src, atype, count, ts_width, dst_width, psize_width;
   while (!in.eof()) {
-    int64_t src, atype, count, ts_width, dst_width, prop_len_width;
-    in.read(&c, sizeof(char));
-    if (c != SuccinctGraph::NODE_ID_DELIM) {
-      std::cout << "(";
-      for (size_t i = 0; i < prop_sizes.size(); i++) {
-        std::cout << prop_sizes[i] << ",";
-      }
-      std::cout << ")\n";
+    std::getline(in, buf, SuccinctGraph::NODE_ID_DELIM);
+    if (buf != "") {
+      std::cout << "Buf not empty: " << buf << "\n";
     }
     assert(c == SuccinctGraph::NODE_ID_DELIM);
 
@@ -48,8 +44,8 @@ int main(int argc, char** argv) {
     count = std::stoll(buf.substr(4));
 
     std::getline(in, buf, SuccinctGraph::METADATA_DELIM);
-    prop_len_width = std::stoi(buf);
-    assert(prop_len_width == 3);
+    psize_width = std::stoi(buf);
+    assert(psize_width == 3);
 
     char* ts_buf = new char[ts_width * count];
     in.read(ts_buf, sizeof(char) * ts_width * count);
@@ -59,17 +55,17 @@ int main(int argc, char** argv) {
     in.read(dst_buf, sizeof(char) * dst_width * count);
     delete[] dst_buf;
 
-    char* prop_len = new char[prop_len_width];
-    prop_sizes.clear();
+    char* psizebuf = new char[psize_width];
+    psizes.clear();
     for (int64_t i = 0; i < count; i++) {
-      in.read(prop_len, prop_len_width);
-      int32_t psize = std::atoi(prop_len);
-      prop_sizes.push_back(psize);
-      char* prop_buf = new char[psize];
-      in.read(prop_buf, psize);
-      delete[] prop_buf;
+      in.read(psizebuf, psize_width);
+      int32_t psize = std::atoi(psizebuf);
+      psizes.push_back(psize);
+      char* prop = new char[psize];
+      in.read(prop, psize);
+      delete[] prop;
     }
-    delete[] prop_len;
+    delete[] psizebuf;
 
     std::cout << src << "\t" << atype << "\t" << count << "\n";
 
