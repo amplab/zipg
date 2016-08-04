@@ -52,14 +52,17 @@ int main(int argc, char** argv) {
     delete[] dst_buf;
 
     char* prop_len = new char[prop_len_width];
+    std::cout << "(";
     for (int64_t i = 0; i < count; i++) {
       in.read(prop_len, prop_len_width);
       int32_t psize = std::atoi(prop_len);
+      std::cout << psize << ", ";
       char* prop_buf = new char[psize];
       in.read(prop_buf, psize);
       delete[] prop_buf;
     }
     delete[] prop_len;
+    std::cout << "\n";
 
     std::cout << src << "\t" << atype << "\t" << count << "\n";
 
