@@ -27,8 +27,7 @@ int main(int argc, char** argv) {
   while (true) {
     std::getline(in, buf, SuccinctGraph::NODE_ID_DELIM);
     if (buf != "") {
-      std::cout << "Buffer not empty: " << buf << "\n";
-      assert(buf == "\n");
+      std::cout << "WARNING: Buffer not empty: " << buf << "\n";
     }
 
     if (in.eof())
