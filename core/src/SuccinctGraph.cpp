@@ -97,7 +97,8 @@ void SuccinctGraph::load_deleted_edges(std::string deleted_edges_file) {
     in.read(reinterpret_cast<char *>(&src), sizeof(int64_t));
     in.read(reinterpret_cast<char *>(&atype), sizeof(int64_t));
     deleted_edges[std::make_pair(src, atype)] = new bitmap::Bitmap();
-    deleted_edges[std::make_pair(src, atype)]->Deserialize(in);
+    size_t bytes = deleted_edges[std::make_pair(src, atype)]->Deserialize(in);
+    LOG_E("Loaded deleted edges bitmap for (%lld, %lld) with %zu bytes.", src, atype, bytes);
   }
   LOG_E("Done SuccinctGraph::load_deleted_edges\n");
 }
