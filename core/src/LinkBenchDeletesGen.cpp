@@ -26,13 +26,11 @@ int main(int argc, char** argv) {
   int64_t src, atype, count, ts_width, dst_width, psize_width;
   while (true) {
     std::getline(in, buf, SuccinctGraph::NODE_ID_DELIM);
-    if (buf != "") {
+    if (buf != "")
       assert(buf == "\n");
-    }
 
-    if (in.eof()) {
+    if (in.eof())
       break;
-    }
 
     std::getline(in, buf, SuccinctGraph::ATYPE_DELIM);
     src = std::stoll(buf);
@@ -68,8 +66,6 @@ int main(int argc, char** argv) {
       delete[] prop;
     }
     delete[] psizebuf;
-
-    std::cout << src << "\t" << atype << "\t" << count << "\n";
 
     // Write deletes bitmap to file
     out.write(reinterpret_cast<const char *>(&src), sizeof(int64_t));
