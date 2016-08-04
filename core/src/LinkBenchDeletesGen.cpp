@@ -23,9 +23,17 @@ int main(int argc, char** argv) {
   std::ofstream out(output);
   std::string buf;  // Buffer
   char c;
+  std::vector<int32_t> prop_sizes;
   while (!in.eof()) {
     int64_t src, atype, count, ts_width, dst_width, prop_len_width;
     in.read(&c, sizeof(char));
+    if (c != SuccinctGraph::NODE_ID_DELIM) {
+      std::cout << "(";
+      for (size_t i = 0; i < prop_sizes.size(); i++) {
+        std::cout << prop_sizes[i] << ",";
+      }
+      std::cout << ")\n";
+    }
     assert(c == SuccinctGraph::NODE_ID_DELIM);
 
     std::getline(in, buf, SuccinctGraph::ATYPE_DELIM);
@@ -52,9 +60,11 @@ int main(int argc, char** argv) {
     delete[] dst_buf;
 
     char* prop_len = new char[prop_len_width];
+    prop_sizes.clear();
     for (int64_t i = 0; i < count; i++) {
       in.read(prop_len, prop_len_width);
       int32_t psize = std::atoi(prop_len);
+      prop_sizes.push_back(psize);
       char* prop_buf = new char[psize];
       in.read(prop_buf, psize);
       delete[] prop_buf;
