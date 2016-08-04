@@ -46,10 +46,12 @@ int main(int argc, char** argv) {
     char* ts_buf = new char[ts_width * count];
     in.read(ts_buf, sizeof(char) * ts_width);
     delete[] ts_buf;
+    std::cout << std::string(ts_buf) << "\n";
 
     char* dst_buf = new char[dst_width * count];
     in.read(dst_buf, sizeof(char) * dst_width);
     delete[] dst_buf;
+    std::cout << std::string(dst_buf) << "\n";
 
     char* prop_len = new char[prop_len_width];
     std::cout << "(";
