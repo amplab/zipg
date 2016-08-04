@@ -39,34 +39,27 @@ int main(int argc, char** argv) {
     dst_width = std::stoll(buf.substr(2, 2));
     count = std::stoll(buf.substr(4));
 
-    std::cout << "ts-width=" << ts_width << ",dst-width=" << dst_width << "\n";
-
     std::getline(in, buf, SuccinctGraph::METADATA_DELIM);
     prop_len_width = std::stoi(buf);
     assert(prop_len_width == 3);
 
     char* ts_buf = new char[ts_width * count];
     in.read(ts_buf, sizeof(char) * ts_width * count);
-    std::cout << "[" << std::string(ts_buf) << "]\n";
     delete[] ts_buf;
 
     char* dst_buf = new char[dst_width * count];
     in.read(dst_buf, sizeof(char) * dst_width * count);
-    std::cout << "[" << std::string(dst_buf) << "]\n";
     delete[] dst_buf;
 
     char* prop_len = new char[prop_len_width];
-    std::cout << "(";
     for (int64_t i = 0; i < count; i++) {
       in.read(prop_len, prop_len_width);
       int32_t psize = std::atoi(prop_len);
-      std::cout << psize << ", ";
       char* prop_buf = new char[psize];
       in.read(prop_buf, psize);
       delete[] prop_buf;
     }
     delete[] prop_len;
-    std::cout << ")\n";
 
     std::cout << src << "\t" << atype << "\t" << count << "\n";
 
