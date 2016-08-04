@@ -22,7 +22,6 @@ int main(int argc, char** argv) {
   std::ifstream in(input);
   std::ofstream out(output);
   std::string buf;  // Buffer
-  char c;
   std::vector<int32_t> psizes;
   int64_t src, atype, count, ts_width, dst_width, psize_width;
   while (!in.eof()) {
@@ -30,7 +29,6 @@ int main(int argc, char** argv) {
     if (buf != "") {
       std::cout << "Buf not empty: " << buf << "\n";
     }
-    assert(c == SuccinctGraph::NODE_ID_DELIM);
 
     std::getline(in, buf, SuccinctGraph::ATYPE_DELIM);
     src = std::stoll(buf);
