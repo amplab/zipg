@@ -46,12 +46,12 @@ int main(int argc, char** argv) {
     assert(prop_len_width == 3);
 
     char* ts_buf = new char[ts_width * count];
-    in.read(ts_buf, sizeof(char) * ts_width);
+    in.read(ts_buf, sizeof(char) * ts_width * count);
     std::cout << "[" << std::string(ts_buf) << "]\n";
     delete[] ts_buf;
 
     char* dst_buf = new char[dst_width * count];
-    in.read(dst_buf, sizeof(char) * dst_width);
+    in.read(dst_buf, sizeof(char) * dst_width * count);
     std::cout << "[" << std::string(dst_buf) << "]\n";
     delete[] dst_buf;
 
