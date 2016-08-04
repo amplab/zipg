@@ -24,10 +24,14 @@ int main(int argc, char** argv) {
   std::string buf;  // Buffer
   std::vector<int32_t> psizes;
   int64_t src, atype, count, ts_width, dst_width, psize_width;
-  while (!in.eof()) {
+  while (true) {
     std::getline(in, buf, SuccinctGraph::NODE_ID_DELIM);
     if (buf != "") {
-      std::cout << "Buf not empty: " << buf << "\n";
+      std::cout << "Buf not empty: [" << buf << "]\n";
+    }
+
+    if (in.eof()) {
+      break;
     }
 
     std::getline(in, buf, SuccinctGraph::ATYPE_DELIM);
