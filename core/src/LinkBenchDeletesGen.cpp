@@ -22,8 +22,11 @@ int main(int argc, char** argv) {
   std::ifstream in(input);
   std::ofstream out(output);
   std::string buf;  // Buffer
-  while (std::getline(in, buf, SuccinctGraph::NODE_ID_DELIM) && !in.eof()) {
-    int64_t src, atype, count;
+  char c;
+  while (!in.eof()) {
+    int64_t src, atype, count, ts_width, dst_width, prop_len_width;
+    in.read(&c, sizeof(char));
+    assert(c == SuccinctGraph::NODE_ID_DELIM);
 
     std::getline(in, buf, SuccinctGraph::ATYPE_DELIM);
     src = std::stoll(buf);
@@ -32,7 +35,33 @@ int main(int argc, char** argv) {
     atype = std::stoll(buf);
 
     std::getline(in, buf, SuccinctGraph::EDGE_WIDTH_DELIM);
+    ts_width = std::stoll(buf.substr(0, 2));
+    dst_width = std::stoll(buf.substr(2, 2));
     count = std::stoll(buf.substr(4));
+
+    std::getline(in, buf, SuccinctGraph::METADATA_DELIM);
+    prop_len_width = std::stoi(buf);
+    assert(prop_len_width == 3);
+
+    char* ts_buf = new char[ts_width * count];
+    in.read(ts_buf, sizeof(char) * ts_width);
+    delete[] ts_buf;
+
+    char* dst_buf = new char[dst_width * count];
+    in.read(dst_buf, sizeof(char) * dst_width);
+    delete[] dst_buf;
+
+    char* prop_len = new char[prop_len_width];
+    for (int64_t i = 0; i < count; i++) {
+      in.read(prop_len, prop_len_width);
+      int32_t psize = std::atoi(prop_len);
+      char* prop_buf = new char[psize];
+      in.read(prop_buf, psize);
+      delete[] prop_buf;
+    }
+    delete[] prop_len;
+
+    std::cout << src << "\t" << atype << "\t" << count << "\n";
 
     // Write deletes bitmap to file
     out.write(reinterpret_cast<const char *>(&src), sizeof(int64_t));
