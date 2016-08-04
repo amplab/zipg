@@ -39,6 +39,8 @@ int main(int argc, char** argv) {
     dst_width = std::stoll(buf.substr(2, 2));
     count = std::stoll(buf.substr(4));
 
+    std::cout << ts_width << "\t" << dst_width << "\n";
+
     std::getline(in, buf, SuccinctGraph::METADATA_DELIM);
     prop_len_width = std::stoi(buf);
     assert(prop_len_width == 3);
