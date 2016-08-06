@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <cstdlib>
 
+#include "bitmap.h"
 #include "DeletedEdges.h"
 
 int main(int argc, char** argv) {
