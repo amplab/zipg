@@ -41,5 +41,7 @@ int main(int argc, char** argv) {
             << " edges and " << del.GetNumRecords() << " edges.\n";
   del.Serialize(out);
 
+  out.close();
+
   return 0;
 }
