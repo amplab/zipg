@@ -90,7 +90,7 @@ void SuccinctGraph::load_edge_table(std::string edge_succinct_dir) {
 
 void SuccinctGraph::load_deleted_edges(std::string deleted_edges_file) {
   LOG_E("In SuccinctGraph::load_deleted_edges\n");
-  uint8_t* data = SuccinctUtils::MemoryMap(deleted_edges_file);
+  uint8_t* data = (uint8_t*)SuccinctUtils::MemoryMap(deleted_edges_file);
   deleted_edges = new DeletedEdges();
   deleted_edges->MemoryMap(data);
   LOG_E("Done SuccinctGraph::load_deleted_edges\n");
