@@ -69,3 +69,5 @@ add_executable(linkbench-deletes src/LinkBenchDeletesGen.cpp)
 
 add_executable(graphconstruct src/GraphConstruct.cpp)
 target_link_libraries(graphconstruct succinct)
+
+add_executable(convertdel src/ConvertDeletedEdge.cpp)

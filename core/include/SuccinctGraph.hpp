@@ -257,15 +257,14 @@ class SuccinctGraph {
 
   // Deleted edges
   struct pairhash {
-  public:
-    template <typename T, typename U>
-    std::size_t operator()(const std::pair<T, U> &x) const
-    {
+   public:
+    template<typename T, typename U>
+    std::size_t operator()(const std::pair<T, U> &x) const {
       return std::hash<T>()(x.first) ^ std::hash<U>()(x.second);
     }
   };
 
-  std::unordered_map<edge_record_id_t, bitmap::Bitmap*, pairhash> deleted_edges;
+  DeletedEdges* deleted_edges;
 
   KeepInputSuccinctFile* edge_table_with_input_ = nullptr;
 

@@ -12,7 +12,7 @@ namespace bitmap {
 
 #define GETBIT(n, i)    ((n >> i) & 1UL)
 #define SETBIT(n, i)    n = (n | (1UL << i))
-#define CLRBIT(n, i)  n = (n & ~(1UL << i))
+#define CLRBIT(n, i)    n = (n & ~(1UL << i))
 
 #define BITS2BLOCKS(bits) \
     (((bits) % 64 == 0) ? ((bits) / 64) : (((bits) / 64) + 1))
@@ -194,7 +194,7 @@ class Bitmap {
   }
 
   // Serialization/De-serialization
-  virtual size_type Serialize(std::ostream& out, size_type size) {
+  size_type Serialize(std::ostream& out, size_type size) {
     size_t out_size = 0;
 
     out.write(reinterpret_cast<const char *>(&size), sizeof(size_type));
@@ -207,19 +207,32 @@ class Bitmap {
     return out_size;
   }
 
-  virtual size_type Deserialize(std::istream& in) {
-    size_t in_size = 0;
-
+  size_type Deserialize(std::istream& in) {
     size_type size;
     in.read(reinterpret_cast<char *>(&size), sizeof(size_type));
-    in_size += sizeof(size_type);
+    sizeof(size_type);
 
     data_ = new data_type[BITS2BLOCKS(size)];
     in.read(reinterpret_cast<char *>(data_),
     BITS2BLOCKS(size) * sizeof(data_type));
-    in_size += (BITS2BLOCKS(size) * sizeof(data_type));
+    (BITS2BLOCKS(size) * sizeof(data_type));
 
-    return in_size;
+    return size;
+  }
+
+  size_type MemoryMap(uint8_t* buf) {
+    uint8_t *data, *data_beg;
+    data = data_beg = buf;
+
+    uint64_t bitmap_size = *((size_type *) data);
+    data += sizeof(size_type);
+    if (bitmap_size) {
+      data_ = (data_type*) data;
+      size_type bitmap_size_bytes = (BITS2BLOCKS(bitmap_size) * sizeof(data_type));
+      data += bitmap_size_bytes;
+    }
+
+    return data - data_beg;
   }
 
  protected:

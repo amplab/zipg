@@ -44,14 +44,14 @@ class SuccinctUtils {
     n = (n + (n >> 4)) & m4;
     return (n * h01) >> 56;
 
-    #undef m1
-    #undef m2
-    #undef m4
-    #undef m8
-    #undef m16
-    #undef m32
-    #undef hff
-    #undef h01
+#undef m1
+#undef m2
+#undef m4
+#undef m8
+#undef m16
+#undef m32
+#undef hff
+#undef h01
   }
 
   // Returns integer logarithm to the base 2
@@ -94,7 +94,7 @@ class SuccinctUtils {
     assert(fd != -1);
 
     // Try mapping with huge-pages support
-    void *data = mmap(NULL, st.st_size, PROT_READ,
+    void *data = mmap(NULL, st.st_size, PROT_READ | PROT_WRITE,
     MAP_PRIVATE | MAP_HUGETLB | MAP_POPULATE,
                       fd, 0);
 
@@ -103,8 +103,8 @@ class SuccinctUtils {
       fprintf(
           stderr,
           "mmap with MAP_HUGETLB option failed; trying without MAP_HUGETLB flag...\n");
-      data = mmap(NULL, st.st_size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_POPULATE, fd,
-                  0);
+      data = mmap(NULL, st.st_size, PROT_READ | PROT_WRITE,
+                  MAP_PRIVATE | MAP_POPULATE, fd, 0);
     }
     madvise(data, st.st_size, POSIX_MADV_RANDOM);
     assert(data != (void * )-1);
