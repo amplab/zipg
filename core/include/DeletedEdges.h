@@ -94,6 +94,7 @@ class DeletedEdges {
               num_entries_ * sizeof(int64_t));
     out_size += (sizeof(int64_t) * num_entries_);
 
+    std::cout << "Writing bitmap for " << num_edges_ << "\n";
     out_size += bitmap_->Serialize(out, num_edges_);
 
     return out_size;
