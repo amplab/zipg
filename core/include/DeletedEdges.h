@@ -50,7 +50,7 @@ class DeletedEdges {
     num_edges_ = num_edges;
   }
 
-  DeletedEdges(std::vector<edge_record_id> record_ids, std::vector<int64_t> offsets, int64_t num_edges) {
+  DeletedEdges(std::vector<edge_record_id>& record_ids, std::vector<int64_t>& offsets, int64_t num_edges) {
     assert(record_ids.size() == offsets.size());
     bitmap_ = new bitmap::Bitmap(num_edges);
     record_ids_ = &record_ids[0];
@@ -83,19 +83,29 @@ class DeletedEdges {
     out.write(reinterpret_cast<const char*>(&num_entries_), sizeof(int64_t));
     out_size += sizeof(int64_t);
 
+    std::cout << "Wrote " << sizeof(int64_t) << " bytes\n";
+
     out.write(reinterpret_cast<const char*>(&num_edges_), sizeof(int64_t));
     out_size += sizeof(int64_t);
+
+    std::cout << "Wrote " << sizeof(int64_t) << " bytes\n";
 
     out.write(reinterpret_cast<const char*>(record_ids_),
               num_entries_ * sizeof(edge_record_id));
     out_size += (sizeof(edge_record_id) * num_entries_);
 
+    std::cout << "Wrote " << (sizeof(edge_record_id) * num_entries_) << " bytes\n";
+
     out.write(reinterpret_cast<const char*>(offsets_),
               num_entries_ * sizeof(int64_t));
     out_size += (sizeof(int64_t) * num_entries_);
 
-    std::cout << "Writing bitmap for " << num_edges_ << "\n";
-    out_size += bitmap_->Serialize(out, num_edges_);
+    std::cout << "Wrote " << (sizeof(int64_t) * num_entries_) << " bytes\n";
+
+
+    size_t nbytes = bitmap_->Serialize(out, num_edges_);
+
+    std::cout << "Wrote " << nbytes << " bytes\n";
 
     return out_size;
   }
