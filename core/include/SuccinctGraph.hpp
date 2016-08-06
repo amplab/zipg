@@ -8,6 +8,7 @@
 #include "succinct_file.h"
 #include "KeepInputSuccinctFile.h"
 #include "bitmap.h"
+#include "DeletedEdges.h"
 
 #include <sys/time.h>
 
