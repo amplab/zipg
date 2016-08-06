@@ -90,12 +90,40 @@ class SuccinctUtils {
     struct stat st;
     stat(filename.c_str(), &st);
 
+    int fd = open(filename.c_str(), O_RDONLY, 0);
+    assert(fd != -1);
+
+    // Try mapping with huge-pages support
+    void *data = mmap(NULL, st.st_size, PROT_READ,
+    MAP_SHARED | MAP_HUGETLB | MAP_POPULATE,
+                      fd, 0);
+
+    // Revert to mapping with huge page support in case mapping fails
+    if (data == (void *) -1) {
+      fprintf(
+          stderr,
+          "mmap with MAP_HUGETLB option failed; trying without MAP_HUGETLB flag...\n");
+      data = mmap(NULL, st.st_size, PROT_READ,
+      MAP_SHARED | MAP_POPULATE,
+                  fd, 0);
+    }
+    madvise(data, st.st_size, POSIX_MADV_RANDOM);
+    assert(data != (void * )-1);
+
+    return data;
+  }
+
+  // Memory maps a file and returns a pointer to it
+  static void* MemoryMapMutable(std::string filename) {
+    struct stat st;
+    stat(filename.c_str(), &st);
+
     int fd = open(filename.c_str(), O_RDWR, 0);
     assert(fd != -1);
 
     // Try mapping with huge-pages support
     void *data = mmap(NULL, st.st_size, PROT_READ | PROT_WRITE,
-                      MAP_SHARED | MAP_HUGETLB | MAP_POPULATE,
+                      MAP_PRIVATE | MAP_HUGETLB | MAP_POPULATE,
                       fd, 0);
 
     // Revert to mapping with huge page support in case mapping fails
@@ -104,7 +132,8 @@ class SuccinctUtils {
           stderr,
           "mmap with MAP_HUGETLB option failed; trying without MAP_HUGETLB flag...\n");
       data = mmap(NULL, st.st_size, PROT_READ | PROT_WRITE,
-                  MAP_SHARED | MAP_POPULATE, fd, 0);
+                  MAP_PRIVATE | MAP_POPULATE,
+                  fd, 0);
     }
     madvise(data, st.st_size, POSIX_MADV_RANDOM);
     assert(data != (void * )-1);

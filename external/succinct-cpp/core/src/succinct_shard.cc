@@ -64,7 +64,7 @@ SuccinctShard::SuccinctShard(uint32_t id, std::string filename,
     }
     case SuccinctMode::LOAD_MEMORY_MAPPED: {
       uint8_t *data, *data_beg;
-      data = data_beg = (uint8_t *) SuccinctUtils::MemoryMap(
+      data = data_beg = (uint8_t *) SuccinctUtils::MemoryMapMutable(
           succinct_path_ + "/keyval");
 
       // Read keys
