@@ -21,6 +21,25 @@ class SampledByValueSA : public FlatSampledArray {
   // Set d_bpos
   void SetSampledPositions(Dictionary *sampled_positions);
 
+  virtual size_t MemoryMap(std::string filename) {
+    uint8_t *data_buf, *data_beg;
+    data_buf = data_beg = (uint8_t *) SuccinctUtils::MemoryMapUnpopulated(
+        filename);
+
+    data_size_ = *((uint64_t *) data_buf);
+    data_buf += sizeof(uint64_t);
+    data_bits_ = *((uint8_t *) data_buf);
+    data_buf += sizeof(uint8_t);
+    original_size_ = *((uint64_t *) data_buf);
+    data_buf += sizeof(uint64_t);
+    sampling_rate_ = *((uint32_t *) data_buf);
+    data_buf += sizeof(uint32_t);
+
+    data_buf += SuccinctBase::MemoryMapBitmap(&data_, data_buf);
+
+    return data_buf - data_beg;
+  }
+
  protected:
   // Sample original SA by value
   virtual void Sample(ArrayStream& original, uint64_t n);

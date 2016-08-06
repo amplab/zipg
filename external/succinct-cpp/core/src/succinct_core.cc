@@ -568,7 +568,7 @@ size_t SuccinctCore::MemoryMap() {
   data += (sizeof(char) * (alphabet_size_ + 1));
 
   // Memory map SA and ISA
-  data += sa_->MemoryMap(succinct_path_ + "/sa");
+  data += sa_->MemoryMapUnpopulated(succinct_path_ + "/sa");
   data += isa_->MemoryMap(succinct_path_ + "/isa");
 
   // Memory map bitmap marking positions of sampled values if the sampling scheme
