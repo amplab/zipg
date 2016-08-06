@@ -17,7 +17,7 @@ int main(int argc, char** argv) {
   std::vector<int64_t> offsets;
   std::vector<DeletedEdges::edge_record_id> edge_record_ids;
   int64_t cur_offset = 0;
-  std::cout << "Reading " << num_edge_records << "from file " << filename
+  std::cout << "Reading " << num_edge_records << " edge records from file " << filename
             << "\n";
   for (size_t i = 0; i < num_edge_records; i++) {
     int64_t src, atype;

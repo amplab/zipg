@@ -94,7 +94,7 @@ class DeletedEdges {
               num_entries_ * sizeof(int64_t));
     out_size += (sizeof(int64_t) * num_entries_);
 
-    out_size += bitmap_->Serialize(out, 0);
+    out_size += bitmap_->Serialize(out, num_edges_);
 
     return out_size;
   }
