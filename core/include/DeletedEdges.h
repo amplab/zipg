@@ -69,6 +69,14 @@ class DeletedEdges {
     bitmap_->SetBit(off + edge_idx);
   }
 
+  size_t GetNumEdges() {
+    return num_edges_;
+  }
+
+  size_t GetNumRecords() {
+    return num_entries_;
+  }
+
   size_t Serialize(std::ostream& out) {
     size_t out_size = 0;
 
@@ -150,7 +158,6 @@ class DeletedEdges {
       else
         hi = mid;
     }
-
     return lo - 1;
   }
 
