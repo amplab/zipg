@@ -166,6 +166,12 @@ class SuccinctUtils {
     return data;
   }
 
+  static void Unmap(void *data, std::string filename) {
+    struct stat st;
+    stat(filename.c_str(), &st);
+    munmap(data, st.st_size);
+  }
+
   // Writes an integer array to file
   template<typename T>
   static void WriteToFile(T* data, size_t size, std::string outfile) {
