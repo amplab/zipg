@@ -71,3 +71,4 @@ add_executable(graphconstruct src/GraphConstruct.cpp)
 target_link_libraries(graphconstruct succinct)
 
 add_executable(convertdel src/ConvertDeletedEdge.cpp)
+add_executable(convertdel2 src/ConvertDeletedEdge2.cpp)
