@@ -29,8 +29,8 @@ function setup() {
     echo "Must specify dataset"
   fi
 
-  node_file_raw=/home/ec2-user/zipg/${dataset}/singlemachine/${dataset}.node
-  edge_file_raw=/home/ec2-user/zipg/${dataset}/singlemachine/${dataset}.assoc
+  node_file_raw=/mnt2/${dataset}/${dataset}.node
+  edge_file_raw=/mnt2/${dataset}/${dataset}.assoc
 
   if [ "$master" = "localhost" ]; then
     bash $sbin/../scripts/setup_dist.sh $node_file_raw $edge_file_raw $sa $isa $npa
