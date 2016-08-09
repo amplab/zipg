@@ -64,26 +64,28 @@ SuccinctShard::SuccinctShard(uint32_t id, std::string filename,
     }
     case SuccinctMode::LOAD_MEMORY_MAPPED: {
       uint8_t *data, *data_beg;
-      data = data_beg = (uint8_t *) SuccinctUtils::MemoryMapMutable(
+      data = data_beg = (uint8_t *) SuccinctUtils::MemoryMap(
           succinct_path_ + "/keyval");
 
       // Read keys
       size_t keys_size = *((size_t *) data);
       data += sizeof(size_t);
+      buf_allocator<int64_t> key_allocator((int64_t *) data);
       keys_ = std::vector<int64_t>((int64_t *) data,
-                                   (int64_t *) data + keys_size);
+                                   (int64_t *) data + keys_size, key_allocator);
       data += (sizeof(int64_t) * keys_size);
 
       // Read values
       size_t value_offsets_size = *((size_t *) data);
       data += sizeof(size_t);
+      buf_allocator<int64_t> value_offsets_allocator((int64_t *) data);
       value_offsets_ = std::vector<int64_t>(
-          (int64_t *) data, (int64_t *) data + value_offsets_size);
+          (int64_t *) data, (int64_t *) data + value_offsets_size,
+          value_offsets_allocator);
       data += (sizeof(int64_t) * value_offsets_size);
 
       // Read bitmap
       data += SuccinctBase::MemoryMapBitmap(&invalid_offsets_, data);
-      SuccinctUtils::Unmap(data_beg, succinct_path_ + "/keyval");
       break;
     }
   }

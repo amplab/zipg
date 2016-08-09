@@ -295,8 +295,7 @@ size_t SuccinctBase::MemoryMapBitmap(SuccinctBase::Bitmap **B, uint8_t* buf) {
   if (bitmap_size) {
     (*B) = new Bitmap;
     (*B)->size = bitmap_size;
-    (*B)->bitmap = new uint64_t[BITS2BLOCKS(bitmap_size)];
-    // (*B)->bitmap = (uint64_t*) data;
+    (*B)->bitmap = (uint64_t*) data;
     uint64_t bitmap_size_bytes = (BITS2BLOCKS(bitmap_size) * sizeof(uint64_t));
     data += bitmap_size_bytes;
   }
