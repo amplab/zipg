@@ -14,6 +14,8 @@
 #define LOG_E(fmt, ...) fprintf(stderr, fmt, ##__VA_ARGS__); fflush(stderr)
 #endif
 
+#define LOG_DEBUG
+
 #ifndef COND_LOG_E
 #ifdef LOG_DEBUG
 #define COND_LOG_E(fmt, ...) fprintf(stderr, fmt, ##__VA_ARGS__); fflush(stderr)
