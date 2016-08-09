@@ -1,5 +1,11 @@
 #include "GraphQueryAggregatorService.h"
 
+#include <stdio.h>
+#include <execinfo.h>
+#include <signal.h>
+#include <stdlib.h>
+#include <unistd.h>
+
 #include <fstream>
 #include <mutex>
 #include <set>
@@ -136,7 +142,7 @@ class GraphQueryAggregatorServiceHandler :
       LOG_E("%zu total aggregators, but only %zu live\n", total_num_hosts_,
             hostnames_.size());
       return 1;
-    } COND_LOG_E("Aggregators connected: cluster has %zu aggregators in total.\n",
+    }COND_LOG_E("Aggregators connected: cluster has %zu aggregators in total.\n",
         hostnames_.size());
     return 0;
   }
@@ -1529,7 +1535,7 @@ class GraphQueryAggregatorServiceHandler :
     if (!multistore_enabled_) {
       assert(total_num_hosts_ > 0 && "total_num_hosts_ <= 0");
       return shard_id / total_num_hosts_;
-    } COND_LOG_E("Converting shard id %d to shard idx\n", shard_id);
+    }COND_LOG_E("Converting shard id %d to shard idx\n", shard_id);
     int diff = shard_id - num_succinctstore_shards_;
 
     if (diff >= 0) {
@@ -1642,11 +1648,22 @@ std::string edge_part_name(std::string base_path, int32_t shard_id,
   return edge_part.str();
 }
 
+void handler(int sig) {
+  void *array[10];
+  size_t size = backtrace(array, 10);
+
+  LOG_E("Error: signal %d:\n", sig);
+  backtrace_symbols_fd(array, size, STDERR_FILENO);
+  exit(1);
+}
+
 int main(int argc, char **argv) {
   if (argc < 2) {
     print_usage(argv[0]);
     return -1;
   }
+
+  signal(SIGSEGV, handler);
 
   LOG_E("Launched aggregator with command line: ");
   for (int i = 0; i < argc; i++) {
