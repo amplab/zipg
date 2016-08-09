@@ -1008,13 +1008,8 @@ class GraphQueryAggregatorServiceHandler :
     } else {
       local_id = global_to_local_node_id(id, shard_id);
     }
-    try {
-      local_shards_.at(shard_idx)->getNode(data, local_id);
-    } catch (std::exception& e) {
-      LOG_E(
-          "Exception at getNodeLocal (local_shards_.at(%lld)->getNode(data, %lld): %s",
-          shard_idx, local_id, e.what());
-    }
+
+    local_shards_.at(shard_idx)->getNode(data, local_id);
   }
 
   void getNode(std::string& data, int64_t id) {
@@ -1038,11 +1033,13 @@ class GraphQueryAggregatorServiceHandler :
 
     // If the regular lookup did not yield results, search the log store.
     if (data == "") {
-      COND_LOG_E("Not found in SuccinctStore, forwarding to LogStore.\n");
       if (host_id == total_num_hosts_ - 1) {
-        COND_LOG_E("LogStore shard is local.\n");
+        LOG_E("Not found in SuccinctStore, forwarding to LogStore.\n");
+        LOG_E("LogStore shard is local.\n");
         getNodeLocal(data, total_num_shards_, id);
       } else {
+        COND_LOG_E("Not found in SuccinctStore, forwarding to LogStore.\n");
+
         COND_LOG_E("LogStore shard is not local, forwarding to remote host.\n");
         aggregators_.at(total_num_hosts_ - 1).getNodeLocal(data,
                                                            total_num_shards_,
