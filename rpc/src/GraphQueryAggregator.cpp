@@ -1008,7 +1008,13 @@ class GraphQueryAggregatorServiceHandler :
     } else {
       local_id = global_to_local_node_id(id, shard_id);
     }
-    local_shards_.at(shard_idx)->getNode(data, local_id);
+    try {
+      local_shards_.at(shard_idx)->getNode(data, local_id);
+    } catch (std::exception& e) {
+      LOG_E(
+          "Exception at getNodeLocal (local_shards_.at(%lld)->getNode(data, %lld): %s",
+          shard_idx, local_id, e.what());
+    }
   }
 
   void getNode(std::string& data, int64_t id) {
