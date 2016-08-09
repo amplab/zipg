@@ -1027,31 +1027,36 @@ class GraphQueryAggregatorServiceHandler :
 
     COND_LOG_E("Received getNode for nodeId = %lld\n", id);
 
-    try {
-      if (host_id == local_host_id_) {
-        COND_LOG_E("Shard %d is local.\n", shard_id);
-        getNodeLocal(data, shard_id, id);
-      } else {
-        COND_LOG_E("Forwarding to shard %d on host %d.\n", shard_id, host_id);
+    if (host_id == local_host_id_) {
+      COND_LOG_E("Shard %d is local.\n", shard_id);
+      getNodeLocal(data, shard_id, id);
+    } else {
+      COND_LOG_E("Forwarding to shard %d on host %d.\n", shard_id, host_id);
+      try {
         aggregators_.at(host_id).getNodeLocal(data, shard_id, id);
+      } catch (std::exception& e) {
+        LOG_E("Exception at getNode (first attempt): %s\n", e.what());
       }
+    }
 
-      // If the regular lookup did not yield results, search the log store.
-      if (data == "") {
-        COND_LOG_E("Not found in SuccinctStore, forwarding to LogStore.\n");
-        if (host_id == total_num_hosts_ - 1) {
-          COND_LOG_E("LogStore shard is local.\n");
-          getNodeLocal(data, total_num_shards_, id);
-        } else {
-          COND_LOG_E("LogStore shard is not local, forwarding to remote host.\n");
+    // If the regular lookup did not yield results, search the log store.
+    if (data == "") {
+      COND_LOG_E("Not found in SuccinctStore, forwarding to LogStore.\n");
+      if (host_id == total_num_hosts_ - 1) {
+        COND_LOG_E("LogStore shard is local.\n");
+        getNodeLocal(data, total_num_shards_, id);
+      } else {
+        COND_LOG_E("LogStore shard is not local, forwarding to remote host.\n");
+        try {
           aggregators_.at(total_num_hosts_ - 1).getNodeLocal(data,
                                                              total_num_shards_,
                                                              id);
+        } catch (std::exception& e) {
+          LOG_E("Exception at getNode (second attempt): %s\n", e.what());
         }
       }
-    } catch (std::exception& e) {
-      LOG_E("Exception at getNode: %s\n", e.what());
     }
+
   }
 
   int64_t addNode(const int64_t id, const std::string& data) {
