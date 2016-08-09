@@ -1032,31 +1032,23 @@ class GraphQueryAggregatorServiceHandler :
       getNodeLocal(data, shard_id, id);
     } else {
       COND_LOG_E("Forwarding to shard %d on host %d.\n", shard_id, host_id);
-      try {
-        aggregators_.at(host_id).getNodeLocal(data, shard_id, id);
-      } catch (std::exception& e) {
-        LOG_E("Exception at getNode (first attempt): %s\n", e.what());
-      }
+      aggregators_.at(host_id).getNodeLocal(data, shard_id, id);
+
     }
 
     // If the regular lookup did not yield results, search the log store.
     if (data == "") {
       COND_LOG_E("Not found in SuccinctStore, forwarding to LogStore.\n");
-      if (host_id == total_num_hosts_ - 1) {
+      if (local_host_id_ == total_num_hosts_ - 1) {
         COND_LOG_E("LogStore shard is local.\n");
         getNodeLocal(data, total_num_shards_, id);
       } else {
         COND_LOG_E("LogStore shard is not local, forwarding to remote host.\n");
-        try {
-          aggregators_.at(total_num_hosts_ - 1).getNodeLocal(data,
-                                                             total_num_shards_,
-                                                             id);
-        } catch (std::exception& e) {
-          LOG_E("Exception at getNode (second attempt): %s\n", e.what());
-        }
+        aggregators_.at(total_num_hosts_ - 1).getNodeLocal(data,
+                                                           total_num_shards_,
+                                                           id);
       }
     }
-
   }
 
   int64_t addNode(const int64_t id, const std::string& data) {
@@ -1120,7 +1112,7 @@ class GraphQueryAggregatorServiceHandler :
     // If the regular lookup did not yield results, search the log store.
     if (!deleted) {
       COND_LOG_E("Not found in SuccinctStore, forwarding to LogStore.\n");
-      if (host_id == total_num_hosts_ - 1) {
+      if (local_host_id_ == total_num_hosts_ - 1) {
         COND_LOG_E("LogStore shard is local.\n");
         return deleteNodeLocal(total_num_shards_, id);
       } else {
