@@ -992,24 +992,28 @@ class GraphQueryAggregatorServiceHandler :
   void getNodeLocal(std::string& data, int64_t shard_id, int64_t id) {
     data = "";
 
-    COND_LOG_E("Received local request for getNodeLocal node_id = %lld\n", id);
-    int shard_idx = shard_id_to_shard_idx(shard_id);
-    assert(
-        shard_idx < local_shards_.size()
-            && "shard_idx >= local_shards_.size()");
+    try {
+      COND_LOG_E("Received local request for getNodeLocal node_id = %lld\n", id);
+      int shard_idx = shard_id_to_shard_idx(shard_id);
+      assert(
+          shard_idx < local_shards_.size()
+              && "shard_idx >= local_shards_.size()");
 
-    COND_LOG_E("Shard index = %d, number of shards on this server = %zu\n",
-        shard_idx, local_shards_.size());
-    int64_t local_id;
-    if (local_host_id_ == total_num_hosts_ - 1
-        && shard_idx == local_shards_.size() - 1) {
-      // This request is for the LogStore shard, don't mess with id.
-      local_id = id;
-    } else {
-      local_id = global_to_local_node_id(id, shard_id);
+      COND_LOG_E("Shard index = %d, number of shards on this server = %zu\n",
+          shard_idx, local_shards_.size());
+      int64_t local_id;
+      if (local_host_id_ == total_num_hosts_ - 1
+          && shard_idx == local_shards_.size() - 1) {
+        // This request is for the LogStore shard, don't mess with id.
+        local_id = id;
+      } else {
+        local_id = global_to_local_node_id(id, shard_id);
+      }
+
+      local_shards_.at(shard_idx)->getNode(data, local_id);
+    } catch (std::exception& e) {
+      LOG_E("Exception at getNodeLocal: %s\n", e.what());
     }
-
-    local_shards_.at(shard_idx)->getNode(data, local_id);
   }
 
   void getNode(std::string& data, int64_t id) {
@@ -1023,28 +1027,30 @@ class GraphQueryAggregatorServiceHandler :
 
     COND_LOG_E("Received getNode for nodeId = %lld\n", id);
 
-    if (host_id == local_host_id_) {
-      COND_LOG_E("Shard %d is local.\n", shard_id);
-      getNodeLocal(data, shard_id, id);
-    } else {
-      COND_LOG_E("Forwarding to shard %d on host %d.\n", shard_id, host_id);
-      aggregators_.at(host_id).getNodeLocal(data, shard_id, id);
-    }
-
-    // If the regular lookup did not yield results, search the log store.
-    if (data == "") {
-      if (host_id == total_num_hosts_ - 1) {
-        LOG_E("Not found in SuccinctStore, forwarding to LogStore.\n");
-        LOG_E("LogStore shard is local.\n");
-        getNodeLocal(data, total_num_shards_, id);
+    try {
+      if (host_id == local_host_id_) {
+        COND_LOG_E("Shard %d is local.\n", shard_id);
+        getNodeLocal(data, shard_id, id);
       } else {
-        COND_LOG_E("Not found in SuccinctStore, forwarding to LogStore.\n");
-
-        COND_LOG_E("LogStore shard is not local, forwarding to remote host.\n");
-        aggregators_.at(total_num_hosts_ - 1).getNodeLocal(data,
-                                                           total_num_shards_,
-                                                           id);
+        COND_LOG_E("Forwarding to shard %d on host %d.\n", shard_id, host_id);
+        aggregators_.at(host_id).getNodeLocal(data, shard_id, id);
       }
+
+      // If the regular lookup did not yield results, search the log store.
+      if (data == "") {
+        COND_LOG_E("Not found in SuccinctStore, forwarding to LogStore.\n");
+        if (host_id == total_num_hosts_ - 1) {
+          COND_LOG_E("LogStore shard is local.\n");
+          getNodeLocal(data, total_num_shards_, id);
+        } else {
+          COND_LOG_E("LogStore shard is not local, forwarding to remote host.\n");
+          aggregators_.at(total_num_hosts_ - 1).getNodeLocal(data,
+                                                             total_num_shards_,
+                                                             id);
+        }
+      }
+    } catch (std::exception& e) {
+      LOG_E("Exception at getNode: %s\n", e.what());
     }
   }
 
@@ -1538,9 +1544,10 @@ class GraphQueryAggregatorServiceHandler :
     if (!multistore_enabled_) {
       assert(total_num_hosts_ > 0 && "total_num_hosts_ <= 0");
       return shard_id / total_num_hosts_;
-    }COND_LOG_E("Converting shard id %d to shard idx\n", shard_id);
-    int diff = shard_id - num_succinctstore_shards_;
+    }
 
+    COND_LOG_E("Converting shard id %d to shard idx\n", shard_id);
+    int diff = shard_id - total_num_shards_;
     if (diff >= 0) {
       COND_LOG_E(
           "Shard id %d >= number of SuccinctStore shards %d, returning LogStore shard id.\n",
