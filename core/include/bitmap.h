@@ -216,6 +216,7 @@ class Bitmap {
     in.read(reinterpret_cast<char *>(data_),
     BITS2BLOCKS(size) * sizeof(data_type));
     (BITS2BLOCKS(size) * sizeof(data_type));
+    memset(data_, (BITS2BLOCKS(size) * sizeof(data_type)), 0);
 
     return size;
   }
@@ -231,6 +232,7 @@ class Bitmap {
       size_type bitmap_size_bytes = (BITS2BLOCKS(bitmap_size) * sizeof(data_type));
       data += bitmap_size_bytes;
     }
+    memset(data_, (BITS2BLOCKS(bitmap_size) * sizeof(data_type)), 0);
 
     return data - data_beg;
   }
