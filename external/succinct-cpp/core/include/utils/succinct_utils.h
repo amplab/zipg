@@ -95,7 +95,7 @@ class SuccinctUtils {
 
     // Try mapping with huge-pages support
     void *data = mmap(NULL, st.st_size, PROT_READ,
-    MAP_SHARED | MAP_HUGETLB | MAP_POPULATE,
+                      MAP_SHARED | MAP_HUGETLB | MAP_POPULATE,
                       fd, 0);
 
     // Revert to mapping with huge page support in case mapping fails
@@ -104,7 +104,7 @@ class SuccinctUtils {
           stderr,
           "mmap with MAP_HUGETLB option failed; trying without MAP_HUGETLB flag...\n");
       data = mmap(NULL, st.st_size, PROT_READ,
-      MAP_SHARED | MAP_POPULATE,
+                  MAP_SHARED | MAP_POPULATE,
                   fd, 0);
     }
     madvise(data, st.st_size, POSIX_MADV_RANDOM);
@@ -148,7 +148,7 @@ class SuccinctUtils {
 
     // Try mapping with huge-pages support
     void *data = mmap(NULL, st.st_size, PROT_READ | PROT_WRITE,
-    MAP_PRIVATE | MAP_HUGETLB | MAP_POPULATE,
+                      MAP_SHARED | MAP_HUGETLB | MAP_POPULATE,
                       fd, 0);
 
     // Revert to mapping with huge page support in case mapping fails
@@ -157,7 +157,7 @@ class SuccinctUtils {
           stderr,
           "mmap with MAP_HUGETLB option failed; trying without MAP_HUGETLB flag...\n");
       data = mmap(NULL, st.st_size, PROT_READ | PROT_WRITE,
-      MAP_PRIVATE | MAP_POPULATE,
+                  MAP_SHARED | MAP_POPULATE,
                   fd, 0);
     }
     madvise(data, st.st_size, POSIX_MADV_RANDOM);
