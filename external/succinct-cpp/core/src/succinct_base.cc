@@ -281,6 +281,7 @@ size_t SuccinctBase::DeserializeBitmap(SuccinctBase::Bitmap **B,
       in.read(reinterpret_cast<char *>(&(*B)->bitmap[i]), sizeof(uint64_t));
       in_size += sizeof(uint64_t);
     }
+    memset((*B)->bitmap, BITS2BLOCKS(bitmap_size) * sizeof(uint64_t), 0);
   }
 
   return in_size;
@@ -297,6 +298,7 @@ size_t SuccinctBase::MemoryMapBitmap(SuccinctBase::Bitmap **B, uint8_t* buf) {
     (*B)->size = bitmap_size;
     (*B)->bitmap = (uint64_t*) data;
     uint64_t bitmap_size_bytes = (BITS2BLOCKS(bitmap_size) * sizeof(uint64_t));
+    memset((*B)->bitmap, bitmap_size_bytes, 0);
     data += bitmap_size_bytes;
   }
 
