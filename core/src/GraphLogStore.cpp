@@ -4,9 +4,6 @@
 
 void GraphLogStore::construct() {
   node_table_ = std::make_shared<KVLogStore>(4294967296ULL);
-  LOG_E("GraphLogStore: Constructing Edge table\n");
-  edge_table_.construct();
-  LOG_E("GraphLogStore: Edge table constructed\n");
 }
 
 void GraphLogStore::load() {
@@ -24,14 +21,7 @@ int64_t GraphLogStore::append_node(const std::vector<std::string>& attrs) {
 
 int GraphLogStore::append_edge(int64_t src, int64_t dst, int64_t atype,
                                int64_t timestamp, const std::string& attr) {
-  if (edge_table_.num_edges() >= max_num_edges_) {
-    LOG_E("append_edge failed: Edge table log store already has %d edges\n",
-          max_num_edges_);
-    return -1;
-  }
-
-  edge_table_.add_assoc(src, dst, atype, timestamp, attr);
-  return 0;
+  return !edge_table_.addLink(src, dst, atype, timestamp, attr);
 }
 
 void GraphLogStore::get_attribute(std::string& result, int64_t node_id,
@@ -162,8 +152,7 @@ int64_t GraphLogStore::addNode(const int64_t id, const std::string& data) {
   COND_LOG_E("Adding new node (id=%lld) to LogStore.\n", id);
   size_t distance = num_digits(data.length()) + 1;
   std::string value = std::to_string(distance)
-      + SuccinctGraph::NODE_TABLE_HEADER_DELIM
-      + std::to_string(data.length())
+      + SuccinctGraph::NODE_TABLE_HEADER_DELIM + std::to_string(data.length())
       + SuccinctGraph::NODE_TABLE_HEADER_DELIM
       + static_cast<char>(SuccinctGraph::DELIMITERS[0]) + data + "\n";
   return node_table_->insert(id, value);

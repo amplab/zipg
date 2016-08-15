@@ -63,27 +63,6 @@ class StructuredEdgeTable {
     return num_edges_;
   }
 
-//    template<class Archive>
-//    void serialize(Archive & ar, const unsigned int version) {
-//        // read class state from archive
-//        ar & edge_file_;
-//        for (auto it = edges.begin(); it != edges.end(); ++it) {
-//            int64_t key = it->first;
-//            auto& map = it->second;
-//            ar & key;
-//            for (auto it2 = map.begin(); it2 != map.end(); ++it2) {
-//                key = it2->first; // atype
-//                auto& vec = it2->second;
-//                ar & key;
-//                for (auto& edge_data : vec) {
-//                    ar & edge_data.dst;
-//                    ar & edge_data.timestamp;
-//                    ar & edge_data.attr;
-//                }
-//            }
-//        }
-//    }
-
   // LinkBench API
   typedef SuccinctGraph::Assoc Link;
 
@@ -97,7 +76,6 @@ class StructuredEdgeTable {
 
   bool deleteLink(int64_t id1, int64_t link_type, int64_t id2);
  private:
-
   typedef Link EdgeData;
 
   struct EdgeDataComparator {

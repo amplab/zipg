@@ -121,6 +121,15 @@ class SuccinctGraph {
     AType atype;  // 8 bytes
     Timestamp time;  // 8 bytes
     std::string attr;  // variable bytes
+
+    Assoc(NodeId id1, NodeId id2, AType link_type, Timestamp timestamp,
+          std::string& data)
+        : src_id(id1),
+          dst_id(id2),
+          atype(link_type),
+          time(timestamp),
+          attr(data) {
+    }
   };
 
   static bool cmp_assoc_by_decreasing_time(const Assoc &a, const Assoc &b) {

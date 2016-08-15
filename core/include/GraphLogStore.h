@@ -27,7 +27,6 @@ class GraphLogStore {
       : node_file_(node_file),
         edge_file_(edge_file),
         node_pointer_file(""),  // FIXME?
-        edge_table_(edge_file),
         node_table_(new KVLogStore(4294967296ULL)),  // FIXME: hard-coded
         max_num_edges_(3500000)  // FIXME: hard-coded
   {
@@ -63,7 +62,8 @@ class GraphLogStore {
                                                        int64_t atype,
                                                        int32_t off,
                                                        int32_t len) {
-    return edge_table_.assoc_range(src, atype, off, len);
+    std::vector<SuccinctGraph::Assoc> ret;
+    return edge_table_.getLinkList(ret, src, atype, 0, UINT_MAX, off, len);
   }
 
   void obj_get(std::vector<std::string>& result, int64_t obj_id);
@@ -71,11 +71,12 @@ class GraphLogStore {
   inline std::vector<SuccinctGraph::Assoc> assoc_get(
       int64_t src, int64_t atype, const std::set<int64_t>& dst_id_set,
       int64_t t_low, int64_t t_high) {
-    return edge_table_.assoc_get(src, atype, dst_id_set, t_low, t_high);
+    std::vector<SuccinctGraph::Assoc> ret;
+    return edge_table_.getLinkList(ret, src, atype, t_low, t_high, 0, UINT_MAX);
   }
 
   inline int64_t assoc_count(int64_t src, int64_t atype) {
-    return edge_table_.assoc_count(src, atype);
+    return edge_table_.countLinks(src, atype);
   }
 
   inline std::vector<SuccinctGraph::Assoc> assoc_time_range(int64_t src,
@@ -83,13 +84,13 @@ class GraphLogStore {
                                                             int64_t t_low,
                                                             int64_t t_high,
                                                             int32_t len) {
-    return edge_table_.assoc_time_range(src, atype, t_low, t_high, len);
+    std::vector<SuccinctGraph::Assoc> ret;
+    return edge_table_.getLinkList(ret, src, atype, t_low, t_high, 0, len);
   }
 
   inline void build_backfill_edge_updates(
       std::unordered_map<int, GraphFormatter::AssocSet>& edge_updates,
       int num_shards_to_mod) {
-    edge_table_.build_backfill_edge_updates(edge_updates, num_shards_to_mod);
   }
 
   inline int32_t num_digits(int64_t number) {
@@ -147,7 +148,7 @@ class GraphLogStore {
   std::string node_pointer_file;
 
   std::shared_ptr<KVLogStore> node_table_;
-  StructuredEdgeTable edge_table_;
+  EdgeLogStore edge_table_;
 
   const int max_num_edges_;  // bound per log store
 

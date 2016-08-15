@@ -1,89 +1,47 @@
 #ifndef KV_LOG_STORE_H
 #define KV_LOG_STORE_H
 
-// Succinct stuff
-#include "utils/definitions.h"
-#include "succinct_base.h"
-
-#include "utils.h"
-
-#include <boost/thread.hpp>
-#include <set>
-#include <string>
-#include <unordered_map>
-#include <vector>
-
-class Hash {
- public:
-  static const uint32_t K1 = 256;
-  static const uint32_t K2 = 65536;
-  static const uint32_t K3 = 16777216;
-
-  static uint32_t simple_hash2(const char* buf) {
-    return buf[0] * K1 + buf[1];
-  }
-
-  static uint32_t simple_hash3(const char* buf) {
-    return buf[0] * K2 + buf[1] * K1 + buf[2];
-  }
-
-  static uint32_t simple_hash4(const char* buf) {
-    return buf[0] * K3 + buf[1] * K2 + buf[2] * K1 + buf[3];
-  }
-};
+#include "slog/logstore.h"
 
 // LogStore with a key-value interface.
-// FIXME: search() has the prefix-match bug.
 class KVLogStore {
  public:
-  static const uint32_t kLogStoreSize = 125 * 1024 * 1024;  // 125MB
-  static const uint32_t kMaxKeys = 16384000;
-  typedef std::unordered_map<uint32_t, std::vector<uint32_t>> NGramIdx;
-
   KVLogStore(int64_t start_key) {
-    cur_key_ = start_key;
-    data_ = new char[kLogStoreSize];
+    start_key_ = start_key;
   }
 
   ~KVLogStore() {
-    if (data_ != nullptr) {
-      delete[] data_;
-    }
   }
 
   // Thread-safe for concurrent writes.
-  int64_t append(const std::string& value);
+  int64_t append(const std::string& value) {
+    return start_key_ + logstore_.insert(value);
+  }
 
-  int64_t insert(const int64_t key, const std::string& value);
+  int64_t insert(const int64_t key, const std::string& value) {
+    return logstore_.insert(key, value);
+  }
 
   // Clears `_return` for caller.
-  void search(std::set<int64_t> &_return, const std::string& substring);
+  void search(std::set<int64_t> &_return, const std::string& substring) {
+    logstore_.search(_return, substring);
+  }
 
   // Clears `value` for caller.
-  void get_value(std::string &value, uint64_t key);
+  void get_value(std::string &value, uint64_t key) {
+    char buf[2048];
+    bool success = logstore_.get(buf, key);
+    if (success)
+      value = std::string(buf);
+  }
 
-  bool remove(const int64_t key);
+  bool remove(const int64_t key) {
+    return logstore_.delete_record(key);
+  }
 
  private:
-  char* data_;
-
-  // Only for log store
-  uint64_t tail_ = static_cast<uint64_t>(0);
-
-  // Index to speed up searches
-  // Note: Index only works when logstore data is < 2GB; for larger log
-  // stores, switch to long offsets.
-  NGramIdx ngram_idx_;
-  uint32_t ngram_n_ = 3;
-
-  typedef std::map<int64_t, int32_t> FwdMap;
-  typedef std::map<int32_t, int64_t> BwdMap;
-  FwdMap k2v;
-  BwdMap v2k;
-
-  int64_t cur_key_;
-
-  boost::shared_mutex mutex_;
+  int64_t start_key_;
+  slog::log_store<16384000, 125*1024*1024, slog::udef_kvmap> logstore_;
 };
 
 #endif
