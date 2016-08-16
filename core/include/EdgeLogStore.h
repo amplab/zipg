@@ -43,7 +43,7 @@ struct edge_info {
     id2 = other.id2;
     timestamp = other.timestamp;
     data = other.data;
-    return this;
+    return *this;
   }
 };
 
