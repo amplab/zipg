@@ -3,7 +3,7 @@
 
 #include "GraphFormatter.hpp"
 #include "KVLogStore.h"
-#include "StructuredEdgeTable.h"
+#include "EdgeLogStore.h"
 
 #include <set>
 #include <string>
