@@ -16,7 +16,7 @@ class list_ops {
 
   // Atomically inserts a node in the list; if the key corresponding to the node
   // already exists, fails and returns.
-  static bool insert(node_ptr_t *head, node_ptr_t node, data_type *oval) {
+  static bool insert(node_ptr_t *head, node_ptr_t node, node_ptr_t *ocur) {
     so_key_t key = node->key;
 
     while (1) {
@@ -24,14 +24,14 @@ class list_ops {
       node_ptr_t cur;
 
       if (find(head, key, NULL, &lprev, &cur, NULL)) {  // needs to set cur/prev
-        if (oval)
-          *oval = cur->value;
+        if (ocur)
+          *ocur = cur;
         return false;
       }
       node->next = cur;
       if (CAS(lprev, node->next, node) == cur) {
-        if (oval)
-          *oval = cur->value;
+        if (ocur)
+          *ocur = cur;
         return true;
       }
     }

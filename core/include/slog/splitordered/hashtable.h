@@ -113,10 +113,10 @@ class hash_table {
     if (buckets_[bucket] == UNINITIALIZED)
       initialize_bucket(bucket);
 
-    data_type old_val;
-    if (!list_ops<data_type>::insert(&(buckets_[bucket]), node, &old_val)) {
+    node_ptr_t existing;
+    if (!list_ops<data_type>::insert(&(buckets_[bucket]), node, &existing)) {
       delete node;
-      value = old_val;
+      value = existing->value;
       return false;
     }
 
