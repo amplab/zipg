@@ -52,93 +52,9 @@ service GraphQueryAggregatorService {
           2: i32 local_shard, // one of this aggregator's shards
           3: list<ThriftSrcAtype> updates),
 
-      void record_node_append(
-          1: i32 next_shard,
-          2: i32 local_shard,
-          3: i64 obj),
-
-      // Primitive queries
-      string get_attribute(1: i64 nodeId, 2: i32 attrId),
-
-      string get_attribute_local(1: i64 shardId, 2: i64 nodeId, 3: i32 attrId),
-
-      list<i64> get_neighbors(1: i64 nodeId),
-
-      list<i64> get_neighbors_local(1: i32 shardId, 2: i64 nodeId),
-
-      list<i64> get_neighbors_atype(1: i64 nodeId, 2: i64 atype),
-
-      list<i64> get_neighbors_atype_local(
-          1: i32 shardId, 2: i64 nodeId, 3: i64 atype),
-
-      list<i64> get_neighbors_attr(
-          1: i64 nodeId, 2: i32 attrId, 3: string attrKey),
-
-      list<i64> get_neighbors_attr_local(
-          1: i32 shardId, 2: i64 nodeId, 3: i32 attrId, 4: string attrKey),
-
-      set<i64> get_nodes(1: i32 attrId, 2: string attrKey),
-
-      set<i64> get_nodes_local(1: i32 attrId, 2: string attrKey),
-
-      set<i64> get_nodes2(
-          1: i32 attrId1,
-          2: string attrKey1,
-          3: i32 attrId2,
-          4: string attrKey2),
-
-      set<i64> get_nodes2_local(
-          1: i32 attrId1,
-          2: string attrKey1,
-          3: i32 attrId2,
-          4: string attrKey2),
-
-      // The passed-in `nodeIds` are global keys that are guaranteed to only
-      // belong to shards under this aggregator.  On return, the keys are global.
-      list<i64> filter_nodes_local(
-          1: list<i64> nodeIds,
-          2: i32 attrId,
-          3: string attrKey),
-
-      list<string> get_edge_attrs(1: i64 nodeId, 2: i64 atype),
-      list<string> get_edge_attrs_local(
-          1: i32 shardId, 2: i64 nodeId, 3: i64 atype),
-
-      // TAO queries
-      list<ThriftAssoc> assoc_range(
-          1: i64 src, 2: i64 atype, 3: i32 off, 4: i32 len),
-
-      list<ThriftAssoc> assoc_range_local(
-          1: i32 shardId, 2: i64 src, 3: i64 atype, 4: i32 off, 5: i32 len),
-
       i64 assoc_count(1: i64 src, 2: i64 atype),
 
       i64 assoc_count_local(1: i32 shardId, 2: i64 src, 3: i64 atype),
-
-      list<ThriftAssoc> assoc_get(
-          1: i64 src, 2: i64 atype, 3: set<i64> dstIdSet,
-          4: i64 tLow, 5: i64 tHigh),
-
-      list<ThriftAssoc> assoc_get_local(
-          1: i32 shardId, 2: i64 src, 3: i64 atype,
-          4: set<i64> dstIdSet, 5: i64 tLow, 6: i64 tHigh),
-
-      i64 obj_add(1: list<string> attrs),
-
-      list<string> obj_get(1: i64 nodeId),
-
-      list<string> obj_get_local(1: i32 shardId, 2: i64 nodeId),
-
-      list<ThriftAssoc> assoc_time_range(
-          1: i64 src, 2: i64 atype,
-          3: i64 tLow, 4: i64 tHigh, 5: i32 limit),
-
-      list<ThriftAssoc> assoc_time_range_local(
-          1: i32 shardId, 2: i64 src, 3: i64 atype,
-          4: i64 tLow, 5: i64 tHigh, 6: i32 limit),
-
-      i32 assoc_add(
-          1: i64 src, 2: i64 atype, 3: i64 dst, 4: i64 time, 5: string attr),
 
       // LinkBench API
       string getNode(1: i64 id),
@@ -146,7 +62,7 @@ service GraphQueryAggregatorService {
 
       i64 addNode(1: i64 id, 2: string data),
       // i64 addNodeLocal(1: i64 shard_id, 2: i64 id, 3: string data),
-      
+
       bool deleteNode(1: i64 id),
       bool deleteNodeLocal(1: i64 shard_id, 2: i64 id),
 
@@ -157,7 +73,7 @@ service GraphQueryAggregatorService {
 
       bool addLink(1: ThriftAssoc link),
       // bool addLinkLocal(1: i64 shard_id, 2: ThriftAssoc link),
-      
+
       bool deleteLink(1: i64 id1, 2: i64 link_type, 3: i64 id2),
       bool deleteLinkLocal(1: i64 shard_id, 2: i64 id1, 3: i64 link_type, 4: i64 id2),
 
@@ -170,5 +86,4 @@ service GraphQueryAggregatorService {
       list<ThriftAssoc> getFilteredLinkListLocal(1: i64 shard_id, 2: i64 id1, 3: i64 link_type, 4: i64 min_timestamp, 5: i64 max_timestamp, 6: i64 offset, 7: i64 limit),
 
       i64 countLinks(1: i64 id1, 2: i64 link_type),
-
 }

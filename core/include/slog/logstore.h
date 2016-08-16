@@ -112,11 +112,7 @@ class log_store {
     uint32_t value_offset = current_tail & 0xFFFFFFFF, value_length = value
         .length();
 
-    // Throw an exception if internal key greater than the largest valid
-    // internal key or end of the value goes beyond maximum Log size.
-    if (internal_key >= MAX_KEYS)
-      throw -1;
-
+    // Throw an exception if end of the value goes beyond maximum Log size.
     if (value_offset + value_length >= LOG_SIZE)
       throw -2;
 
