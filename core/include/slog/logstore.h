@@ -114,8 +114,11 @@ class log_store {
 
     // Throw an exception if internal key greater than the largest valid
     // internal key or end of the value goes beyond maximum Log size.
-    if (internal_key >= MAX_KEYS || value_offset + value_length >= LOG_SIZE)
+    if (internal_key >= MAX_KEYS)
       throw -1;
+
+    if (value_offset + value_length >= LOG_SIZE)
+      throw -2;
 
     // We can add the new value offset to the value offsets array
     // and initialize its delete tail without worrying about locking,
