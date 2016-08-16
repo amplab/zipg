@@ -130,6 +130,21 @@ class SuccinctGraph {
           time(timestamp),
           attr(data) {
     }
+
+    Assoc() {
+      src_id = -1;
+      dst_id = -1;
+      atype = -1;
+      time = -1;
+    }
+
+    Assoc(const Assoc& other) {
+      src_id = other.src_id;
+      dst_id = other.dst_id;
+      atype = other.atype;
+      time = other.time;
+      attr = other.attr;
+    }
   };
 
   static bool cmp_assoc_by_decreasing_time(const Assoc &a, const Assoc &b) {

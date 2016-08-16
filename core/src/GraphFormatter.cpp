@@ -296,7 +296,7 @@ void GraphFormatter::make_rand_assoc(
        // UNSAFE: Augmented edges are assigned empty attribute value,
        // which is unsafe since the existing assoc lists likely already
        // have a positive edge attr width.
-       assoc = { src_id, dst_id, atype, 0, "" };
+       assoc = SuccinctGraph::Assoc(src_id, dst_id, atype, 0, "");
     }
 }
 
