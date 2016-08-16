@@ -32,7 +32,6 @@ class KVLogStore {
 
   // Clears `value` for caller.
   void get_value(std::string &value, uint64_t key) {
-    char buf[2048];
     bool success = logstore_.get(buf, key);
     if (success)
       value = std::string(buf);
@@ -43,8 +42,9 @@ class KVLogStore {
   }
 
  private:
+  char buf[4096];
   int64_t start_key_;
-  slog::log_store<16384000, 125*1024*1024, slog::udef_kvmap> logstore_;
+  slog::log_store<16384000, 125 * 1024 * 1024, slog::udef_kvmap> logstore_;
 };
 
 #endif
