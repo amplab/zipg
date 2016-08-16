@@ -19,7 +19,10 @@ class KVLogStore {
   }
 
   int64_t insert(const int64_t key, const std::string& value) {
-    return logstore_.insert(key, value);
+    bool success = logstore_.insert(key, value);
+    if (success)
+      return key;
+    return -1;
   }
 
   // Clears `_return` for caller.
