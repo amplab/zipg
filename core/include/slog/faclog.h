@@ -200,8 +200,8 @@ class faclog_consistent : public __faclog_base<T, NBUCKETS> {
     uint32_t hibit = bit_utils::highest_bit(pos);
     uint32_t bucket_off = pos ^ (1 << hibit);
     uint32_t bucket_idx = hibit - __faclog_base<T, NBUCKETS>::FBS_HIBIT;
-    if (buckets_[bucket_idx] == NULL)
-      try_allocate_bucket(bucket_idx);
+    if (__faclog_base<T, NBUCKETS>::buckets_[bucket_idx] == NULL)
+      __faclog_base<T, NBUCKETS>::try_allocate_bucket(bucket_idx);
     while (!std::atomic_compare_exchange_weak(&read_tail_, &idx, idx + 1))
       ;
     return idx;
