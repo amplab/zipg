@@ -424,8 +424,8 @@ class GraphShard {
   }
 
   bool addLink(const Link& link) {
-    SuccinctGraph::Assoc _link = { link.srcId, link.dstId, link.atype, link
-        .timestamp, link.attr };
+    SuccinctGraph::Assoc _link(link.srcId, link.dstId, link.atype,
+                               link.timestamp, link.attr);
 
     switch (store_mode_) {
       case StoreMode::SuccinctStore:
