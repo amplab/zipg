@@ -123,7 +123,7 @@ class SuccinctGraph {
     std::string attr;  // variable bytes
 
     Assoc(NodeId id1, NodeId id2, AType link_type, Timestamp timestamp,
-          std::string& data)
+          const std::string& data)
         : src_id(id1),
           dst_id(id2),
           atype(link_type),
