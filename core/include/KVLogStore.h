@@ -44,7 +44,7 @@ class KVLogStore {
  private:
   char buf[4096];
   int64_t start_key_;
-  slog::log_store<16384000, 125 * 1024 * 1024, slog::udef_kvmap> logstore_;
+  slog::log_store<536870912, UINT_MAX, slog::udef_kvmap> logstore_;
 };
 
 #endif
