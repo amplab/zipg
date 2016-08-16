@@ -36,6 +36,15 @@ struct edge_info {
     timestamp = other.timestamp;
     data = other.data;
   }
+
+  edge_info& edge_info::operator=(const edge_info& other) {
+    valid.store(other.valid.load());
+    link_type = other.link_type;
+    id2 = other.id2;
+    timestamp = other.timestamp;
+    data = other.data;
+    return this;
+  }
 };
 
 class EdgeLogStore {
