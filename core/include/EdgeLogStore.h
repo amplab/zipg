@@ -21,7 +21,7 @@ struct edge_info {
   }
 
   edge_info(int64_t link_type, int64_t id2, int64_t timestamp,
-            std::string& data) {
+            const std::string& data) {
     valid.store(true);
     this->link_type = link_type;
     this->id2 = id2;
@@ -66,7 +66,7 @@ class EdgeLogStore {
   }
 
   bool getLink(Link& link, int64_t id1, int64_t link_type, int64_t id2) {
-    auto& res = findLink(id1, link_type, id2);
+    auto res = findLink(id1, link_type, id2);
 
     if (res.first >= 0 && res.second >= 0) {
       edge_info& info = edge_records_[res.first][res.second];
@@ -141,7 +141,7 @@ class EdgeLogStore {
   }
 
   bool deleteLink(int64_t id1, int64_t link_type, int64_t id2) {
-    auto& res = findLink(id1, link_type, id2);
+    auto res = findLink(id1, link_type, id2);
 
     if (res.first >= 0 && res.second >= 0) {
       edge_records_[res.first][res.second].valid.store(false);

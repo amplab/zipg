@@ -63,7 +63,8 @@ class GraphLogStore {
                                                        int32_t off,
                                                        int32_t len) {
     std::vector<SuccinctGraph::Assoc> ret;
-    return edge_table_.getLinkList(ret, src, atype, 0, UINT_MAX, off, len);
+    edge_table_.getLinkList(ret, src, atype, 0, UINT_MAX, off, len);
+    return ret;
   }
 
   void obj_get(std::vector<std::string>& result, int64_t obj_id);
@@ -72,7 +73,8 @@ class GraphLogStore {
       int64_t src, int64_t atype, const std::set<int64_t>& dst_id_set,
       int64_t t_low, int64_t t_high) {
     std::vector<SuccinctGraph::Assoc> ret;
-    return edge_table_.getLinkList(ret, src, atype, t_low, t_high, 0, UINT_MAX);
+    edge_table_.getLinkList(ret, src, atype, t_low, t_high, 0, UINT_MAX);
+    return ret;
   }
 
   inline int64_t assoc_count(int64_t src, int64_t atype) {
@@ -85,7 +87,8 @@ class GraphLogStore {
                                                             int64_t t_high,
                                                             int32_t len) {
     std::vector<SuccinctGraph::Assoc> ret;
-    return edge_table_.getLinkList(ret, src, atype, t_low, t_high, 0, len);
+    edge_table_.getLinkList(ret, src, atype, t_low, t_high, 0, len);
+    return ret;
   }
 
   inline void build_backfill_edge_updates(
