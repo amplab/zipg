@@ -196,10 +196,10 @@ class faclog_consistent : public __faclog_base<T, NBUCKETS> {
 
   uint32_t advance_back() {
     uint32_t idx = std::atomic_fetch_add(&write_tail_, 1U);
-    uint32_t pos = idx + FBS;
+    uint32_t pos = idx + __faclog_base<T, NBUCKETS>::FBS;
     uint32_t hibit = bit_utils::highest_bit(pos);
     uint32_t bucket_off = pos ^ (1 << hibit);
-    uint32_t bucket_idx = hibit - FBS_HIBIT;
+    uint32_t bucket_idx = hibit - __faclog_base<T, NBUCKETS>::FBS_HIBIT;
     if (buckets_[bucket_idx] == NULL)
       try_allocate_bucket(bucket_idx);
     while (!std::atomic_compare_exchange_weak(&read_tail_, &idx, idx + 1))

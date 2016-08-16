@@ -9,7 +9,7 @@
 
 #include "defs.h"
 #include "listops.h"
-#include "utils.h"
+#include "../utils.h"
 
 namespace splitordered {
 
