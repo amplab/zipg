@@ -27,6 +27,7 @@ function setup() {
 
   if [ "$dataset" = "" ]; then
     echo "Must specify dataset"
+    exit -1
   fi
 
   node_file_raw=/mnt2/${dataset}/${dataset}.node
