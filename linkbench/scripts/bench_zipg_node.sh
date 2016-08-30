@@ -43,6 +43,6 @@ fi
 node_max_id=$(($numnodes + $node_id * 10000000 + 1))
 
 echo "Executing benchmark on node $node_id with $num_threads threads for the $dataset dataset [node_max_id=$node_max_id]"
-cmd="$sbin/../bin/linkbench -c $sbin/../config/LinkConfigSuccinct.properties -r -L $sbin/../zipg.t${num_threads}.q${query_type}.log -Drequesters=${num_threads} -Dhostname=$servername -Dnodeidoffset=$node_max_id $QOPTS"
+cmd="$sbin/../bin/linkbench -c $sbin/../config/LinkBenchConfigZipG.properties -r -L $sbin/../zipg.t${num_threads}.q${query_type}.log -Drequesters=${num_threads} -Dhostname=$servername -Dnodeidoffset=$node_max_id $QOPTS"
 echo $cmd
 $cmd
