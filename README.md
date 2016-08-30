@@ -94,7 +94,7 @@ Also, make sure you have passwordless ssh access to localhost.
 Finally, you can use scripts at `$ZIPG_HOME/linkbench/scripts` to run benchmarks. In particular, the following command should run the benchmark, provided the appropriate configuration parameters have been set:
 
 ```
-$ZIPG\_HOME/linkbench/scripts/bench\_zipg.sh <dataset-name>
+$ZIPG_HOME/linkbench/scripts/bench_zipg.sh <dataset-name>
 ```
 
 where `<dataset-name>` is the name of the dataset. The datasets used in the paper are available at `s3://succinct-datasets/linkbench/succinct`.
@@ -120,13 +120,13 @@ Use 10x m3.2xlarge `servers` for the distributed cluster; additionally a `master
 Now you can use the same scripts at `$ZIPG_HOME/linkbench/scripts` to run benchmarks on the distributed benchmarks, e.g.,
 
 ```bash
-$ZIPG\_HOME/linkbench/scripts/bench\_zipg.sh <dataset-name>
+$ZIPG_HOME/linkbench/scripts/bench_zipg.sh <dataset-name>
 ```
 
 where `<dataset-name>` is the name of the dataset. The datasets used in the paper are available at `s3://succinct-datasets/linkbench/succinct`. To download the required dataset, use the script `$ZIPG_HOME/scripts/download_data.sh` as follows:
 
 ```bash
-$ZIPG\_HOME/scripts/download\_data.sh <dataset-name>
+$ZIPG_HOME/scripts/download_data.sh <dataset-name>
 ```
 
 ## Contact
@@ -135,3 +135,5 @@ If you have any doubts or would like to report bugs, please contact us at:
 
 * anuragk [at] berkeley.edu
 * ragarwal [at] cornell.edu
+
+Please note that the repo is undergoing rapid changes, and there may be temporary inconsistencies in the instructions and the repo.
