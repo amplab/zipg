@@ -40,7 +40,7 @@ git clone https://github.com/anuragkh/zipg.git
 Use the following credentials: 
 
 username: vldbreviewer
-password: vldbreviewer
+password: vldbreviewer1
 
 2. Install dependencies
 
