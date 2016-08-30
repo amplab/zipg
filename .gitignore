@@ -71,3 +71,4 @@ data/
 **/CMakeFiles
 **/CMakeCache.txt
 */bin/
+succinct_graph
