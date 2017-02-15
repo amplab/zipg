@@ -66,6 +66,8 @@ external/neo4j*/data/
 *latency*txt*
 
 data/
+results/
+succinct_graph/
 
 # CMake
 **/CMakeFiles
