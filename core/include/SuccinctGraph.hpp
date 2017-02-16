@@ -222,6 +222,20 @@ class SuccinctGraph {
 
   bool deleteLink(int64_t id1, int64_t link_type, int64_t id2);
 
+  /**************** Path-Query API ****************/
+
+  typedef int64_t edge_label;
+  typedef std::pair<int64_t, int64_t> path_endpoints;
+
+  typedef struct {
+    bool inverse;
+    std::set<path_endpoints> end_points;
+  } RPQContext;
+
+  void init_rpq_ctx(edge_label label, RPQContext& ctx);
+
+  void advance_rpq_ctx(edge_label label, RPQContext& ctx);
+
   /**************** Fields ****************/
 
   // Succinct compression params: currently same for node table & edge table.
