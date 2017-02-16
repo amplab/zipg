@@ -508,6 +508,31 @@ class GraphShard {
     }
   }
 
+  void init_rpq_ctx(int64_t label, SuccinctGraph::RPQContext& ctx) {
+    switch (store_mode_) {
+      case StoreMode::SuccinctStore:
+        COND_LOG_E("init_rpq_ctx(...) on SuccinctStore shard.\n");
+        graph_->init_rpq_ctx(label, ctx);
+        break;
+      case StoreMode::LogStore:
+        // Do nothing;
+        break;
+    }
+  }
+
+  void advance_rpq_ctx(SuccinctGraph::RPQContext& ret, int64_t label,
+                       const SuccinctGraph::RPQContext& ctx) {
+    switch (store_mode_) {
+      case StoreMode::SuccinctStore:
+        COND_LOG_E("advance_rpq_ctx(...) on SuccinctStore shard.\n");
+        graph_->advance_rpq_ctx(ret, label, ctx);
+        break;
+      case StoreMode::LogStore:
+        // Do nothing;
+        break;
+    }
+  }
+
  private:
 
   // By default, StoreMode::SuccinctStore
@@ -621,6 +646,23 @@ class AsyncGraphShard : public GraphShard {
           getFilteredLinkList(res, id1, link_type, min_timestamp, max_timestamp, offset, limit);
           return res;
         });
+  }
+
+  std::future<SuccinctGraph::RPQContext> async_init_rpq_ctx(int64_t label) {
+    return pool_->enqueue([&] {
+      SuccinctGraph::RPQContext ctx;
+      init_rpq_ctx(label, ctx);
+      return ctx;
+    });
+  }
+
+  std::future<SuccinctGraph::RPQContext> async_advance_rpq_ctx(
+      int64_t label, const SuccinctGraph::RPQContext& ctx) {
+    return pool_->enqueue([&] {
+      SuccinctGraph::RPQContext ret;
+      advance_rpq_ctx(ret, label, ctx);
+      return ret;
+    });
   }
 
   // TODO: Add more async functions

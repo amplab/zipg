@@ -234,7 +234,7 @@ class SuccinctGraph {
 
   void init_rpq_ctx(edge_label label, RPQContext& ctx);
 
-  void advance_rpq_ctx(edge_label label, RPQContext& ctx);
+  void advance_rpq_ctx(RPQContext& ret, edge_label label, const RPQContext& ctx);
 
   /**************** Fields ****************/
 

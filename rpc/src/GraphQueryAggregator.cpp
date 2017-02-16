@@ -1516,6 +1516,148 @@ class GraphQueryAggregatorServiceHandler :
     return assoc_count(id1, link_type);
   }
 
+  // RPQ API
+
+  void rpq(RPQCtx& _return, const std::vector<int64_t> & query) {
+
+    for (int i = 0; i < total_num_hosts_; ++i) {
+      if (i == local_host_id_) {
+        continue;
+      }
+      aggregators_.at(i).send_rpq_local(query);
+    }
+
+    rpq_local(_return, query);
+    for (int i = 0; i < total_num_hosts_; ++i) {
+      if (i == local_host_id_) {
+        continue;
+      }
+      RPQCtx ret;
+      aggregators_.at(i).recv_rpq_local(ret);
+      _return.endpoints.insert(_return.endpoints.end(), ret.endpoints.begin(),
+                               ret.endpoints.end());
+    }
+  }
+
+  void rpq_local(RPQCtx& _return, const std::vector<int64_t> & query) {
+    if (query.empty())
+      return;
+
+    // Initialize the RPQCtx
+    typedef std::future<SuccinctGraph::RPQContext> future_t;
+    std::vector<future_t> futures;
+    for (auto& shard : local_shards_) {
+      auto future = shard->async_init_rpq_ctx(query.front());
+      futures.push_back(std::move(future));
+    }
+
+    // Segregate local ctxs based on next hop
+    std::vector<RPQCtx> host_ctx(total_num_hosts_);
+    for (auto& future : futures) {
+      auto res = future.get();
+      for (auto ep : res.end_points) {
+        int shard_id = ep.second % total_num_shards_;
+        int host_id = shard_id % total_num_hosts_;
+        host_ctx[host_id].endpoints.push_back(pair2path(ep));
+      }
+    }
+
+    if (query.size() > 1) {
+      // If there are more hops in the query,
+      // Create new query with first label popped out
+      std::vector<int64_t> rem_query(query.begin() + 1, query.end());
+
+      // Send out advance requests to next hops
+      for (int i = 0; i < total_num_hosts_; ++i) {
+        if (i == local_host_id_) {
+          continue;
+        }
+        aggregators_.at(i).send_advance_rpq_ctx(rem_query, host_ctx[i]);
+      }
+
+      advance_rpq_ctx(_return, rem_query, host_ctx[local_host_id_]);
+
+      for (int i = 0; i < total_num_hosts_; ++i) {
+        if (i == local_host_id_) {
+          continue;
+        }
+        RPQCtx ret;
+        aggregators_.at(i).recv_advance_rpq_ctx(ret);
+        _return.endpoints.insert(_return.endpoints.end(), ret.endpoints.begin(),
+                                 ret.endpoints.end());
+      }
+    } else {
+      for (int i = 0; i < total_num_hosts_; ++i) {
+        _return.endpoints.insert(_return.endpoints.end(),
+                                 host_ctx[i].endpoints.begin(),
+                                 host_ctx[i].endpoints.end());
+      }
+    }
+  }
+
+  void advance_rpq_ctx(RPQCtx& _return, const std::vector<int64_t> & query,
+                       const RPQCtx& ctx) {
+    if (query.empty())
+      return;
+
+    int64_t label = query.front();
+
+    // Perform local advance
+    typedef std::future<SuccinctGraph::RPQContext> future_t;
+    std::vector<future_t> futures;
+    std::vector<SuccinctGraph::RPQContext> local_ctx;
+    segregate_ctx(local_ctx, ctx);
+    for (size_t i = 0; i < local_shards_.size(); i++) {
+      auto& shard = local_shards_[i];
+      auto& shard_ctx = local_ctx[i];
+      auto future = shard->async_advance_rpq_ctx(query.front(), shard_ctx);
+      futures.push_back(std::move(future));
+    }
+
+    // Segregate local ctxs based on next hop
+    std::vector<RPQCtx> host_ctx(total_num_hosts_);
+    for (auto& future : futures) {
+      auto res = future.get();
+      for (auto ep : res.end_points) {
+        int shard_id = ep.second % total_num_shards_;
+        int host_id = shard_id % total_num_hosts_;
+        host_ctx[host_id].endpoints.push_back(pair2path(ep));
+      }
+    }
+
+    if (query.size() > 1) {
+      // If there are more hops in the query,
+      // Create new query with first label popped out
+      std::vector<int64_t> rem_query(query.begin() + 1, query.end());
+
+      // Send out advance requests to next hops
+      for (int i = 0; i < total_num_hosts_; ++i) {
+        if (i == local_host_id_) {
+          continue;
+        }
+        aggregators_.at(i).send_advance_rpq_ctx(rem_query, host_ctx[i]);
+      }
+
+      advance_rpq_ctx(_return, rem_query, host_ctx[local_host_id_]);
+
+      for (int i = 0; i < total_num_hosts_; ++i) {
+        if (i == local_host_id_) {
+          continue;
+        }
+        RPQCtx ret;
+        aggregators_.at(i).recv_advance_rpq_ctx(ret);
+        _return.endpoints.insert(_return.endpoints.end(), ret.endpoints.begin(),
+                                 ret.endpoints.end());
+      }
+    } else {
+      for (int i = 0; i < total_num_hosts_; ++i) {
+        _return.endpoints.insert(_return.endpoints.end(),
+                                 host_ctx[i].endpoints.begin(),
+                                 host_ctx[i].endpoints.end());
+      }
+    }
+  }
+
  private:
 
 // globalKey = localKey * numShards + shardId

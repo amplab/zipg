@@ -1648,9 +1648,9 @@ void SuccinctGraph::init_rpq_ctx(SuccinctGraph::edge_label label,
   }
 }
 
-void SuccinctGraph::advance_rpq_ctx(SuccinctGraph::edge_label label,
-                                    SuccinctGraph::RPQContext& ctx) {
-  std::set<SuccinctGraph::path_endpoints> new_endpoints;
+void SuccinctGraph::advance_rpq_ctx(SuccinctGraph::RPQContext& ret,
+                                    SuccinctGraph::edge_label label,
+                                    const SuccinctGraph::RPQContext& ctx) {
   for (SuccinctGraph::path_endpoints ep : ctx.end_points) {
     int64_t id = ep.second;
     std::string search_key = mk_edge_table_search_key(id, label);
@@ -1691,9 +1691,7 @@ void SuccinctGraph::advance_rpq_ctx(SuccinctGraph::edge_label label,
           SuccinctGraphSerde::decode_multi_node_ids(str, dst_id_width);
 
       for (int64_t dst : decoded_dst_ids)
-        new_endpoints.insert(SuccinctGraph::path_endpoints(ep.first, dst));
+        ret.end_points.insert(SuccinctGraph::path_endpoints(ep.first, dst));
     }
   }
-  ctx.end_points.clear();
-  ctx.end_points = new_endpoints;
 }
