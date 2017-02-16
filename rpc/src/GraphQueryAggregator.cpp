@@ -1518,11 +1518,11 @@ class GraphQueryAggregatorServiceHandler :
 
   // RPQ API
   void rpq(RPQCtx& _return, const std::vector<int64_t> & query) {
-
+    COND_LOG_E("Recieved rpq(...) request\n");
     for (int i = 0; i < total_num_hosts_; ++i) {
       if (i == local_host_id_) {
         continue;
-      }
+      } COND_LOG_E("Forwarding to rpq to aggregator %d\n", i);
       aggregators_.at(i).send_rpq_local(query);
     }
 
@@ -1532,20 +1532,27 @@ class GraphQueryAggregatorServiceHandler :
         continue;
       }
       RPQCtx ret;
+      COND_LOG_E("Receiving rpq response from aggregator %d\n", i);
       aggregators_.at(i).recv_rpq_local(ret);
+
+      COND_LOG_E("Aggregating rpq response from aggregator %d\n", i);
       _return.endpoints.insert(_return.endpoints.end(), ret.endpoints.begin(),
                                ret.endpoints.end());
     }
   }
 
   void rpq_local(RPQCtx& _return, const std::vector<int64_t> & query) {
+
+    COND_LOG_E("Recieved rpq_local(...) request\n");
     if (query.empty())
       return;
 
     // Initialize the RPQCtx
+    COND_LOG_E("Initializing rpq ctx\n");
     typedef std::future<SuccinctGraph::RPQContext> future_t;
     std::vector<future_t> futures;
     for (auto& shard : local_shards_) {
+      COND_LOG_E("Creating future for local shard...\n");
       auto future = shard->async_init_rpq_ctx(query.front());
       futures.push_back(std::move(future));
     }
@@ -1553,24 +1560,31 @@ class GraphQueryAggregatorServiceHandler :
     // Segregate local ctxs based on next hop
     std::vector<RPQCtx> host_ctx(total_num_hosts_);
     for (auto& future : futures) {
+      COND_LOG_E("Getting res local shard...\n");
       auto res = future.get();
+
+      COND_LOG_E("Segregating local results...\n");
       for (auto ep : res.end_points) {
         int shard_id = ep.second % total_num_shards_;
         int host_id = shard_id % total_num_hosts_;
         host_ctx[host_id].endpoints.push_back(pair2path(ep));
-      }
+      } COND_LOG_E("Done segregating local results.\n");
     }
 
     if (query.size() > 1) {
+      COND_LOG_E("More hops left, extracting remaining query...\n");
+
       // If there are more hops in the query,
       // Create new query with first label popped out
       std::vector<int64_t> rem_query(query.begin() + 1, query.end());
+
+      COND_LOG_E("Remaining query size = %zu\n", rem_query.size());
 
       // Send out advance requests to next hops
       for (int i = 0; i < total_num_hosts_; ++i) {
         if (i == local_host_id_) {
           continue;
-        }
+        } COND_LOG_E("Sending advance ctx request to aggregator %d\n", i);
         aggregators_.at(i).send_advance_rpq_ctx(rem_query, host_ctx[i]);
       }
 
@@ -1581,11 +1595,15 @@ class GraphQueryAggregatorServiceHandler :
           continue;
         }
         RPQCtx ret;
+        COND_LOG_E("Receiving advance_ctx response from aggregator %d\n", i);
         aggregators_.at(i).recv_advance_rpq_ctx(ret);
+
+        COND_LOG_E("Aggregating advance_ctx response from aggregator %d\n", i);
         _return.endpoints.insert(_return.endpoints.end(), ret.endpoints.begin(),
                                  ret.endpoints.end());
       }
     } else {
+      COND_LOG_E("No more hops left in query, aggregating local results\n");
       for (int i = 0; i < total_num_hosts_; ++i) {
         _return.endpoints.insert(_return.endpoints.end(),
                                  host_ctx[i].endpoints.begin(),
@@ -1596,12 +1614,17 @@ class GraphQueryAggregatorServiceHandler :
 
   void advance_rpq_ctx(RPQCtx& _return, const std::vector<int64_t> & query,
                        const RPQCtx& ctx) {
+
+    COND_LOG_E("Received advance_rpq_ctx(...) request\n");
+
     if (query.empty())
       return;
 
     int64_t label = query.front();
+    COND_LOG_E("Current label = %lld\n", label);
 
     // Perform local advance
+    COND_LOG_E("Performing local advance...\n");
     typedef std::future<SuccinctGraph::RPQContext> future_t;
     std::vector<future_t> futures;
     std::vector<SuccinctGraph::RPQContext> local_ctx;
@@ -1609,6 +1632,7 @@ class GraphQueryAggregatorServiceHandler :
     for (size_t i = 0; i < local_shards_.size(); i++) {
       auto& shard = local_shards_[i];
       auto& shard_ctx = local_ctx[i];
+      COND_LOG_E("Creating future for local shard...\n");
       auto future = shard->async_advance_rpq_ctx(query.front(), shard_ctx);
       futures.push_back(std::move(future));
     }
@@ -1616,7 +1640,10 @@ class GraphQueryAggregatorServiceHandler :
     // Segregate local ctxs based on next hop
     std::vector<RPQCtx> host_ctx(total_num_hosts_);
     for (auto& future : futures) {
+      COND_LOG_E("Getting res local shard...\n");
       auto res = future.get();
+
+      COND_LOG_E("Segregating local results...\n");
       for (auto ep : res.end_points) {
         int shard_id = ep.second % total_num_shards_;
         int host_id = shard_id % total_num_hosts_;
@@ -1625,15 +1652,19 @@ class GraphQueryAggregatorServiceHandler :
     }
 
     if (query.size() > 1) {
+      COND_LOG_E("More hops left, extracting remaining query...\n");
+
       // If there are more hops in the query,
       // Create new query with first label popped out
       std::vector<int64_t> rem_query(query.begin() + 1, query.end());
+
+      COND_LOG_E("Remaining query size = %zu\n", rem_query.size());
 
       // Send out advance requests to next hops
       for (int i = 0; i < total_num_hosts_; ++i) {
         if (i == local_host_id_) {
           continue;
-        }
+        } COND_LOG_E("Sending advance ctx request to aggregator %d\n", i);
         aggregators_.at(i).send_advance_rpq_ctx(rem_query, host_ctx[i]);
       }
 
@@ -1644,11 +1675,15 @@ class GraphQueryAggregatorServiceHandler :
           continue;
         }
         RPQCtx ret;
+        COND_LOG_E("Receiving advance_ctx response from aggregator %d\n", i);
         aggregators_.at(i).recv_advance_rpq_ctx(ret);
+
+        COND_LOG_E("Aggregating advance_ctx response from aggregator %d\n", i);
         _return.endpoints.insert(_return.endpoints.end(), ret.endpoints.begin(),
                                  ret.endpoints.end());
       }
     } else {
+      COND_LOG_E("No more hops left in query, aggregating local results\n");
       for (int i = 0; i < total_num_hosts_; ++i) {
         _return.endpoints.insert(_return.endpoints.end(),
                                  host_ctx[i].endpoints.begin(),
@@ -1669,6 +1704,8 @@ class GraphQueryAggregatorServiceHandler :
 
   void segregate_ctx(std::vector<SuccinctGraph::RPQContext>& ret,
                      const RPQCtx& ctx) {
+
+    COND_LOG_E("Segregating input ctx into shard-local ctxs...\n");
     for (auto ep : ctx.endpoints) {
       int shard_id = ep.dst % total_num_shards_;
       int shard_idx = shard_id_to_shard_idx(shard_id);
@@ -1677,7 +1714,7 @@ class GraphQueryAggregatorServiceHandler :
               && "shard_idx >= local_shards_.size()");
       ret[shard_idx].end_points.insert(
           SuccinctGraph::path_endpoints(ep.src, ep.dst));
-    }
+    } COND_LOG_E("Done segregating input ctx into shard-local ctxs.\n");
   }
 
 // globalKey = localKey * numShards + shardId
