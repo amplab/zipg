@@ -1517,7 +1517,6 @@ class GraphQueryAggregatorServiceHandler :
   }
 
   // RPQ API
-
   void rpq(RPQCtx& _return, const std::vector<int64_t> & query) {
 
     for (int i = 0; i < total_num_hosts_; ++i) {
