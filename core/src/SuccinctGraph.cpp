@@ -82,8 +82,6 @@ void SuccinctGraph::load_edge_table(std::string edge_succinct_dir) {
 #else
   edge_table = new SuccinctFile(edge_succinct_dir,
                                 SuccinctMode::LOAD_MEMORY_MAPPED);
-  // Deserialize deleted edges bitmap
-  load_deleted_edges(edge_succinct_dir + ".deletes");
 #endif
   LOG_E("Done SuccinctGraph::load_edge_table\n");
 }

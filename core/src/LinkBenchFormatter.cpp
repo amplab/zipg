@@ -112,18 +112,19 @@ int32_t num_digits(int64_t number) {
 }
 
 int main(int argc, char** argv) {
-  if (argc != 3) {
-    fprintf(stderr, "Usage: %s [input prefix] [output prefix]\n", argv[0]);
+  if (argc != 4) {
+    fprintf(stderr, "Usage: %s [input prefix] [output prefix] [suffix]\n", argv[0]);
     return -1;
   }
 
   std::string input_prefix = std::string(argv[1]);
   std::string output_prefix = std::string(argv[2]);
+  std::string suffix = std::string(argv[3]);
 
-  std::string node_file_in = input_prefix + ".node";
-  std::string edge_file_in = input_prefix + ".assoc";
-  std::string node_file_out = output_prefix + ".node";
-  std::string edge_file_out = output_prefix + ".assoc";
+  std::string node_file_in = input_prefix + ".node" + suffix;
+  std::string edge_file_in = input_prefix + ".assoc" + suffix;
+  std::string node_file_out = output_prefix + ".node" + suffix;
+  std::string edge_file_out = output_prefix + ".assoc" + suffix;
 
   typedef SuccinctGraph::Assoc Assoc;
   typedef SuccinctGraph::AType AType;
@@ -155,11 +156,9 @@ int main(int argc, char** argv) {
     build_assoc_map(assoc_map, edge_file_in);
 
     std::ofstream edge_out(edge_file_out);
-    std::ofstream edge_deletes_out(edge_file_out + ".deletes");
+
     // Output total number of edge records in the shard
     size_t num_edge_records = assoc_map.size();
-    edge_deletes_out.write(reinterpret_cast<const char *>(&num_edge_records),
-                           sizeof(size_t));
 
     int64_t max_dst_id = -1, max_timestamp = -1;
 
@@ -171,16 +170,6 @@ int main(int argc, char** argv) {
       edge_out << SuccinctGraph::ATYPE_DELIM << src_id_and_atype.second;
 
       std::vector<Assoc> assoc_list = it->second;
-
-      // Write deletes bitmap to file
-      edge_deletes_out.write(
-          reinterpret_cast<const char *>(&src_id_and_atype.first),
-          sizeof(int64_t));
-      edge_deletes_out.write(
-          reinterpret_cast<const char *>(&src_id_and_atype.second),
-          sizeof(int64_t));
-      bitmap::Bitmap invalid_edges(assoc_list.size());
-      invalid_edges.Serialize(edge_deletes_out, assoc_list.size());
 
       max_dst_id = max_timestamp = -1;
       for (auto it2 = assoc_list.begin(); it2 != assoc_list.end(); ++it2) {
@@ -243,7 +232,6 @@ int main(int argc, char** argv) {
 
     edge_out << "\n";
     edge_out.close();
-    edge_deletes_out.close();
   }
 
   return 0;
