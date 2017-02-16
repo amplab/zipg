@@ -1806,7 +1806,7 @@ std::string node_part_name(std::string base_path, int32_t shard_id,
   std::string max = std::to_string(num_shards);
   std::stringstream node_part;
   node_part << base_path << "-part" << std::setfill('0')
-            << std::setw(max.length()) << shard_id << "of" << max << "WithPtrs";
+            << std::setw(max.length()) << shard_id << "of" << max;
   return node_part.str();
 }
 
