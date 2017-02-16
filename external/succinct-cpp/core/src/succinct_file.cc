@@ -188,6 +188,15 @@ void SuccinctFile::Search(std::vector<int64_t>& result, const std::string& str)
   }
 }
 
+int64_t SuccinctFile::Search(const std::string& str)
+{
+  std::pair<int64_t, int64_t> range = GetRange(str.c_str(), str.length());
+  if (range.first > range.second)
+    return -1;
+
+  return (int64_t) LookupSA(range.first);
+}
+
 void SuccinctFile::RegexSearch(std::set<std::pair<size_t, size_t>>& results,
                                const std::string& query) {
   SRegEx re(query, this, true);

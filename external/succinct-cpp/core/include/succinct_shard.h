@@ -133,6 +133,10 @@ class SuccinctShard : public SuccinctCore {
   // Get succinct shard size
   virtual size_t StorageSize();
 
+  std::vector<int64_t>* GetKeys() {
+    return &keys_;
+  }
+
  protected:
   int64_t GetKeyPos(const int64_t value_offset);
   int64_t GetValueOffsetPos(const int64_t key);

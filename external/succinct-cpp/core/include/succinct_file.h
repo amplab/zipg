@@ -46,6 +46,8 @@ class SuccinctFile : public SuccinctCore {
    */
   void Search(std::vector<int64_t>& result, const std::string& str);
 
+  int64_t Search(const std::string& str);
+
   /*
    * Get the offsets corresponding to matches of regex.
    */
