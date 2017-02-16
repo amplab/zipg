@@ -1877,9 +1877,7 @@ void crit_err_hdlr(int sig_num, siginfo_t * info, void * ucontext) {
   void * caller_address;
   char ** messages;
   int size, i;
-  sig_ucontext_t * uc;
-
-  uc = (sig_ucontext_t *) ucontext;
+  sig_ucontext_t * uc = (sig_ucontext_t *) ucontext;
 
   /* Get the address at the time the signal was raised */
 #if defined(__i386__) // gcc specific
@@ -1894,15 +1892,12 @@ void crit_err_hdlr(int sig_num, siginfo_t * info, void * ucontext) {
             << "), address is " << info->si_addr << " from " << caller_address
             << std::endl;
 
-  void * array[50];
-  int size = backtrace(array, 50);
-
+  size = backtrace(array, 50);
   array[1] = caller_address;
-
-  char ** messages = backtrace_symbols(array, size);
+  messages = backtrace_symbols(array, size);
 
   // skip first stack frame (points here)
-  for (int i = 1; i < size && messages != NULL; ++i) {
+  for (i = 1; i < size && messages != NULL; ++i) {
     char *mangled_name = 0, *offset_begin = 0, *offset_end = 0;
 
     // find parantheses and +address offset surrounding mangled name
