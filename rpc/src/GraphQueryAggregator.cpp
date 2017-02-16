@@ -1659,6 +1659,27 @@ class GraphQueryAggregatorServiceHandler :
 
  private:
 
+  // RPQ Helpers
+  inline Path pair2path(std::pair<int64_t, int64_t> x) {
+    Path p;
+    p.src = x.first;
+    p.dst = x.second;
+    return p;
+  }
+
+  void segregate_ctx(std::vector<SuccinctGraph::RPQContext>& ret,
+                     const RPQCtx& ctx) {
+    for (auto ep : ctx.endpoints) {
+      int shard_id = ep.dst % total_num_shards_;
+      int shard_idx = shard_id_to_shard_idx(shard_id);
+      assert(
+          shard_idx < local_shards_.size()
+              && "shard_idx >= local_shards_.size()");
+      ret[shard_idx].end_points.insert(
+          SuccinctGraph::path_endpoints(ep.src, ep.dst));
+    }
+  }
+
 // globalKey = localKey * numShards + shardId
 // localKey = (globalKey - shardId) / numShards
   inline int64_t global_to_local_node_id(int64_t global_node_id, int shard_id) {
