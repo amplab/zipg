@@ -136,7 +136,7 @@ class RPQParser {
     rtrim(exp);
     recurse_ = false;
     if (exp.back() == '*') {
-      recurse_ = true;
+      // recurse_ = true;
       exp.back() = ' ';
     }
     lex_.str(exp);
