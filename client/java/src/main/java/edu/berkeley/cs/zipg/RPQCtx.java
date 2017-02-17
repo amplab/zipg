@@ -11,12 +11,12 @@ package edu.berkeley.cs.zipg;
 public class RPQCtx implements org.apache.thrift.TBase<RPQCtx, RPQCtx._Fields>, java.io.Serializable, Cloneable, Comparable<RPQCtx> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("RPQCtx");
 
-  private static final org.apache.thrift.protocol.TField ENDPOINTS_FIELD_DESC = new org.apache.thrift.protocol.TField("endpoints", org.apache.thrift.protocol.TType.LIST, (short)1);
+  private static final org.apache.thrift.protocol.TField ENDPOINTS_FIELD_DESC = new org.apache.thrift.protocol.TField("endpoints", org.apache.thrift.protocol.TType.SET, (short)1);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new RPQCtxStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new RPQCtxTupleSchemeFactory();
 
-  public java.util.List<Path> endpoints; // required
+  public java.util.Set<Path> endpoints; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -81,7 +81,7 @@ public class RPQCtx implements org.apache.thrift.TBase<RPQCtx, RPQCtx._Fields>, 
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.ENDPOINTS, new org.apache.thrift.meta_data.FieldMetaData("endpoints", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+        new org.apache.thrift.meta_data.SetMetaData(org.apache.thrift.protocol.TType.SET, 
             new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Path.class))));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(RPQCtx.class, metaDataMap);
@@ -91,7 +91,7 @@ public class RPQCtx implements org.apache.thrift.TBase<RPQCtx, RPQCtx._Fields>, 
   }
 
   public RPQCtx(
-    java.util.List<Path> endpoints)
+    java.util.Set<Path> endpoints)
   {
     this();
     this.endpoints = endpoints;
@@ -102,7 +102,7 @@ public class RPQCtx implements org.apache.thrift.TBase<RPQCtx, RPQCtx._Fields>, 
    */
   public RPQCtx(RPQCtx other) {
     if (other.isSetEndpoints()) {
-      java.util.List<Path> __this__endpoints = new java.util.ArrayList<Path>(other.endpoints.size());
+      java.util.Set<Path> __this__endpoints = new java.util.HashSet<Path>(other.endpoints.size());
       for (Path other_element : other.endpoints) {
         __this__endpoints.add(new Path(other_element));
       }
@@ -129,16 +129,16 @@ public class RPQCtx implements org.apache.thrift.TBase<RPQCtx, RPQCtx._Fields>, 
 
   public void addToEndpoints(Path elem) {
     if (this.endpoints == null) {
-      this.endpoints = new java.util.ArrayList<Path>();
+      this.endpoints = new java.util.HashSet<Path>();
     }
     this.endpoints.add(elem);
   }
 
-  public java.util.List<Path> getEndpoints() {
+  public java.util.Set<Path> getEndpoints() {
     return this.endpoints;
   }
 
-  public RPQCtx setEndpoints(java.util.List<Path> endpoints) {
+  public RPQCtx setEndpoints(java.util.Set<Path> endpoints) {
     this.endpoints = endpoints;
     return this;
   }
@@ -164,7 +164,7 @@ public class RPQCtx implements org.apache.thrift.TBase<RPQCtx, RPQCtx._Fields>, 
       if (value == null) {
         unsetEndpoints();
       } else {
-        setEndpoints((java.util.List<Path>)value);
+        setEndpoints((java.util.Set<Path>)value);
       }
       break;
 
@@ -320,18 +320,18 @@ public class RPQCtx implements org.apache.thrift.TBase<RPQCtx, RPQCtx._Fields>, 
         }
         switch (schemeField.id) {
           case 1: // ENDPOINTS
-            if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
+            if (schemeField.type == org.apache.thrift.protocol.TType.SET) {
               {
-                org.apache.thrift.protocol.TList _list0 = iprot.readListBegin();
-                struct.endpoints = new java.util.ArrayList<Path>(_list0.size);
+                org.apache.thrift.protocol.TSet _set0 = iprot.readSetBegin();
+                struct.endpoints = new java.util.HashSet<Path>(2*_set0.size);
                 Path _elem1;
-                for (int _i2 = 0; _i2 < _list0.size; ++_i2)
+                for (int _i2 = 0; _i2 < _set0.size; ++_i2)
                 {
                   _elem1 = new Path();
                   _elem1.read(iprot);
                   struct.endpoints.add(_elem1);
                 }
-                iprot.readListEnd();
+                iprot.readSetEnd();
               }
               struct.setEndpointsIsSet(true);
             } else { 
@@ -356,12 +356,12 @@ public class RPQCtx implements org.apache.thrift.TBase<RPQCtx, RPQCtx._Fields>, 
       if (struct.endpoints != null) {
         oprot.writeFieldBegin(ENDPOINTS_FIELD_DESC);
         {
-          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.endpoints.size()));
+          oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRUCT, struct.endpoints.size()));
           for (Path _iter3 : struct.endpoints)
           {
             _iter3.write(oprot);
           }
-          oprot.writeListEnd();
+          oprot.writeSetEnd();
         }
         oprot.writeFieldEnd();
       }
@@ -404,10 +404,10 @@ public class RPQCtx implements org.apache.thrift.TBase<RPQCtx, RPQCtx._Fields>, 
       java.util.BitSet incoming = iprot.readBitSet(1);
       if (incoming.get(0)) {
         {
-          org.apache.thrift.protocol.TList _list5 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.endpoints = new java.util.ArrayList<Path>(_list5.size);
+          org.apache.thrift.protocol.TSet _set5 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.endpoints = new java.util.HashSet<Path>(2*_set5.size);
           Path _elem6;
-          for (int _i7 = 0; _i7 < _list5.size; ++_i7)
+          for (int _i7 = 0; _i7 < _set5.size; ++_i7)
           {
             _elem6 = new Path();
             _elem6.read(iprot);

@@ -112,6 +112,8 @@ public class GraphQueryAggregatorService {
 
     public long countLinks(long id1, long link_type) throws org.apache.thrift.TException;
 
+    public RPQCtx rpq(RPQuery query) throws org.apache.thrift.TException;
+
     public RPQCtx path_query(java.util.List<java.lang.Long> query) throws org.apache.thrift.TException;
 
     public RPQCtx path_query_local(java.util.List<java.lang.Long> query) throws org.apache.thrift.TException;
@@ -221,6 +223,8 @@ public class GraphQueryAggregatorService {
     public void getFilteredLinkListLocal(long shard_id, long id1, long link_type, long min_timestamp, long max_timestamp, long offset, long limit, org.apache.thrift.async.AsyncMethodCallback<java.util.List<ThriftAssoc>> resultHandler) throws org.apache.thrift.TException;
 
     public void countLinks(long id1, long link_type, org.apache.thrift.async.AsyncMethodCallback<java.lang.Long> resultHandler) throws org.apache.thrift.TException;
+
+    public void rpq(RPQuery query, org.apache.thrift.async.AsyncMethodCallback<RPQCtx> resultHandler) throws org.apache.thrift.TException;
 
     public void path_query(java.util.List<java.lang.Long> query, org.apache.thrift.async.AsyncMethodCallback<RPQCtx> resultHandler) throws org.apache.thrift.TException;
 
@@ -1473,6 +1477,29 @@ public class GraphQueryAggregatorService {
         return result.success;
       }
       throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "countLinks failed: unknown result");
+    }
+
+    public RPQCtx rpq(RPQuery query) throws org.apache.thrift.TException
+    {
+      send_rpq(query);
+      return recv_rpq();
+    }
+
+    public void send_rpq(RPQuery query) throws org.apache.thrift.TException
+    {
+      rpq_args args = new rpq_args();
+      args.setQuery(query);
+      sendBase("rpq", args);
+    }
+
+    public RPQCtx recv_rpq() throws org.apache.thrift.TException
+    {
+      rpq_result result = new rpq_result();
+      receiveBase(result, "rpq");
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "rpq failed: unknown result");
     }
 
     public RPQCtx path_query(java.util.List<java.lang.Long> query) throws org.apache.thrift.TException
@@ -3424,6 +3451,38 @@ public class GraphQueryAggregatorService {
       }
     }
 
+    public void rpq(RPQuery query, org.apache.thrift.async.AsyncMethodCallback<RPQCtx> resultHandler) throws org.apache.thrift.TException {
+      checkReady();
+      rpq_call method_call = new rpq_call(query, resultHandler, this, ___protocolFactory, ___transport);
+      this.___currentMethod = method_call;
+      ___manager.call(method_call);
+    }
+
+    public static class rpq_call extends org.apache.thrift.async.TAsyncMethodCall<RPQCtx> {
+      private RPQuery query;
+      public rpq_call(RPQuery query, org.apache.thrift.async.AsyncMethodCallback<RPQCtx> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.query = query;
+      }
+
+      public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("rpq", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        rpq_args args = new rpq_args();
+        args.setQuery(query);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public RPQCtx getResult() throws org.apache.thrift.TException {
+        if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
+          throw new java.lang.IllegalStateException("Method call not finished!");
+        }
+        org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
+        org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        return (new Client(prot)).recv_rpq();
+      }
+    }
+
     public void path_query(java.util.List<java.lang.Long> query, org.apache.thrift.async.AsyncMethodCallback<RPQCtx> resultHandler) throws org.apache.thrift.TException {
       checkReady();
       path_query_call method_call = new path_query_call(query, resultHandler, this, ___protocolFactory, ___transport);
@@ -3586,6 +3645,7 @@ public class GraphQueryAggregatorService {
       processMap.put("getFilteredLinkList", new getFilteredLinkList());
       processMap.put("getFilteredLinkListLocal", new getFilteredLinkListLocal());
       processMap.put("countLinks", new countLinks());
+      processMap.put("rpq", new rpq());
       processMap.put("path_query", new path_query());
       processMap.put("path_query_local", new path_query_local());
       processMap.put("advance_path_query_ctx", new advance_path_query_ctx());
@@ -4607,6 +4667,26 @@ public class GraphQueryAggregatorService {
       }
     }
 
+    public static class rpq<I extends Iface> extends org.apache.thrift.ProcessFunction<I, rpq_args> {
+      public rpq() {
+        super("rpq");
+      }
+
+      public rpq_args getEmptyArgsInstance() {
+        return new rpq_args();
+      }
+
+      protected boolean isOneway() {
+        return false;
+      }
+
+      public rpq_result getResult(I iface, rpq_args args) throws org.apache.thrift.TException {
+        rpq_result result = new rpq_result();
+        result.success = iface.rpq(args.query);
+        return result;
+      }
+    }
+
     public static class path_query<I extends Iface> extends org.apache.thrift.ProcessFunction<I, path_query_args> {
       public path_query() {
         super("path_query");
@@ -4730,6 +4810,7 @@ public class GraphQueryAggregatorService {
       processMap.put("getFilteredLinkList", new getFilteredLinkList());
       processMap.put("getFilteredLinkListLocal", new getFilteredLinkListLocal());
       processMap.put("countLinks", new countLinks());
+      processMap.put("rpq", new rpq());
       processMap.put("path_query", new path_query());
       processMap.put("path_query_local", new path_query_local());
       processMap.put("advance_path_query_ctx", new advance_path_query_ctx());
@@ -7797,6 +7878,67 @@ public class GraphQueryAggregatorService {
       }
     }
 
+    public static class rpq<I extends AsyncIface> extends org.apache.thrift.AsyncProcessFunction<I, rpq_args, RPQCtx> {
+      public rpq() {
+        super("rpq");
+      }
+
+      public rpq_args getEmptyArgsInstance() {
+        return new rpq_args();
+      }
+
+      public org.apache.thrift.async.AsyncMethodCallback<RPQCtx> getResultHandler(final org.apache.thrift.server.AbstractNonblockingServer.AsyncFrameBuffer fb, final int seqid) {
+        final org.apache.thrift.AsyncProcessFunction fcall = this;
+        return new org.apache.thrift.async.AsyncMethodCallback<RPQCtx>() { 
+          public void onComplete(RPQCtx o) {
+            rpq_result result = new rpq_result();
+            result.success = o;
+            try {
+              fcall.sendResponse(fb, result, org.apache.thrift.protocol.TMessageType.REPLY,seqid);
+            } catch (org.apache.thrift.transport.TTransportException e) {
+              _LOGGER.error("TTransportException writing to internal frame buffer", e);
+              fb.close();
+            } catch (java.lang.Exception e) {
+              _LOGGER.error("Exception writing to internal frame buffer", e);
+              onError(e);
+            }
+          }
+          public void onError(java.lang.Exception e) {
+            byte msgType = org.apache.thrift.protocol.TMessageType.REPLY;
+            org.apache.thrift.TSerializable msg;
+            rpq_result result = new rpq_result();
+            if (e instanceof org.apache.thrift.transport.TTransportException) {
+              _LOGGER.error("TTransportException inside handler", e);
+              fb.close();
+              return;
+            } else if (e instanceof org.apache.thrift.TApplicationException) {
+              _LOGGER.error("TApplicationException inside handler", e);
+              msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
+              msg = (org.apache.thrift.TApplicationException)e;
+            } else {
+              _LOGGER.error("Exception inside handler", e);
+              msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
+              msg = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, e.getMessage());
+            }
+            try {
+              fcall.sendResponse(fb,msg,msgType,seqid);
+            } catch (java.lang.Exception ex) {
+              _LOGGER.error("Exception writing to internal frame buffer", ex);
+              fb.close();
+            }
+          }
+        };
+      }
+
+      protected boolean isOneway() {
+        return false;
+      }
+
+      public void start(I iface, rpq_args args, org.apache.thrift.async.AsyncMethodCallback<RPQCtx> resultHandler) throws org.apache.thrift.TException {
+        iface.rpq(args.query,resultHandler);
+      }
+    }
+
     public static class path_query<I extends AsyncIface> extends org.apache.thrift.AsyncProcessFunction<I, path_query_args, RPQCtx> {
       public path_query() {
         super("path_query");
@@ -10686,14 +10828,14 @@ public class GraphQueryAggregatorService {
             case 3: // UPDATES
               if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
                 {
-                  org.apache.thrift.protocol.TList _list8 = iprot.readListBegin();
-                  struct.updates = new java.util.ArrayList<ThriftSrcAtype>(_list8.size);
-                  ThriftSrcAtype _elem9;
-                  for (int _i10 = 0; _i10 < _list8.size; ++_i10)
+                  org.apache.thrift.protocol.TList _list24 = iprot.readListBegin();
+                  struct.updates = new java.util.ArrayList<ThriftSrcAtype>(_list24.size);
+                  ThriftSrcAtype _elem25;
+                  for (int _i26 = 0; _i26 < _list24.size; ++_i26)
                   {
-                    _elem9 = new ThriftSrcAtype();
-                    _elem9.read(iprot);
-                    struct.updates.add(_elem9);
+                    _elem25 = new ThriftSrcAtype();
+                    _elem25.read(iprot);
+                    struct.updates.add(_elem25);
                   }
                   iprot.readListEnd();
                 }
@@ -10727,9 +10869,9 @@ public class GraphQueryAggregatorService {
           oprot.writeFieldBegin(UPDATES_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.updates.size()));
-            for (ThriftSrcAtype _iter11 : struct.updates)
+            for (ThriftSrcAtype _iter27 : struct.updates)
             {
-              _iter11.write(oprot);
+              _iter27.write(oprot);
             }
             oprot.writeListEnd();
           }
@@ -10772,9 +10914,9 @@ public class GraphQueryAggregatorService {
         if (struct.isSetUpdates()) {
           {
             oprot.writeI32(struct.updates.size());
-            for (ThriftSrcAtype _iter12 : struct.updates)
+            for (ThriftSrcAtype _iter28 : struct.updates)
             {
-              _iter12.write(oprot);
+              _iter28.write(oprot);
             }
           }
         }
@@ -10794,14 +10936,14 @@ public class GraphQueryAggregatorService {
         }
         if (incoming.get(2)) {
           {
-            org.apache.thrift.protocol.TList _list13 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-            struct.updates = new java.util.ArrayList<ThriftSrcAtype>(_list13.size);
-            ThriftSrcAtype _elem14;
-            for (int _i15 = 0; _i15 < _list13.size; ++_i15)
+            org.apache.thrift.protocol.TList _list29 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+            struct.updates = new java.util.ArrayList<ThriftSrcAtype>(_list29.size);
+            ThriftSrcAtype _elem30;
+            for (int _i31 = 0; _i31 < _list29.size; ++_i31)
             {
-              _elem14 = new ThriftSrcAtype();
-              _elem14.read(iprot);
-              struct.updates.add(_elem14);
+              _elem30 = new ThriftSrcAtype();
+              _elem30.read(iprot);
+              struct.updates.add(_elem30);
             }
           }
           struct.setUpdatesIsSet(true);
@@ -14261,13 +14403,13 @@ public class GraphQueryAggregatorService {
             case 0: // SUCCESS
               if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
                 {
-                  org.apache.thrift.protocol.TList _list16 = iprot.readListBegin();
-                  struct.success = new java.util.ArrayList<java.lang.Long>(_list16.size);
-                  long _elem17;
-                  for (int _i18 = 0; _i18 < _list16.size; ++_i18)
+                  org.apache.thrift.protocol.TList _list32 = iprot.readListBegin();
+                  struct.success = new java.util.ArrayList<java.lang.Long>(_list32.size);
+                  long _elem33;
+                  for (int _i34 = 0; _i34 < _list32.size; ++_i34)
                   {
-                    _elem17 = iprot.readI64();
-                    struct.success.add(_elem17);
+                    _elem33 = iprot.readI64();
+                    struct.success.add(_elem33);
                   }
                   iprot.readListEnd();
                 }
@@ -14295,9 +14437,9 @@ public class GraphQueryAggregatorService {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, struct.success.size()));
-            for (long _iter19 : struct.success)
+            for (long _iter35 : struct.success)
             {
-              oprot.writeI64(_iter19);
+              oprot.writeI64(_iter35);
             }
             oprot.writeListEnd();
           }
@@ -14328,9 +14470,9 @@ public class GraphQueryAggregatorService {
         if (struct.isSetSuccess()) {
           {
             oprot.writeI32(struct.success.size());
-            for (long _iter20 : struct.success)
+            for (long _iter36 : struct.success)
             {
-              oprot.writeI64(_iter20);
+              oprot.writeI64(_iter36);
             }
           }
         }
@@ -14342,13 +14484,13 @@ public class GraphQueryAggregatorService {
         java.util.BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
           {
-            org.apache.thrift.protocol.TList _list21 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
-            struct.success = new java.util.ArrayList<java.lang.Long>(_list21.size);
-            long _elem22;
-            for (int _i23 = 0; _i23 < _list21.size; ++_i23)
+            org.apache.thrift.protocol.TList _list37 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
+            struct.success = new java.util.ArrayList<java.lang.Long>(_list37.size);
+            long _elem38;
+            for (int _i39 = 0; _i39 < _list37.size; ++_i39)
             {
-              _elem22 = iprot.readI64();
-              struct.success.add(_elem22);
+              _elem38 = iprot.readI64();
+              struct.success.add(_elem38);
             }
           }
           struct.setSuccessIsSet(true);
@@ -15126,13 +15268,13 @@ public class GraphQueryAggregatorService {
             case 0: // SUCCESS
               if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
                 {
-                  org.apache.thrift.protocol.TList _list24 = iprot.readListBegin();
-                  struct.success = new java.util.ArrayList<java.lang.Long>(_list24.size);
-                  long _elem25;
-                  for (int _i26 = 0; _i26 < _list24.size; ++_i26)
+                  org.apache.thrift.protocol.TList _list40 = iprot.readListBegin();
+                  struct.success = new java.util.ArrayList<java.lang.Long>(_list40.size);
+                  long _elem41;
+                  for (int _i42 = 0; _i42 < _list40.size; ++_i42)
                   {
-                    _elem25 = iprot.readI64();
-                    struct.success.add(_elem25);
+                    _elem41 = iprot.readI64();
+                    struct.success.add(_elem41);
                   }
                   iprot.readListEnd();
                 }
@@ -15160,9 +15302,9 @@ public class GraphQueryAggregatorService {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, struct.success.size()));
-            for (long _iter27 : struct.success)
+            for (long _iter43 : struct.success)
             {
-              oprot.writeI64(_iter27);
+              oprot.writeI64(_iter43);
             }
             oprot.writeListEnd();
           }
@@ -15193,9 +15335,9 @@ public class GraphQueryAggregatorService {
         if (struct.isSetSuccess()) {
           {
             oprot.writeI32(struct.success.size());
-            for (long _iter28 : struct.success)
+            for (long _iter44 : struct.success)
             {
-              oprot.writeI64(_iter28);
+              oprot.writeI64(_iter44);
             }
           }
         }
@@ -15207,13 +15349,13 @@ public class GraphQueryAggregatorService {
         java.util.BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
           {
-            org.apache.thrift.protocol.TList _list29 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
-            struct.success = new java.util.ArrayList<java.lang.Long>(_list29.size);
-            long _elem30;
-            for (int _i31 = 0; _i31 < _list29.size; ++_i31)
+            org.apache.thrift.protocol.TList _list45 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
+            struct.success = new java.util.ArrayList<java.lang.Long>(_list45.size);
+            long _elem46;
+            for (int _i47 = 0; _i47 < _list45.size; ++_i47)
             {
-              _elem30 = iprot.readI64();
-              struct.success.add(_elem30);
+              _elem46 = iprot.readI64();
+              struct.success.add(_elem46);
             }
           }
           struct.setSuccessIsSet(true);
@@ -15991,13 +16133,13 @@ public class GraphQueryAggregatorService {
             case 0: // SUCCESS
               if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
                 {
-                  org.apache.thrift.protocol.TList _list32 = iprot.readListBegin();
-                  struct.success = new java.util.ArrayList<java.lang.Long>(_list32.size);
-                  long _elem33;
-                  for (int _i34 = 0; _i34 < _list32.size; ++_i34)
+                  org.apache.thrift.protocol.TList _list48 = iprot.readListBegin();
+                  struct.success = new java.util.ArrayList<java.lang.Long>(_list48.size);
+                  long _elem49;
+                  for (int _i50 = 0; _i50 < _list48.size; ++_i50)
                   {
-                    _elem33 = iprot.readI64();
-                    struct.success.add(_elem33);
+                    _elem49 = iprot.readI64();
+                    struct.success.add(_elem49);
                   }
                   iprot.readListEnd();
                 }
@@ -16025,9 +16167,9 @@ public class GraphQueryAggregatorService {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, struct.success.size()));
-            for (long _iter35 : struct.success)
+            for (long _iter51 : struct.success)
             {
-              oprot.writeI64(_iter35);
+              oprot.writeI64(_iter51);
             }
             oprot.writeListEnd();
           }
@@ -16058,9 +16200,9 @@ public class GraphQueryAggregatorService {
         if (struct.isSetSuccess()) {
           {
             oprot.writeI32(struct.success.size());
-            for (long _iter36 : struct.success)
+            for (long _iter52 : struct.success)
             {
-              oprot.writeI64(_iter36);
+              oprot.writeI64(_iter52);
             }
           }
         }
@@ -16072,13 +16214,13 @@ public class GraphQueryAggregatorService {
         java.util.BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
           {
-            org.apache.thrift.protocol.TList _list37 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
-            struct.success = new java.util.ArrayList<java.lang.Long>(_list37.size);
-            long _elem38;
-            for (int _i39 = 0; _i39 < _list37.size; ++_i39)
+            org.apache.thrift.protocol.TList _list53 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
+            struct.success = new java.util.ArrayList<java.lang.Long>(_list53.size);
+            long _elem54;
+            for (int _i55 = 0; _i55 < _list53.size; ++_i55)
             {
-              _elem38 = iprot.readI64();
-              struct.success.add(_elem38);
+              _elem54 = iprot.readI64();
+              struct.success.add(_elem54);
             }
           }
           struct.setSuccessIsSet(true);
@@ -16952,13 +17094,13 @@ public class GraphQueryAggregatorService {
             case 0: // SUCCESS
               if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
                 {
-                  org.apache.thrift.protocol.TList _list40 = iprot.readListBegin();
-                  struct.success = new java.util.ArrayList<java.lang.Long>(_list40.size);
-                  long _elem41;
-                  for (int _i42 = 0; _i42 < _list40.size; ++_i42)
+                  org.apache.thrift.protocol.TList _list56 = iprot.readListBegin();
+                  struct.success = new java.util.ArrayList<java.lang.Long>(_list56.size);
+                  long _elem57;
+                  for (int _i58 = 0; _i58 < _list56.size; ++_i58)
                   {
-                    _elem41 = iprot.readI64();
-                    struct.success.add(_elem41);
+                    _elem57 = iprot.readI64();
+                    struct.success.add(_elem57);
                   }
                   iprot.readListEnd();
                 }
@@ -16986,9 +17128,9 @@ public class GraphQueryAggregatorService {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, struct.success.size()));
-            for (long _iter43 : struct.success)
+            for (long _iter59 : struct.success)
             {
-              oprot.writeI64(_iter43);
+              oprot.writeI64(_iter59);
             }
             oprot.writeListEnd();
           }
@@ -17019,9 +17161,9 @@ public class GraphQueryAggregatorService {
         if (struct.isSetSuccess()) {
           {
             oprot.writeI32(struct.success.size());
-            for (long _iter44 : struct.success)
+            for (long _iter60 : struct.success)
             {
-              oprot.writeI64(_iter44);
+              oprot.writeI64(_iter60);
             }
           }
         }
@@ -17033,13 +17175,13 @@ public class GraphQueryAggregatorService {
         java.util.BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
           {
-            org.apache.thrift.protocol.TList _list45 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
-            struct.success = new java.util.ArrayList<java.lang.Long>(_list45.size);
-            long _elem46;
-            for (int _i47 = 0; _i47 < _list45.size; ++_i47)
+            org.apache.thrift.protocol.TList _list61 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
+            struct.success = new java.util.ArrayList<java.lang.Long>(_list61.size);
+            long _elem62;
+            for (int _i63 = 0; _i63 < _list61.size; ++_i63)
             {
-              _elem46 = iprot.readI64();
-              struct.success.add(_elem46);
+              _elem62 = iprot.readI64();
+              struct.success.add(_elem62);
             }
           }
           struct.setSuccessIsSet(true);
@@ -17921,13 +18063,13 @@ public class GraphQueryAggregatorService {
             case 0: // SUCCESS
               if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
                 {
-                  org.apache.thrift.protocol.TList _list48 = iprot.readListBegin();
-                  struct.success = new java.util.ArrayList<java.lang.Long>(_list48.size);
-                  long _elem49;
-                  for (int _i50 = 0; _i50 < _list48.size; ++_i50)
+                  org.apache.thrift.protocol.TList _list64 = iprot.readListBegin();
+                  struct.success = new java.util.ArrayList<java.lang.Long>(_list64.size);
+                  long _elem65;
+                  for (int _i66 = 0; _i66 < _list64.size; ++_i66)
                   {
-                    _elem49 = iprot.readI64();
-                    struct.success.add(_elem49);
+                    _elem65 = iprot.readI64();
+                    struct.success.add(_elem65);
                   }
                   iprot.readListEnd();
                 }
@@ -17955,9 +18097,9 @@ public class GraphQueryAggregatorService {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, struct.success.size()));
-            for (long _iter51 : struct.success)
+            for (long _iter67 : struct.success)
             {
-              oprot.writeI64(_iter51);
+              oprot.writeI64(_iter67);
             }
             oprot.writeListEnd();
           }
@@ -17988,9 +18130,9 @@ public class GraphQueryAggregatorService {
         if (struct.isSetSuccess()) {
           {
             oprot.writeI32(struct.success.size());
-            for (long _iter52 : struct.success)
+            for (long _iter68 : struct.success)
             {
-              oprot.writeI64(_iter52);
+              oprot.writeI64(_iter68);
             }
           }
         }
@@ -18002,13 +18144,13 @@ public class GraphQueryAggregatorService {
         java.util.BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
           {
-            org.apache.thrift.protocol.TList _list53 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
-            struct.success = new java.util.ArrayList<java.lang.Long>(_list53.size);
-            long _elem54;
-            for (int _i55 = 0; _i55 < _list53.size; ++_i55)
+            org.apache.thrift.protocol.TList _list69 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
+            struct.success = new java.util.ArrayList<java.lang.Long>(_list69.size);
+            long _elem70;
+            for (int _i71 = 0; _i71 < _list69.size; ++_i71)
             {
-              _elem54 = iprot.readI64();
-              struct.success.add(_elem54);
+              _elem70 = iprot.readI64();
+              struct.success.add(_elem70);
             }
           }
           struct.setSuccessIsSet(true);
@@ -18986,13 +19128,13 @@ public class GraphQueryAggregatorService {
             case 0: // SUCCESS
               if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
                 {
-                  org.apache.thrift.protocol.TList _list56 = iprot.readListBegin();
-                  struct.success = new java.util.ArrayList<java.lang.Long>(_list56.size);
-                  long _elem57;
-                  for (int _i58 = 0; _i58 < _list56.size; ++_i58)
+                  org.apache.thrift.protocol.TList _list72 = iprot.readListBegin();
+                  struct.success = new java.util.ArrayList<java.lang.Long>(_list72.size);
+                  long _elem73;
+                  for (int _i74 = 0; _i74 < _list72.size; ++_i74)
                   {
-                    _elem57 = iprot.readI64();
-                    struct.success.add(_elem57);
+                    _elem73 = iprot.readI64();
+                    struct.success.add(_elem73);
                   }
                   iprot.readListEnd();
                 }
@@ -19020,9 +19162,9 @@ public class GraphQueryAggregatorService {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, struct.success.size()));
-            for (long _iter59 : struct.success)
+            for (long _iter75 : struct.success)
             {
-              oprot.writeI64(_iter59);
+              oprot.writeI64(_iter75);
             }
             oprot.writeListEnd();
           }
@@ -19053,9 +19195,9 @@ public class GraphQueryAggregatorService {
         if (struct.isSetSuccess()) {
           {
             oprot.writeI32(struct.success.size());
-            for (long _iter60 : struct.success)
+            for (long _iter76 : struct.success)
             {
-              oprot.writeI64(_iter60);
+              oprot.writeI64(_iter76);
             }
           }
         }
@@ -19067,13 +19209,13 @@ public class GraphQueryAggregatorService {
         java.util.BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
           {
-            org.apache.thrift.protocol.TList _list61 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
-            struct.success = new java.util.ArrayList<java.lang.Long>(_list61.size);
-            long _elem62;
-            for (int _i63 = 0; _i63 < _list61.size; ++_i63)
+            org.apache.thrift.protocol.TList _list77 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
+            struct.success = new java.util.ArrayList<java.lang.Long>(_list77.size);
+            long _elem78;
+            for (int _i79 = 0; _i79 < _list77.size; ++_i79)
             {
-              _elem62 = iprot.readI64();
-              struct.success.add(_elem62);
+              _elem78 = iprot.readI64();
+              struct.success.add(_elem78);
             }
           }
           struct.setSuccessIsSet(true);
@@ -19859,13 +20001,13 @@ public class GraphQueryAggregatorService {
             case 0: // SUCCESS
               if (schemeField.type == org.apache.thrift.protocol.TType.SET) {
                 {
-                  org.apache.thrift.protocol.TSet _set64 = iprot.readSetBegin();
-                  struct.success = new java.util.HashSet<java.lang.Long>(2*_set64.size);
-                  long _elem65;
-                  for (int _i66 = 0; _i66 < _set64.size; ++_i66)
+                  org.apache.thrift.protocol.TSet _set80 = iprot.readSetBegin();
+                  struct.success = new java.util.HashSet<java.lang.Long>(2*_set80.size);
+                  long _elem81;
+                  for (int _i82 = 0; _i82 < _set80.size; ++_i82)
                   {
-                    _elem65 = iprot.readI64();
-                    struct.success.add(_elem65);
+                    _elem81 = iprot.readI64();
+                    struct.success.add(_elem81);
                   }
                   iprot.readSetEnd();
                 }
@@ -19893,9 +20035,9 @@ public class GraphQueryAggregatorService {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
             oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.I64, struct.success.size()));
-            for (long _iter67 : struct.success)
+            for (long _iter83 : struct.success)
             {
-              oprot.writeI64(_iter67);
+              oprot.writeI64(_iter83);
             }
             oprot.writeSetEnd();
           }
@@ -19926,9 +20068,9 @@ public class GraphQueryAggregatorService {
         if (struct.isSetSuccess()) {
           {
             oprot.writeI32(struct.success.size());
-            for (long _iter68 : struct.success)
+            for (long _iter84 : struct.success)
             {
-              oprot.writeI64(_iter68);
+              oprot.writeI64(_iter84);
             }
           }
         }
@@ -19940,13 +20082,13 @@ public class GraphQueryAggregatorService {
         java.util.BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
           {
-            org.apache.thrift.protocol.TSet _set69 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.I64, iprot.readI32());
-            struct.success = new java.util.HashSet<java.lang.Long>(2*_set69.size);
-            long _elem70;
-            for (int _i71 = 0; _i71 < _set69.size; ++_i71)
+            org.apache.thrift.protocol.TSet _set85 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.I64, iprot.readI32());
+            struct.success = new java.util.HashSet<java.lang.Long>(2*_set85.size);
+            long _elem86;
+            for (int _i87 = 0; _i87 < _set85.size; ++_i87)
             {
-              _elem70 = iprot.readI64();
-              struct.success.add(_elem70);
+              _elem86 = iprot.readI64();
+              struct.success.add(_elem86);
             }
           }
           struct.setSuccessIsSet(true);
@@ -20732,13 +20874,13 @@ public class GraphQueryAggregatorService {
             case 0: // SUCCESS
               if (schemeField.type == org.apache.thrift.protocol.TType.SET) {
                 {
-                  org.apache.thrift.protocol.TSet _set72 = iprot.readSetBegin();
-                  struct.success = new java.util.HashSet<java.lang.Long>(2*_set72.size);
-                  long _elem73;
-                  for (int _i74 = 0; _i74 < _set72.size; ++_i74)
+                  org.apache.thrift.protocol.TSet _set88 = iprot.readSetBegin();
+                  struct.success = new java.util.HashSet<java.lang.Long>(2*_set88.size);
+                  long _elem89;
+                  for (int _i90 = 0; _i90 < _set88.size; ++_i90)
                   {
-                    _elem73 = iprot.readI64();
-                    struct.success.add(_elem73);
+                    _elem89 = iprot.readI64();
+                    struct.success.add(_elem89);
                   }
                   iprot.readSetEnd();
                 }
@@ -20766,9 +20908,9 @@ public class GraphQueryAggregatorService {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
             oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.I64, struct.success.size()));
-            for (long _iter75 : struct.success)
+            for (long _iter91 : struct.success)
             {
-              oprot.writeI64(_iter75);
+              oprot.writeI64(_iter91);
             }
             oprot.writeSetEnd();
           }
@@ -20799,9 +20941,9 @@ public class GraphQueryAggregatorService {
         if (struct.isSetSuccess()) {
           {
             oprot.writeI32(struct.success.size());
-            for (long _iter76 : struct.success)
+            for (long _iter92 : struct.success)
             {
-              oprot.writeI64(_iter76);
+              oprot.writeI64(_iter92);
             }
           }
         }
@@ -20813,13 +20955,13 @@ public class GraphQueryAggregatorService {
         java.util.BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
           {
-            org.apache.thrift.protocol.TSet _set77 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.I64, iprot.readI32());
-            struct.success = new java.util.HashSet<java.lang.Long>(2*_set77.size);
-            long _elem78;
-            for (int _i79 = 0; _i79 < _set77.size; ++_i79)
+            org.apache.thrift.protocol.TSet _set93 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.I64, iprot.readI32());
+            struct.success = new java.util.HashSet<java.lang.Long>(2*_set93.size);
+            long _elem94;
+            for (int _i95 = 0; _i95 < _set93.size; ++_i95)
             {
-              _elem78 = iprot.readI64();
-              struct.success.add(_elem78);
+              _elem94 = iprot.readI64();
+              struct.success.add(_elem94);
             }
           }
           struct.setSuccessIsSet(true);
@@ -21805,13 +21947,13 @@ public class GraphQueryAggregatorService {
             case 0: // SUCCESS
               if (schemeField.type == org.apache.thrift.protocol.TType.SET) {
                 {
-                  org.apache.thrift.protocol.TSet _set80 = iprot.readSetBegin();
-                  struct.success = new java.util.HashSet<java.lang.Long>(2*_set80.size);
-                  long _elem81;
-                  for (int _i82 = 0; _i82 < _set80.size; ++_i82)
+                  org.apache.thrift.protocol.TSet _set96 = iprot.readSetBegin();
+                  struct.success = new java.util.HashSet<java.lang.Long>(2*_set96.size);
+                  long _elem97;
+                  for (int _i98 = 0; _i98 < _set96.size; ++_i98)
                   {
-                    _elem81 = iprot.readI64();
-                    struct.success.add(_elem81);
+                    _elem97 = iprot.readI64();
+                    struct.success.add(_elem97);
                   }
                   iprot.readSetEnd();
                 }
@@ -21839,9 +21981,9 @@ public class GraphQueryAggregatorService {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
             oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.I64, struct.success.size()));
-            for (long _iter83 : struct.success)
+            for (long _iter99 : struct.success)
             {
-              oprot.writeI64(_iter83);
+              oprot.writeI64(_iter99);
             }
             oprot.writeSetEnd();
           }
@@ -21872,9 +22014,9 @@ public class GraphQueryAggregatorService {
         if (struct.isSetSuccess()) {
           {
             oprot.writeI32(struct.success.size());
-            for (long _iter84 : struct.success)
+            for (long _iter100 : struct.success)
             {
-              oprot.writeI64(_iter84);
+              oprot.writeI64(_iter100);
             }
           }
         }
@@ -21886,13 +22028,13 @@ public class GraphQueryAggregatorService {
         java.util.BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
           {
-            org.apache.thrift.protocol.TSet _set85 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.I64, iprot.readI32());
-            struct.success = new java.util.HashSet<java.lang.Long>(2*_set85.size);
-            long _elem86;
-            for (int _i87 = 0; _i87 < _set85.size; ++_i87)
+            org.apache.thrift.protocol.TSet _set101 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.I64, iprot.readI32());
+            struct.success = new java.util.HashSet<java.lang.Long>(2*_set101.size);
+            long _elem102;
+            for (int _i103 = 0; _i103 < _set101.size; ++_i103)
             {
-              _elem86 = iprot.readI64();
-              struct.success.add(_elem86);
+              _elem102 = iprot.readI64();
+              struct.success.add(_elem102);
             }
           }
           struct.setSuccessIsSet(true);
@@ -22878,13 +23020,13 @@ public class GraphQueryAggregatorService {
             case 0: // SUCCESS
               if (schemeField.type == org.apache.thrift.protocol.TType.SET) {
                 {
-                  org.apache.thrift.protocol.TSet _set88 = iprot.readSetBegin();
-                  struct.success = new java.util.HashSet<java.lang.Long>(2*_set88.size);
-                  long _elem89;
-                  for (int _i90 = 0; _i90 < _set88.size; ++_i90)
+                  org.apache.thrift.protocol.TSet _set104 = iprot.readSetBegin();
+                  struct.success = new java.util.HashSet<java.lang.Long>(2*_set104.size);
+                  long _elem105;
+                  for (int _i106 = 0; _i106 < _set104.size; ++_i106)
                   {
-                    _elem89 = iprot.readI64();
-                    struct.success.add(_elem89);
+                    _elem105 = iprot.readI64();
+                    struct.success.add(_elem105);
                   }
                   iprot.readSetEnd();
                 }
@@ -22912,9 +23054,9 @@ public class GraphQueryAggregatorService {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
             oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.I64, struct.success.size()));
-            for (long _iter91 : struct.success)
+            for (long _iter107 : struct.success)
             {
-              oprot.writeI64(_iter91);
+              oprot.writeI64(_iter107);
             }
             oprot.writeSetEnd();
           }
@@ -22945,9 +23087,9 @@ public class GraphQueryAggregatorService {
         if (struct.isSetSuccess()) {
           {
             oprot.writeI32(struct.success.size());
-            for (long _iter92 : struct.success)
+            for (long _iter108 : struct.success)
             {
-              oprot.writeI64(_iter92);
+              oprot.writeI64(_iter108);
             }
           }
         }
@@ -22959,13 +23101,13 @@ public class GraphQueryAggregatorService {
         java.util.BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
           {
-            org.apache.thrift.protocol.TSet _set93 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.I64, iprot.readI32());
-            struct.success = new java.util.HashSet<java.lang.Long>(2*_set93.size);
-            long _elem94;
-            for (int _i95 = 0; _i95 < _set93.size; ++_i95)
+            org.apache.thrift.protocol.TSet _set109 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.I64, iprot.readI32());
+            struct.success = new java.util.HashSet<java.lang.Long>(2*_set109.size);
+            long _elem110;
+            for (int _i111 = 0; _i111 < _set109.size; ++_i111)
             {
-              _elem94 = iprot.readI64();
-              struct.success.add(_elem94);
+              _elem110 = iprot.readI64();
+              struct.success.add(_elem110);
             }
           }
           struct.setSuccessIsSet(true);
@@ -23449,13 +23591,13 @@ public class GraphQueryAggregatorService {
             case 1: // NODE_IDS
               if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
                 {
-                  org.apache.thrift.protocol.TList _list96 = iprot.readListBegin();
-                  struct.nodeIds = new java.util.ArrayList<java.lang.Long>(_list96.size);
-                  long _elem97;
-                  for (int _i98 = 0; _i98 < _list96.size; ++_i98)
+                  org.apache.thrift.protocol.TList _list112 = iprot.readListBegin();
+                  struct.nodeIds = new java.util.ArrayList<java.lang.Long>(_list112.size);
+                  long _elem113;
+                  for (int _i114 = 0; _i114 < _list112.size; ++_i114)
                   {
-                    _elem97 = iprot.readI64();
-                    struct.nodeIds.add(_elem97);
+                    _elem113 = iprot.readI64();
+                    struct.nodeIds.add(_elem113);
                   }
                   iprot.readListEnd();
                 }
@@ -23499,9 +23641,9 @@ public class GraphQueryAggregatorService {
           oprot.writeFieldBegin(NODE_IDS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, struct.nodeIds.size()));
-            for (long _iter99 : struct.nodeIds)
+            for (long _iter115 : struct.nodeIds)
             {
-              oprot.writeI64(_iter99);
+              oprot.writeI64(_iter115);
             }
             oprot.writeListEnd();
           }
@@ -23546,9 +23688,9 @@ public class GraphQueryAggregatorService {
         if (struct.isSetNodeIds()) {
           {
             oprot.writeI32(struct.nodeIds.size());
-            for (long _iter100 : struct.nodeIds)
+            for (long _iter116 : struct.nodeIds)
             {
-              oprot.writeI64(_iter100);
+              oprot.writeI64(_iter116);
             }
           }
         }
@@ -23566,13 +23708,13 @@ public class GraphQueryAggregatorService {
         java.util.BitSet incoming = iprot.readBitSet(3);
         if (incoming.get(0)) {
           {
-            org.apache.thrift.protocol.TList _list101 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
-            struct.nodeIds = new java.util.ArrayList<java.lang.Long>(_list101.size);
-            long _elem102;
-            for (int _i103 = 0; _i103 < _list101.size; ++_i103)
+            org.apache.thrift.protocol.TList _list117 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
+            struct.nodeIds = new java.util.ArrayList<java.lang.Long>(_list117.size);
+            long _elem118;
+            for (int _i119 = 0; _i119 < _list117.size; ++_i119)
             {
-              _elem102 = iprot.readI64();
-              struct.nodeIds.add(_elem102);
+              _elem118 = iprot.readI64();
+              struct.nodeIds.add(_elem118);
             }
           }
           struct.setNodeIdsIsSet(true);
@@ -23904,13 +24046,13 @@ public class GraphQueryAggregatorService {
             case 0: // SUCCESS
               if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
                 {
-                  org.apache.thrift.protocol.TList _list104 = iprot.readListBegin();
-                  struct.success = new java.util.ArrayList<java.lang.Long>(_list104.size);
-                  long _elem105;
-                  for (int _i106 = 0; _i106 < _list104.size; ++_i106)
+                  org.apache.thrift.protocol.TList _list120 = iprot.readListBegin();
+                  struct.success = new java.util.ArrayList<java.lang.Long>(_list120.size);
+                  long _elem121;
+                  for (int _i122 = 0; _i122 < _list120.size; ++_i122)
                   {
-                    _elem105 = iprot.readI64();
-                    struct.success.add(_elem105);
+                    _elem121 = iprot.readI64();
+                    struct.success.add(_elem121);
                   }
                   iprot.readListEnd();
                 }
@@ -23938,9 +24080,9 @@ public class GraphQueryAggregatorService {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, struct.success.size()));
-            for (long _iter107 : struct.success)
+            for (long _iter123 : struct.success)
             {
-              oprot.writeI64(_iter107);
+              oprot.writeI64(_iter123);
             }
             oprot.writeListEnd();
           }
@@ -23971,9 +24113,9 @@ public class GraphQueryAggregatorService {
         if (struct.isSetSuccess()) {
           {
             oprot.writeI32(struct.success.size());
-            for (long _iter108 : struct.success)
+            for (long _iter124 : struct.success)
             {
-              oprot.writeI64(_iter108);
+              oprot.writeI64(_iter124);
             }
           }
         }
@@ -23985,13 +24127,13 @@ public class GraphQueryAggregatorService {
         java.util.BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
           {
-            org.apache.thrift.protocol.TList _list109 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
-            struct.success = new java.util.ArrayList<java.lang.Long>(_list109.size);
-            long _elem110;
-            for (int _i111 = 0; _i111 < _list109.size; ++_i111)
+            org.apache.thrift.protocol.TList _list125 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
+            struct.success = new java.util.ArrayList<java.lang.Long>(_list125.size);
+            long _elem126;
+            for (int _i127 = 0; _i127 < _list125.size; ++_i127)
             {
-              _elem110 = iprot.readI64();
-              struct.success.add(_elem110);
+              _elem126 = iprot.readI64();
+              struct.success.add(_elem126);
             }
           }
           struct.setSuccessIsSet(true);
@@ -24769,13 +24911,13 @@ public class GraphQueryAggregatorService {
             case 0: // SUCCESS
               if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
                 {
-                  org.apache.thrift.protocol.TList _list112 = iprot.readListBegin();
-                  struct.success = new java.util.ArrayList<java.lang.String>(_list112.size);
-                  java.lang.String _elem113;
-                  for (int _i114 = 0; _i114 < _list112.size; ++_i114)
+                  org.apache.thrift.protocol.TList _list128 = iprot.readListBegin();
+                  struct.success = new java.util.ArrayList<java.lang.String>(_list128.size);
+                  java.lang.String _elem129;
+                  for (int _i130 = 0; _i130 < _list128.size; ++_i130)
                   {
-                    _elem113 = iprot.readString();
-                    struct.success.add(_elem113);
+                    _elem129 = iprot.readString();
+                    struct.success.add(_elem129);
                   }
                   iprot.readListEnd();
                 }
@@ -24803,9 +24945,9 @@ public class GraphQueryAggregatorService {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.success.size()));
-            for (java.lang.String _iter115 : struct.success)
+            for (java.lang.String _iter131 : struct.success)
             {
-              oprot.writeString(_iter115);
+              oprot.writeString(_iter131);
             }
             oprot.writeListEnd();
           }
@@ -24836,9 +24978,9 @@ public class GraphQueryAggregatorService {
         if (struct.isSetSuccess()) {
           {
             oprot.writeI32(struct.success.size());
-            for (java.lang.String _iter116 : struct.success)
+            for (java.lang.String _iter132 : struct.success)
             {
-              oprot.writeString(_iter116);
+              oprot.writeString(_iter132);
             }
           }
         }
@@ -24850,13 +24992,13 @@ public class GraphQueryAggregatorService {
         java.util.BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
           {
-            org.apache.thrift.protocol.TList _list117 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-            struct.success = new java.util.ArrayList<java.lang.String>(_list117.size);
-            java.lang.String _elem118;
-            for (int _i119 = 0; _i119 < _list117.size; ++_i119)
+            org.apache.thrift.protocol.TList _list133 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+            struct.success = new java.util.ArrayList<java.lang.String>(_list133.size);
+            java.lang.String _elem134;
+            for (int _i135 = 0; _i135 < _list133.size; ++_i135)
             {
-              _elem118 = iprot.readString();
-              struct.success.add(_elem118);
+              _elem134 = iprot.readString();
+              struct.success.add(_elem134);
             }
           }
           struct.setSuccessIsSet(true);
@@ -25730,13 +25872,13 @@ public class GraphQueryAggregatorService {
             case 0: // SUCCESS
               if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
                 {
-                  org.apache.thrift.protocol.TList _list120 = iprot.readListBegin();
-                  struct.success = new java.util.ArrayList<java.lang.String>(_list120.size);
-                  java.lang.String _elem121;
-                  for (int _i122 = 0; _i122 < _list120.size; ++_i122)
+                  org.apache.thrift.protocol.TList _list136 = iprot.readListBegin();
+                  struct.success = new java.util.ArrayList<java.lang.String>(_list136.size);
+                  java.lang.String _elem137;
+                  for (int _i138 = 0; _i138 < _list136.size; ++_i138)
                   {
-                    _elem121 = iprot.readString();
-                    struct.success.add(_elem121);
+                    _elem137 = iprot.readString();
+                    struct.success.add(_elem137);
                   }
                   iprot.readListEnd();
                 }
@@ -25764,9 +25906,9 @@ public class GraphQueryAggregatorService {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.success.size()));
-            for (java.lang.String _iter123 : struct.success)
+            for (java.lang.String _iter139 : struct.success)
             {
-              oprot.writeString(_iter123);
+              oprot.writeString(_iter139);
             }
             oprot.writeListEnd();
           }
@@ -25797,9 +25939,9 @@ public class GraphQueryAggregatorService {
         if (struct.isSetSuccess()) {
           {
             oprot.writeI32(struct.success.size());
-            for (java.lang.String _iter124 : struct.success)
+            for (java.lang.String _iter140 : struct.success)
             {
-              oprot.writeString(_iter124);
+              oprot.writeString(_iter140);
             }
           }
         }
@@ -25811,13 +25953,13 @@ public class GraphQueryAggregatorService {
         java.util.BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
           {
-            org.apache.thrift.protocol.TList _list125 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-            struct.success = new java.util.ArrayList<java.lang.String>(_list125.size);
-            java.lang.String _elem126;
-            for (int _i127 = 0; _i127 < _list125.size; ++_i127)
+            org.apache.thrift.protocol.TList _list141 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+            struct.success = new java.util.ArrayList<java.lang.String>(_list141.size);
+            java.lang.String _elem142;
+            for (int _i143 = 0; _i143 < _list141.size; ++_i143)
             {
-              _elem126 = iprot.readString();
-              struct.success.add(_elem126);
+              _elem142 = iprot.readString();
+              struct.success.add(_elem142);
             }
           }
           struct.setSuccessIsSet(true);
@@ -26790,14 +26932,14 @@ public class GraphQueryAggregatorService {
             case 0: // SUCCESS
               if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
                 {
-                  org.apache.thrift.protocol.TList _list128 = iprot.readListBegin();
-                  struct.success = new java.util.ArrayList<ThriftAssoc>(_list128.size);
-                  ThriftAssoc _elem129;
-                  for (int _i130 = 0; _i130 < _list128.size; ++_i130)
+                  org.apache.thrift.protocol.TList _list144 = iprot.readListBegin();
+                  struct.success = new java.util.ArrayList<ThriftAssoc>(_list144.size);
+                  ThriftAssoc _elem145;
+                  for (int _i146 = 0; _i146 < _list144.size; ++_i146)
                   {
-                    _elem129 = new ThriftAssoc();
-                    _elem129.read(iprot);
-                    struct.success.add(_elem129);
+                    _elem145 = new ThriftAssoc();
+                    _elem145.read(iprot);
+                    struct.success.add(_elem145);
                   }
                   iprot.readListEnd();
                 }
@@ -26825,9 +26967,9 @@ public class GraphQueryAggregatorService {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.success.size()));
-            for (ThriftAssoc _iter131 : struct.success)
+            for (ThriftAssoc _iter147 : struct.success)
             {
-              _iter131.write(oprot);
+              _iter147.write(oprot);
             }
             oprot.writeListEnd();
           }
@@ -26858,9 +27000,9 @@ public class GraphQueryAggregatorService {
         if (struct.isSetSuccess()) {
           {
             oprot.writeI32(struct.success.size());
-            for (ThriftAssoc _iter132 : struct.success)
+            for (ThriftAssoc _iter148 : struct.success)
             {
-              _iter132.write(oprot);
+              _iter148.write(oprot);
             }
           }
         }
@@ -26872,14 +27014,14 @@ public class GraphQueryAggregatorService {
         java.util.BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
           {
-            org.apache.thrift.protocol.TList _list133 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-            struct.success = new java.util.ArrayList<ThriftAssoc>(_list133.size);
-            ThriftAssoc _elem134;
-            for (int _i135 = 0; _i135 < _list133.size; ++_i135)
+            org.apache.thrift.protocol.TList _list149 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+            struct.success = new java.util.ArrayList<ThriftAssoc>(_list149.size);
+            ThriftAssoc _elem150;
+            for (int _i151 = 0; _i151 < _list149.size; ++_i151)
             {
-              _elem134 = new ThriftAssoc();
-              _elem134.read(iprot);
-              struct.success.add(_elem134);
+              _elem150 = new ThriftAssoc();
+              _elem150.read(iprot);
+              struct.success.add(_elem150);
             }
           }
           struct.setSuccessIsSet(true);
@@ -27948,14 +28090,14 @@ public class GraphQueryAggregatorService {
             case 0: // SUCCESS
               if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
                 {
-                  org.apache.thrift.protocol.TList _list136 = iprot.readListBegin();
-                  struct.success = new java.util.ArrayList<ThriftAssoc>(_list136.size);
-                  ThriftAssoc _elem137;
-                  for (int _i138 = 0; _i138 < _list136.size; ++_i138)
+                  org.apache.thrift.protocol.TList _list152 = iprot.readListBegin();
+                  struct.success = new java.util.ArrayList<ThriftAssoc>(_list152.size);
+                  ThriftAssoc _elem153;
+                  for (int _i154 = 0; _i154 < _list152.size; ++_i154)
                   {
-                    _elem137 = new ThriftAssoc();
-                    _elem137.read(iprot);
-                    struct.success.add(_elem137);
+                    _elem153 = new ThriftAssoc();
+                    _elem153.read(iprot);
+                    struct.success.add(_elem153);
                   }
                   iprot.readListEnd();
                 }
@@ -27983,9 +28125,9 @@ public class GraphQueryAggregatorService {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.success.size()));
-            for (ThriftAssoc _iter139 : struct.success)
+            for (ThriftAssoc _iter155 : struct.success)
             {
-              _iter139.write(oprot);
+              _iter155.write(oprot);
             }
             oprot.writeListEnd();
           }
@@ -28016,9 +28158,9 @@ public class GraphQueryAggregatorService {
         if (struct.isSetSuccess()) {
           {
             oprot.writeI32(struct.success.size());
-            for (ThriftAssoc _iter140 : struct.success)
+            for (ThriftAssoc _iter156 : struct.success)
             {
-              _iter140.write(oprot);
+              _iter156.write(oprot);
             }
           }
         }
@@ -28030,14 +28172,14 @@ public class GraphQueryAggregatorService {
         java.util.BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
           {
-            org.apache.thrift.protocol.TList _list141 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-            struct.success = new java.util.ArrayList<ThriftAssoc>(_list141.size);
-            ThriftAssoc _elem142;
-            for (int _i143 = 0; _i143 < _list141.size; ++_i143)
+            org.apache.thrift.protocol.TList _list157 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+            struct.success = new java.util.ArrayList<ThriftAssoc>(_list157.size);
+            ThriftAssoc _elem158;
+            for (int _i159 = 0; _i159 < _list157.size; ++_i159)
             {
-              _elem142 = new ThriftAssoc();
-              _elem142.read(iprot);
-              struct.success.add(_elem142);
+              _elem158 = new ThriftAssoc();
+              _elem158.read(iprot);
+              struct.success.add(_elem158);
             }
           }
           struct.setSuccessIsSet(true);
@@ -30405,13 +30547,13 @@ public class GraphQueryAggregatorService {
             case 3: // DST_ID_SET
               if (schemeField.type == org.apache.thrift.protocol.TType.SET) {
                 {
-                  org.apache.thrift.protocol.TSet _set144 = iprot.readSetBegin();
-                  struct.dstIdSet = new java.util.HashSet<java.lang.Long>(2*_set144.size);
-                  long _elem145;
-                  for (int _i146 = 0; _i146 < _set144.size; ++_i146)
+                  org.apache.thrift.protocol.TSet _set160 = iprot.readSetBegin();
+                  struct.dstIdSet = new java.util.HashSet<java.lang.Long>(2*_set160.size);
+                  long _elem161;
+                  for (int _i162 = 0; _i162 < _set160.size; ++_i162)
                   {
-                    _elem145 = iprot.readI64();
-                    struct.dstIdSet.add(_elem145);
+                    _elem161 = iprot.readI64();
+                    struct.dstIdSet.add(_elem161);
                   }
                   iprot.readSetEnd();
                 }
@@ -30461,9 +30603,9 @@ public class GraphQueryAggregatorService {
           oprot.writeFieldBegin(DST_ID_SET_FIELD_DESC);
           {
             oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.I64, struct.dstIdSet.size()));
-            for (long _iter147 : struct.dstIdSet)
+            for (long _iter163 : struct.dstIdSet)
             {
-              oprot.writeI64(_iter147);
+              oprot.writeI64(_iter163);
             }
             oprot.writeSetEnd();
           }
@@ -30518,9 +30660,9 @@ public class GraphQueryAggregatorService {
         if (struct.isSetDstIdSet()) {
           {
             oprot.writeI32(struct.dstIdSet.size());
-            for (long _iter148 : struct.dstIdSet)
+            for (long _iter164 : struct.dstIdSet)
             {
-              oprot.writeI64(_iter148);
+              oprot.writeI64(_iter164);
             }
           }
         }
@@ -30546,13 +30688,13 @@ public class GraphQueryAggregatorService {
         }
         if (incoming.get(2)) {
           {
-            org.apache.thrift.protocol.TSet _set149 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.I64, iprot.readI32());
-            struct.dstIdSet = new java.util.HashSet<java.lang.Long>(2*_set149.size);
-            long _elem150;
-            for (int _i151 = 0; _i151 < _set149.size; ++_i151)
+            org.apache.thrift.protocol.TSet _set165 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.I64, iprot.readI32());
+            struct.dstIdSet = new java.util.HashSet<java.lang.Long>(2*_set165.size);
+            long _elem166;
+            for (int _i167 = 0; _i167 < _set165.size; ++_i167)
             {
-              _elem150 = iprot.readI64();
-              struct.dstIdSet.add(_elem150);
+              _elem166 = iprot.readI64();
+              struct.dstIdSet.add(_elem166);
             }
           }
           struct.setDstIdSetIsSet(true);
@@ -30887,14 +31029,14 @@ public class GraphQueryAggregatorService {
             case 0: // SUCCESS
               if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
                 {
-                  org.apache.thrift.protocol.TList _list152 = iprot.readListBegin();
-                  struct.success = new java.util.ArrayList<ThriftAssoc>(_list152.size);
-                  ThriftAssoc _elem153;
-                  for (int _i154 = 0; _i154 < _list152.size; ++_i154)
+                  org.apache.thrift.protocol.TList _list168 = iprot.readListBegin();
+                  struct.success = new java.util.ArrayList<ThriftAssoc>(_list168.size);
+                  ThriftAssoc _elem169;
+                  for (int _i170 = 0; _i170 < _list168.size; ++_i170)
                   {
-                    _elem153 = new ThriftAssoc();
-                    _elem153.read(iprot);
-                    struct.success.add(_elem153);
+                    _elem169 = new ThriftAssoc();
+                    _elem169.read(iprot);
+                    struct.success.add(_elem169);
                   }
                   iprot.readListEnd();
                 }
@@ -30922,9 +31064,9 @@ public class GraphQueryAggregatorService {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.success.size()));
-            for (ThriftAssoc _iter155 : struct.success)
+            for (ThriftAssoc _iter171 : struct.success)
             {
-              _iter155.write(oprot);
+              _iter171.write(oprot);
             }
             oprot.writeListEnd();
           }
@@ -30955,9 +31097,9 @@ public class GraphQueryAggregatorService {
         if (struct.isSetSuccess()) {
           {
             oprot.writeI32(struct.success.size());
-            for (ThriftAssoc _iter156 : struct.success)
+            for (ThriftAssoc _iter172 : struct.success)
             {
-              _iter156.write(oprot);
+              _iter172.write(oprot);
             }
           }
         }
@@ -30969,14 +31111,14 @@ public class GraphQueryAggregatorService {
         java.util.BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
           {
-            org.apache.thrift.protocol.TList _list157 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-            struct.success = new java.util.ArrayList<ThriftAssoc>(_list157.size);
-            ThriftAssoc _elem158;
-            for (int _i159 = 0; _i159 < _list157.size; ++_i159)
+            org.apache.thrift.protocol.TList _list173 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+            struct.success = new java.util.ArrayList<ThriftAssoc>(_list173.size);
+            ThriftAssoc _elem174;
+            for (int _i175 = 0; _i175 < _list173.size; ++_i175)
             {
-              _elem158 = new ThriftAssoc();
-              _elem158.read(iprot);
-              struct.success.add(_elem158);
+              _elem174 = new ThriftAssoc();
+              _elem174.read(iprot);
+              struct.success.add(_elem174);
             }
           }
           struct.setSuccessIsSet(true);
@@ -31703,13 +31845,13 @@ public class GraphQueryAggregatorService {
             case 4: // DST_ID_SET
               if (schemeField.type == org.apache.thrift.protocol.TType.SET) {
                 {
-                  org.apache.thrift.protocol.TSet _set160 = iprot.readSetBegin();
-                  struct.dstIdSet = new java.util.HashSet<java.lang.Long>(2*_set160.size);
-                  long _elem161;
-                  for (int _i162 = 0; _i162 < _set160.size; ++_i162)
+                  org.apache.thrift.protocol.TSet _set176 = iprot.readSetBegin();
+                  struct.dstIdSet = new java.util.HashSet<java.lang.Long>(2*_set176.size);
+                  long _elem177;
+                  for (int _i178 = 0; _i178 < _set176.size; ++_i178)
                   {
-                    _elem161 = iprot.readI64();
-                    struct.dstIdSet.add(_elem161);
+                    _elem177 = iprot.readI64();
+                    struct.dstIdSet.add(_elem177);
                   }
                   iprot.readSetEnd();
                 }
@@ -31762,9 +31904,9 @@ public class GraphQueryAggregatorService {
           oprot.writeFieldBegin(DST_ID_SET_FIELD_DESC);
           {
             oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.I64, struct.dstIdSet.size()));
-            for (long _iter163 : struct.dstIdSet)
+            for (long _iter179 : struct.dstIdSet)
             {
-              oprot.writeI64(_iter163);
+              oprot.writeI64(_iter179);
             }
             oprot.writeSetEnd();
           }
@@ -31825,9 +31967,9 @@ public class GraphQueryAggregatorService {
         if (struct.isSetDstIdSet()) {
           {
             oprot.writeI32(struct.dstIdSet.size());
-            for (long _iter164 : struct.dstIdSet)
+            for (long _iter180 : struct.dstIdSet)
             {
-              oprot.writeI64(_iter164);
+              oprot.writeI64(_iter180);
             }
           }
         }
@@ -31857,13 +31999,13 @@ public class GraphQueryAggregatorService {
         }
         if (incoming.get(3)) {
           {
-            org.apache.thrift.protocol.TSet _set165 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.I64, iprot.readI32());
-            struct.dstIdSet = new java.util.HashSet<java.lang.Long>(2*_set165.size);
-            long _elem166;
-            for (int _i167 = 0; _i167 < _set165.size; ++_i167)
+            org.apache.thrift.protocol.TSet _set181 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.I64, iprot.readI32());
+            struct.dstIdSet = new java.util.HashSet<java.lang.Long>(2*_set181.size);
+            long _elem182;
+            for (int _i183 = 0; _i183 < _set181.size; ++_i183)
             {
-              _elem166 = iprot.readI64();
-              struct.dstIdSet.add(_elem166);
+              _elem182 = iprot.readI64();
+              struct.dstIdSet.add(_elem182);
             }
           }
           struct.setDstIdSetIsSet(true);
@@ -32198,14 +32340,14 @@ public class GraphQueryAggregatorService {
             case 0: // SUCCESS
               if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
                 {
-                  org.apache.thrift.protocol.TList _list168 = iprot.readListBegin();
-                  struct.success = new java.util.ArrayList<ThriftAssoc>(_list168.size);
-                  ThriftAssoc _elem169;
-                  for (int _i170 = 0; _i170 < _list168.size; ++_i170)
+                  org.apache.thrift.protocol.TList _list184 = iprot.readListBegin();
+                  struct.success = new java.util.ArrayList<ThriftAssoc>(_list184.size);
+                  ThriftAssoc _elem185;
+                  for (int _i186 = 0; _i186 < _list184.size; ++_i186)
                   {
-                    _elem169 = new ThriftAssoc();
-                    _elem169.read(iprot);
-                    struct.success.add(_elem169);
+                    _elem185 = new ThriftAssoc();
+                    _elem185.read(iprot);
+                    struct.success.add(_elem185);
                   }
                   iprot.readListEnd();
                 }
@@ -32233,9 +32375,9 @@ public class GraphQueryAggregatorService {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.success.size()));
-            for (ThriftAssoc _iter171 : struct.success)
+            for (ThriftAssoc _iter187 : struct.success)
             {
-              _iter171.write(oprot);
+              _iter187.write(oprot);
             }
             oprot.writeListEnd();
           }
@@ -32266,9 +32408,9 @@ public class GraphQueryAggregatorService {
         if (struct.isSetSuccess()) {
           {
             oprot.writeI32(struct.success.size());
-            for (ThriftAssoc _iter172 : struct.success)
+            for (ThriftAssoc _iter188 : struct.success)
             {
-              _iter172.write(oprot);
+              _iter188.write(oprot);
             }
           }
         }
@@ -32280,14 +32422,14 @@ public class GraphQueryAggregatorService {
         java.util.BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
           {
-            org.apache.thrift.protocol.TList _list173 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-            struct.success = new java.util.ArrayList<ThriftAssoc>(_list173.size);
-            ThriftAssoc _elem174;
-            for (int _i175 = 0; _i175 < _list173.size; ++_i175)
+            org.apache.thrift.protocol.TList _list189 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+            struct.success = new java.util.ArrayList<ThriftAssoc>(_list189.size);
+            ThriftAssoc _elem190;
+            for (int _i191 = 0; _i191 < _list189.size; ++_i191)
             {
-              _elem174 = new ThriftAssoc();
-              _elem174.read(iprot);
-              struct.success.add(_elem174);
+              _elem190 = new ThriftAssoc();
+              _elem190.read(iprot);
+              struct.success.add(_elem190);
             }
           }
           struct.setSuccessIsSet(true);
@@ -32611,13 +32753,13 @@ public class GraphQueryAggregatorService {
             case 1: // ATTRS
               if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
                 {
-                  org.apache.thrift.protocol.TList _list176 = iprot.readListBegin();
-                  struct.attrs = new java.util.ArrayList<java.lang.String>(_list176.size);
-                  java.lang.String _elem177;
-                  for (int _i178 = 0; _i178 < _list176.size; ++_i178)
+                  org.apache.thrift.protocol.TList _list192 = iprot.readListBegin();
+                  struct.attrs = new java.util.ArrayList<java.lang.String>(_list192.size);
+                  java.lang.String _elem193;
+                  for (int _i194 = 0; _i194 < _list192.size; ++_i194)
                   {
-                    _elem177 = iprot.readString();
-                    struct.attrs.add(_elem177);
+                    _elem193 = iprot.readString();
+                    struct.attrs.add(_elem193);
                   }
                   iprot.readListEnd();
                 }
@@ -32645,9 +32787,9 @@ public class GraphQueryAggregatorService {
           oprot.writeFieldBegin(ATTRS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.attrs.size()));
-            for (java.lang.String _iter179 : struct.attrs)
+            for (java.lang.String _iter195 : struct.attrs)
             {
-              oprot.writeString(_iter179);
+              oprot.writeString(_iter195);
             }
             oprot.writeListEnd();
           }
@@ -32678,9 +32820,9 @@ public class GraphQueryAggregatorService {
         if (struct.isSetAttrs()) {
           {
             oprot.writeI32(struct.attrs.size());
-            for (java.lang.String _iter180 : struct.attrs)
+            for (java.lang.String _iter196 : struct.attrs)
             {
-              oprot.writeString(_iter180);
+              oprot.writeString(_iter196);
             }
           }
         }
@@ -32692,13 +32834,13 @@ public class GraphQueryAggregatorService {
         java.util.BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
           {
-            org.apache.thrift.protocol.TList _list181 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-            struct.attrs = new java.util.ArrayList<java.lang.String>(_list181.size);
-            java.lang.String _elem182;
-            for (int _i183 = 0; _i183 < _list181.size; ++_i183)
+            org.apache.thrift.protocol.TList _list197 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+            struct.attrs = new java.util.ArrayList<java.lang.String>(_list197.size);
+            java.lang.String _elem198;
+            for (int _i199 = 0; _i199 < _list197.size; ++_i199)
             {
-              _elem182 = iprot.readString();
-              struct.attrs.add(_elem182);
+              _elem198 = iprot.readString();
+              struct.attrs.add(_elem198);
             }
           }
           struct.setAttrsIsSet(true);
@@ -33740,13 +33882,13 @@ public class GraphQueryAggregatorService {
             case 0: // SUCCESS
               if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
                 {
-                  org.apache.thrift.protocol.TList _list184 = iprot.readListBegin();
-                  struct.success = new java.util.ArrayList<java.lang.String>(_list184.size);
-                  java.lang.String _elem185;
-                  for (int _i186 = 0; _i186 < _list184.size; ++_i186)
+                  org.apache.thrift.protocol.TList _list200 = iprot.readListBegin();
+                  struct.success = new java.util.ArrayList<java.lang.String>(_list200.size);
+                  java.lang.String _elem201;
+                  for (int _i202 = 0; _i202 < _list200.size; ++_i202)
                   {
-                    _elem185 = iprot.readString();
-                    struct.success.add(_elem185);
+                    _elem201 = iprot.readString();
+                    struct.success.add(_elem201);
                   }
                   iprot.readListEnd();
                 }
@@ -33774,9 +33916,9 @@ public class GraphQueryAggregatorService {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.success.size()));
-            for (java.lang.String _iter187 : struct.success)
+            for (java.lang.String _iter203 : struct.success)
             {
-              oprot.writeString(_iter187);
+              oprot.writeString(_iter203);
             }
             oprot.writeListEnd();
           }
@@ -33807,9 +33949,9 @@ public class GraphQueryAggregatorService {
         if (struct.isSetSuccess()) {
           {
             oprot.writeI32(struct.success.size());
-            for (java.lang.String _iter188 : struct.success)
+            for (java.lang.String _iter204 : struct.success)
             {
-              oprot.writeString(_iter188);
+              oprot.writeString(_iter204);
             }
           }
         }
@@ -33821,13 +33963,13 @@ public class GraphQueryAggregatorService {
         java.util.BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
           {
-            org.apache.thrift.protocol.TList _list189 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-            struct.success = new java.util.ArrayList<java.lang.String>(_list189.size);
-            java.lang.String _elem190;
-            for (int _i191 = 0; _i191 < _list189.size; ++_i191)
+            org.apache.thrift.protocol.TList _list205 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+            struct.success = new java.util.ArrayList<java.lang.String>(_list205.size);
+            java.lang.String _elem206;
+            for (int _i207 = 0; _i207 < _list205.size; ++_i207)
             {
-              _elem190 = iprot.readString();
-              struct.success.add(_elem190);
+              _elem206 = iprot.readString();
+              struct.success.add(_elem206);
             }
           }
           struct.setSuccessIsSet(true);
@@ -34605,13 +34747,13 @@ public class GraphQueryAggregatorService {
             case 0: // SUCCESS
               if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
                 {
-                  org.apache.thrift.protocol.TList _list192 = iprot.readListBegin();
-                  struct.success = new java.util.ArrayList<java.lang.String>(_list192.size);
-                  java.lang.String _elem193;
-                  for (int _i194 = 0; _i194 < _list192.size; ++_i194)
+                  org.apache.thrift.protocol.TList _list208 = iprot.readListBegin();
+                  struct.success = new java.util.ArrayList<java.lang.String>(_list208.size);
+                  java.lang.String _elem209;
+                  for (int _i210 = 0; _i210 < _list208.size; ++_i210)
                   {
-                    _elem193 = iprot.readString();
-                    struct.success.add(_elem193);
+                    _elem209 = iprot.readString();
+                    struct.success.add(_elem209);
                   }
                   iprot.readListEnd();
                 }
@@ -34639,9 +34781,9 @@ public class GraphQueryAggregatorService {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.success.size()));
-            for (java.lang.String _iter195 : struct.success)
+            for (java.lang.String _iter211 : struct.success)
             {
-              oprot.writeString(_iter195);
+              oprot.writeString(_iter211);
             }
             oprot.writeListEnd();
           }
@@ -34672,9 +34814,9 @@ public class GraphQueryAggregatorService {
         if (struct.isSetSuccess()) {
           {
             oprot.writeI32(struct.success.size());
-            for (java.lang.String _iter196 : struct.success)
+            for (java.lang.String _iter212 : struct.success)
             {
-              oprot.writeString(_iter196);
+              oprot.writeString(_iter212);
             }
           }
         }
@@ -34686,13 +34828,13 @@ public class GraphQueryAggregatorService {
         java.util.BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
           {
-            org.apache.thrift.protocol.TList _list197 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-            struct.success = new java.util.ArrayList<java.lang.String>(_list197.size);
-            java.lang.String _elem198;
-            for (int _i199 = 0; _i199 < _list197.size; ++_i199)
+            org.apache.thrift.protocol.TList _list213 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+            struct.success = new java.util.ArrayList<java.lang.String>(_list213.size);
+            java.lang.String _elem214;
+            for (int _i215 = 0; _i215 < _list213.size; ++_i215)
             {
-              _elem198 = iprot.readString();
-              struct.success.add(_elem198);
+              _elem214 = iprot.readString();
+              struct.success.add(_elem214);
             }
           }
           struct.setSuccessIsSet(true);
@@ -35761,14 +35903,14 @@ public class GraphQueryAggregatorService {
             case 0: // SUCCESS
               if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
                 {
-                  org.apache.thrift.protocol.TList _list200 = iprot.readListBegin();
-                  struct.success = new java.util.ArrayList<ThriftAssoc>(_list200.size);
-                  ThriftAssoc _elem201;
-                  for (int _i202 = 0; _i202 < _list200.size; ++_i202)
+                  org.apache.thrift.protocol.TList _list216 = iprot.readListBegin();
+                  struct.success = new java.util.ArrayList<ThriftAssoc>(_list216.size);
+                  ThriftAssoc _elem217;
+                  for (int _i218 = 0; _i218 < _list216.size; ++_i218)
                   {
-                    _elem201 = new ThriftAssoc();
-                    _elem201.read(iprot);
-                    struct.success.add(_elem201);
+                    _elem217 = new ThriftAssoc();
+                    _elem217.read(iprot);
+                    struct.success.add(_elem217);
                   }
                   iprot.readListEnd();
                 }
@@ -35796,9 +35938,9 @@ public class GraphQueryAggregatorService {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.success.size()));
-            for (ThriftAssoc _iter203 : struct.success)
+            for (ThriftAssoc _iter219 : struct.success)
             {
-              _iter203.write(oprot);
+              _iter219.write(oprot);
             }
             oprot.writeListEnd();
           }
@@ -35829,9 +35971,9 @@ public class GraphQueryAggregatorService {
         if (struct.isSetSuccess()) {
           {
             oprot.writeI32(struct.success.size());
-            for (ThriftAssoc _iter204 : struct.success)
+            for (ThriftAssoc _iter220 : struct.success)
             {
-              _iter204.write(oprot);
+              _iter220.write(oprot);
             }
           }
         }
@@ -35843,14 +35985,14 @@ public class GraphQueryAggregatorService {
         java.util.BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
           {
-            org.apache.thrift.protocol.TList _list205 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-            struct.success = new java.util.ArrayList<ThriftAssoc>(_list205.size);
-            ThriftAssoc _elem206;
-            for (int _i207 = 0; _i207 < _list205.size; ++_i207)
+            org.apache.thrift.protocol.TList _list221 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+            struct.success = new java.util.ArrayList<ThriftAssoc>(_list221.size);
+            ThriftAssoc _elem222;
+            for (int _i223 = 0; _i223 < _list221.size; ++_i223)
             {
-              _elem206 = new ThriftAssoc();
-              _elem206.read(iprot);
-              struct.success.add(_elem206);
+              _elem222 = new ThriftAssoc();
+              _elem222.read(iprot);
+              struct.success.add(_elem222);
             }
           }
           struct.setSuccessIsSet(true);
@@ -37015,14 +37157,14 @@ public class GraphQueryAggregatorService {
             case 0: // SUCCESS
               if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
                 {
-                  org.apache.thrift.protocol.TList _list208 = iprot.readListBegin();
-                  struct.success = new java.util.ArrayList<ThriftAssoc>(_list208.size);
-                  ThriftAssoc _elem209;
-                  for (int _i210 = 0; _i210 < _list208.size; ++_i210)
+                  org.apache.thrift.protocol.TList _list224 = iprot.readListBegin();
+                  struct.success = new java.util.ArrayList<ThriftAssoc>(_list224.size);
+                  ThriftAssoc _elem225;
+                  for (int _i226 = 0; _i226 < _list224.size; ++_i226)
                   {
-                    _elem209 = new ThriftAssoc();
-                    _elem209.read(iprot);
-                    struct.success.add(_elem209);
+                    _elem225 = new ThriftAssoc();
+                    _elem225.read(iprot);
+                    struct.success.add(_elem225);
                   }
                   iprot.readListEnd();
                 }
@@ -37050,9 +37192,9 @@ public class GraphQueryAggregatorService {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.success.size()));
-            for (ThriftAssoc _iter211 : struct.success)
+            for (ThriftAssoc _iter227 : struct.success)
             {
-              _iter211.write(oprot);
+              _iter227.write(oprot);
             }
             oprot.writeListEnd();
           }
@@ -37083,9 +37225,9 @@ public class GraphQueryAggregatorService {
         if (struct.isSetSuccess()) {
           {
             oprot.writeI32(struct.success.size());
-            for (ThriftAssoc _iter212 : struct.success)
+            for (ThriftAssoc _iter228 : struct.success)
             {
-              _iter212.write(oprot);
+              _iter228.write(oprot);
             }
           }
         }
@@ -37097,14 +37239,14 @@ public class GraphQueryAggregatorService {
         java.util.BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
           {
-            org.apache.thrift.protocol.TList _list213 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-            struct.success = new java.util.ArrayList<ThriftAssoc>(_list213.size);
-            ThriftAssoc _elem214;
-            for (int _i215 = 0; _i215 < _list213.size; ++_i215)
+            org.apache.thrift.protocol.TList _list229 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+            struct.success = new java.util.ArrayList<ThriftAssoc>(_list229.size);
+            ThriftAssoc _elem230;
+            for (int _i231 = 0; _i231 < _list229.size; ++_i231)
             {
-              _elem214 = new ThriftAssoc();
-              _elem214.read(iprot);
-              struct.success.add(_elem214);
+              _elem230 = new ThriftAssoc();
+              _elem230.read(iprot);
+              struct.success.add(_elem230);
             }
           }
           struct.setSuccessIsSet(true);
@@ -49007,14 +49149,14 @@ public class GraphQueryAggregatorService {
             case 0: // SUCCESS
               if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
                 {
-                  org.apache.thrift.protocol.TList _list216 = iprot.readListBegin();
-                  struct.success = new java.util.ArrayList<ThriftAssoc>(_list216.size);
-                  ThriftAssoc _elem217;
-                  for (int _i218 = 0; _i218 < _list216.size; ++_i218)
+                  org.apache.thrift.protocol.TList _list232 = iprot.readListBegin();
+                  struct.success = new java.util.ArrayList<ThriftAssoc>(_list232.size);
+                  ThriftAssoc _elem233;
+                  for (int _i234 = 0; _i234 < _list232.size; ++_i234)
                   {
-                    _elem217 = new ThriftAssoc();
-                    _elem217.read(iprot);
-                    struct.success.add(_elem217);
+                    _elem233 = new ThriftAssoc();
+                    _elem233.read(iprot);
+                    struct.success.add(_elem233);
                   }
                   iprot.readListEnd();
                 }
@@ -49042,9 +49184,9 @@ public class GraphQueryAggregatorService {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.success.size()));
-            for (ThriftAssoc _iter219 : struct.success)
+            for (ThriftAssoc _iter235 : struct.success)
             {
-              _iter219.write(oprot);
+              _iter235.write(oprot);
             }
             oprot.writeListEnd();
           }
@@ -49075,9 +49217,9 @@ public class GraphQueryAggregatorService {
         if (struct.isSetSuccess()) {
           {
             oprot.writeI32(struct.success.size());
-            for (ThriftAssoc _iter220 : struct.success)
+            for (ThriftAssoc _iter236 : struct.success)
             {
-              _iter220.write(oprot);
+              _iter236.write(oprot);
             }
           }
         }
@@ -49089,14 +49231,14 @@ public class GraphQueryAggregatorService {
         java.util.BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
           {
-            org.apache.thrift.protocol.TList _list221 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-            struct.success = new java.util.ArrayList<ThriftAssoc>(_list221.size);
-            ThriftAssoc _elem222;
-            for (int _i223 = 0; _i223 < _list221.size; ++_i223)
+            org.apache.thrift.protocol.TList _list237 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+            struct.success = new java.util.ArrayList<ThriftAssoc>(_list237.size);
+            ThriftAssoc _elem238;
+            for (int _i239 = 0; _i239 < _list237.size; ++_i239)
             {
-              _elem222 = new ThriftAssoc();
-              _elem222.read(iprot);
-              struct.success.add(_elem222);
+              _elem238 = new ThriftAssoc();
+              _elem238.read(iprot);
+              struct.success.add(_elem238);
             }
           }
           struct.setSuccessIsSet(true);
@@ -49973,14 +50115,14 @@ public class GraphQueryAggregatorService {
             case 0: // SUCCESS
               if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
                 {
-                  org.apache.thrift.protocol.TList _list224 = iprot.readListBegin();
-                  struct.success = new java.util.ArrayList<ThriftAssoc>(_list224.size);
-                  ThriftAssoc _elem225;
-                  for (int _i226 = 0; _i226 < _list224.size; ++_i226)
+                  org.apache.thrift.protocol.TList _list240 = iprot.readListBegin();
+                  struct.success = new java.util.ArrayList<ThriftAssoc>(_list240.size);
+                  ThriftAssoc _elem241;
+                  for (int _i242 = 0; _i242 < _list240.size; ++_i242)
                   {
-                    _elem225 = new ThriftAssoc();
-                    _elem225.read(iprot);
-                    struct.success.add(_elem225);
+                    _elem241 = new ThriftAssoc();
+                    _elem241.read(iprot);
+                    struct.success.add(_elem241);
                   }
                   iprot.readListEnd();
                 }
@@ -50008,9 +50150,9 @@ public class GraphQueryAggregatorService {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.success.size()));
-            for (ThriftAssoc _iter227 : struct.success)
+            for (ThriftAssoc _iter243 : struct.success)
             {
-              _iter227.write(oprot);
+              _iter243.write(oprot);
             }
             oprot.writeListEnd();
           }
@@ -50041,9 +50183,9 @@ public class GraphQueryAggregatorService {
         if (struct.isSetSuccess()) {
           {
             oprot.writeI32(struct.success.size());
-            for (ThriftAssoc _iter228 : struct.success)
+            for (ThriftAssoc _iter244 : struct.success)
             {
-              _iter228.write(oprot);
+              _iter244.write(oprot);
             }
           }
         }
@@ -50055,14 +50197,14 @@ public class GraphQueryAggregatorService {
         java.util.BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
           {
-            org.apache.thrift.protocol.TList _list229 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-            struct.success = new java.util.ArrayList<ThriftAssoc>(_list229.size);
-            ThriftAssoc _elem230;
-            for (int _i231 = 0; _i231 < _list229.size; ++_i231)
+            org.apache.thrift.protocol.TList _list245 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+            struct.success = new java.util.ArrayList<ThriftAssoc>(_list245.size);
+            ThriftAssoc _elem246;
+            for (int _i247 = 0; _i247 < _list245.size; ++_i247)
             {
-              _elem230 = new ThriftAssoc();
-              _elem230.read(iprot);
-              struct.success.add(_elem230);
+              _elem246 = new ThriftAssoc();
+              _elem246.read(iprot);
+              struct.success.add(_elem246);
             }
           }
           struct.setSuccessIsSet(true);
@@ -51227,14 +51369,14 @@ public class GraphQueryAggregatorService {
             case 0: // SUCCESS
               if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
                 {
-                  org.apache.thrift.protocol.TList _list232 = iprot.readListBegin();
-                  struct.success = new java.util.ArrayList<ThriftAssoc>(_list232.size);
-                  ThriftAssoc _elem233;
-                  for (int _i234 = 0; _i234 < _list232.size; ++_i234)
+                  org.apache.thrift.protocol.TList _list248 = iprot.readListBegin();
+                  struct.success = new java.util.ArrayList<ThriftAssoc>(_list248.size);
+                  ThriftAssoc _elem249;
+                  for (int _i250 = 0; _i250 < _list248.size; ++_i250)
                   {
-                    _elem233 = new ThriftAssoc();
-                    _elem233.read(iprot);
-                    struct.success.add(_elem233);
+                    _elem249 = new ThriftAssoc();
+                    _elem249.read(iprot);
+                    struct.success.add(_elem249);
                   }
                   iprot.readListEnd();
                 }
@@ -51262,9 +51404,9 @@ public class GraphQueryAggregatorService {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.success.size()));
-            for (ThriftAssoc _iter235 : struct.success)
+            for (ThriftAssoc _iter251 : struct.success)
             {
-              _iter235.write(oprot);
+              _iter251.write(oprot);
             }
             oprot.writeListEnd();
           }
@@ -51295,9 +51437,9 @@ public class GraphQueryAggregatorService {
         if (struct.isSetSuccess()) {
           {
             oprot.writeI32(struct.success.size());
-            for (ThriftAssoc _iter236 : struct.success)
+            for (ThriftAssoc _iter252 : struct.success)
             {
-              _iter236.write(oprot);
+              _iter252.write(oprot);
             }
           }
         }
@@ -51309,14 +51451,14 @@ public class GraphQueryAggregatorService {
         java.util.BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
           {
-            org.apache.thrift.protocol.TList _list237 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-            struct.success = new java.util.ArrayList<ThriftAssoc>(_list237.size);
-            ThriftAssoc _elem238;
-            for (int _i239 = 0; _i239 < _list237.size; ++_i239)
+            org.apache.thrift.protocol.TList _list253 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+            struct.success = new java.util.ArrayList<ThriftAssoc>(_list253.size);
+            ThriftAssoc _elem254;
+            for (int _i255 = 0; _i255 < _list253.size; ++_i255)
             {
-              _elem238 = new ThriftAssoc();
-              _elem238.read(iprot);
-              struct.success.add(_elem238);
+              _elem254 = new ThriftAssoc();
+              _elem254.read(iprot);
+              struct.success.add(_elem254);
             }
           }
           struct.setSuccessIsSet(true);
@@ -52577,14 +52719,14 @@ public class GraphQueryAggregatorService {
             case 0: // SUCCESS
               if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
                 {
-                  org.apache.thrift.protocol.TList _list240 = iprot.readListBegin();
-                  struct.success = new java.util.ArrayList<ThriftAssoc>(_list240.size);
-                  ThriftAssoc _elem241;
-                  for (int _i242 = 0; _i242 < _list240.size; ++_i242)
+                  org.apache.thrift.protocol.TList _list256 = iprot.readListBegin();
+                  struct.success = new java.util.ArrayList<ThriftAssoc>(_list256.size);
+                  ThriftAssoc _elem257;
+                  for (int _i258 = 0; _i258 < _list256.size; ++_i258)
                   {
-                    _elem241 = new ThriftAssoc();
-                    _elem241.read(iprot);
-                    struct.success.add(_elem241);
+                    _elem257 = new ThriftAssoc();
+                    _elem257.read(iprot);
+                    struct.success.add(_elem257);
                   }
                   iprot.readListEnd();
                 }
@@ -52612,9 +52754,9 @@ public class GraphQueryAggregatorService {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.success.size()));
-            for (ThriftAssoc _iter243 : struct.success)
+            for (ThriftAssoc _iter259 : struct.success)
             {
-              _iter243.write(oprot);
+              _iter259.write(oprot);
             }
             oprot.writeListEnd();
           }
@@ -52645,9 +52787,9 @@ public class GraphQueryAggregatorService {
         if (struct.isSetSuccess()) {
           {
             oprot.writeI32(struct.success.size());
-            for (ThriftAssoc _iter244 : struct.success)
+            for (ThriftAssoc _iter260 : struct.success)
             {
-              _iter244.write(oprot);
+              _iter260.write(oprot);
             }
           }
         }
@@ -52659,14 +52801,14 @@ public class GraphQueryAggregatorService {
         java.util.BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
           {
-            org.apache.thrift.protocol.TList _list245 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-            struct.success = new java.util.ArrayList<ThriftAssoc>(_list245.size);
-            ThriftAssoc _elem246;
-            for (int _i247 = 0; _i247 < _list245.size; ++_i247)
+            org.apache.thrift.protocol.TList _list261 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+            struct.success = new java.util.ArrayList<ThriftAssoc>(_list261.size);
+            ThriftAssoc _elem262;
+            for (int _i263 = 0; _i263 < _list261.size; ++_i263)
             {
-              _elem246 = new ThriftAssoc();
-              _elem246.read(iprot);
-              struct.success.add(_elem246);
+              _elem262 = new ThriftAssoc();
+              _elem262.read(iprot);
+              struct.success.add(_elem262);
             }
           }
           struct.setSuccessIsSet(true);
@@ -53493,6 +53635,740 @@ public class GraphQueryAggregatorService {
     }
   }
 
+  public static class rpq_args implements org.apache.thrift.TBase<rpq_args, rpq_args._Fields>, java.io.Serializable, Cloneable, Comparable<rpq_args>   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("rpq_args");
+
+    private static final org.apache.thrift.protocol.TField QUERY_FIELD_DESC = new org.apache.thrift.protocol.TField("query", org.apache.thrift.protocol.TType.STRUCT, (short)1);
+
+    private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new rpq_argsStandardSchemeFactory();
+    private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new rpq_argsTupleSchemeFactory();
+
+    public RPQuery query; // required
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      QUERY((short)1, "query");
+
+      private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
+
+      static {
+        for (_Fields field : java.util.EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // QUERY
+            return QUERY;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new java.lang.IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(java.lang.String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final java.lang.String _fieldName;
+
+      _Fields(short thriftId, java.lang.String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public java.lang.String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+    public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.QUERY, new org.apache.thrift.meta_data.FieldMetaData("query", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, RPQuery.class)));
+      metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(rpq_args.class, metaDataMap);
+    }
+
+    public rpq_args() {
+    }
+
+    public rpq_args(
+      RPQuery query)
+    {
+      this();
+      this.query = query;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public rpq_args(rpq_args other) {
+      if (other.isSetQuery()) {
+        this.query = new RPQuery(other.query);
+      }
+    }
+
+    public rpq_args deepCopy() {
+      return new rpq_args(this);
+    }
+
+    @Override
+    public void clear() {
+      this.query = null;
+    }
+
+    public RPQuery getQuery() {
+      return this.query;
+    }
+
+    public rpq_args setQuery(RPQuery query) {
+      this.query = query;
+      return this;
+    }
+
+    public void unsetQuery() {
+      this.query = null;
+    }
+
+    /** Returns true if field query is set (has been assigned a value) and false otherwise */
+    public boolean isSetQuery() {
+      return this.query != null;
+    }
+
+    public void setQueryIsSet(boolean value) {
+      if (!value) {
+        this.query = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, java.lang.Object value) {
+      switch (field) {
+      case QUERY:
+        if (value == null) {
+          unsetQuery();
+        } else {
+          setQuery((RPQuery)value);
+        }
+        break;
+
+      }
+    }
+
+    public java.lang.Object getFieldValue(_Fields field) {
+      switch (field) {
+      case QUERY:
+        return getQuery();
+
+      }
+      throw new java.lang.IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new java.lang.IllegalArgumentException();
+      }
+
+      switch (field) {
+      case QUERY:
+        return isSetQuery();
+      }
+      throw new java.lang.IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(java.lang.Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof rpq_args)
+        return this.equals((rpq_args)that);
+      return false;
+    }
+
+    public boolean equals(rpq_args that) {
+      if (that == null)
+        return false;
+      if (this == that)
+        return true;
+
+      boolean this_present_query = true && this.isSetQuery();
+      boolean that_present_query = true && that.isSetQuery();
+      if (this_present_query || that_present_query) {
+        if (!(this_present_query && that_present_query))
+          return false;
+        if (!this.query.equals(that.query))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      int hashCode = 1;
+
+      hashCode = hashCode * 8191 + ((isSetQuery()) ? 131071 : 524287);
+      if (isSetQuery())
+        hashCode = hashCode * 8191 + query.hashCode();
+
+      return hashCode;
+    }
+
+    @Override
+    public int compareTo(rpq_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+
+      lastComparison = java.lang.Boolean.valueOf(isSetQuery()).compareTo(other.isSetQuery());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetQuery()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.query, other.query);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      scheme(iprot).read(iprot, this);
+    }
+
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      scheme(oprot).write(oprot, this);
+    }
+
+    @Override
+    public java.lang.String toString() {
+      java.lang.StringBuilder sb = new java.lang.StringBuilder("rpq_args(");
+      boolean first = true;
+
+      sb.append("query:");
+      if (this.query == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.query);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+      // check for sub-struct validity
+      if (query != null) {
+        query.validate();
+      }
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, java.lang.ClassNotFoundException {
+      try {
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private static class rpq_argsStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+      public rpq_argsStandardScheme getScheme() {
+        return new rpq_argsStandardScheme();
+      }
+    }
+
+    private static class rpq_argsStandardScheme extends org.apache.thrift.scheme.StandardScheme<rpq_args> {
+
+      public void read(org.apache.thrift.protocol.TProtocol iprot, rpq_args struct) throws org.apache.thrift.TException {
+        org.apache.thrift.protocol.TField schemeField;
+        iprot.readStructBegin();
+        while (true)
+        {
+          schemeField = iprot.readFieldBegin();
+          if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
+            break;
+          }
+          switch (schemeField.id) {
+            case 1: // QUERY
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+                struct.query = new RPQuery();
+                struct.query.read(iprot);
+                struct.setQueryIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            default:
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+          }
+          iprot.readFieldEnd();
+        }
+        iprot.readStructEnd();
+
+        // check for required fields of primitive type, which can't be checked in the validate method
+        struct.validate();
+      }
+
+      public void write(org.apache.thrift.protocol.TProtocol oprot, rpq_args struct) throws org.apache.thrift.TException {
+        struct.validate();
+
+        oprot.writeStructBegin(STRUCT_DESC);
+        if (struct.query != null) {
+          oprot.writeFieldBegin(QUERY_FIELD_DESC);
+          struct.query.write(oprot);
+          oprot.writeFieldEnd();
+        }
+        oprot.writeFieldStop();
+        oprot.writeStructEnd();
+      }
+
+    }
+
+    private static class rpq_argsTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+      public rpq_argsTupleScheme getScheme() {
+        return new rpq_argsTupleScheme();
+      }
+    }
+
+    private static class rpq_argsTupleScheme extends org.apache.thrift.scheme.TupleScheme<rpq_args> {
+
+      @Override
+      public void write(org.apache.thrift.protocol.TProtocol prot, rpq_args struct) throws org.apache.thrift.TException {
+        org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
+        java.util.BitSet optionals = new java.util.BitSet();
+        if (struct.isSetQuery()) {
+          optionals.set(0);
+        }
+        oprot.writeBitSet(optionals, 1);
+        if (struct.isSetQuery()) {
+          struct.query.write(oprot);
+        }
+      }
+
+      @Override
+      public void read(org.apache.thrift.protocol.TProtocol prot, rpq_args struct) throws org.apache.thrift.TException {
+        org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
+        java.util.BitSet incoming = iprot.readBitSet(1);
+        if (incoming.get(0)) {
+          struct.query = new RPQuery();
+          struct.query.read(iprot);
+          struct.setQueryIsSet(true);
+        }
+      }
+    }
+
+    private static <S extends org.apache.thrift.scheme.IScheme> S scheme(org.apache.thrift.protocol.TProtocol proto) {
+      return (org.apache.thrift.scheme.StandardScheme.class.equals(proto.getScheme()) ? STANDARD_SCHEME_FACTORY : TUPLE_SCHEME_FACTORY).getScheme();
+    }
+  }
+
+  public static class rpq_result implements org.apache.thrift.TBase<rpq_result, rpq_result._Fields>, java.io.Serializable, Cloneable, Comparable<rpq_result>   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("rpq_result");
+
+    private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.STRUCT, (short)0);
+
+    private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new rpq_resultStandardSchemeFactory();
+    private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new rpq_resultTupleSchemeFactory();
+
+    public RPQCtx success; // required
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      SUCCESS((short)0, "success");
+
+      private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
+
+      static {
+        for (_Fields field : java.util.EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 0: // SUCCESS
+            return SUCCESS;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new java.lang.IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(java.lang.String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final java.lang.String _fieldName;
+
+      _Fields(short thriftId, java.lang.String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public java.lang.String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+    public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, RPQCtx.class)));
+      metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(rpq_result.class, metaDataMap);
+    }
+
+    public rpq_result() {
+    }
+
+    public rpq_result(
+      RPQCtx success)
+    {
+      this();
+      this.success = success;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public rpq_result(rpq_result other) {
+      if (other.isSetSuccess()) {
+        this.success = new RPQCtx(other.success);
+      }
+    }
+
+    public rpq_result deepCopy() {
+      return new rpq_result(this);
+    }
+
+    @Override
+    public void clear() {
+      this.success = null;
+    }
+
+    public RPQCtx getSuccess() {
+      return this.success;
+    }
+
+    public rpq_result setSuccess(RPQCtx success) {
+      this.success = success;
+      return this;
+    }
+
+    public void unsetSuccess() {
+      this.success = null;
+    }
+
+    /** Returns true if field success is set (has been assigned a value) and false otherwise */
+    public boolean isSetSuccess() {
+      return this.success != null;
+    }
+
+    public void setSuccessIsSet(boolean value) {
+      if (!value) {
+        this.success = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, java.lang.Object value) {
+      switch (field) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((RPQCtx)value);
+        }
+        break;
+
+      }
+    }
+
+    public java.lang.Object getFieldValue(_Fields field) {
+      switch (field) {
+      case SUCCESS:
+        return getSuccess();
+
+      }
+      throw new java.lang.IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new java.lang.IllegalArgumentException();
+      }
+
+      switch (field) {
+      case SUCCESS:
+        return isSetSuccess();
+      }
+      throw new java.lang.IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(java.lang.Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof rpq_result)
+        return this.equals((rpq_result)that);
+      return false;
+    }
+
+    public boolean equals(rpq_result that) {
+      if (that == null)
+        return false;
+      if (this == that)
+        return true;
+
+      boolean this_present_success = true && this.isSetSuccess();
+      boolean that_present_success = true && that.isSetSuccess();
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (!this.success.equals(that.success))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      int hashCode = 1;
+
+      hashCode = hashCode * 8191 + ((isSetSuccess()) ? 131071 : 524287);
+      if (isSetSuccess())
+        hashCode = hashCode * 8191 + success.hashCode();
+
+      return hashCode;
+    }
+
+    @Override
+    public int compareTo(rpq_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+
+      lastComparison = java.lang.Boolean.valueOf(isSetSuccess()).compareTo(other.isSetSuccess());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetSuccess()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.success, other.success);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      scheme(iprot).read(iprot, this);
+    }
+
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      scheme(oprot).write(oprot, this);
+      }
+
+    @Override
+    public java.lang.String toString() {
+      java.lang.StringBuilder sb = new java.lang.StringBuilder("rpq_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      if (this.success == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.success);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+      // check for sub-struct validity
+      if (success != null) {
+        success.validate();
+      }
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, java.lang.ClassNotFoundException {
+      try {
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private static class rpq_resultStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+      public rpq_resultStandardScheme getScheme() {
+        return new rpq_resultStandardScheme();
+      }
+    }
+
+    private static class rpq_resultStandardScheme extends org.apache.thrift.scheme.StandardScheme<rpq_result> {
+
+      public void read(org.apache.thrift.protocol.TProtocol iprot, rpq_result struct) throws org.apache.thrift.TException {
+        org.apache.thrift.protocol.TField schemeField;
+        iprot.readStructBegin();
+        while (true)
+        {
+          schemeField = iprot.readFieldBegin();
+          if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
+            break;
+          }
+          switch (schemeField.id) {
+            case 0: // SUCCESS
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+                struct.success = new RPQCtx();
+                struct.success.read(iprot);
+                struct.setSuccessIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            default:
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+          }
+          iprot.readFieldEnd();
+        }
+        iprot.readStructEnd();
+
+        // check for required fields of primitive type, which can't be checked in the validate method
+        struct.validate();
+      }
+
+      public void write(org.apache.thrift.protocol.TProtocol oprot, rpq_result struct) throws org.apache.thrift.TException {
+        struct.validate();
+
+        oprot.writeStructBegin(STRUCT_DESC);
+        if (struct.success != null) {
+          oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+          struct.success.write(oprot);
+          oprot.writeFieldEnd();
+        }
+        oprot.writeFieldStop();
+        oprot.writeStructEnd();
+      }
+
+    }
+
+    private static class rpq_resultTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+      public rpq_resultTupleScheme getScheme() {
+        return new rpq_resultTupleScheme();
+      }
+    }
+
+    private static class rpq_resultTupleScheme extends org.apache.thrift.scheme.TupleScheme<rpq_result> {
+
+      @Override
+      public void write(org.apache.thrift.protocol.TProtocol prot, rpq_result struct) throws org.apache.thrift.TException {
+        org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
+        java.util.BitSet optionals = new java.util.BitSet();
+        if (struct.isSetSuccess()) {
+          optionals.set(0);
+        }
+        oprot.writeBitSet(optionals, 1);
+        if (struct.isSetSuccess()) {
+          struct.success.write(oprot);
+        }
+      }
+
+      @Override
+      public void read(org.apache.thrift.protocol.TProtocol prot, rpq_result struct) throws org.apache.thrift.TException {
+        org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
+        java.util.BitSet incoming = iprot.readBitSet(1);
+        if (incoming.get(0)) {
+          struct.success = new RPQCtx();
+          struct.success.read(iprot);
+          struct.setSuccessIsSet(true);
+        }
+      }
+    }
+
+    private static <S extends org.apache.thrift.scheme.IScheme> S scheme(org.apache.thrift.protocol.TProtocol proto) {
+      return (org.apache.thrift.scheme.StandardScheme.class.equals(proto.getScheme()) ? STANDARD_SCHEME_FACTORY : TUPLE_SCHEME_FACTORY).getScheme();
+    }
+  }
+
   public static class path_query_args implements org.apache.thrift.TBase<path_query_args, path_query_args._Fields>, java.io.Serializable, Cloneable, Comparable<path_query_args>   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("path_query_args");
 
@@ -53804,13 +54680,13 @@ public class GraphQueryAggregatorService {
             case 1: // QUERY
               if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
                 {
-                  org.apache.thrift.protocol.TList _list248 = iprot.readListBegin();
-                  struct.query = new java.util.ArrayList<java.lang.Long>(_list248.size);
-                  long _elem249;
-                  for (int _i250 = 0; _i250 < _list248.size; ++_i250)
+                  org.apache.thrift.protocol.TList _list264 = iprot.readListBegin();
+                  struct.query = new java.util.ArrayList<java.lang.Long>(_list264.size);
+                  long _elem265;
+                  for (int _i266 = 0; _i266 < _list264.size; ++_i266)
                   {
-                    _elem249 = iprot.readI64();
-                    struct.query.add(_elem249);
+                    _elem265 = iprot.readI64();
+                    struct.query.add(_elem265);
                   }
                   iprot.readListEnd();
                 }
@@ -53838,9 +54714,9 @@ public class GraphQueryAggregatorService {
           oprot.writeFieldBegin(QUERY_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, struct.query.size()));
-            for (long _iter251 : struct.query)
+            for (long _iter267 : struct.query)
             {
-              oprot.writeI64(_iter251);
+              oprot.writeI64(_iter267);
             }
             oprot.writeListEnd();
           }
@@ -53871,9 +54747,9 @@ public class GraphQueryAggregatorService {
         if (struct.isSetQuery()) {
           {
             oprot.writeI32(struct.query.size());
-            for (long _iter252 : struct.query)
+            for (long _iter268 : struct.query)
             {
-              oprot.writeI64(_iter252);
+              oprot.writeI64(_iter268);
             }
           }
         }
@@ -53885,13 +54761,13 @@ public class GraphQueryAggregatorService {
         java.util.BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
           {
-            org.apache.thrift.protocol.TList _list253 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
-            struct.query = new java.util.ArrayList<java.lang.Long>(_list253.size);
-            long _elem254;
-            for (int _i255 = 0; _i255 < _list253.size; ++_i255)
+            org.apache.thrift.protocol.TList _list269 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
+            struct.query = new java.util.ArrayList<java.lang.Long>(_list269.size);
+            long _elem270;
+            for (int _i271 = 0; _i271 < _list269.size; ++_i271)
             {
-              _elem254 = iprot.readI64();
-              struct.query.add(_elem254);
+              _elem270 = iprot.readI64();
+              struct.query.add(_elem270);
             }
           }
           struct.setQueryIsSet(true);
@@ -54582,13 +55458,13 @@ public class GraphQueryAggregatorService {
             case 1: // QUERY
               if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
                 {
-                  org.apache.thrift.protocol.TList _list256 = iprot.readListBegin();
-                  struct.query = new java.util.ArrayList<java.lang.Long>(_list256.size);
-                  long _elem257;
-                  for (int _i258 = 0; _i258 < _list256.size; ++_i258)
+                  org.apache.thrift.protocol.TList _list272 = iprot.readListBegin();
+                  struct.query = new java.util.ArrayList<java.lang.Long>(_list272.size);
+                  long _elem273;
+                  for (int _i274 = 0; _i274 < _list272.size; ++_i274)
                   {
-                    _elem257 = iprot.readI64();
-                    struct.query.add(_elem257);
+                    _elem273 = iprot.readI64();
+                    struct.query.add(_elem273);
                   }
                   iprot.readListEnd();
                 }
@@ -54616,9 +55492,9 @@ public class GraphQueryAggregatorService {
           oprot.writeFieldBegin(QUERY_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, struct.query.size()));
-            for (long _iter259 : struct.query)
+            for (long _iter275 : struct.query)
             {
-              oprot.writeI64(_iter259);
+              oprot.writeI64(_iter275);
             }
             oprot.writeListEnd();
           }
@@ -54649,9 +55525,9 @@ public class GraphQueryAggregatorService {
         if (struct.isSetQuery()) {
           {
             oprot.writeI32(struct.query.size());
-            for (long _iter260 : struct.query)
+            for (long _iter276 : struct.query)
             {
-              oprot.writeI64(_iter260);
+              oprot.writeI64(_iter276);
             }
           }
         }
@@ -54663,13 +55539,13 @@ public class GraphQueryAggregatorService {
         java.util.BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
           {
-            org.apache.thrift.protocol.TList _list261 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
-            struct.query = new java.util.ArrayList<java.lang.Long>(_list261.size);
-            long _elem262;
-            for (int _i263 = 0; _i263 < _list261.size; ++_i263)
+            org.apache.thrift.protocol.TList _list277 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
+            struct.query = new java.util.ArrayList<java.lang.Long>(_list277.size);
+            long _elem278;
+            for (int _i279 = 0; _i279 < _list277.size; ++_i279)
             {
-              _elem262 = iprot.readI64();
-              struct.query.add(_elem262);
+              _elem278 = iprot.readI64();
+              struct.query.add(_elem278);
             }
           }
           struct.setQueryIsSet(true);
@@ -55444,13 +56320,13 @@ public class GraphQueryAggregatorService {
             case 1: // QUERY
               if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
                 {
-                  org.apache.thrift.protocol.TList _list264 = iprot.readListBegin();
-                  struct.query = new java.util.ArrayList<java.lang.Long>(_list264.size);
-                  long _elem265;
-                  for (int _i266 = 0; _i266 < _list264.size; ++_i266)
+                  org.apache.thrift.protocol.TList _list280 = iprot.readListBegin();
+                  struct.query = new java.util.ArrayList<java.lang.Long>(_list280.size);
+                  long _elem281;
+                  for (int _i282 = 0; _i282 < _list280.size; ++_i282)
                   {
-                    _elem265 = iprot.readI64();
-                    struct.query.add(_elem265);
+                    _elem281 = iprot.readI64();
+                    struct.query.add(_elem281);
                   }
                   iprot.readListEnd();
                 }
@@ -55487,9 +56363,9 @@ public class GraphQueryAggregatorService {
           oprot.writeFieldBegin(QUERY_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, struct.query.size()));
-            for (long _iter267 : struct.query)
+            for (long _iter283 : struct.query)
             {
-              oprot.writeI64(_iter267);
+              oprot.writeI64(_iter283);
             }
             oprot.writeListEnd();
           }
@@ -55528,9 +56404,9 @@ public class GraphQueryAggregatorService {
         if (struct.isSetQuery()) {
           {
             oprot.writeI32(struct.query.size());
-            for (long _iter268 : struct.query)
+            for (long _iter284 : struct.query)
             {
-              oprot.writeI64(_iter268);
+              oprot.writeI64(_iter284);
             }
           }
         }
@@ -55545,13 +56421,13 @@ public class GraphQueryAggregatorService {
         java.util.BitSet incoming = iprot.readBitSet(2);
         if (incoming.get(0)) {
           {
-            org.apache.thrift.protocol.TList _list269 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
-            struct.query = new java.util.ArrayList<java.lang.Long>(_list269.size);
-            long _elem270;
-            for (int _i271 = 0; _i271 < _list269.size; ++_i271)
+            org.apache.thrift.protocol.TList _list285 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
+            struct.query = new java.util.ArrayList<java.lang.Long>(_list285.size);
+            long _elem286;
+            for (int _i287 = 0; _i287 < _list285.size; ++_i287)
             {
-              _elem270 = iprot.readI64();
-              struct.query.add(_elem270);
+              _elem286 = iprot.readI64();
+              struct.query.add(_elem286);
             }
           }
           struct.setQueryIsSet(true);

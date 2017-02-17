@@ -28,7 +28,12 @@ struct Path {
 }
 
 struct RPQCtx {
-  1: list<Path> endpoints,
+  1: set<Path> endpoints,
+}
+
+struct RPQuery {
+  1: list<list<Path>> path_queries,
+  2: bool recurse,
 }
 
 // One aggregator per machine; handles local aggregation and query routing.
@@ -181,6 +186,7 @@ service GraphQueryAggregatorService {
   i64 countLinks(1: i64 id1, 2: i64 link_type),
   
   // RPQ API
+  RPQCtx rpq(1: RPQuery query),
   RPQCtx path_query(1: list<i64> query),
   RPQCtx path_query_local(1: list<i64> query),
   RPQCtx advance_path_query_ctx(1: list<i64> query, 2: RPQCtx ctx),

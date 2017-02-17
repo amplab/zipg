@@ -74,6 +74,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('   getFilteredLinkList(i64 id1, i64 link_type, i64 min_timestamp, i64 max_timestamp, i64 offset, i64 limit)')
     print('   getFilteredLinkListLocal(i64 shard_id, i64 id1, i64 link_type, i64 min_timestamp, i64 max_timestamp, i64 offset, i64 limit)')
     print('  i64 countLinks(i64 id1, i64 link_type)')
+    print('  RPQCtx rpq(RPQuery query)')
     print('  RPQCtx path_query( query)')
     print('  RPQCtx path_query_local( query)')
     print('  RPQCtx advance_path_query_ctx( query, RPQCtx ctx)')
@@ -455,6 +456,12 @@ elif cmd == 'countLinks':
         print('countLinks requires 2 args')
         sys.exit(1)
     pp.pprint(client.countLinks(eval(args[0]), eval(args[1]),))
+
+elif cmd == 'rpq':
+    if len(args) != 1:
+        print('rpq requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.rpq(eval(args[0]),))
 
 elif cmd == 'path_query':
     if len(args) != 1:
