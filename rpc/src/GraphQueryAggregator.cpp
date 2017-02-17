@@ -1556,6 +1556,8 @@ class GraphQueryAggregatorServiceHandler :
 
     if (recurse)
       transitive_closure(_return.endpoints);
+
+    COND_LOG_E("Finished rpq(...)\n");
   }
 
   void path_query(RPQCtx& _return, const std::vector<int64_t> & query) {
@@ -1580,6 +1582,7 @@ class GraphQueryAggregatorServiceHandler :
       COND_LOG_E("Aggregating rpq response from aggregator %d\n", i);
       _return.endpoints.insert(ret.endpoints.begin(), ret.endpoints.end());
     }
+    COND_LOG_E("Finished path query\n");
   }
 
   void path_query_local(RPQCtx& _return, const std::vector<int64_t> & query) {
@@ -1645,6 +1648,7 @@ class GraphQueryAggregatorServiceHandler :
         COND_LOG_E("Aggregating advance_ctx response from aggregator %d\n", i);
         _return.endpoints.insert(ret.endpoints.begin(), ret.endpoints.end());
       }
+      COND_LOG_E("Finished advance_ctx\n");
     } else {
       COND_LOG_E("No more hops left in query, aggregating local results\n");
       for (int i = 0; i < total_num_hosts_; ++i) {
