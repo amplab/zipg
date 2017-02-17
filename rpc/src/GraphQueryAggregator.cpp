@@ -1658,7 +1658,7 @@ class GraphQueryAggregatorServiceHandler :
     std::vector<future_t> futures;
     std::vector<SuccinctGraph::RPQContext> local_ctx;
     local_ctx.resize(local_shards_.size());
-
+    segregate_ctx(local_ctx, ctx);
     for (size_t i = 0; i < local_shards_.size(); i++) {
       COND_LOG_E("Creating future for local shard...\n");
       auto future = local_shards_[i]->async_advance_rpq_ctx(query.front(),
