@@ -106,7 +106,6 @@ class RPQLexer {
           label = "-" + label;
           stream_.get();
         }
-        fprintf(stderr, "label: %s\n", label.c_str());
         return RPQToken(LABEL, label);
       }
     }
@@ -157,14 +156,11 @@ class RPQParser {
   void path_union_b(std::vector<std::vector<int64_t>>& uq) {
     RPQToken tok = lex_.next();
     if (tok.id == RPQLexer::LEFT) {
-      fprintf(stderr, "Removing bracket...\n");
       path_union_b(uq);
       tok = lex_.next();
       if (tok.id != RPQLexer::RIGHT)
         throw new RPQParseException(std::string("Missing ): ") + tok.value);
     } else {
-      fprintf(stderr, "Removed all brackets... Putting back token %s\n",
-              tok.value.c_str());
       lex_.put_back(tok);
       path_union(uq);
     }
