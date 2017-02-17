@@ -99,7 +99,7 @@ class RPQLexer {
 
         std::string label = "" + c;
         while (isdigit(stream_.peek()))
-          label += (char) stream_.get();
+          label = label + ((char) stream_.get());
 
         if (stream_.peek() == '-') {
           label = "-" + label;
