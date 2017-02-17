@@ -1521,7 +1521,7 @@ class GraphQueryAggregatorServiceHandler :
 
   // RPQ API
   int64_t count_regular_path_query(const std::string& query) {
-    RPQCtx& ret;
+    RPQCtx ret;
     regular_path_query(ret, query);
     return ret.endpoints.size();
   }
