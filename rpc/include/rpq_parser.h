@@ -190,7 +190,7 @@ class RPQParser {
   void path_query(std::vector<int64_t>& pq) {
     RPQToken tok = lex_.next();
     if (tok.id != RPQLexer::LABEL)
-      throw new RPQParseException("Expected label");
+      throw new RPQParseException("Expected beginning label");
 
     pq.push_back(std::stoll(tok.value));
     while (true) {
@@ -201,7 +201,7 @@ class RPQParser {
       }
       tok = lex_.next();
       if (tok.id != RPQLexer::LABEL)
-        throw new RPQParseException("Expected label");
+        throw new RPQParseException("Expected label after dot");
       pq.push_back(std::stoll(tok.value));
     }
   }
