@@ -441,6 +441,13 @@ class Iface(object):
         """
         pass
 
+    def regular_path_query(self, query):
+        """
+        Parameters:
+         - query
+        """
+        pass
+
     def rpq(self, query):
         """
         Parameters:
@@ -2182,6 +2189,37 @@ class Client(Iface):
             return result.success
         raise TApplicationException(TApplicationException.MISSING_RESULT, "countLinks failed: unknown result")
 
+    def regular_path_query(self, query):
+        """
+        Parameters:
+         - query
+        """
+        self.send_regular_path_query(query)
+        return self.recv_regular_path_query()
+
+    def send_regular_path_query(self, query):
+        self._oprot.writeMessageBegin('regular_path_query', TMessageType.CALL, self._seqid)
+        args = regular_path_query_args()
+        args.query = query
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_regular_path_query(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = regular_path_query_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "regular_path_query failed: unknown result")
+
     def rpq(self, query):
         """
         Parameters:
@@ -2363,6 +2401,7 @@ class Processor(Iface, TProcessor):
         self._processMap["getFilteredLinkList"] = Processor.process_getFilteredLinkList
         self._processMap["getFilteredLinkListLocal"] = Processor.process_getFilteredLinkListLocal
         self._processMap["countLinks"] = Processor.process_countLinks
+        self._processMap["regular_path_query"] = Processor.process_regular_path_query
         self._processMap["rpq"] = Processor.process_rpq
         self._processMap["path_query"] = Processor.process_path_query
         self._processMap["path_query_local"] = Processor.process_path_query_local
@@ -3329,6 +3368,25 @@ class Processor(Iface, TProcessor):
             logging.exception(ex)
             result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
         oprot.writeMessageBegin("countLinks", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_regular_path_query(self, seqid, iprot, oprot):
+        args = regular_path_query_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = regular_path_query_result()
+        try:
+            result.success = self._handler.regular_path_query(args.query)
+            msg_type = TMessageType.REPLY
+        except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
+            raise
+        except Exception as ex:
+            msg_type = TMessageType.EXCEPTION
+            logging.exception(ex)
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("regular_path_query", msg_type, seqid)
         result.write(oprot)
         oprot.writeMessageEnd()
         oprot.trans.flush()
@@ -10550,6 +10608,126 @@ class countLinks_result(object):
         if self.success is not None:
             oprot.writeFieldBegin('success', TType.I64, 0)
             oprot.writeI64(self.success)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class regular_path_query_args(object):
+    """
+    Attributes:
+     - query
+    """
+
+    thrift_spec = (
+        None,  # 0
+        (1, TType.STRING, 'query', 'UTF8', None, ),  # 1
+    )
+
+    def __init__(self, query=None,):
+        self.query = query
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, (self.__class__, self.thrift_spec))
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.query = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, (self.__class__, self.thrift_spec)))
+            return
+        oprot.writeStructBegin('regular_path_query_args')
+        if self.query is not None:
+            oprot.writeFieldBegin('query', TType.STRING, 1)
+            oprot.writeString(self.query.encode('utf-8') if sys.version_info[0] == 2 else self.query)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class regular_path_query_result(object):
+    """
+    Attributes:
+     - success
+    """
+
+    thrift_spec = (
+        (0, TType.STRUCT, 'success', (RPQCtx, RPQCtx.thrift_spec), None, ),  # 0
+    )
+
+    def __init__(self, success=None,):
+        self.success = success
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, (self.__class__, self.thrift_spec))
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.STRUCT:
+                    self.success = RPQCtx()
+                    self.success.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, (self.__class__, self.thrift_spec)))
+            return
+        oprot.writeStructBegin('regular_path_query_result')
+        if self.success is not None:
+            oprot.writeFieldBegin('success', TType.STRUCT, 0)
+            self.success.write(oprot)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()

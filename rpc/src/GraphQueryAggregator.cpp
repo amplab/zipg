@@ -28,6 +28,7 @@
 #include "ports.h"
 #include "utils.h"
 #include "async_thread_pool.h"
+#include "rpq_parser.h"
 
 using namespace ::apache::thrift;
 using namespace ::apache::thrift::protocol;
@@ -1518,6 +1519,16 @@ class GraphQueryAggregatorServiceHandler :
   }
 
   // RPQ API
+  void regular_path_query(RPQCtx& _return, const std::string& query) {
+    std::string exp = query;
+    try {
+      RPQuery q = RPQParser(exp).parse();
+      rpq(_return, q);
+    } catch (RPQParseException& e) {
+      LOG_E("Could not parse query.\n");
+    }
+  }
+
   void rpq(RPQCtx& _return, const RPQuery& query) {
     bool recurse = query.recurse;
     for (const std::vector<int64_t>& pq : query.path_queries) {
@@ -1526,6 +1537,9 @@ class GraphQueryAggregatorServiceHandler :
       path_query(ctx, pq);
       _return.endpoints.insert(ctx.endpoints.begin(), ctx.endpoints.end());
     }
+
+    if (recurse)
+      transitive_closure(_return.endpoints);
   }
 
   void path_query(RPQCtx& _return, const std::vector<int64_t> & query) {
@@ -1702,6 +1716,22 @@ class GraphQueryAggregatorServiceHandler :
  private:
 
   // RPQ Helpers
+  void transitive_closure(std::set<Path>& s) {
+    std::set<Path> a;   // missing nodes to add
+    for (auto i = s.cbegin(); i != s.cend(); i++) {
+      for (auto j = i; ++j != s.cend(); j) {
+        if (i->dst == j->src && i->src != j->dst
+            && s.count(Path(i->src, j->dst)) == 0)
+          a.insert(Path(i->src, j->dst));
+      }
+    }
+    if (!a.empty()) {
+      for (auto p : a)
+        s.insert(p);
+      transitive_closure(s);
+    }
+  }
+
   inline Path pair2path(std::pair<int64_t, int64_t> x) {
     Path p;
     p.src = x.first;
