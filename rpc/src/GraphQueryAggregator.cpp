@@ -1554,10 +1554,10 @@ class GraphQueryAggregatorServiceHandler :
       _return.endpoints.insert(ctx.endpoints.begin(), ctx.endpoints.end());
     }
 
+    COND_LOG_E("All done before recurse; recurse = %d\n", recurse);
+
     if (recurse)
       transitive_closure(_return.endpoints);
-
-    COND_LOG_E("Finished rpq(...)\n");
   }
 
   void path_query(RPQCtx& _return, const std::vector<int64_t> & query) {
