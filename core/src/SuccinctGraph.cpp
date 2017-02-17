@@ -1705,4 +1705,5 @@ void SuccinctGraph::advance_rpq_ctx(SuccinctGraph::RPQContext& ret,
         ret.end_points.insert(SuccinctGraph::path_endpoints(ep.first, dst));
     }
   }
+  COND_LOG_E("[SuccinctGraph] Found %zu paths on shard\n", ret.end_points.size());
 }
