@@ -155,11 +155,13 @@ class RPQParser {
   void path_union_b(std::vector<std::vector<int64_t>>& uq) {
     RPQToken tok = lex_.next();
     if (tok.id == RPQLexer::LEFT) {
+      fprintf(stderr, "Removing bracket...\n");
       path_union_b(uq);
       tok = lex_.next();
       if (tok.id != RPQLexer::RIGHT)
         throw new RPQParseException(std::string("Missing ): ") + lex_.str());
     } else {
+      fprintf(stderr, "Removed all brackets...\n");
       lex_.put_back(tok);
       path_union(uq);
     }
