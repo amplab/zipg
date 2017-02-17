@@ -1653,7 +1653,7 @@ void SuccinctGraph::init_rpq_ctx(SuccinctGraph::edge_label label,
         SuccinctGraphSerde::decode_multi_node_ids(str, dst_id_width);
 
     for (int64_t dst : decoded_dst_ids) {
-      COND_LOG_E("DSTID: %lld", dst);
+      COND_LOG_E("DSTID: %lld\n", dst);
       ctx.end_points.insert(SuccinctGraph::path_endpoints(off, dst));
     }
   }
