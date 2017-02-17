@@ -155,13 +155,13 @@ class RPQParser {
   void path_union_b(std::vector<std::vector<int64_t>>& uq) {
     RPQToken tok = lex_.next();
     if (tok.id == RPQLexer::LEFT) {
-      path_union(uq);
+      path_union_b(uq);
       tok = lex_.next();
       if (tok.id != RPQLexer::RIGHT)
         throw new RPQParseException(std::string("Missing ): ") + lex_.str());
     } else {
       lex_.put_back(tok);
-      path_union_b(uq);
+      path_union(uq);
     }
   }
 
@@ -185,7 +185,7 @@ class RPQParser {
   void path_query_b(std::vector<int64_t>& pq) {
     RPQToken tok = lex_.next();
     if (tok.id == RPQLexer::LEFT) {
-      path_query(pq);
+      path_query_b(pq);
       tok = lex_.next();
       if (tok.id != RPQLexer::RIGHT)
         throw new RPQParseException(std::string("Missing ): ") + lex_.str());
