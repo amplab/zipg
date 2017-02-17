@@ -69,6 +69,10 @@ class RPQLexer {
     stream_.str(exp);
   }
 
+  std::string str() {
+    return stream_.str();
+  }
+
   const RPQToken next() {
     while (iswspace(stream_.peek()))
       stream_.get();
@@ -150,7 +154,7 @@ class RPQParser {
       path_union(uq);
       tok = lex_.next();
       if (tok.id != RPQLexer::RIGHT)
-        throw new RPQParseException("Missing )");
+        throw new RPQParseException(std::string("Missing ): ") + lex_.str());
     } else {
       lex_.put_back(tok);
       path_union_b(uq);
@@ -180,7 +184,7 @@ class RPQParser {
       path_query(pq);
       tok = lex_.next();
       if (tok.id != RPQLexer::RIGHT)
-        throw new RPQParseException("Missing )");
+        throw new RPQParseException(std::string("Missing ): ") + lex_.str());
     } else {
       lex_.put_back(tok);
       path_query(pq);
@@ -190,7 +194,8 @@ class RPQParser {
   void path_query(std::vector<int64_t>& pq) {
     RPQToken tok = lex_.next();
     if (tok.id != RPQLexer::LABEL)
-      throw new RPQParseException("Expected beginning label");
+      throw new RPQParseException(
+          std::string("Expected beginning label: ") + lex_.str());
 
     pq.push_back(std::stoll(tok.value));
     while (true) {
@@ -201,7 +206,8 @@ class RPQParser {
       }
       tok = lex_.next();
       if (tok.id != RPQLexer::LABEL)
-        throw new RPQParseException("Expected label after dot");
+        throw new RPQParseException(
+            std::string("Expected label after dot: ") + lex_.str());
       pq.push_back(std::stoll(tok.value));
     }
   }
