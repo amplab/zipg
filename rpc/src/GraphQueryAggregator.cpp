@@ -1566,7 +1566,7 @@ class GraphQueryAggregatorServiceHandler :
       COND_LOG_E("Getting res local shard...\n");
       auto res = future.get();
 
-      COND_LOG_E("Segregating local results...\n");
+      COND_LOG_E("Segregating %zu local results...\n", res.end_points.size());
       for (auto ep : res.end_points) {
         int shard_id = ep.second % total_num_shards_;
         int host_id = shard_id % total_num_hosts_;
