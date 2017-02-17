@@ -134,7 +134,7 @@ class RPQParser {
         throw new RPQParseException;
     } else {
       lex_.put_back(tok);
-      path_union_b (pq);
+      path_union_b(uq);
     }
   }
 

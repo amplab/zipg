@@ -1720,9 +1720,13 @@ class GraphQueryAggregatorServiceHandler :
     std::set<Path> a;   // missing nodes to add
     for (auto i = s.cbegin(); i != s.cend(); i++) {
       for (auto j = i; ++j != s.cend(); j) {
-        if (i->dst == j->src && i->src != j->dst
-            && s.count(Path(i->src, j->dst)) == 0)
-          a.insert(Path(i->src, j->dst));
+        if (i->dst == j->src && i->src != j->dst) {
+          Path p;
+          p.src = i->src;
+          p.dst = j->dst;
+          if (s.count(p) == 0)
+            a.insert(p);
+        }
       }
     }
     if (!a.empty()) {
