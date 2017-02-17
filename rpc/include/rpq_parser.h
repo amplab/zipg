@@ -24,7 +24,7 @@ struct RPQToken {
         value(val) {
   }
 
-  RPQToken& RPQToken::operator=(const RPQToken& other) {
+  RPQToken& operator=(const RPQToken& other) {
     id = other.id;
     value = other.value;
     return *this;
