@@ -1595,6 +1595,7 @@ class GraphQueryAggregatorServiceHandler :
         int shard_id = ep.second % total_num_shards_;
         int host_id = shard_id % total_num_hosts_;
         host_ctx[host_id].endpoints.insert(pair2path(ep));
+        COND_LOG_E("%lld, %lld\n", ep.first, ep.second);
       }
       COND_LOG_E("Done segregating local results.\n");
     }
@@ -1658,16 +1659,6 @@ class GraphQueryAggregatorServiceHandler :
     std::vector<future_t> futures;
     std::vector<SuccinctGraph::RPQContext> local_ctx;
     local_ctx.resize(local_shards_.size());
-
-    COND_LOG_E("Before seg:\n");
-    for (auto ep : ctx.endpoints)
-      COND_LOG_E("%lld, %lld\n", ep.src, ep.dst);
-
-    segregate_ctx(local_ctx, ctx);
-    COND_LOG_E("Before seg:\n");
-    for (size_t i = 0; i < local_ctx.size(); i++)
-      for (auto ep : local_ctx[i].end_points)
-        COND_LOG_E("%zu %lld, %lld\n", i, ep.first, ep.second);
 
     for (size_t i = 0; i < local_shards_.size(); i++) {
       COND_LOG_E("Creating future for local shard...\n");
