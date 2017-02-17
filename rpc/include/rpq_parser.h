@@ -13,9 +13,16 @@
 #include <locale>
 
 class RPQParseException : public std::exception {
-  virtual const char* what() const throw () {
-    return std::string("Error parsing regular expression.").c_str();
+  RPQParseException(std::string& msg)
+      : msg_(msg.c_str()) {
   }
+
+  virtual const char* what() const throw () {
+    return msg_;
+  }
+
+ private:
+  const char* msg_;
 };
 
 struct RPQToken {
@@ -74,7 +81,7 @@ class RPQLexer {
         return RPQToken(PLUS, "+");
       default: {
         if (!isdigit(c))
-          throw new RPQParseException;
+          throw new RPQParseException("Invalid token");
 
         std::string label = "";
         while (isdigit(stream_.peek()))
@@ -137,7 +144,7 @@ class RPQParser {
       path_union(uq);
       tok = lex_.next();
       if (tok.id != RPQLexer::RIGHT)
-        throw new RPQParseException;
+        throw new RPQParseException("Missing )");
     } else {
       lex_.put_back(tok);
       path_union_b(uq);
@@ -167,7 +174,7 @@ class RPQParser {
       path_query(pq);
       tok = lex_.next();
       if (tok.id != RPQLexer::RIGHT)
-        throw new RPQParseException;
+        throw new RPQParseException("Missing )");
     } else {
       lex_.put_back(tok);
       path_query(pq);
@@ -177,7 +184,7 @@ class RPQParser {
   void path_query(std::vector<int64_t>& pq) {
     RPQToken tok = lex_.next();
     if (tok.id != RPQLexer::LABEL)
-      throw new RPQParseException;
+      throw new RPQParseException("Expected label");
 
     pq.push_back(std::stoll(tok.value));
     while (true) {
@@ -188,7 +195,7 @@ class RPQParser {
       }
       tok = lex_.next();
       if (tok.id != RPQLexer::LABEL)
-        throw new RPQParseException;
+        throw new RPQParseException("Expected label");
       pq.push_back(std::stoll(tok.value));
     }
   }

@@ -1526,7 +1526,7 @@ class GraphQueryAggregatorServiceHandler :
       print_query(q);
       rpq(_return, q);
     } catch (RPQParseException* e) {
-      LOG_E("Could not parse query.\n");
+      LOG_E("Could not parse query: %s\n", e->what());
     }
   }
 
