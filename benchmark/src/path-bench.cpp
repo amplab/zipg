@@ -37,10 +37,12 @@ class PathBench {
     std::string output_file = "path_query_latency.txt";
 
     // Warmup
+    int sum = 0;
     for (size_t i = 0; i < queries_.size(); i++) {
       // Run query
-      int64_t cnt = aggregator_->count_regular_path_query(queries_.at(i));
+      sum += aggregator_->count_regular_path_query(queries_.at(i));
     }
+    fprintf(stderr, "Sum=%lld\n", sum);
 
     // Measure
     std::ofstream out(output_file);
