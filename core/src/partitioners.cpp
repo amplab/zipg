@@ -103,8 +103,8 @@ void HashPartitioner::partition(const std::string& node_file_in,
     std::getline(ss, time_str, ' ');
     std::string bwd = dst_id_str + " " + src_id_str + " -" + label_str + " "
         + time_str + " ";
-    fprintf(stderr, "%s : %s\n", fwd.c_str(), bwd.c_str());
     *(shard_edge_outs[id_to_shard(std::stoll(src_id_str))]) << fwd << std::endl;
+    *(shard_edge_outs[id_to_shard(std::stoll(dst_id_str))]) << bwd << std::endl;
   }
 }
 
