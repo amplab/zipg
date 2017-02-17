@@ -18,6 +18,11 @@ class RPQParseException : public std::exception {
       : msg_(msg.c_str()) {
   }
 
+  RPQParseException(const char* msg)
+      : msg_(msg) {
+
+  }
+
   virtual const char* what() const throw () {
     return msg_;
   }
