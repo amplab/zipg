@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <initializer_list>
 
+#include "GraphFormatter.hpp"
 #include "SuccinctGraph.hpp"
 #include "utils.h"
 #include "GraphBenchmark.hpp"
