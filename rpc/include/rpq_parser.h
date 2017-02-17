@@ -103,7 +103,10 @@ class RPQLexer {
           label.push_back((char) stream_.get());
 
         if (stream_.peek() == '-') {
-          label = "-" + label;
+          if (label == "0")
+            label = std::to_string(INT64_MIN);
+          else
+            label = "-" + label;
           stream_.get();
         }
         return RPQToken(LABEL, label);
