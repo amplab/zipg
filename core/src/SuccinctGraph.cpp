@@ -1604,9 +1604,12 @@ void SuccinctGraph::init_rpq_ctx(SuccinctGraph::edge_label label,
   COND_LOG_E("[SuccinctGraph] init_rpq_request()\n");
   std::vector<int64_t> *ids = node_table->GetKeys();
   COND_LOG_E("[SuccinctGraph] ids->size() = %zu\n", ids->size());
+  COND_LOG_E("[SuccinctGraph] label = %lld\n", label);
   for (size_t i = 0; i < ids->size(); i++) {
     int64_t id = ids->at(i);
+    COND_LOG_E("[SuccinctGraph] id = %lld\n", id);
     std::string search_key = mk_edge_table_search_key(id, label);
+    COND_LOG_E("[SuccinctGraph] search-key = %s\n", search_key);
     int64_t off = EDGE_TABLE->Search(search_key);
     if (off > 0) {
       std::string str;
