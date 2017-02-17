@@ -13,6 +13,7 @@
 #include <locale>
 
 class RPQParseException : public std::exception {
+ public:
   RPQParseException(std::string& msg)
       : msg_(msg.c_str()) {
   }
