@@ -319,12 +319,12 @@ class RPQuery : public virtual ::apache::thrift::TBase {
   }
 
   virtual ~RPQuery() throw();
-  std::vector<std::vector<Path> >  path_queries;
+  std::vector<std::vector<int64_t> >  path_queries;
   bool recurse;
 
   _RPQuery__isset __isset;
 
-  void __set_path_queries(const std::vector<std::vector<Path> > & val);
+  void __set_path_queries(const std::vector<std::vector<int64_t> > & val);
 
   void __set_recurse(const bool val);
 

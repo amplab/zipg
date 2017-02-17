@@ -609,7 +609,7 @@ RPQuery::~RPQuery() throw() {
 }
 
 
-void RPQuery::__set_path_queries(const std::vector<std::vector<Path> > & val) {
+void RPQuery::__set_path_queries(const std::vector<std::vector<int64_t> > & val) {
   this->path_queries = val;
 }
 
@@ -658,7 +658,7 @@ uint32_t RPQuery::read(::apache::thrift::protocol::TProtocol* iprot) {
                 uint32_t _i26;
                 for (_i26 = 0; _i26 < _size22; ++_i26)
                 {
-                  xfer += this->path_queries[_i21][_i26].read(iprot);
+                  xfer += iprot->readI64(this->path_queries[_i21][_i26]);
                 }
                 xfer += iprot->readListEnd();
               }
@@ -698,15 +698,15 @@ uint32_t RPQuery::write(::apache::thrift::protocol::TProtocol* oprot) const {
   xfer += oprot->writeFieldBegin("path_queries", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_LIST, static_cast<uint32_t>(this->path_queries.size()));
-    std::vector<std::vector<Path> > ::const_iterator _iter27;
+    std::vector<std::vector<int64_t> > ::const_iterator _iter27;
     for (_iter27 = this->path_queries.begin(); _iter27 != this->path_queries.end(); ++_iter27)
     {
       {
-        xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>((*_iter27).size()));
-        std::vector<Path> ::const_iterator _iter28;
+        xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>((*_iter27).size()));
+        std::vector<int64_t> ::const_iterator _iter28;
         for (_iter28 = (*_iter27).begin(); _iter28 != (*_iter27).end(); ++_iter28)
         {
-          xfer += (*_iter28).write(oprot);
+          xfer += oprot->writeI64((*_iter28));
         }
         xfer += oprot->writeListEnd();
       }

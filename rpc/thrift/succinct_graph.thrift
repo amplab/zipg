@@ -32,7 +32,7 @@ struct RPQCtx {
 }
 
 struct RPQuery {
-  1: list<list<Path>> path_queries,
+  1: list<list<i64>> path_queries,
   2: bool recurse,
 }
 
@@ -71,12 +71,12 @@ service GraphQueryAggregatorService {
     2: i32 local_shard,
     3: i64 obj),
 
-   // Primitive queries
-   string get_attribute(1: i64 nodeId, 2: i32 attrId),
+  // Primitive queries
+  string get_attribute(1: i64 nodeId, 2: i32 attrId),
 
-   string get_attribute_local(1: i64 shardId, 2: i64 nodeId, 3: i32 attrId),
+  string get_attribute_local(1: i64 shardId, 2: i64 nodeId, 3: i32 attrId),
 
-   list<i64> get_neighbors(1: i64 nodeId),
+  list<i64> get_neighbors(1: i64 nodeId),
 
   list<i64> get_neighbors_local(1: i32 shardId, 2: i64 nodeId),
 

@@ -415,7 +415,7 @@ class RPQuery(object):
 
     thrift_spec = (
         None,  # 0
-        (1, TType.LIST, 'path_queries', (TType.LIST, (TType.STRUCT, (Path, Path.thrift_spec), False), False), None, ),  # 1
+        (1, TType.LIST, 'path_queries', (TType.LIST, (TType.I64, None, False), False), None, ),  # 1
         (2, TType.BOOL, 'recurse', None, None, ),  # 2
     )
 
@@ -440,8 +440,7 @@ class RPQuery(object):
                         _elem12 = []
                         (_etype16, _size13) = iprot.readListBegin()
                         for _i17 in range(_size13):
-                            _elem18 = Path()
-                            _elem18.read(iprot)
+                            _elem18 = iprot.readI64()
                             _elem12.append(_elem18)
                         iprot.readListEnd()
                         self.path_queries.append(_elem12)
@@ -467,9 +466,9 @@ class RPQuery(object):
             oprot.writeFieldBegin('path_queries', TType.LIST, 1)
             oprot.writeListBegin(TType.LIST, len(self.path_queries))
             for iter19 in self.path_queries:
-                oprot.writeListBegin(TType.STRUCT, len(iter19))
+                oprot.writeListBegin(TType.I64, len(iter19))
                 for iter20 in iter19:
-                    iter20.write(oprot)
+                    oprot.writeI64(iter20)
                 oprot.writeListEnd()
             oprot.writeListEnd()
             oprot.writeFieldEnd()

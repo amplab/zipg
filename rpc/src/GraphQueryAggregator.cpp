@@ -1520,11 +1520,10 @@ class GraphQueryAggregatorServiceHandler :
   // RPQ API
   void rpq(RPQCtx& _return, const RPQuery& query) {
     bool recurse = query.recurse;
-    for (const auto& path_query : query.path_queries) {
+    for (const std::vector<int64_t>& path_query : query.path_queries) {
+      // Union
       RPQCtx ctx;
       path_query(ctx, path_query);
-
-      // Union
       _return.endpoints.insert(ctx.endpoints.begin(), ctx.endpoints.end());
     }
   }
