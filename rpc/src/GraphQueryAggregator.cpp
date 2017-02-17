@@ -1595,7 +1595,6 @@ class GraphQueryAggregatorServiceHandler :
         int shard_id = ep.second % total_num_shards_;
         int host_id = shard_id % total_num_hosts_;
         host_ctx[host_id].endpoints.insert(pair2path(ep));
-        COND_LOG_E("%lld, %lld\n", ep.first, ep.second);
       }
       COND_LOG_E("Done segregating local results.\n");
     }
