@@ -161,7 +161,8 @@ class RPQParser {
       if (tok.id != RPQLexer::RIGHT)
         throw new RPQParseException(std::string("Missing ): ") + tok.value);
     } else {
-      fprintf(stderr, "Removed all brackets...\n");
+      fprintf(stderr, "Removed all brackets... Putting back token %s\n",
+              tok.value.c_str());
       lex_.put_back(tok);
       path_union(uq);
     }
