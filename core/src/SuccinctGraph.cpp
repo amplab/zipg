@@ -1618,7 +1618,7 @@ void SuccinctGraph::init_rpq_ctx(SuccinctGraph::edge_label label,
 
     std::string str;
     uint64_t idx_hint = -1ULL;
-    int32_t dst_id_width, timestamp_width, cnt;
+    int32_t dst_id_width, timestamp_width, edge_data_len_width, cnt;
 
     edge_table->Extract(str, off,
                         SuccinctGraphSerde::WIDTH_TIMESTAMP_WIDTH_PADDED);
@@ -1639,6 +1639,10 @@ void SuccinctGraph::init_rpq_ctx(SuccinctGraph::edge_label label,
         EDGE_WIDTH_DELIM);
     COND_LOG_E("extracted cnt = '%s'\n", str.c_str());
     cnt = std::stoll(str);
+
+    off = edge_table->ExtractUntil(str, idx_hint, off, METADATA_DELIM);
+    edge_data_len_width = std::stoi(str);
+    COND_LOG_E("extracted edge data length width = '%s'\n", str.c_str());
 
     // Skip timestamps
     EDGE_TABLE->Extract(str, off, cnt * timestamp_width);
@@ -1686,7 +1690,7 @@ void SuccinctGraph::advance_rpq_ctx(SuccinctGraph::RPQContext& ret,
       std::string str;
       off += search_key.size();
       uint64_t idx_hint = -1ULL;
-      int32_t dst_id_width, timestamp_width, cnt;
+      int32_t dst_id_width, timestamp_width, edge_data_len_width, cnt;
 
       edge_table->Extract(str, off,
                           SuccinctGraphSerde::WIDTH_TIMESTAMP_WIDTH_PADDED);
@@ -1708,6 +1712,10 @@ void SuccinctGraph::advance_rpq_ctx(SuccinctGraph::RPQContext& ret,
           EDGE_WIDTH_DELIM);
       // COND_LOG_E("extracted cnt = '%s'\n", str.c_str());
       cnt = std::stoll(str);
+
+      off = edge_table->ExtractUntil(str, idx_hint, off, METADATA_DELIM);
+      edge_data_len_width = std::stoi(str);
+      // COND_LOG_E("extracted edge data length width = '%s'\n", str.c_str());
 
       // Skip timestamps
       off += cnt * timestamp_width;
