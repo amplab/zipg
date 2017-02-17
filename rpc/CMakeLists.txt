@@ -32,7 +32,7 @@ thrift_gen_java(${THRIFT_SERVICE_FILE} ${JAVA_CLIENT_DIR})
 thrift_gen_py(${THRIFT_SERVICE_FILE} ${PY_CLIENT_DIR})
 
 set(GENERAL_SOURCES ${SOURCES_DIR}/succinct_graph_constants.cpp
-    ${SOURCES_DIR}/succinct_graph_types.cpp)
+  ${SOURCES_DIR}/succinct_graph_types.cpp ${SOURCES_DIR}/path.cpp)
 
 set(HANDLER_SOURCES ${GENERAL_SOURCES}
     ${SOURCES_DIR}/GraphQueryAggregator.cpp
