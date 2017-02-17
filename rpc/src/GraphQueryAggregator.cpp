@@ -1519,24 +1519,24 @@ class GraphQueryAggregatorServiceHandler :
   }
 
   // RPQ API
-  void rpq(RPQCtx& _return, const std::vector<int64_t> & query) {
+  void path_query(RPQCtx& _return, const std::vector<int64_t> & query) {
     COND_LOG_E("Recieved rpq(...) request\n");
     for (int i = 0; i < total_num_hosts_; ++i) {
       if (i == local_host_id_) {
         continue;
       }
       COND_LOG_E("Forwarding to rpq to aggregator %d\n", i);
-      aggregators_.at(i).send_rpq_local(query);
+      aggregators_.at(i).send_path_query_local(query);
     }
 
-    rpq_local(_return, query);
+    path_query_local(_return, query);
     for (int i = 0; i < total_num_hosts_; ++i) {
       if (i == local_host_id_) {
         continue;
       }
       RPQCtx ret;
       COND_LOG_E("Receiving rpq response from aggregator %d\n", i);
-      aggregators_.at(i).recv_rpq_local(ret);
+      aggregators_.at(i).recv_path_query_local(ret);
 
       COND_LOG_E("Aggregating rpq response from aggregator %d\n", i);
       _return.endpoints.insert(_return.endpoints.end(), ret.endpoints.begin(),
@@ -1544,7 +1544,7 @@ class GraphQueryAggregatorServiceHandler :
     }
   }
 
-  void rpq_local(RPQCtx& _return, const std::vector<int64_t> & query) {
+  void path_query_local(RPQCtx& _return, const std::vector<int64_t> & query) {
 
     COND_LOG_E("Recieved rpq_local(...) request\n");
     if (query.empty())

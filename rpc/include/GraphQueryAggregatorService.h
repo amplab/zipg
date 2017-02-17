@@ -71,9 +71,9 @@ class GraphQueryAggregatorServiceIf {
   virtual void getFilteredLinkList(std::vector<ThriftAssoc> & _return, const int64_t id1, const int64_t link_type, const int64_t min_timestamp, const int64_t max_timestamp, const int64_t offset, const int64_t limit) = 0;
   virtual void getFilteredLinkListLocal(std::vector<ThriftAssoc> & _return, const int64_t shard_id, const int64_t id1, const int64_t link_type, const int64_t min_timestamp, const int64_t max_timestamp, const int64_t offset, const int64_t limit) = 0;
   virtual int64_t countLinks(const int64_t id1, const int64_t link_type) = 0;
-  virtual void rpq(RPQCtx& _return, const std::vector<int64_t> & query) = 0;
-  virtual void rpq_local(RPQCtx& _return, const std::vector<int64_t> & query) = 0;
-  virtual void advance_rpq_ctx(RPQCtx& _return, const std::vector<int64_t> & query, const RPQCtx& ctx) = 0;
+  virtual void path_query(RPQCtx& _return, const std::vector<int64_t> & query) = 0;
+  virtual void path_query_local(RPQCtx& _return, const std::vector<int64_t> & query) = 0;
+  virtual void advance_path_query_ctx(RPQCtx& _return, const std::vector<int64_t> & query, const RPQCtx& ctx) = 0;
 };
 
 class GraphQueryAggregatorServiceIfFactory {
@@ -268,13 +268,13 @@ class GraphQueryAggregatorServiceNull : virtual public GraphQueryAggregatorServi
     int64_t _return = 0;
     return _return;
   }
-  void rpq(RPQCtx& /* _return */, const std::vector<int64_t> & /* query */) {
+  void path_query(RPQCtx& /* _return */, const std::vector<int64_t> & /* query */) {
     return;
   }
-  void rpq_local(RPQCtx& /* _return */, const std::vector<int64_t> & /* query */) {
+  void path_query_local(RPQCtx& /* _return */, const std::vector<int64_t> & /* query */) {
     return;
   }
-  void advance_rpq_ctx(RPQCtx& /* _return */, const std::vector<int64_t> & /* query */, const RPQCtx& /* ctx */) {
+  void advance_path_query_ctx(RPQCtx& /* _return */, const std::vector<int64_t> & /* query */, const RPQCtx& /* ctx */) {
     return;
   }
 };
@@ -5996,37 +5996,37 @@ class GraphQueryAggregatorService_countLinks_presult {
 
 };
 
-typedef struct _GraphQueryAggregatorService_rpq_args__isset {
-  _GraphQueryAggregatorService_rpq_args__isset() : query(false) {}
+typedef struct _GraphQueryAggregatorService_path_query_args__isset {
+  _GraphQueryAggregatorService_path_query_args__isset() : query(false) {}
   bool query :1;
-} _GraphQueryAggregatorService_rpq_args__isset;
+} _GraphQueryAggregatorService_path_query_args__isset;
 
-class GraphQueryAggregatorService_rpq_args {
+class GraphQueryAggregatorService_path_query_args {
  public:
 
-  GraphQueryAggregatorService_rpq_args(const GraphQueryAggregatorService_rpq_args&);
-  GraphQueryAggregatorService_rpq_args& operator=(const GraphQueryAggregatorService_rpq_args&);
-  GraphQueryAggregatorService_rpq_args() {
+  GraphQueryAggregatorService_path_query_args(const GraphQueryAggregatorService_path_query_args&);
+  GraphQueryAggregatorService_path_query_args& operator=(const GraphQueryAggregatorService_path_query_args&);
+  GraphQueryAggregatorService_path_query_args() {
   }
 
-  virtual ~GraphQueryAggregatorService_rpq_args() throw();
+  virtual ~GraphQueryAggregatorService_path_query_args() throw();
   std::vector<int64_t>  query;
 
-  _GraphQueryAggregatorService_rpq_args__isset __isset;
+  _GraphQueryAggregatorService_path_query_args__isset __isset;
 
   void __set_query(const std::vector<int64_t> & val);
 
-  bool operator == (const GraphQueryAggregatorService_rpq_args & rhs) const
+  bool operator == (const GraphQueryAggregatorService_path_query_args & rhs) const
   {
     if (!(query == rhs.query))
       return false;
     return true;
   }
-  bool operator != (const GraphQueryAggregatorService_rpq_args &rhs) const {
+  bool operator != (const GraphQueryAggregatorService_path_query_args &rhs) const {
     return !(*this == rhs);
   }
 
-  bool operator < (const GraphQueryAggregatorService_rpq_args & ) const;
+  bool operator < (const GraphQueryAggregatorService_path_query_args & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
@@ -6034,103 +6034,103 @@ class GraphQueryAggregatorService_rpq_args {
 };
 
 
-class GraphQueryAggregatorService_rpq_pargs {
+class GraphQueryAggregatorService_path_query_pargs {
  public:
 
 
-  virtual ~GraphQueryAggregatorService_rpq_pargs() throw();
+  virtual ~GraphQueryAggregatorService_path_query_pargs() throw();
   const std::vector<int64_t> * query;
 
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
-typedef struct _GraphQueryAggregatorService_rpq_result__isset {
-  _GraphQueryAggregatorService_rpq_result__isset() : success(false) {}
+typedef struct _GraphQueryAggregatorService_path_query_result__isset {
+  _GraphQueryAggregatorService_path_query_result__isset() : success(false) {}
   bool success :1;
-} _GraphQueryAggregatorService_rpq_result__isset;
+} _GraphQueryAggregatorService_path_query_result__isset;
 
-class GraphQueryAggregatorService_rpq_result {
+class GraphQueryAggregatorService_path_query_result {
  public:
 
-  GraphQueryAggregatorService_rpq_result(const GraphQueryAggregatorService_rpq_result&);
-  GraphQueryAggregatorService_rpq_result& operator=(const GraphQueryAggregatorService_rpq_result&);
-  GraphQueryAggregatorService_rpq_result() {
+  GraphQueryAggregatorService_path_query_result(const GraphQueryAggregatorService_path_query_result&);
+  GraphQueryAggregatorService_path_query_result& operator=(const GraphQueryAggregatorService_path_query_result&);
+  GraphQueryAggregatorService_path_query_result() {
   }
 
-  virtual ~GraphQueryAggregatorService_rpq_result() throw();
+  virtual ~GraphQueryAggregatorService_path_query_result() throw();
   RPQCtx success;
 
-  _GraphQueryAggregatorService_rpq_result__isset __isset;
+  _GraphQueryAggregatorService_path_query_result__isset __isset;
 
   void __set_success(const RPQCtx& val);
 
-  bool operator == (const GraphQueryAggregatorService_rpq_result & rhs) const
+  bool operator == (const GraphQueryAggregatorService_path_query_result & rhs) const
   {
     if (!(success == rhs.success))
       return false;
     return true;
   }
-  bool operator != (const GraphQueryAggregatorService_rpq_result &rhs) const {
+  bool operator != (const GraphQueryAggregatorService_path_query_result &rhs) const {
     return !(*this == rhs);
   }
 
-  bool operator < (const GraphQueryAggregatorService_rpq_result & ) const;
+  bool operator < (const GraphQueryAggregatorService_path_query_result & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
-typedef struct _GraphQueryAggregatorService_rpq_presult__isset {
-  _GraphQueryAggregatorService_rpq_presult__isset() : success(false) {}
+typedef struct _GraphQueryAggregatorService_path_query_presult__isset {
+  _GraphQueryAggregatorService_path_query_presult__isset() : success(false) {}
   bool success :1;
-} _GraphQueryAggregatorService_rpq_presult__isset;
+} _GraphQueryAggregatorService_path_query_presult__isset;
 
-class GraphQueryAggregatorService_rpq_presult {
+class GraphQueryAggregatorService_path_query_presult {
  public:
 
 
-  virtual ~GraphQueryAggregatorService_rpq_presult() throw();
+  virtual ~GraphQueryAggregatorService_path_query_presult() throw();
   RPQCtx* success;
 
-  _GraphQueryAggregatorService_rpq_presult__isset __isset;
+  _GraphQueryAggregatorService_path_query_presult__isset __isset;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
 
 };
 
-typedef struct _GraphQueryAggregatorService_rpq_local_args__isset {
-  _GraphQueryAggregatorService_rpq_local_args__isset() : query(false) {}
+typedef struct _GraphQueryAggregatorService_path_query_local_args__isset {
+  _GraphQueryAggregatorService_path_query_local_args__isset() : query(false) {}
   bool query :1;
-} _GraphQueryAggregatorService_rpq_local_args__isset;
+} _GraphQueryAggregatorService_path_query_local_args__isset;
 
-class GraphQueryAggregatorService_rpq_local_args {
+class GraphQueryAggregatorService_path_query_local_args {
  public:
 
-  GraphQueryAggregatorService_rpq_local_args(const GraphQueryAggregatorService_rpq_local_args&);
-  GraphQueryAggregatorService_rpq_local_args& operator=(const GraphQueryAggregatorService_rpq_local_args&);
-  GraphQueryAggregatorService_rpq_local_args() {
+  GraphQueryAggregatorService_path_query_local_args(const GraphQueryAggregatorService_path_query_local_args&);
+  GraphQueryAggregatorService_path_query_local_args& operator=(const GraphQueryAggregatorService_path_query_local_args&);
+  GraphQueryAggregatorService_path_query_local_args() {
   }
 
-  virtual ~GraphQueryAggregatorService_rpq_local_args() throw();
+  virtual ~GraphQueryAggregatorService_path_query_local_args() throw();
   std::vector<int64_t>  query;
 
-  _GraphQueryAggregatorService_rpq_local_args__isset __isset;
+  _GraphQueryAggregatorService_path_query_local_args__isset __isset;
 
   void __set_query(const std::vector<int64_t> & val);
 
-  bool operator == (const GraphQueryAggregatorService_rpq_local_args & rhs) const
+  bool operator == (const GraphQueryAggregatorService_path_query_local_args & rhs) const
   {
     if (!(query == rhs.query))
       return false;
     return true;
   }
-  bool operator != (const GraphQueryAggregatorService_rpq_local_args &rhs) const {
+  bool operator != (const GraphQueryAggregatorService_path_query_local_args &rhs) const {
     return !(*this == rhs);
   }
 
-  bool operator < (const GraphQueryAggregatorService_rpq_local_args & ) const;
+  bool operator < (const GraphQueryAggregatorService_path_query_local_args & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
@@ -6138,97 +6138,97 @@ class GraphQueryAggregatorService_rpq_local_args {
 };
 
 
-class GraphQueryAggregatorService_rpq_local_pargs {
+class GraphQueryAggregatorService_path_query_local_pargs {
  public:
 
 
-  virtual ~GraphQueryAggregatorService_rpq_local_pargs() throw();
+  virtual ~GraphQueryAggregatorService_path_query_local_pargs() throw();
   const std::vector<int64_t> * query;
 
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
-typedef struct _GraphQueryAggregatorService_rpq_local_result__isset {
-  _GraphQueryAggregatorService_rpq_local_result__isset() : success(false) {}
+typedef struct _GraphQueryAggregatorService_path_query_local_result__isset {
+  _GraphQueryAggregatorService_path_query_local_result__isset() : success(false) {}
   bool success :1;
-} _GraphQueryAggregatorService_rpq_local_result__isset;
+} _GraphQueryAggregatorService_path_query_local_result__isset;
 
-class GraphQueryAggregatorService_rpq_local_result {
+class GraphQueryAggregatorService_path_query_local_result {
  public:
 
-  GraphQueryAggregatorService_rpq_local_result(const GraphQueryAggregatorService_rpq_local_result&);
-  GraphQueryAggregatorService_rpq_local_result& operator=(const GraphQueryAggregatorService_rpq_local_result&);
-  GraphQueryAggregatorService_rpq_local_result() {
+  GraphQueryAggregatorService_path_query_local_result(const GraphQueryAggregatorService_path_query_local_result&);
+  GraphQueryAggregatorService_path_query_local_result& operator=(const GraphQueryAggregatorService_path_query_local_result&);
+  GraphQueryAggregatorService_path_query_local_result() {
   }
 
-  virtual ~GraphQueryAggregatorService_rpq_local_result() throw();
+  virtual ~GraphQueryAggregatorService_path_query_local_result() throw();
   RPQCtx success;
 
-  _GraphQueryAggregatorService_rpq_local_result__isset __isset;
+  _GraphQueryAggregatorService_path_query_local_result__isset __isset;
 
   void __set_success(const RPQCtx& val);
 
-  bool operator == (const GraphQueryAggregatorService_rpq_local_result & rhs) const
+  bool operator == (const GraphQueryAggregatorService_path_query_local_result & rhs) const
   {
     if (!(success == rhs.success))
       return false;
     return true;
   }
-  bool operator != (const GraphQueryAggregatorService_rpq_local_result &rhs) const {
+  bool operator != (const GraphQueryAggregatorService_path_query_local_result &rhs) const {
     return !(*this == rhs);
   }
 
-  bool operator < (const GraphQueryAggregatorService_rpq_local_result & ) const;
+  bool operator < (const GraphQueryAggregatorService_path_query_local_result & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
-typedef struct _GraphQueryAggregatorService_rpq_local_presult__isset {
-  _GraphQueryAggregatorService_rpq_local_presult__isset() : success(false) {}
+typedef struct _GraphQueryAggregatorService_path_query_local_presult__isset {
+  _GraphQueryAggregatorService_path_query_local_presult__isset() : success(false) {}
   bool success :1;
-} _GraphQueryAggregatorService_rpq_local_presult__isset;
+} _GraphQueryAggregatorService_path_query_local_presult__isset;
 
-class GraphQueryAggregatorService_rpq_local_presult {
+class GraphQueryAggregatorService_path_query_local_presult {
  public:
 
 
-  virtual ~GraphQueryAggregatorService_rpq_local_presult() throw();
+  virtual ~GraphQueryAggregatorService_path_query_local_presult() throw();
   RPQCtx* success;
 
-  _GraphQueryAggregatorService_rpq_local_presult__isset __isset;
+  _GraphQueryAggregatorService_path_query_local_presult__isset __isset;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
 
 };
 
-typedef struct _GraphQueryAggregatorService_advance_rpq_ctx_args__isset {
-  _GraphQueryAggregatorService_advance_rpq_ctx_args__isset() : query(false), ctx(false) {}
+typedef struct _GraphQueryAggregatorService_advance_path_query_ctx_args__isset {
+  _GraphQueryAggregatorService_advance_path_query_ctx_args__isset() : query(false), ctx(false) {}
   bool query :1;
   bool ctx :1;
-} _GraphQueryAggregatorService_advance_rpq_ctx_args__isset;
+} _GraphQueryAggregatorService_advance_path_query_ctx_args__isset;
 
-class GraphQueryAggregatorService_advance_rpq_ctx_args {
+class GraphQueryAggregatorService_advance_path_query_ctx_args {
  public:
 
-  GraphQueryAggregatorService_advance_rpq_ctx_args(const GraphQueryAggregatorService_advance_rpq_ctx_args&);
-  GraphQueryAggregatorService_advance_rpq_ctx_args& operator=(const GraphQueryAggregatorService_advance_rpq_ctx_args&);
-  GraphQueryAggregatorService_advance_rpq_ctx_args() {
+  GraphQueryAggregatorService_advance_path_query_ctx_args(const GraphQueryAggregatorService_advance_path_query_ctx_args&);
+  GraphQueryAggregatorService_advance_path_query_ctx_args& operator=(const GraphQueryAggregatorService_advance_path_query_ctx_args&);
+  GraphQueryAggregatorService_advance_path_query_ctx_args() {
   }
 
-  virtual ~GraphQueryAggregatorService_advance_rpq_ctx_args() throw();
+  virtual ~GraphQueryAggregatorService_advance_path_query_ctx_args() throw();
   std::vector<int64_t>  query;
   RPQCtx ctx;
 
-  _GraphQueryAggregatorService_advance_rpq_ctx_args__isset __isset;
+  _GraphQueryAggregatorService_advance_path_query_ctx_args__isset __isset;
 
   void __set_query(const std::vector<int64_t> & val);
 
   void __set_ctx(const RPQCtx& val);
 
-  bool operator == (const GraphQueryAggregatorService_advance_rpq_ctx_args & rhs) const
+  bool operator == (const GraphQueryAggregatorService_advance_path_query_ctx_args & rhs) const
   {
     if (!(query == rhs.query))
       return false;
@@ -6236,11 +6236,11 @@ class GraphQueryAggregatorService_advance_rpq_ctx_args {
       return false;
     return true;
   }
-  bool operator != (const GraphQueryAggregatorService_advance_rpq_ctx_args &rhs) const {
+  bool operator != (const GraphQueryAggregatorService_advance_path_query_ctx_args &rhs) const {
     return !(*this == rhs);
   }
 
-  bool operator < (const GraphQueryAggregatorService_advance_rpq_ctx_args & ) const;
+  bool operator < (const GraphQueryAggregatorService_advance_path_query_ctx_args & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
@@ -6248,11 +6248,11 @@ class GraphQueryAggregatorService_advance_rpq_ctx_args {
 };
 
 
-class GraphQueryAggregatorService_advance_rpq_ctx_pargs {
+class GraphQueryAggregatorService_advance_path_query_ctx_pargs {
  public:
 
 
-  virtual ~GraphQueryAggregatorService_advance_rpq_ctx_pargs() throw();
+  virtual ~GraphQueryAggregatorService_advance_path_query_ctx_pargs() throw();
   const std::vector<int64_t> * query;
   const RPQCtx* ctx;
 
@@ -6260,56 +6260,56 @@ class GraphQueryAggregatorService_advance_rpq_ctx_pargs {
 
 };
 
-typedef struct _GraphQueryAggregatorService_advance_rpq_ctx_result__isset {
-  _GraphQueryAggregatorService_advance_rpq_ctx_result__isset() : success(false) {}
+typedef struct _GraphQueryAggregatorService_advance_path_query_ctx_result__isset {
+  _GraphQueryAggregatorService_advance_path_query_ctx_result__isset() : success(false) {}
   bool success :1;
-} _GraphQueryAggregatorService_advance_rpq_ctx_result__isset;
+} _GraphQueryAggregatorService_advance_path_query_ctx_result__isset;
 
-class GraphQueryAggregatorService_advance_rpq_ctx_result {
+class GraphQueryAggregatorService_advance_path_query_ctx_result {
  public:
 
-  GraphQueryAggregatorService_advance_rpq_ctx_result(const GraphQueryAggregatorService_advance_rpq_ctx_result&);
-  GraphQueryAggregatorService_advance_rpq_ctx_result& operator=(const GraphQueryAggregatorService_advance_rpq_ctx_result&);
-  GraphQueryAggregatorService_advance_rpq_ctx_result() {
+  GraphQueryAggregatorService_advance_path_query_ctx_result(const GraphQueryAggregatorService_advance_path_query_ctx_result&);
+  GraphQueryAggregatorService_advance_path_query_ctx_result& operator=(const GraphQueryAggregatorService_advance_path_query_ctx_result&);
+  GraphQueryAggregatorService_advance_path_query_ctx_result() {
   }
 
-  virtual ~GraphQueryAggregatorService_advance_rpq_ctx_result() throw();
+  virtual ~GraphQueryAggregatorService_advance_path_query_ctx_result() throw();
   RPQCtx success;
 
-  _GraphQueryAggregatorService_advance_rpq_ctx_result__isset __isset;
+  _GraphQueryAggregatorService_advance_path_query_ctx_result__isset __isset;
 
   void __set_success(const RPQCtx& val);
 
-  bool operator == (const GraphQueryAggregatorService_advance_rpq_ctx_result & rhs) const
+  bool operator == (const GraphQueryAggregatorService_advance_path_query_ctx_result & rhs) const
   {
     if (!(success == rhs.success))
       return false;
     return true;
   }
-  bool operator != (const GraphQueryAggregatorService_advance_rpq_ctx_result &rhs) const {
+  bool operator != (const GraphQueryAggregatorService_advance_path_query_ctx_result &rhs) const {
     return !(*this == rhs);
   }
 
-  bool operator < (const GraphQueryAggregatorService_advance_rpq_ctx_result & ) const;
+  bool operator < (const GraphQueryAggregatorService_advance_path_query_ctx_result & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
-typedef struct _GraphQueryAggregatorService_advance_rpq_ctx_presult__isset {
-  _GraphQueryAggregatorService_advance_rpq_ctx_presult__isset() : success(false) {}
+typedef struct _GraphQueryAggregatorService_advance_path_query_ctx_presult__isset {
+  _GraphQueryAggregatorService_advance_path_query_ctx_presult__isset() : success(false) {}
   bool success :1;
-} _GraphQueryAggregatorService_advance_rpq_ctx_presult__isset;
+} _GraphQueryAggregatorService_advance_path_query_ctx_presult__isset;
 
-class GraphQueryAggregatorService_advance_rpq_ctx_presult {
+class GraphQueryAggregatorService_advance_path_query_ctx_presult {
  public:
 
 
-  virtual ~GraphQueryAggregatorService_advance_rpq_ctx_presult() throw();
+  virtual ~GraphQueryAggregatorService_advance_path_query_ctx_presult() throw();
   RPQCtx* success;
 
-  _GraphQueryAggregatorService_advance_rpq_ctx_presult__isset __isset;
+  _GraphQueryAggregatorService_advance_path_query_ctx_presult__isset __isset;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
 
@@ -6490,15 +6490,15 @@ class GraphQueryAggregatorServiceClient : virtual public GraphQueryAggregatorSer
   int64_t countLinks(const int64_t id1, const int64_t link_type);
   void send_countLinks(const int64_t id1, const int64_t link_type);
   int64_t recv_countLinks();
-  void rpq(RPQCtx& _return, const std::vector<int64_t> & query);
-  void send_rpq(const std::vector<int64_t> & query);
-  void recv_rpq(RPQCtx& _return);
-  void rpq_local(RPQCtx& _return, const std::vector<int64_t> & query);
-  void send_rpq_local(const std::vector<int64_t> & query);
-  void recv_rpq_local(RPQCtx& _return);
-  void advance_rpq_ctx(RPQCtx& _return, const std::vector<int64_t> & query, const RPQCtx& ctx);
-  void send_advance_rpq_ctx(const std::vector<int64_t> & query, const RPQCtx& ctx);
-  void recv_advance_rpq_ctx(RPQCtx& _return);
+  void path_query(RPQCtx& _return, const std::vector<int64_t> & query);
+  void send_path_query(const std::vector<int64_t> & query);
+  void recv_path_query(RPQCtx& _return);
+  void path_query_local(RPQCtx& _return, const std::vector<int64_t> & query);
+  void send_path_query_local(const std::vector<int64_t> & query);
+  void recv_path_query_local(RPQCtx& _return);
+  void advance_path_query_ctx(RPQCtx& _return, const std::vector<int64_t> & query, const RPQCtx& ctx);
+  void send_advance_path_query_ctx(const std::vector<int64_t> & query, const RPQCtx& ctx);
+  void recv_advance_path_query_ctx(RPQCtx& _return);
  protected:
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> piprot_;
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> poprot_;
@@ -6564,9 +6564,9 @@ class GraphQueryAggregatorServiceProcessor : public ::apache::thrift::TDispatchP
   void process_getFilteredLinkList(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_getFilteredLinkListLocal(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_countLinks(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
-  void process_rpq(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
-  void process_rpq_local(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
-  void process_advance_rpq_ctx(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_path_query(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_path_query_local(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_advance_path_query_ctx(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
  public:
   GraphQueryAggregatorServiceProcessor(boost::shared_ptr<GraphQueryAggregatorServiceIf> iface) :
     iface_(iface) {
@@ -6620,9 +6620,9 @@ class GraphQueryAggregatorServiceProcessor : public ::apache::thrift::TDispatchP
     processMap_["getFilteredLinkList"] = &GraphQueryAggregatorServiceProcessor::process_getFilteredLinkList;
     processMap_["getFilteredLinkListLocal"] = &GraphQueryAggregatorServiceProcessor::process_getFilteredLinkListLocal;
     processMap_["countLinks"] = &GraphQueryAggregatorServiceProcessor::process_countLinks;
-    processMap_["rpq"] = &GraphQueryAggregatorServiceProcessor::process_rpq;
-    processMap_["rpq_local"] = &GraphQueryAggregatorServiceProcessor::process_rpq_local;
-    processMap_["advance_rpq_ctx"] = &GraphQueryAggregatorServiceProcessor::process_advance_rpq_ctx;
+    processMap_["path_query"] = &GraphQueryAggregatorServiceProcessor::process_path_query;
+    processMap_["path_query_local"] = &GraphQueryAggregatorServiceProcessor::process_path_query_local;
+    processMap_["advance_path_query_ctx"] = &GraphQueryAggregatorServiceProcessor::process_advance_path_query_ctx;
   }
 
   virtual ~GraphQueryAggregatorServiceProcessor() {}
@@ -7132,33 +7132,33 @@ class GraphQueryAggregatorServiceMultiface : virtual public GraphQueryAggregator
     return ifaces_[i]->countLinks(id1, link_type);
   }
 
-  void rpq(RPQCtx& _return, const std::vector<int64_t> & query) {
+  void path_query(RPQCtx& _return, const std::vector<int64_t> & query) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
-      ifaces_[i]->rpq(_return, query);
+      ifaces_[i]->path_query(_return, query);
     }
-    ifaces_[i]->rpq(_return, query);
+    ifaces_[i]->path_query(_return, query);
     return;
   }
 
-  void rpq_local(RPQCtx& _return, const std::vector<int64_t> & query) {
+  void path_query_local(RPQCtx& _return, const std::vector<int64_t> & query) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
-      ifaces_[i]->rpq_local(_return, query);
+      ifaces_[i]->path_query_local(_return, query);
     }
-    ifaces_[i]->rpq_local(_return, query);
+    ifaces_[i]->path_query_local(_return, query);
     return;
   }
 
-  void advance_rpq_ctx(RPQCtx& _return, const std::vector<int64_t> & query, const RPQCtx& ctx) {
+  void advance_path_query_ctx(RPQCtx& _return, const std::vector<int64_t> & query, const RPQCtx& ctx) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
-      ifaces_[i]->advance_rpq_ctx(_return, query, ctx);
+      ifaces_[i]->advance_path_query_ctx(_return, query, ctx);
     }
-    ifaces_[i]->advance_rpq_ctx(_return, query, ctx);
+    ifaces_[i]->advance_path_query_ctx(_return, query, ctx);
     return;
   }
 
@@ -7342,15 +7342,15 @@ class GraphQueryAggregatorServiceConcurrentClient : virtual public GraphQueryAgg
   int64_t countLinks(const int64_t id1, const int64_t link_type);
   int32_t send_countLinks(const int64_t id1, const int64_t link_type);
   int64_t recv_countLinks(const int32_t seqid);
-  void rpq(RPQCtx& _return, const std::vector<int64_t> & query);
-  int32_t send_rpq(const std::vector<int64_t> & query);
-  void recv_rpq(RPQCtx& _return, const int32_t seqid);
-  void rpq_local(RPQCtx& _return, const std::vector<int64_t> & query);
-  int32_t send_rpq_local(const std::vector<int64_t> & query);
-  void recv_rpq_local(RPQCtx& _return, const int32_t seqid);
-  void advance_rpq_ctx(RPQCtx& _return, const std::vector<int64_t> & query, const RPQCtx& ctx);
-  int32_t send_advance_rpq_ctx(const std::vector<int64_t> & query, const RPQCtx& ctx);
-  void recv_advance_rpq_ctx(RPQCtx& _return, const int32_t seqid);
+  void path_query(RPQCtx& _return, const std::vector<int64_t> & query);
+  int32_t send_path_query(const std::vector<int64_t> & query);
+  void recv_path_query(RPQCtx& _return, const int32_t seqid);
+  void path_query_local(RPQCtx& _return, const std::vector<int64_t> & query);
+  int32_t send_path_query_local(const std::vector<int64_t> & query);
+  void recv_path_query_local(RPQCtx& _return, const int32_t seqid);
+  void advance_path_query_ctx(RPQCtx& _return, const std::vector<int64_t> & query, const RPQCtx& ctx);
+  int32_t send_advance_path_query_ctx(const std::vector<int64_t> & query, const RPQCtx& ctx);
+  void recv_advance_path_query_ctx(RPQCtx& _return, const int32_t seqid);
  protected:
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> piprot_;
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> poprot_;

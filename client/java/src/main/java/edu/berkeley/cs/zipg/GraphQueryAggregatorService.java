@@ -112,11 +112,11 @@ public class GraphQueryAggregatorService {
 
     public long countLinks(long id1, long link_type) throws org.apache.thrift.TException;
 
-    public RPQCtx rpq(java.util.List<java.lang.Long> query) throws org.apache.thrift.TException;
+    public RPQCtx path_query(java.util.List<java.lang.Long> query) throws org.apache.thrift.TException;
 
-    public RPQCtx rpq_local(java.util.List<java.lang.Long> query) throws org.apache.thrift.TException;
+    public RPQCtx path_query_local(java.util.List<java.lang.Long> query) throws org.apache.thrift.TException;
 
-    public RPQCtx advance_rpq_ctx(java.util.List<java.lang.Long> query, RPQCtx ctx) throws org.apache.thrift.TException;
+    public RPQCtx advance_path_query_ctx(java.util.List<java.lang.Long> query, RPQCtx ctx) throws org.apache.thrift.TException;
 
   }
 
@@ -222,11 +222,11 @@ public class GraphQueryAggregatorService {
 
     public void countLinks(long id1, long link_type, org.apache.thrift.async.AsyncMethodCallback<java.lang.Long> resultHandler) throws org.apache.thrift.TException;
 
-    public void rpq(java.util.List<java.lang.Long> query, org.apache.thrift.async.AsyncMethodCallback<RPQCtx> resultHandler) throws org.apache.thrift.TException;
+    public void path_query(java.util.List<java.lang.Long> query, org.apache.thrift.async.AsyncMethodCallback<RPQCtx> resultHandler) throws org.apache.thrift.TException;
 
-    public void rpq_local(java.util.List<java.lang.Long> query, org.apache.thrift.async.AsyncMethodCallback<RPQCtx> resultHandler) throws org.apache.thrift.TException;
+    public void path_query_local(java.util.List<java.lang.Long> query, org.apache.thrift.async.AsyncMethodCallback<RPQCtx> resultHandler) throws org.apache.thrift.TException;
 
-    public void advance_rpq_ctx(java.util.List<java.lang.Long> query, RPQCtx ctx, org.apache.thrift.async.AsyncMethodCallback<RPQCtx> resultHandler) throws org.apache.thrift.TException;
+    public void advance_path_query_ctx(java.util.List<java.lang.Long> query, RPQCtx ctx, org.apache.thrift.async.AsyncMethodCallback<RPQCtx> resultHandler) throws org.apache.thrift.TException;
 
   }
 
@@ -1475,74 +1475,74 @@ public class GraphQueryAggregatorService {
       throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "countLinks failed: unknown result");
     }
 
-    public RPQCtx rpq(java.util.List<java.lang.Long> query) throws org.apache.thrift.TException
+    public RPQCtx path_query(java.util.List<java.lang.Long> query) throws org.apache.thrift.TException
     {
-      send_rpq(query);
-      return recv_rpq();
+      send_path_query(query);
+      return recv_path_query();
     }
 
-    public void send_rpq(java.util.List<java.lang.Long> query) throws org.apache.thrift.TException
+    public void send_path_query(java.util.List<java.lang.Long> query) throws org.apache.thrift.TException
     {
-      rpq_args args = new rpq_args();
+      path_query_args args = new path_query_args();
       args.setQuery(query);
-      sendBase("rpq", args);
+      sendBase("path_query", args);
     }
 
-    public RPQCtx recv_rpq() throws org.apache.thrift.TException
+    public RPQCtx recv_path_query() throws org.apache.thrift.TException
     {
-      rpq_result result = new rpq_result();
-      receiveBase(result, "rpq");
+      path_query_result result = new path_query_result();
+      receiveBase(result, "path_query");
       if (result.isSetSuccess()) {
         return result.success;
       }
-      throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "rpq failed: unknown result");
+      throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "path_query failed: unknown result");
     }
 
-    public RPQCtx rpq_local(java.util.List<java.lang.Long> query) throws org.apache.thrift.TException
+    public RPQCtx path_query_local(java.util.List<java.lang.Long> query) throws org.apache.thrift.TException
     {
-      send_rpq_local(query);
-      return recv_rpq_local();
+      send_path_query_local(query);
+      return recv_path_query_local();
     }
 
-    public void send_rpq_local(java.util.List<java.lang.Long> query) throws org.apache.thrift.TException
+    public void send_path_query_local(java.util.List<java.lang.Long> query) throws org.apache.thrift.TException
     {
-      rpq_local_args args = new rpq_local_args();
+      path_query_local_args args = new path_query_local_args();
       args.setQuery(query);
-      sendBase("rpq_local", args);
+      sendBase("path_query_local", args);
     }
 
-    public RPQCtx recv_rpq_local() throws org.apache.thrift.TException
+    public RPQCtx recv_path_query_local() throws org.apache.thrift.TException
     {
-      rpq_local_result result = new rpq_local_result();
-      receiveBase(result, "rpq_local");
+      path_query_local_result result = new path_query_local_result();
+      receiveBase(result, "path_query_local");
       if (result.isSetSuccess()) {
         return result.success;
       }
-      throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "rpq_local failed: unknown result");
+      throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "path_query_local failed: unknown result");
     }
 
-    public RPQCtx advance_rpq_ctx(java.util.List<java.lang.Long> query, RPQCtx ctx) throws org.apache.thrift.TException
+    public RPQCtx advance_path_query_ctx(java.util.List<java.lang.Long> query, RPQCtx ctx) throws org.apache.thrift.TException
     {
-      send_advance_rpq_ctx(query, ctx);
-      return recv_advance_rpq_ctx();
+      send_advance_path_query_ctx(query, ctx);
+      return recv_advance_path_query_ctx();
     }
 
-    public void send_advance_rpq_ctx(java.util.List<java.lang.Long> query, RPQCtx ctx) throws org.apache.thrift.TException
+    public void send_advance_path_query_ctx(java.util.List<java.lang.Long> query, RPQCtx ctx) throws org.apache.thrift.TException
     {
-      advance_rpq_ctx_args args = new advance_rpq_ctx_args();
+      advance_path_query_ctx_args args = new advance_path_query_ctx_args();
       args.setQuery(query);
       args.setCtx(ctx);
-      sendBase("advance_rpq_ctx", args);
+      sendBase("advance_path_query_ctx", args);
     }
 
-    public RPQCtx recv_advance_rpq_ctx() throws org.apache.thrift.TException
+    public RPQCtx recv_advance_path_query_ctx() throws org.apache.thrift.TException
     {
-      advance_rpq_ctx_result result = new advance_rpq_ctx_result();
-      receiveBase(result, "advance_rpq_ctx");
+      advance_path_query_ctx_result result = new advance_path_query_ctx_result();
+      receiveBase(result, "advance_path_query_ctx");
       if (result.isSetSuccess()) {
         return result.success;
       }
-      throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "advance_rpq_ctx failed: unknown result");
+      throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "advance_path_query_ctx failed: unknown result");
     }
 
   }
@@ -3424,23 +3424,23 @@ public class GraphQueryAggregatorService {
       }
     }
 
-    public void rpq(java.util.List<java.lang.Long> query, org.apache.thrift.async.AsyncMethodCallback<RPQCtx> resultHandler) throws org.apache.thrift.TException {
+    public void path_query(java.util.List<java.lang.Long> query, org.apache.thrift.async.AsyncMethodCallback<RPQCtx> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      rpq_call method_call = new rpq_call(query, resultHandler, this, ___protocolFactory, ___transport);
+      path_query_call method_call = new path_query_call(query, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
 
-    public static class rpq_call extends org.apache.thrift.async.TAsyncMethodCall<RPQCtx> {
+    public static class path_query_call extends org.apache.thrift.async.TAsyncMethodCall<RPQCtx> {
       private java.util.List<java.lang.Long> query;
-      public rpq_call(java.util.List<java.lang.Long> query, org.apache.thrift.async.AsyncMethodCallback<RPQCtx> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      public path_query_call(java.util.List<java.lang.Long> query, org.apache.thrift.async.AsyncMethodCallback<RPQCtx> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.query = query;
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
-        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("rpq", org.apache.thrift.protocol.TMessageType.CALL, 0));
-        rpq_args args = new rpq_args();
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("path_query", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        path_query_args args = new path_query_args();
         args.setQuery(query);
         args.write(prot);
         prot.writeMessageEnd();
@@ -3452,27 +3452,27 @@ public class GraphQueryAggregatorService {
         }
         org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
         org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
-        return (new Client(prot)).recv_rpq();
+        return (new Client(prot)).recv_path_query();
       }
     }
 
-    public void rpq_local(java.util.List<java.lang.Long> query, org.apache.thrift.async.AsyncMethodCallback<RPQCtx> resultHandler) throws org.apache.thrift.TException {
+    public void path_query_local(java.util.List<java.lang.Long> query, org.apache.thrift.async.AsyncMethodCallback<RPQCtx> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      rpq_local_call method_call = new rpq_local_call(query, resultHandler, this, ___protocolFactory, ___transport);
+      path_query_local_call method_call = new path_query_local_call(query, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
 
-    public static class rpq_local_call extends org.apache.thrift.async.TAsyncMethodCall<RPQCtx> {
+    public static class path_query_local_call extends org.apache.thrift.async.TAsyncMethodCall<RPQCtx> {
       private java.util.List<java.lang.Long> query;
-      public rpq_local_call(java.util.List<java.lang.Long> query, org.apache.thrift.async.AsyncMethodCallback<RPQCtx> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      public path_query_local_call(java.util.List<java.lang.Long> query, org.apache.thrift.async.AsyncMethodCallback<RPQCtx> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.query = query;
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
-        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("rpq_local", org.apache.thrift.protocol.TMessageType.CALL, 0));
-        rpq_local_args args = new rpq_local_args();
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("path_query_local", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        path_query_local_args args = new path_query_local_args();
         args.setQuery(query);
         args.write(prot);
         prot.writeMessageEnd();
@@ -3484,29 +3484,29 @@ public class GraphQueryAggregatorService {
         }
         org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
         org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
-        return (new Client(prot)).recv_rpq_local();
+        return (new Client(prot)).recv_path_query_local();
       }
     }
 
-    public void advance_rpq_ctx(java.util.List<java.lang.Long> query, RPQCtx ctx, org.apache.thrift.async.AsyncMethodCallback<RPQCtx> resultHandler) throws org.apache.thrift.TException {
+    public void advance_path_query_ctx(java.util.List<java.lang.Long> query, RPQCtx ctx, org.apache.thrift.async.AsyncMethodCallback<RPQCtx> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      advance_rpq_ctx_call method_call = new advance_rpq_ctx_call(query, ctx, resultHandler, this, ___protocolFactory, ___transport);
+      advance_path_query_ctx_call method_call = new advance_path_query_ctx_call(query, ctx, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
 
-    public static class advance_rpq_ctx_call extends org.apache.thrift.async.TAsyncMethodCall<RPQCtx> {
+    public static class advance_path_query_ctx_call extends org.apache.thrift.async.TAsyncMethodCall<RPQCtx> {
       private java.util.List<java.lang.Long> query;
       private RPQCtx ctx;
-      public advance_rpq_ctx_call(java.util.List<java.lang.Long> query, RPQCtx ctx, org.apache.thrift.async.AsyncMethodCallback<RPQCtx> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      public advance_path_query_ctx_call(java.util.List<java.lang.Long> query, RPQCtx ctx, org.apache.thrift.async.AsyncMethodCallback<RPQCtx> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.query = query;
         this.ctx = ctx;
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
-        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("advance_rpq_ctx", org.apache.thrift.protocol.TMessageType.CALL, 0));
-        advance_rpq_ctx_args args = new advance_rpq_ctx_args();
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("advance_path_query_ctx", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        advance_path_query_ctx_args args = new advance_path_query_ctx_args();
         args.setQuery(query);
         args.setCtx(ctx);
         args.write(prot);
@@ -3519,7 +3519,7 @@ public class GraphQueryAggregatorService {
         }
         org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
         org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
-        return (new Client(prot)).recv_advance_rpq_ctx();
+        return (new Client(prot)).recv_advance_path_query_ctx();
       }
     }
 
@@ -3586,9 +3586,9 @@ public class GraphQueryAggregatorService {
       processMap.put("getFilteredLinkList", new getFilteredLinkList());
       processMap.put("getFilteredLinkListLocal", new getFilteredLinkListLocal());
       processMap.put("countLinks", new countLinks());
-      processMap.put("rpq", new rpq());
-      processMap.put("rpq_local", new rpq_local());
-      processMap.put("advance_rpq_ctx", new advance_rpq_ctx());
+      processMap.put("path_query", new path_query());
+      processMap.put("path_query_local", new path_query_local());
+      processMap.put("advance_path_query_ctx", new advance_path_query_ctx());
       return processMap;
     }
 
@@ -4607,62 +4607,62 @@ public class GraphQueryAggregatorService {
       }
     }
 
-    public static class rpq<I extends Iface> extends org.apache.thrift.ProcessFunction<I, rpq_args> {
-      public rpq() {
-        super("rpq");
+    public static class path_query<I extends Iface> extends org.apache.thrift.ProcessFunction<I, path_query_args> {
+      public path_query() {
+        super("path_query");
       }
 
-      public rpq_args getEmptyArgsInstance() {
-        return new rpq_args();
+      public path_query_args getEmptyArgsInstance() {
+        return new path_query_args();
       }
 
       protected boolean isOneway() {
         return false;
       }
 
-      public rpq_result getResult(I iface, rpq_args args) throws org.apache.thrift.TException {
-        rpq_result result = new rpq_result();
-        result.success = iface.rpq(args.query);
+      public path_query_result getResult(I iface, path_query_args args) throws org.apache.thrift.TException {
+        path_query_result result = new path_query_result();
+        result.success = iface.path_query(args.query);
         return result;
       }
     }
 
-    public static class rpq_local<I extends Iface> extends org.apache.thrift.ProcessFunction<I, rpq_local_args> {
-      public rpq_local() {
-        super("rpq_local");
+    public static class path_query_local<I extends Iface> extends org.apache.thrift.ProcessFunction<I, path_query_local_args> {
+      public path_query_local() {
+        super("path_query_local");
       }
 
-      public rpq_local_args getEmptyArgsInstance() {
-        return new rpq_local_args();
+      public path_query_local_args getEmptyArgsInstance() {
+        return new path_query_local_args();
       }
 
       protected boolean isOneway() {
         return false;
       }
 
-      public rpq_local_result getResult(I iface, rpq_local_args args) throws org.apache.thrift.TException {
-        rpq_local_result result = new rpq_local_result();
-        result.success = iface.rpq_local(args.query);
+      public path_query_local_result getResult(I iface, path_query_local_args args) throws org.apache.thrift.TException {
+        path_query_local_result result = new path_query_local_result();
+        result.success = iface.path_query_local(args.query);
         return result;
       }
     }
 
-    public static class advance_rpq_ctx<I extends Iface> extends org.apache.thrift.ProcessFunction<I, advance_rpq_ctx_args> {
-      public advance_rpq_ctx() {
-        super("advance_rpq_ctx");
+    public static class advance_path_query_ctx<I extends Iface> extends org.apache.thrift.ProcessFunction<I, advance_path_query_ctx_args> {
+      public advance_path_query_ctx() {
+        super("advance_path_query_ctx");
       }
 
-      public advance_rpq_ctx_args getEmptyArgsInstance() {
-        return new advance_rpq_ctx_args();
+      public advance_path_query_ctx_args getEmptyArgsInstance() {
+        return new advance_path_query_ctx_args();
       }
 
       protected boolean isOneway() {
         return false;
       }
 
-      public advance_rpq_ctx_result getResult(I iface, advance_rpq_ctx_args args) throws org.apache.thrift.TException {
-        advance_rpq_ctx_result result = new advance_rpq_ctx_result();
-        result.success = iface.advance_rpq_ctx(args.query, args.ctx);
+      public advance_path_query_ctx_result getResult(I iface, advance_path_query_ctx_args args) throws org.apache.thrift.TException {
+        advance_path_query_ctx_result result = new advance_path_query_ctx_result();
+        result.success = iface.advance_path_query_ctx(args.query, args.ctx);
         return result;
       }
     }
@@ -4730,9 +4730,9 @@ public class GraphQueryAggregatorService {
       processMap.put("getFilteredLinkList", new getFilteredLinkList());
       processMap.put("getFilteredLinkListLocal", new getFilteredLinkListLocal());
       processMap.put("countLinks", new countLinks());
-      processMap.put("rpq", new rpq());
-      processMap.put("rpq_local", new rpq_local());
-      processMap.put("advance_rpq_ctx", new advance_rpq_ctx());
+      processMap.put("path_query", new path_query());
+      processMap.put("path_query_local", new path_query_local());
+      processMap.put("advance_path_query_ctx", new advance_path_query_ctx());
       return processMap;
     }
 
@@ -7797,20 +7797,20 @@ public class GraphQueryAggregatorService {
       }
     }
 
-    public static class rpq<I extends AsyncIface> extends org.apache.thrift.AsyncProcessFunction<I, rpq_args, RPQCtx> {
-      public rpq() {
-        super("rpq");
+    public static class path_query<I extends AsyncIface> extends org.apache.thrift.AsyncProcessFunction<I, path_query_args, RPQCtx> {
+      public path_query() {
+        super("path_query");
       }
 
-      public rpq_args getEmptyArgsInstance() {
-        return new rpq_args();
+      public path_query_args getEmptyArgsInstance() {
+        return new path_query_args();
       }
 
       public org.apache.thrift.async.AsyncMethodCallback<RPQCtx> getResultHandler(final org.apache.thrift.server.AbstractNonblockingServer.AsyncFrameBuffer fb, final int seqid) {
         final org.apache.thrift.AsyncProcessFunction fcall = this;
         return new org.apache.thrift.async.AsyncMethodCallback<RPQCtx>() { 
           public void onComplete(RPQCtx o) {
-            rpq_result result = new rpq_result();
+            path_query_result result = new path_query_result();
             result.success = o;
             try {
               fcall.sendResponse(fb, result, org.apache.thrift.protocol.TMessageType.REPLY,seqid);
@@ -7825,7 +7825,7 @@ public class GraphQueryAggregatorService {
           public void onError(java.lang.Exception e) {
             byte msgType = org.apache.thrift.protocol.TMessageType.REPLY;
             org.apache.thrift.TSerializable msg;
-            rpq_result result = new rpq_result();
+            path_query_result result = new path_query_result();
             if (e instanceof org.apache.thrift.transport.TTransportException) {
               _LOGGER.error("TTransportException inside handler", e);
               fb.close();
@@ -7853,25 +7853,25 @@ public class GraphQueryAggregatorService {
         return false;
       }
 
-      public void start(I iface, rpq_args args, org.apache.thrift.async.AsyncMethodCallback<RPQCtx> resultHandler) throws org.apache.thrift.TException {
-        iface.rpq(args.query,resultHandler);
+      public void start(I iface, path_query_args args, org.apache.thrift.async.AsyncMethodCallback<RPQCtx> resultHandler) throws org.apache.thrift.TException {
+        iface.path_query(args.query,resultHandler);
       }
     }
 
-    public static class rpq_local<I extends AsyncIface> extends org.apache.thrift.AsyncProcessFunction<I, rpq_local_args, RPQCtx> {
-      public rpq_local() {
-        super("rpq_local");
+    public static class path_query_local<I extends AsyncIface> extends org.apache.thrift.AsyncProcessFunction<I, path_query_local_args, RPQCtx> {
+      public path_query_local() {
+        super("path_query_local");
       }
 
-      public rpq_local_args getEmptyArgsInstance() {
-        return new rpq_local_args();
+      public path_query_local_args getEmptyArgsInstance() {
+        return new path_query_local_args();
       }
 
       public org.apache.thrift.async.AsyncMethodCallback<RPQCtx> getResultHandler(final org.apache.thrift.server.AbstractNonblockingServer.AsyncFrameBuffer fb, final int seqid) {
         final org.apache.thrift.AsyncProcessFunction fcall = this;
         return new org.apache.thrift.async.AsyncMethodCallback<RPQCtx>() { 
           public void onComplete(RPQCtx o) {
-            rpq_local_result result = new rpq_local_result();
+            path_query_local_result result = new path_query_local_result();
             result.success = o;
             try {
               fcall.sendResponse(fb, result, org.apache.thrift.protocol.TMessageType.REPLY,seqid);
@@ -7886,7 +7886,7 @@ public class GraphQueryAggregatorService {
           public void onError(java.lang.Exception e) {
             byte msgType = org.apache.thrift.protocol.TMessageType.REPLY;
             org.apache.thrift.TSerializable msg;
-            rpq_local_result result = new rpq_local_result();
+            path_query_local_result result = new path_query_local_result();
             if (e instanceof org.apache.thrift.transport.TTransportException) {
               _LOGGER.error("TTransportException inside handler", e);
               fb.close();
@@ -7914,25 +7914,25 @@ public class GraphQueryAggregatorService {
         return false;
       }
 
-      public void start(I iface, rpq_local_args args, org.apache.thrift.async.AsyncMethodCallback<RPQCtx> resultHandler) throws org.apache.thrift.TException {
-        iface.rpq_local(args.query,resultHandler);
+      public void start(I iface, path_query_local_args args, org.apache.thrift.async.AsyncMethodCallback<RPQCtx> resultHandler) throws org.apache.thrift.TException {
+        iface.path_query_local(args.query,resultHandler);
       }
     }
 
-    public static class advance_rpq_ctx<I extends AsyncIface> extends org.apache.thrift.AsyncProcessFunction<I, advance_rpq_ctx_args, RPQCtx> {
-      public advance_rpq_ctx() {
-        super("advance_rpq_ctx");
+    public static class advance_path_query_ctx<I extends AsyncIface> extends org.apache.thrift.AsyncProcessFunction<I, advance_path_query_ctx_args, RPQCtx> {
+      public advance_path_query_ctx() {
+        super("advance_path_query_ctx");
       }
 
-      public advance_rpq_ctx_args getEmptyArgsInstance() {
-        return new advance_rpq_ctx_args();
+      public advance_path_query_ctx_args getEmptyArgsInstance() {
+        return new advance_path_query_ctx_args();
       }
 
       public org.apache.thrift.async.AsyncMethodCallback<RPQCtx> getResultHandler(final org.apache.thrift.server.AbstractNonblockingServer.AsyncFrameBuffer fb, final int seqid) {
         final org.apache.thrift.AsyncProcessFunction fcall = this;
         return new org.apache.thrift.async.AsyncMethodCallback<RPQCtx>() { 
           public void onComplete(RPQCtx o) {
-            advance_rpq_ctx_result result = new advance_rpq_ctx_result();
+            advance_path_query_ctx_result result = new advance_path_query_ctx_result();
             result.success = o;
             try {
               fcall.sendResponse(fb, result, org.apache.thrift.protocol.TMessageType.REPLY,seqid);
@@ -7947,7 +7947,7 @@ public class GraphQueryAggregatorService {
           public void onError(java.lang.Exception e) {
             byte msgType = org.apache.thrift.protocol.TMessageType.REPLY;
             org.apache.thrift.TSerializable msg;
-            advance_rpq_ctx_result result = new advance_rpq_ctx_result();
+            advance_path_query_ctx_result result = new advance_path_query_ctx_result();
             if (e instanceof org.apache.thrift.transport.TTransportException) {
               _LOGGER.error("TTransportException inside handler", e);
               fb.close();
@@ -7975,8 +7975,8 @@ public class GraphQueryAggregatorService {
         return false;
       }
 
-      public void start(I iface, advance_rpq_ctx_args args, org.apache.thrift.async.AsyncMethodCallback<RPQCtx> resultHandler) throws org.apache.thrift.TException {
-        iface.advance_rpq_ctx(args.query, args.ctx,resultHandler);
+      public void start(I iface, advance_path_query_ctx_args args, org.apache.thrift.async.AsyncMethodCallback<RPQCtx> resultHandler) throws org.apache.thrift.TException {
+        iface.advance_path_query_ctx(args.query, args.ctx,resultHandler);
       }
     }
 
@@ -53493,13 +53493,13 @@ public class GraphQueryAggregatorService {
     }
   }
 
-  public static class rpq_args implements org.apache.thrift.TBase<rpq_args, rpq_args._Fields>, java.io.Serializable, Cloneable, Comparable<rpq_args>   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("rpq_args");
+  public static class path_query_args implements org.apache.thrift.TBase<path_query_args, path_query_args._Fields>, java.io.Serializable, Cloneable, Comparable<path_query_args>   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("path_query_args");
 
     private static final org.apache.thrift.protocol.TField QUERY_FIELD_DESC = new org.apache.thrift.protocol.TField("query", org.apache.thrift.protocol.TType.LIST, (short)1);
 
-    private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new rpq_argsStandardSchemeFactory();
-    private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new rpq_argsTupleSchemeFactory();
+    private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new path_query_argsStandardSchemeFactory();
+    private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new path_query_argsTupleSchemeFactory();
 
     public java.util.List<java.lang.Long> query; // required
 
@@ -53569,13 +53569,13 @@ public class GraphQueryAggregatorService {
           new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
               new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64))));
       metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(rpq_args.class, metaDataMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(path_query_args.class, metaDataMap);
     }
 
-    public rpq_args() {
+    public path_query_args() {
     }
 
-    public rpq_args(
+    public path_query_args(
       java.util.List<java.lang.Long> query)
     {
       this();
@@ -53585,15 +53585,15 @@ public class GraphQueryAggregatorService {
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public rpq_args(rpq_args other) {
+    public path_query_args(path_query_args other) {
       if (other.isSetQuery()) {
         java.util.List<java.lang.Long> __this__query = new java.util.ArrayList<java.lang.Long>(other.query);
         this.query = __this__query;
       }
     }
 
-    public rpq_args deepCopy() {
-      return new rpq_args(this);
+    public path_query_args deepCopy() {
+      return new path_query_args(this);
     }
 
     @Override
@@ -53620,7 +53620,7 @@ public class GraphQueryAggregatorService {
       return this.query;
     }
 
-    public rpq_args setQuery(java.util.List<java.lang.Long> query) {
+    public path_query_args setQuery(java.util.List<java.lang.Long> query) {
       this.query = query;
       return this;
     }
@@ -53679,12 +53679,12 @@ public class GraphQueryAggregatorService {
     public boolean equals(java.lang.Object that) {
       if (that == null)
         return false;
-      if (that instanceof rpq_args)
-        return this.equals((rpq_args)that);
+      if (that instanceof path_query_args)
+        return this.equals((path_query_args)that);
       return false;
     }
 
-    public boolean equals(rpq_args that) {
+    public boolean equals(path_query_args that) {
       if (that == null)
         return false;
       if (this == that)
@@ -53714,7 +53714,7 @@ public class GraphQueryAggregatorService {
     }
 
     @Override
-    public int compareTo(rpq_args other) {
+    public int compareTo(path_query_args other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
@@ -53748,7 +53748,7 @@ public class GraphQueryAggregatorService {
 
     @Override
     public java.lang.String toString() {
-      java.lang.StringBuilder sb = new java.lang.StringBuilder("rpq_args(");
+      java.lang.StringBuilder sb = new java.lang.StringBuilder("path_query_args(");
       boolean first = true;
 
       sb.append("query:");
@@ -53783,15 +53783,15 @@ public class GraphQueryAggregatorService {
       }
     }
 
-    private static class rpq_argsStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
-      public rpq_argsStandardScheme getScheme() {
-        return new rpq_argsStandardScheme();
+    private static class path_query_argsStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+      public path_query_argsStandardScheme getScheme() {
+        return new path_query_argsStandardScheme();
       }
     }
 
-    private static class rpq_argsStandardScheme extends org.apache.thrift.scheme.StandardScheme<rpq_args> {
+    private static class path_query_argsStandardScheme extends org.apache.thrift.scheme.StandardScheme<path_query_args> {
 
-      public void read(org.apache.thrift.protocol.TProtocol iprot, rpq_args struct) throws org.apache.thrift.TException {
+      public void read(org.apache.thrift.protocol.TProtocol iprot, path_query_args struct) throws org.apache.thrift.TException {
         org.apache.thrift.protocol.TField schemeField;
         iprot.readStructBegin();
         while (true)
@@ -53830,7 +53830,7 @@ public class GraphQueryAggregatorService {
         struct.validate();
       }
 
-      public void write(org.apache.thrift.protocol.TProtocol oprot, rpq_args struct) throws org.apache.thrift.TException {
+      public void write(org.apache.thrift.protocol.TProtocol oprot, path_query_args struct) throws org.apache.thrift.TException {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
@@ -53852,16 +53852,16 @@ public class GraphQueryAggregatorService {
 
     }
 
-    private static class rpq_argsTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
-      public rpq_argsTupleScheme getScheme() {
-        return new rpq_argsTupleScheme();
+    private static class path_query_argsTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+      public path_query_argsTupleScheme getScheme() {
+        return new path_query_argsTupleScheme();
       }
     }
 
-    private static class rpq_argsTupleScheme extends org.apache.thrift.scheme.TupleScheme<rpq_args> {
+    private static class path_query_argsTupleScheme extends org.apache.thrift.scheme.TupleScheme<path_query_args> {
 
       @Override
-      public void write(org.apache.thrift.protocol.TProtocol prot, rpq_args struct) throws org.apache.thrift.TException {
+      public void write(org.apache.thrift.protocol.TProtocol prot, path_query_args struct) throws org.apache.thrift.TException {
         org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
         java.util.BitSet optionals = new java.util.BitSet();
         if (struct.isSetQuery()) {
@@ -53880,7 +53880,7 @@ public class GraphQueryAggregatorService {
       }
 
       @Override
-      public void read(org.apache.thrift.protocol.TProtocol prot, rpq_args struct) throws org.apache.thrift.TException {
+      public void read(org.apache.thrift.protocol.TProtocol prot, path_query_args struct) throws org.apache.thrift.TException {
         org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
         java.util.BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
@@ -53904,13 +53904,13 @@ public class GraphQueryAggregatorService {
     }
   }
 
-  public static class rpq_result implements org.apache.thrift.TBase<rpq_result, rpq_result._Fields>, java.io.Serializable, Cloneable, Comparable<rpq_result>   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("rpq_result");
+  public static class path_query_result implements org.apache.thrift.TBase<path_query_result, path_query_result._Fields>, java.io.Serializable, Cloneable, Comparable<path_query_result>   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("path_query_result");
 
     private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.STRUCT, (short)0);
 
-    private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new rpq_resultStandardSchemeFactory();
-    private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new rpq_resultTupleSchemeFactory();
+    private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new path_query_resultStandardSchemeFactory();
+    private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new path_query_resultTupleSchemeFactory();
 
     public RPQCtx success; // required
 
@@ -53979,13 +53979,13 @@ public class GraphQueryAggregatorService {
       tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, RPQCtx.class)));
       metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(rpq_result.class, metaDataMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(path_query_result.class, metaDataMap);
     }
 
-    public rpq_result() {
+    public path_query_result() {
     }
 
-    public rpq_result(
+    public path_query_result(
       RPQCtx success)
     {
       this();
@@ -53995,14 +53995,14 @@ public class GraphQueryAggregatorService {
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public rpq_result(rpq_result other) {
+    public path_query_result(path_query_result other) {
       if (other.isSetSuccess()) {
         this.success = new RPQCtx(other.success);
       }
     }
 
-    public rpq_result deepCopy() {
-      return new rpq_result(this);
+    public path_query_result deepCopy() {
+      return new path_query_result(this);
     }
 
     @Override
@@ -54014,7 +54014,7 @@ public class GraphQueryAggregatorService {
       return this.success;
     }
 
-    public rpq_result setSuccess(RPQCtx success) {
+    public path_query_result setSuccess(RPQCtx success) {
       this.success = success;
       return this;
     }
@@ -54073,12 +54073,12 @@ public class GraphQueryAggregatorService {
     public boolean equals(java.lang.Object that) {
       if (that == null)
         return false;
-      if (that instanceof rpq_result)
-        return this.equals((rpq_result)that);
+      if (that instanceof path_query_result)
+        return this.equals((path_query_result)that);
       return false;
     }
 
-    public boolean equals(rpq_result that) {
+    public boolean equals(path_query_result that) {
       if (that == null)
         return false;
       if (this == that)
@@ -54108,7 +54108,7 @@ public class GraphQueryAggregatorService {
     }
 
     @Override
-    public int compareTo(rpq_result other) {
+    public int compareTo(path_query_result other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
@@ -54142,7 +54142,7 @@ public class GraphQueryAggregatorService {
 
     @Override
     public java.lang.String toString() {
-      java.lang.StringBuilder sb = new java.lang.StringBuilder("rpq_result(");
+      java.lang.StringBuilder sb = new java.lang.StringBuilder("path_query_result(");
       boolean first = true;
 
       sb.append("success:");
@@ -54180,15 +54180,15 @@ public class GraphQueryAggregatorService {
       }
     }
 
-    private static class rpq_resultStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
-      public rpq_resultStandardScheme getScheme() {
-        return new rpq_resultStandardScheme();
+    private static class path_query_resultStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+      public path_query_resultStandardScheme getScheme() {
+        return new path_query_resultStandardScheme();
       }
     }
 
-    private static class rpq_resultStandardScheme extends org.apache.thrift.scheme.StandardScheme<rpq_result> {
+    private static class path_query_resultStandardScheme extends org.apache.thrift.scheme.StandardScheme<path_query_result> {
 
-      public void read(org.apache.thrift.protocol.TProtocol iprot, rpq_result struct) throws org.apache.thrift.TException {
+      public void read(org.apache.thrift.protocol.TProtocol iprot, path_query_result struct) throws org.apache.thrift.TException {
         org.apache.thrift.protocol.TField schemeField;
         iprot.readStructBegin();
         while (true)
@@ -54218,7 +54218,7 @@ public class GraphQueryAggregatorService {
         struct.validate();
       }
 
-      public void write(org.apache.thrift.protocol.TProtocol oprot, rpq_result struct) throws org.apache.thrift.TException {
+      public void write(org.apache.thrift.protocol.TProtocol oprot, path_query_result struct) throws org.apache.thrift.TException {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
@@ -54233,16 +54233,16 @@ public class GraphQueryAggregatorService {
 
     }
 
-    private static class rpq_resultTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
-      public rpq_resultTupleScheme getScheme() {
-        return new rpq_resultTupleScheme();
+    private static class path_query_resultTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+      public path_query_resultTupleScheme getScheme() {
+        return new path_query_resultTupleScheme();
       }
     }
 
-    private static class rpq_resultTupleScheme extends org.apache.thrift.scheme.TupleScheme<rpq_result> {
+    private static class path_query_resultTupleScheme extends org.apache.thrift.scheme.TupleScheme<path_query_result> {
 
       @Override
-      public void write(org.apache.thrift.protocol.TProtocol prot, rpq_result struct) throws org.apache.thrift.TException {
+      public void write(org.apache.thrift.protocol.TProtocol prot, path_query_result struct) throws org.apache.thrift.TException {
         org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
         java.util.BitSet optionals = new java.util.BitSet();
         if (struct.isSetSuccess()) {
@@ -54255,7 +54255,7 @@ public class GraphQueryAggregatorService {
       }
 
       @Override
-      public void read(org.apache.thrift.protocol.TProtocol prot, rpq_result struct) throws org.apache.thrift.TException {
+      public void read(org.apache.thrift.protocol.TProtocol prot, path_query_result struct) throws org.apache.thrift.TException {
         org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
         java.util.BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
@@ -54271,13 +54271,13 @@ public class GraphQueryAggregatorService {
     }
   }
 
-  public static class rpq_local_args implements org.apache.thrift.TBase<rpq_local_args, rpq_local_args._Fields>, java.io.Serializable, Cloneable, Comparable<rpq_local_args>   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("rpq_local_args");
+  public static class path_query_local_args implements org.apache.thrift.TBase<path_query_local_args, path_query_local_args._Fields>, java.io.Serializable, Cloneable, Comparable<path_query_local_args>   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("path_query_local_args");
 
     private static final org.apache.thrift.protocol.TField QUERY_FIELD_DESC = new org.apache.thrift.protocol.TField("query", org.apache.thrift.protocol.TType.LIST, (short)1);
 
-    private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new rpq_local_argsStandardSchemeFactory();
-    private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new rpq_local_argsTupleSchemeFactory();
+    private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new path_query_local_argsStandardSchemeFactory();
+    private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new path_query_local_argsTupleSchemeFactory();
 
     public java.util.List<java.lang.Long> query; // required
 
@@ -54347,13 +54347,13 @@ public class GraphQueryAggregatorService {
           new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
               new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64))));
       metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(rpq_local_args.class, metaDataMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(path_query_local_args.class, metaDataMap);
     }
 
-    public rpq_local_args() {
+    public path_query_local_args() {
     }
 
-    public rpq_local_args(
+    public path_query_local_args(
       java.util.List<java.lang.Long> query)
     {
       this();
@@ -54363,15 +54363,15 @@ public class GraphQueryAggregatorService {
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public rpq_local_args(rpq_local_args other) {
+    public path_query_local_args(path_query_local_args other) {
       if (other.isSetQuery()) {
         java.util.List<java.lang.Long> __this__query = new java.util.ArrayList<java.lang.Long>(other.query);
         this.query = __this__query;
       }
     }
 
-    public rpq_local_args deepCopy() {
-      return new rpq_local_args(this);
+    public path_query_local_args deepCopy() {
+      return new path_query_local_args(this);
     }
 
     @Override
@@ -54398,7 +54398,7 @@ public class GraphQueryAggregatorService {
       return this.query;
     }
 
-    public rpq_local_args setQuery(java.util.List<java.lang.Long> query) {
+    public path_query_local_args setQuery(java.util.List<java.lang.Long> query) {
       this.query = query;
       return this;
     }
@@ -54457,12 +54457,12 @@ public class GraphQueryAggregatorService {
     public boolean equals(java.lang.Object that) {
       if (that == null)
         return false;
-      if (that instanceof rpq_local_args)
-        return this.equals((rpq_local_args)that);
+      if (that instanceof path_query_local_args)
+        return this.equals((path_query_local_args)that);
       return false;
     }
 
-    public boolean equals(rpq_local_args that) {
+    public boolean equals(path_query_local_args that) {
       if (that == null)
         return false;
       if (this == that)
@@ -54492,7 +54492,7 @@ public class GraphQueryAggregatorService {
     }
 
     @Override
-    public int compareTo(rpq_local_args other) {
+    public int compareTo(path_query_local_args other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
@@ -54526,7 +54526,7 @@ public class GraphQueryAggregatorService {
 
     @Override
     public java.lang.String toString() {
-      java.lang.StringBuilder sb = new java.lang.StringBuilder("rpq_local_args(");
+      java.lang.StringBuilder sb = new java.lang.StringBuilder("path_query_local_args(");
       boolean first = true;
 
       sb.append("query:");
@@ -54561,15 +54561,15 @@ public class GraphQueryAggregatorService {
       }
     }
 
-    private static class rpq_local_argsStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
-      public rpq_local_argsStandardScheme getScheme() {
-        return new rpq_local_argsStandardScheme();
+    private static class path_query_local_argsStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+      public path_query_local_argsStandardScheme getScheme() {
+        return new path_query_local_argsStandardScheme();
       }
     }
 
-    private static class rpq_local_argsStandardScheme extends org.apache.thrift.scheme.StandardScheme<rpq_local_args> {
+    private static class path_query_local_argsStandardScheme extends org.apache.thrift.scheme.StandardScheme<path_query_local_args> {
 
-      public void read(org.apache.thrift.protocol.TProtocol iprot, rpq_local_args struct) throws org.apache.thrift.TException {
+      public void read(org.apache.thrift.protocol.TProtocol iprot, path_query_local_args struct) throws org.apache.thrift.TException {
         org.apache.thrift.protocol.TField schemeField;
         iprot.readStructBegin();
         while (true)
@@ -54608,7 +54608,7 @@ public class GraphQueryAggregatorService {
         struct.validate();
       }
 
-      public void write(org.apache.thrift.protocol.TProtocol oprot, rpq_local_args struct) throws org.apache.thrift.TException {
+      public void write(org.apache.thrift.protocol.TProtocol oprot, path_query_local_args struct) throws org.apache.thrift.TException {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
@@ -54630,16 +54630,16 @@ public class GraphQueryAggregatorService {
 
     }
 
-    private static class rpq_local_argsTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
-      public rpq_local_argsTupleScheme getScheme() {
-        return new rpq_local_argsTupleScheme();
+    private static class path_query_local_argsTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+      public path_query_local_argsTupleScheme getScheme() {
+        return new path_query_local_argsTupleScheme();
       }
     }
 
-    private static class rpq_local_argsTupleScheme extends org.apache.thrift.scheme.TupleScheme<rpq_local_args> {
+    private static class path_query_local_argsTupleScheme extends org.apache.thrift.scheme.TupleScheme<path_query_local_args> {
 
       @Override
-      public void write(org.apache.thrift.protocol.TProtocol prot, rpq_local_args struct) throws org.apache.thrift.TException {
+      public void write(org.apache.thrift.protocol.TProtocol prot, path_query_local_args struct) throws org.apache.thrift.TException {
         org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
         java.util.BitSet optionals = new java.util.BitSet();
         if (struct.isSetQuery()) {
@@ -54658,7 +54658,7 @@ public class GraphQueryAggregatorService {
       }
 
       @Override
-      public void read(org.apache.thrift.protocol.TProtocol prot, rpq_local_args struct) throws org.apache.thrift.TException {
+      public void read(org.apache.thrift.protocol.TProtocol prot, path_query_local_args struct) throws org.apache.thrift.TException {
         org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
         java.util.BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
@@ -54682,13 +54682,13 @@ public class GraphQueryAggregatorService {
     }
   }
 
-  public static class rpq_local_result implements org.apache.thrift.TBase<rpq_local_result, rpq_local_result._Fields>, java.io.Serializable, Cloneable, Comparable<rpq_local_result>   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("rpq_local_result");
+  public static class path_query_local_result implements org.apache.thrift.TBase<path_query_local_result, path_query_local_result._Fields>, java.io.Serializable, Cloneable, Comparable<path_query_local_result>   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("path_query_local_result");
 
     private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.STRUCT, (short)0);
 
-    private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new rpq_local_resultStandardSchemeFactory();
-    private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new rpq_local_resultTupleSchemeFactory();
+    private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new path_query_local_resultStandardSchemeFactory();
+    private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new path_query_local_resultTupleSchemeFactory();
 
     public RPQCtx success; // required
 
@@ -54757,13 +54757,13 @@ public class GraphQueryAggregatorService {
       tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, RPQCtx.class)));
       metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(rpq_local_result.class, metaDataMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(path_query_local_result.class, metaDataMap);
     }
 
-    public rpq_local_result() {
+    public path_query_local_result() {
     }
 
-    public rpq_local_result(
+    public path_query_local_result(
       RPQCtx success)
     {
       this();
@@ -54773,14 +54773,14 @@ public class GraphQueryAggregatorService {
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public rpq_local_result(rpq_local_result other) {
+    public path_query_local_result(path_query_local_result other) {
       if (other.isSetSuccess()) {
         this.success = new RPQCtx(other.success);
       }
     }
 
-    public rpq_local_result deepCopy() {
-      return new rpq_local_result(this);
+    public path_query_local_result deepCopy() {
+      return new path_query_local_result(this);
     }
 
     @Override
@@ -54792,7 +54792,7 @@ public class GraphQueryAggregatorService {
       return this.success;
     }
 
-    public rpq_local_result setSuccess(RPQCtx success) {
+    public path_query_local_result setSuccess(RPQCtx success) {
       this.success = success;
       return this;
     }
@@ -54851,12 +54851,12 @@ public class GraphQueryAggregatorService {
     public boolean equals(java.lang.Object that) {
       if (that == null)
         return false;
-      if (that instanceof rpq_local_result)
-        return this.equals((rpq_local_result)that);
+      if (that instanceof path_query_local_result)
+        return this.equals((path_query_local_result)that);
       return false;
     }
 
-    public boolean equals(rpq_local_result that) {
+    public boolean equals(path_query_local_result that) {
       if (that == null)
         return false;
       if (this == that)
@@ -54886,7 +54886,7 @@ public class GraphQueryAggregatorService {
     }
 
     @Override
-    public int compareTo(rpq_local_result other) {
+    public int compareTo(path_query_local_result other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
@@ -54920,7 +54920,7 @@ public class GraphQueryAggregatorService {
 
     @Override
     public java.lang.String toString() {
-      java.lang.StringBuilder sb = new java.lang.StringBuilder("rpq_local_result(");
+      java.lang.StringBuilder sb = new java.lang.StringBuilder("path_query_local_result(");
       boolean first = true;
 
       sb.append("success:");
@@ -54958,15 +54958,15 @@ public class GraphQueryAggregatorService {
       }
     }
 
-    private static class rpq_local_resultStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
-      public rpq_local_resultStandardScheme getScheme() {
-        return new rpq_local_resultStandardScheme();
+    private static class path_query_local_resultStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+      public path_query_local_resultStandardScheme getScheme() {
+        return new path_query_local_resultStandardScheme();
       }
     }
 
-    private static class rpq_local_resultStandardScheme extends org.apache.thrift.scheme.StandardScheme<rpq_local_result> {
+    private static class path_query_local_resultStandardScheme extends org.apache.thrift.scheme.StandardScheme<path_query_local_result> {
 
-      public void read(org.apache.thrift.protocol.TProtocol iprot, rpq_local_result struct) throws org.apache.thrift.TException {
+      public void read(org.apache.thrift.protocol.TProtocol iprot, path_query_local_result struct) throws org.apache.thrift.TException {
         org.apache.thrift.protocol.TField schemeField;
         iprot.readStructBegin();
         while (true)
@@ -54996,7 +54996,7 @@ public class GraphQueryAggregatorService {
         struct.validate();
       }
 
-      public void write(org.apache.thrift.protocol.TProtocol oprot, rpq_local_result struct) throws org.apache.thrift.TException {
+      public void write(org.apache.thrift.protocol.TProtocol oprot, path_query_local_result struct) throws org.apache.thrift.TException {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
@@ -55011,16 +55011,16 @@ public class GraphQueryAggregatorService {
 
     }
 
-    private static class rpq_local_resultTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
-      public rpq_local_resultTupleScheme getScheme() {
-        return new rpq_local_resultTupleScheme();
+    private static class path_query_local_resultTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+      public path_query_local_resultTupleScheme getScheme() {
+        return new path_query_local_resultTupleScheme();
       }
     }
 
-    private static class rpq_local_resultTupleScheme extends org.apache.thrift.scheme.TupleScheme<rpq_local_result> {
+    private static class path_query_local_resultTupleScheme extends org.apache.thrift.scheme.TupleScheme<path_query_local_result> {
 
       @Override
-      public void write(org.apache.thrift.protocol.TProtocol prot, rpq_local_result struct) throws org.apache.thrift.TException {
+      public void write(org.apache.thrift.protocol.TProtocol prot, path_query_local_result struct) throws org.apache.thrift.TException {
         org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
         java.util.BitSet optionals = new java.util.BitSet();
         if (struct.isSetSuccess()) {
@@ -55033,7 +55033,7 @@ public class GraphQueryAggregatorService {
       }
 
       @Override
-      public void read(org.apache.thrift.protocol.TProtocol prot, rpq_local_result struct) throws org.apache.thrift.TException {
+      public void read(org.apache.thrift.protocol.TProtocol prot, path_query_local_result struct) throws org.apache.thrift.TException {
         org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
         java.util.BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
@@ -55049,14 +55049,14 @@ public class GraphQueryAggregatorService {
     }
   }
 
-  public static class advance_rpq_ctx_args implements org.apache.thrift.TBase<advance_rpq_ctx_args, advance_rpq_ctx_args._Fields>, java.io.Serializable, Cloneable, Comparable<advance_rpq_ctx_args>   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("advance_rpq_ctx_args");
+  public static class advance_path_query_ctx_args implements org.apache.thrift.TBase<advance_path_query_ctx_args, advance_path_query_ctx_args._Fields>, java.io.Serializable, Cloneable, Comparable<advance_path_query_ctx_args>   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("advance_path_query_ctx_args");
 
     private static final org.apache.thrift.protocol.TField QUERY_FIELD_DESC = new org.apache.thrift.protocol.TField("query", org.apache.thrift.protocol.TType.LIST, (short)1);
     private static final org.apache.thrift.protocol.TField CTX_FIELD_DESC = new org.apache.thrift.protocol.TField("ctx", org.apache.thrift.protocol.TType.STRUCT, (short)2);
 
-    private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new advance_rpq_ctx_argsStandardSchemeFactory();
-    private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new advance_rpq_ctx_argsTupleSchemeFactory();
+    private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new advance_path_query_ctx_argsStandardSchemeFactory();
+    private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new advance_path_query_ctx_argsTupleSchemeFactory();
 
     public java.util.List<java.lang.Long> query; // required
     public RPQCtx ctx; // required
@@ -55132,13 +55132,13 @@ public class GraphQueryAggregatorService {
       tmpMap.put(_Fields.CTX, new org.apache.thrift.meta_data.FieldMetaData("ctx", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, RPQCtx.class)));
       metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(advance_rpq_ctx_args.class, metaDataMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(advance_path_query_ctx_args.class, metaDataMap);
     }
 
-    public advance_rpq_ctx_args() {
+    public advance_path_query_ctx_args() {
     }
 
-    public advance_rpq_ctx_args(
+    public advance_path_query_ctx_args(
       java.util.List<java.lang.Long> query,
       RPQCtx ctx)
     {
@@ -55150,7 +55150,7 @@ public class GraphQueryAggregatorService {
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public advance_rpq_ctx_args(advance_rpq_ctx_args other) {
+    public advance_path_query_ctx_args(advance_path_query_ctx_args other) {
       if (other.isSetQuery()) {
         java.util.List<java.lang.Long> __this__query = new java.util.ArrayList<java.lang.Long>(other.query);
         this.query = __this__query;
@@ -55160,8 +55160,8 @@ public class GraphQueryAggregatorService {
       }
     }
 
-    public advance_rpq_ctx_args deepCopy() {
-      return new advance_rpq_ctx_args(this);
+    public advance_path_query_ctx_args deepCopy() {
+      return new advance_path_query_ctx_args(this);
     }
 
     @Override
@@ -55189,7 +55189,7 @@ public class GraphQueryAggregatorService {
       return this.query;
     }
 
-    public advance_rpq_ctx_args setQuery(java.util.List<java.lang.Long> query) {
+    public advance_path_query_ctx_args setQuery(java.util.List<java.lang.Long> query) {
       this.query = query;
       return this;
     }
@@ -55213,7 +55213,7 @@ public class GraphQueryAggregatorService {
       return this.ctx;
     }
 
-    public advance_rpq_ctx_args setCtx(RPQCtx ctx) {
+    public advance_path_query_ctx_args setCtx(RPQCtx ctx) {
       this.ctx = ctx;
       return this;
     }
@@ -55285,12 +55285,12 @@ public class GraphQueryAggregatorService {
     public boolean equals(java.lang.Object that) {
       if (that == null)
         return false;
-      if (that instanceof advance_rpq_ctx_args)
-        return this.equals((advance_rpq_ctx_args)that);
+      if (that instanceof advance_path_query_ctx_args)
+        return this.equals((advance_path_query_ctx_args)that);
       return false;
     }
 
-    public boolean equals(advance_rpq_ctx_args that) {
+    public boolean equals(advance_path_query_ctx_args that) {
       if (that == null)
         return false;
       if (this == that)
@@ -55333,7 +55333,7 @@ public class GraphQueryAggregatorService {
     }
 
     @Override
-    public int compareTo(advance_rpq_ctx_args other) {
+    public int compareTo(advance_path_query_ctx_args other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
@@ -55377,7 +55377,7 @@ public class GraphQueryAggregatorService {
 
     @Override
     public java.lang.String toString() {
-      java.lang.StringBuilder sb = new java.lang.StringBuilder("advance_rpq_ctx_args(");
+      java.lang.StringBuilder sb = new java.lang.StringBuilder("advance_path_query_ctx_args(");
       boolean first = true;
 
       sb.append("query:");
@@ -55423,15 +55423,15 @@ public class GraphQueryAggregatorService {
       }
     }
 
-    private static class advance_rpq_ctx_argsStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
-      public advance_rpq_ctx_argsStandardScheme getScheme() {
-        return new advance_rpq_ctx_argsStandardScheme();
+    private static class advance_path_query_ctx_argsStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+      public advance_path_query_ctx_argsStandardScheme getScheme() {
+        return new advance_path_query_ctx_argsStandardScheme();
       }
     }
 
-    private static class advance_rpq_ctx_argsStandardScheme extends org.apache.thrift.scheme.StandardScheme<advance_rpq_ctx_args> {
+    private static class advance_path_query_ctx_argsStandardScheme extends org.apache.thrift.scheme.StandardScheme<advance_path_query_ctx_args> {
 
-      public void read(org.apache.thrift.protocol.TProtocol iprot, advance_rpq_ctx_args struct) throws org.apache.thrift.TException {
+      public void read(org.apache.thrift.protocol.TProtocol iprot, advance_path_query_ctx_args struct) throws org.apache.thrift.TException {
         org.apache.thrift.protocol.TField schemeField;
         iprot.readStructBegin();
         while (true)
@@ -55479,7 +55479,7 @@ public class GraphQueryAggregatorService {
         struct.validate();
       }
 
-      public void write(org.apache.thrift.protocol.TProtocol oprot, advance_rpq_ctx_args struct) throws org.apache.thrift.TException {
+      public void write(org.apache.thrift.protocol.TProtocol oprot, advance_path_query_ctx_args struct) throws org.apache.thrift.TException {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
@@ -55506,16 +55506,16 @@ public class GraphQueryAggregatorService {
 
     }
 
-    private static class advance_rpq_ctx_argsTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
-      public advance_rpq_ctx_argsTupleScheme getScheme() {
-        return new advance_rpq_ctx_argsTupleScheme();
+    private static class advance_path_query_ctx_argsTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+      public advance_path_query_ctx_argsTupleScheme getScheme() {
+        return new advance_path_query_ctx_argsTupleScheme();
       }
     }
 
-    private static class advance_rpq_ctx_argsTupleScheme extends org.apache.thrift.scheme.TupleScheme<advance_rpq_ctx_args> {
+    private static class advance_path_query_ctx_argsTupleScheme extends org.apache.thrift.scheme.TupleScheme<advance_path_query_ctx_args> {
 
       @Override
-      public void write(org.apache.thrift.protocol.TProtocol prot, advance_rpq_ctx_args struct) throws org.apache.thrift.TException {
+      public void write(org.apache.thrift.protocol.TProtocol prot, advance_path_query_ctx_args struct) throws org.apache.thrift.TException {
         org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
         java.util.BitSet optionals = new java.util.BitSet();
         if (struct.isSetQuery()) {
@@ -55540,7 +55540,7 @@ public class GraphQueryAggregatorService {
       }
 
       @Override
-      public void read(org.apache.thrift.protocol.TProtocol prot, advance_rpq_ctx_args struct) throws org.apache.thrift.TException {
+      public void read(org.apache.thrift.protocol.TProtocol prot, advance_path_query_ctx_args struct) throws org.apache.thrift.TException {
         org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
         java.util.BitSet incoming = iprot.readBitSet(2);
         if (incoming.get(0)) {
@@ -55569,13 +55569,13 @@ public class GraphQueryAggregatorService {
     }
   }
 
-  public static class advance_rpq_ctx_result implements org.apache.thrift.TBase<advance_rpq_ctx_result, advance_rpq_ctx_result._Fields>, java.io.Serializable, Cloneable, Comparable<advance_rpq_ctx_result>   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("advance_rpq_ctx_result");
+  public static class advance_path_query_ctx_result implements org.apache.thrift.TBase<advance_path_query_ctx_result, advance_path_query_ctx_result._Fields>, java.io.Serializable, Cloneable, Comparable<advance_path_query_ctx_result>   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("advance_path_query_ctx_result");
 
     private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.STRUCT, (short)0);
 
-    private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new advance_rpq_ctx_resultStandardSchemeFactory();
-    private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new advance_rpq_ctx_resultTupleSchemeFactory();
+    private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new advance_path_query_ctx_resultStandardSchemeFactory();
+    private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new advance_path_query_ctx_resultTupleSchemeFactory();
 
     public RPQCtx success; // required
 
@@ -55644,13 +55644,13 @@ public class GraphQueryAggregatorService {
       tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, RPQCtx.class)));
       metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(advance_rpq_ctx_result.class, metaDataMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(advance_path_query_ctx_result.class, metaDataMap);
     }
 
-    public advance_rpq_ctx_result() {
+    public advance_path_query_ctx_result() {
     }
 
-    public advance_rpq_ctx_result(
+    public advance_path_query_ctx_result(
       RPQCtx success)
     {
       this();
@@ -55660,14 +55660,14 @@ public class GraphQueryAggregatorService {
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public advance_rpq_ctx_result(advance_rpq_ctx_result other) {
+    public advance_path_query_ctx_result(advance_path_query_ctx_result other) {
       if (other.isSetSuccess()) {
         this.success = new RPQCtx(other.success);
       }
     }
 
-    public advance_rpq_ctx_result deepCopy() {
-      return new advance_rpq_ctx_result(this);
+    public advance_path_query_ctx_result deepCopy() {
+      return new advance_path_query_ctx_result(this);
     }
 
     @Override
@@ -55679,7 +55679,7 @@ public class GraphQueryAggregatorService {
       return this.success;
     }
 
-    public advance_rpq_ctx_result setSuccess(RPQCtx success) {
+    public advance_path_query_ctx_result setSuccess(RPQCtx success) {
       this.success = success;
       return this;
     }
@@ -55738,12 +55738,12 @@ public class GraphQueryAggregatorService {
     public boolean equals(java.lang.Object that) {
       if (that == null)
         return false;
-      if (that instanceof advance_rpq_ctx_result)
-        return this.equals((advance_rpq_ctx_result)that);
+      if (that instanceof advance_path_query_ctx_result)
+        return this.equals((advance_path_query_ctx_result)that);
       return false;
     }
 
-    public boolean equals(advance_rpq_ctx_result that) {
+    public boolean equals(advance_path_query_ctx_result that) {
       if (that == null)
         return false;
       if (this == that)
@@ -55773,7 +55773,7 @@ public class GraphQueryAggregatorService {
     }
 
     @Override
-    public int compareTo(advance_rpq_ctx_result other) {
+    public int compareTo(advance_path_query_ctx_result other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
@@ -55807,7 +55807,7 @@ public class GraphQueryAggregatorService {
 
     @Override
     public java.lang.String toString() {
-      java.lang.StringBuilder sb = new java.lang.StringBuilder("advance_rpq_ctx_result(");
+      java.lang.StringBuilder sb = new java.lang.StringBuilder("advance_path_query_ctx_result(");
       boolean first = true;
 
       sb.append("success:");
@@ -55845,15 +55845,15 @@ public class GraphQueryAggregatorService {
       }
     }
 
-    private static class advance_rpq_ctx_resultStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
-      public advance_rpq_ctx_resultStandardScheme getScheme() {
-        return new advance_rpq_ctx_resultStandardScheme();
+    private static class advance_path_query_ctx_resultStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+      public advance_path_query_ctx_resultStandardScheme getScheme() {
+        return new advance_path_query_ctx_resultStandardScheme();
       }
     }
 
-    private static class advance_rpq_ctx_resultStandardScheme extends org.apache.thrift.scheme.StandardScheme<advance_rpq_ctx_result> {
+    private static class advance_path_query_ctx_resultStandardScheme extends org.apache.thrift.scheme.StandardScheme<advance_path_query_ctx_result> {
 
-      public void read(org.apache.thrift.protocol.TProtocol iprot, advance_rpq_ctx_result struct) throws org.apache.thrift.TException {
+      public void read(org.apache.thrift.protocol.TProtocol iprot, advance_path_query_ctx_result struct) throws org.apache.thrift.TException {
         org.apache.thrift.protocol.TField schemeField;
         iprot.readStructBegin();
         while (true)
@@ -55883,7 +55883,7 @@ public class GraphQueryAggregatorService {
         struct.validate();
       }
 
-      public void write(org.apache.thrift.protocol.TProtocol oprot, advance_rpq_ctx_result struct) throws org.apache.thrift.TException {
+      public void write(org.apache.thrift.protocol.TProtocol oprot, advance_path_query_ctx_result struct) throws org.apache.thrift.TException {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
@@ -55898,16 +55898,16 @@ public class GraphQueryAggregatorService {
 
     }
 
-    private static class advance_rpq_ctx_resultTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
-      public advance_rpq_ctx_resultTupleScheme getScheme() {
-        return new advance_rpq_ctx_resultTupleScheme();
+    private static class advance_path_query_ctx_resultTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+      public advance_path_query_ctx_resultTupleScheme getScheme() {
+        return new advance_path_query_ctx_resultTupleScheme();
       }
     }
 
-    private static class advance_rpq_ctx_resultTupleScheme extends org.apache.thrift.scheme.TupleScheme<advance_rpq_ctx_result> {
+    private static class advance_path_query_ctx_resultTupleScheme extends org.apache.thrift.scheme.TupleScheme<advance_path_query_ctx_result> {
 
       @Override
-      public void write(org.apache.thrift.protocol.TProtocol prot, advance_rpq_ctx_result struct) throws org.apache.thrift.TException {
+      public void write(org.apache.thrift.protocol.TProtocol prot, advance_path_query_ctx_result struct) throws org.apache.thrift.TException {
         org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
         java.util.BitSet optionals = new java.util.BitSet();
         if (struct.isSetSuccess()) {
@@ -55920,7 +55920,7 @@ public class GraphQueryAggregatorService {
       }
 
       @Override
-      public void read(org.apache.thrift.protocol.TProtocol prot, advance_rpq_ctx_result struct) throws org.apache.thrift.TException {
+      public void read(org.apache.thrift.protocol.TProtocol prot, advance_path_query_ctx_result struct) throws org.apache.thrift.TException {
         org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
         java.util.BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {

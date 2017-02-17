@@ -11557,11 +11557,11 @@ uint32_t GraphQueryAggregatorService_countLinks_presult::read(::apache::thrift::
 }
 
 
-GraphQueryAggregatorService_rpq_args::~GraphQueryAggregatorService_rpq_args() throw() {
+GraphQueryAggregatorService_path_query_args::~GraphQueryAggregatorService_path_query_args() throw() {
 }
 
 
-uint32_t GraphQueryAggregatorService_rpq_args::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t GraphQueryAggregatorService_path_query_args::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -11614,10 +11614,10 @@ uint32_t GraphQueryAggregatorService_rpq_args::read(::apache::thrift::protocol::
   return xfer;
 }
 
-uint32_t GraphQueryAggregatorService_rpq_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t GraphQueryAggregatorService_path_query_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
   uint32_t xfer = 0;
   apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
-  xfer += oprot->writeStructBegin("GraphQueryAggregatorService_rpq_args");
+  xfer += oprot->writeStructBegin("GraphQueryAggregatorService_path_query_args");
 
   xfer += oprot->writeFieldBegin("query", ::apache::thrift::protocol::T_LIST, 1);
   {
@@ -11637,14 +11637,14 @@ uint32_t GraphQueryAggregatorService_rpq_args::write(::apache::thrift::protocol:
 }
 
 
-GraphQueryAggregatorService_rpq_pargs::~GraphQueryAggregatorService_rpq_pargs() throw() {
+GraphQueryAggregatorService_path_query_pargs::~GraphQueryAggregatorService_path_query_pargs() throw() {
 }
 
 
-uint32_t GraphQueryAggregatorService_rpq_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t GraphQueryAggregatorService_path_query_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
   uint32_t xfer = 0;
   apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
-  xfer += oprot->writeStructBegin("GraphQueryAggregatorService_rpq_pargs");
+  xfer += oprot->writeStructBegin("GraphQueryAggregatorService_path_query_pargs");
 
   xfer += oprot->writeFieldBegin("query", ::apache::thrift::protocol::T_LIST, 1);
   {
@@ -11664,11 +11664,11 @@ uint32_t GraphQueryAggregatorService_rpq_pargs::write(::apache::thrift::protocol
 }
 
 
-GraphQueryAggregatorService_rpq_result::~GraphQueryAggregatorService_rpq_result() throw() {
+GraphQueryAggregatorService_path_query_result::~GraphQueryAggregatorService_path_query_result() throw() {
 }
 
 
-uint32_t GraphQueryAggregatorService_rpq_result::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t GraphQueryAggregatorService_path_query_result::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -11709,11 +11709,11 @@ uint32_t GraphQueryAggregatorService_rpq_result::read(::apache::thrift::protocol
   return xfer;
 }
 
-uint32_t GraphQueryAggregatorService_rpq_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t GraphQueryAggregatorService_path_query_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
 
   uint32_t xfer = 0;
 
-  xfer += oprot->writeStructBegin("GraphQueryAggregatorService_rpq_result");
+  xfer += oprot->writeStructBegin("GraphQueryAggregatorService_path_query_result");
 
   if (this->__isset.success) {
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_STRUCT, 0);
@@ -11726,11 +11726,11 @@ uint32_t GraphQueryAggregatorService_rpq_result::write(::apache::thrift::protoco
 }
 
 
-GraphQueryAggregatorService_rpq_presult::~GraphQueryAggregatorService_rpq_presult() throw() {
+GraphQueryAggregatorService_path_query_presult::~GraphQueryAggregatorService_path_query_presult() throw() {
 }
 
 
-uint32_t GraphQueryAggregatorService_rpq_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t GraphQueryAggregatorService_path_query_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -11772,11 +11772,11 @@ uint32_t GraphQueryAggregatorService_rpq_presult::read(::apache::thrift::protoco
 }
 
 
-GraphQueryAggregatorService_rpq_local_args::~GraphQueryAggregatorService_rpq_local_args() throw() {
+GraphQueryAggregatorService_path_query_local_args::~GraphQueryAggregatorService_path_query_local_args() throw() {
 }
 
 
-uint32_t GraphQueryAggregatorService_rpq_local_args::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t GraphQueryAggregatorService_path_query_local_args::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -11829,10 +11829,10 @@ uint32_t GraphQueryAggregatorService_rpq_local_args::read(::apache::thrift::prot
   return xfer;
 }
 
-uint32_t GraphQueryAggregatorService_rpq_local_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t GraphQueryAggregatorService_path_query_local_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
   uint32_t xfer = 0;
   apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
-  xfer += oprot->writeStructBegin("GraphQueryAggregatorService_rpq_local_args");
+  xfer += oprot->writeStructBegin("GraphQueryAggregatorService_path_query_local_args");
 
   xfer += oprot->writeFieldBegin("query", ::apache::thrift::protocol::T_LIST, 1);
   {
@@ -11852,14 +11852,14 @@ uint32_t GraphQueryAggregatorService_rpq_local_args::write(::apache::thrift::pro
 }
 
 
-GraphQueryAggregatorService_rpq_local_pargs::~GraphQueryAggregatorService_rpq_local_pargs() throw() {
+GraphQueryAggregatorService_path_query_local_pargs::~GraphQueryAggregatorService_path_query_local_pargs() throw() {
 }
 
 
-uint32_t GraphQueryAggregatorService_rpq_local_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t GraphQueryAggregatorService_path_query_local_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
   uint32_t xfer = 0;
   apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
-  xfer += oprot->writeStructBegin("GraphQueryAggregatorService_rpq_local_pargs");
+  xfer += oprot->writeStructBegin("GraphQueryAggregatorService_path_query_local_pargs");
 
   xfer += oprot->writeFieldBegin("query", ::apache::thrift::protocol::T_LIST, 1);
   {
@@ -11879,11 +11879,11 @@ uint32_t GraphQueryAggregatorService_rpq_local_pargs::write(::apache::thrift::pr
 }
 
 
-GraphQueryAggregatorService_rpq_local_result::~GraphQueryAggregatorService_rpq_local_result() throw() {
+GraphQueryAggregatorService_path_query_local_result::~GraphQueryAggregatorService_path_query_local_result() throw() {
 }
 
 
-uint32_t GraphQueryAggregatorService_rpq_local_result::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t GraphQueryAggregatorService_path_query_local_result::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -11924,11 +11924,11 @@ uint32_t GraphQueryAggregatorService_rpq_local_result::read(::apache::thrift::pr
   return xfer;
 }
 
-uint32_t GraphQueryAggregatorService_rpq_local_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t GraphQueryAggregatorService_path_query_local_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
 
   uint32_t xfer = 0;
 
-  xfer += oprot->writeStructBegin("GraphQueryAggregatorService_rpq_local_result");
+  xfer += oprot->writeStructBegin("GraphQueryAggregatorService_path_query_local_result");
 
   if (this->__isset.success) {
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_STRUCT, 0);
@@ -11941,11 +11941,11 @@ uint32_t GraphQueryAggregatorService_rpq_local_result::write(::apache::thrift::p
 }
 
 
-GraphQueryAggregatorService_rpq_local_presult::~GraphQueryAggregatorService_rpq_local_presult() throw() {
+GraphQueryAggregatorService_path_query_local_presult::~GraphQueryAggregatorService_path_query_local_presult() throw() {
 }
 
 
-uint32_t GraphQueryAggregatorService_rpq_local_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t GraphQueryAggregatorService_path_query_local_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -11987,11 +11987,11 @@ uint32_t GraphQueryAggregatorService_rpq_local_presult::read(::apache::thrift::p
 }
 
 
-GraphQueryAggregatorService_advance_rpq_ctx_args::~GraphQueryAggregatorService_advance_rpq_ctx_args() throw() {
+GraphQueryAggregatorService_advance_path_query_ctx_args::~GraphQueryAggregatorService_advance_path_query_ctx_args() throw() {
 }
 
 
-uint32_t GraphQueryAggregatorService_advance_rpq_ctx_args::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t GraphQueryAggregatorService_advance_path_query_ctx_args::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -12052,10 +12052,10 @@ uint32_t GraphQueryAggregatorService_advance_rpq_ctx_args::read(::apache::thrift
   return xfer;
 }
 
-uint32_t GraphQueryAggregatorService_advance_rpq_ctx_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t GraphQueryAggregatorService_advance_path_query_ctx_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
   uint32_t xfer = 0;
   apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
-  xfer += oprot->writeStructBegin("GraphQueryAggregatorService_advance_rpq_ctx_args");
+  xfer += oprot->writeStructBegin("GraphQueryAggregatorService_advance_path_query_ctx_args");
 
   xfer += oprot->writeFieldBegin("query", ::apache::thrift::protocol::T_LIST, 1);
   {
@@ -12079,14 +12079,14 @@ uint32_t GraphQueryAggregatorService_advance_rpq_ctx_args::write(::apache::thrif
 }
 
 
-GraphQueryAggregatorService_advance_rpq_ctx_pargs::~GraphQueryAggregatorService_advance_rpq_ctx_pargs() throw() {
+GraphQueryAggregatorService_advance_path_query_ctx_pargs::~GraphQueryAggregatorService_advance_path_query_ctx_pargs() throw() {
 }
 
 
-uint32_t GraphQueryAggregatorService_advance_rpq_ctx_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t GraphQueryAggregatorService_advance_path_query_ctx_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
   uint32_t xfer = 0;
   apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
-  xfer += oprot->writeStructBegin("GraphQueryAggregatorService_advance_rpq_ctx_pargs");
+  xfer += oprot->writeStructBegin("GraphQueryAggregatorService_advance_path_query_ctx_pargs");
 
   xfer += oprot->writeFieldBegin("query", ::apache::thrift::protocol::T_LIST, 1);
   {
@@ -12110,11 +12110,11 @@ uint32_t GraphQueryAggregatorService_advance_rpq_ctx_pargs::write(::apache::thri
 }
 
 
-GraphQueryAggregatorService_advance_rpq_ctx_result::~GraphQueryAggregatorService_advance_rpq_ctx_result() throw() {
+GraphQueryAggregatorService_advance_path_query_ctx_result::~GraphQueryAggregatorService_advance_path_query_ctx_result() throw() {
 }
 
 
-uint32_t GraphQueryAggregatorService_advance_rpq_ctx_result::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t GraphQueryAggregatorService_advance_path_query_ctx_result::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -12155,11 +12155,11 @@ uint32_t GraphQueryAggregatorService_advance_rpq_ctx_result::read(::apache::thri
   return xfer;
 }
 
-uint32_t GraphQueryAggregatorService_advance_rpq_ctx_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t GraphQueryAggregatorService_advance_path_query_ctx_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
 
   uint32_t xfer = 0;
 
-  xfer += oprot->writeStructBegin("GraphQueryAggregatorService_advance_rpq_ctx_result");
+  xfer += oprot->writeStructBegin("GraphQueryAggregatorService_advance_path_query_ctx_result");
 
   if (this->__isset.success) {
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_STRUCT, 0);
@@ -12172,11 +12172,11 @@ uint32_t GraphQueryAggregatorService_advance_rpq_ctx_result::write(::apache::thr
 }
 
 
-GraphQueryAggregatorService_advance_rpq_ctx_presult::~GraphQueryAggregatorService_advance_rpq_ctx_presult() throw() {
+GraphQueryAggregatorService_advance_path_query_ctx_presult::~GraphQueryAggregatorService_advance_path_query_ctx_presult() throw() {
 }
 
 
-uint32_t GraphQueryAggregatorService_advance_rpq_ctx_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t GraphQueryAggregatorService_advance_path_query_ctx_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -15184,18 +15184,18 @@ int64_t GraphQueryAggregatorServiceClient::recv_countLinks()
   throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "countLinks failed: unknown result");
 }
 
-void GraphQueryAggregatorServiceClient::rpq(RPQCtx& _return, const std::vector<int64_t> & query)
+void GraphQueryAggregatorServiceClient::path_query(RPQCtx& _return, const std::vector<int64_t> & query)
 {
-  send_rpq(query);
-  recv_rpq(_return);
+  send_path_query(query);
+  recv_path_query(_return);
 }
 
-void GraphQueryAggregatorServiceClient::send_rpq(const std::vector<int64_t> & query)
+void GraphQueryAggregatorServiceClient::send_path_query(const std::vector<int64_t> & query)
 {
   int32_t cseqid = 0;
-  oprot_->writeMessageBegin("rpq", ::apache::thrift::protocol::T_CALL, cseqid);
+  oprot_->writeMessageBegin("path_query", ::apache::thrift::protocol::T_CALL, cseqid);
 
-  GraphQueryAggregatorService_rpq_pargs args;
+  GraphQueryAggregatorService_path_query_pargs args;
   args.query = &query;
   args.write(oprot_);
 
@@ -15204,7 +15204,7 @@ void GraphQueryAggregatorServiceClient::send_rpq(const std::vector<int64_t> & qu
   oprot_->getTransport()->flush();
 }
 
-void GraphQueryAggregatorServiceClient::recv_rpq(RPQCtx& _return)
+void GraphQueryAggregatorServiceClient::recv_path_query(RPQCtx& _return)
 {
 
   int32_t rseqid = 0;
@@ -15224,12 +15224,12 @@ void GraphQueryAggregatorServiceClient::recv_rpq(RPQCtx& _return)
     iprot_->readMessageEnd();
     iprot_->getTransport()->readEnd();
   }
-  if (fname.compare("rpq") != 0) {
+  if (fname.compare("path_query") != 0) {
     iprot_->skip(::apache::thrift::protocol::T_STRUCT);
     iprot_->readMessageEnd();
     iprot_->getTransport()->readEnd();
   }
-  GraphQueryAggregatorService_rpq_presult result;
+  GraphQueryAggregatorService_path_query_presult result;
   result.success = &_return;
   result.read(iprot_);
   iprot_->readMessageEnd();
@@ -15239,21 +15239,21 @@ void GraphQueryAggregatorServiceClient::recv_rpq(RPQCtx& _return)
     // _return pointer has now been filled
     return;
   }
-  throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "rpq failed: unknown result");
+  throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "path_query failed: unknown result");
 }
 
-void GraphQueryAggregatorServiceClient::rpq_local(RPQCtx& _return, const std::vector<int64_t> & query)
+void GraphQueryAggregatorServiceClient::path_query_local(RPQCtx& _return, const std::vector<int64_t> & query)
 {
-  send_rpq_local(query);
-  recv_rpq_local(_return);
+  send_path_query_local(query);
+  recv_path_query_local(_return);
 }
 
-void GraphQueryAggregatorServiceClient::send_rpq_local(const std::vector<int64_t> & query)
+void GraphQueryAggregatorServiceClient::send_path_query_local(const std::vector<int64_t> & query)
 {
   int32_t cseqid = 0;
-  oprot_->writeMessageBegin("rpq_local", ::apache::thrift::protocol::T_CALL, cseqid);
+  oprot_->writeMessageBegin("path_query_local", ::apache::thrift::protocol::T_CALL, cseqid);
 
-  GraphQueryAggregatorService_rpq_local_pargs args;
+  GraphQueryAggregatorService_path_query_local_pargs args;
   args.query = &query;
   args.write(oprot_);
 
@@ -15262,7 +15262,7 @@ void GraphQueryAggregatorServiceClient::send_rpq_local(const std::vector<int64_t
   oprot_->getTransport()->flush();
 }
 
-void GraphQueryAggregatorServiceClient::recv_rpq_local(RPQCtx& _return)
+void GraphQueryAggregatorServiceClient::recv_path_query_local(RPQCtx& _return)
 {
 
   int32_t rseqid = 0;
@@ -15282,12 +15282,12 @@ void GraphQueryAggregatorServiceClient::recv_rpq_local(RPQCtx& _return)
     iprot_->readMessageEnd();
     iprot_->getTransport()->readEnd();
   }
-  if (fname.compare("rpq_local") != 0) {
+  if (fname.compare("path_query_local") != 0) {
     iprot_->skip(::apache::thrift::protocol::T_STRUCT);
     iprot_->readMessageEnd();
     iprot_->getTransport()->readEnd();
   }
-  GraphQueryAggregatorService_rpq_local_presult result;
+  GraphQueryAggregatorService_path_query_local_presult result;
   result.success = &_return;
   result.read(iprot_);
   iprot_->readMessageEnd();
@@ -15297,21 +15297,21 @@ void GraphQueryAggregatorServiceClient::recv_rpq_local(RPQCtx& _return)
     // _return pointer has now been filled
     return;
   }
-  throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "rpq_local failed: unknown result");
+  throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "path_query_local failed: unknown result");
 }
 
-void GraphQueryAggregatorServiceClient::advance_rpq_ctx(RPQCtx& _return, const std::vector<int64_t> & query, const RPQCtx& ctx)
+void GraphQueryAggregatorServiceClient::advance_path_query_ctx(RPQCtx& _return, const std::vector<int64_t> & query, const RPQCtx& ctx)
 {
-  send_advance_rpq_ctx(query, ctx);
-  recv_advance_rpq_ctx(_return);
+  send_advance_path_query_ctx(query, ctx);
+  recv_advance_path_query_ctx(_return);
 }
 
-void GraphQueryAggregatorServiceClient::send_advance_rpq_ctx(const std::vector<int64_t> & query, const RPQCtx& ctx)
+void GraphQueryAggregatorServiceClient::send_advance_path_query_ctx(const std::vector<int64_t> & query, const RPQCtx& ctx)
 {
   int32_t cseqid = 0;
-  oprot_->writeMessageBegin("advance_rpq_ctx", ::apache::thrift::protocol::T_CALL, cseqid);
+  oprot_->writeMessageBegin("advance_path_query_ctx", ::apache::thrift::protocol::T_CALL, cseqid);
 
-  GraphQueryAggregatorService_advance_rpq_ctx_pargs args;
+  GraphQueryAggregatorService_advance_path_query_ctx_pargs args;
   args.query = &query;
   args.ctx = &ctx;
   args.write(oprot_);
@@ -15321,7 +15321,7 @@ void GraphQueryAggregatorServiceClient::send_advance_rpq_ctx(const std::vector<i
   oprot_->getTransport()->flush();
 }
 
-void GraphQueryAggregatorServiceClient::recv_advance_rpq_ctx(RPQCtx& _return)
+void GraphQueryAggregatorServiceClient::recv_advance_path_query_ctx(RPQCtx& _return)
 {
 
   int32_t rseqid = 0;
@@ -15341,12 +15341,12 @@ void GraphQueryAggregatorServiceClient::recv_advance_rpq_ctx(RPQCtx& _return)
     iprot_->readMessageEnd();
     iprot_->getTransport()->readEnd();
   }
-  if (fname.compare("advance_rpq_ctx") != 0) {
+  if (fname.compare("advance_path_query_ctx") != 0) {
     iprot_->skip(::apache::thrift::protocol::T_STRUCT);
     iprot_->readMessageEnd();
     iprot_->getTransport()->readEnd();
   }
-  GraphQueryAggregatorService_advance_rpq_ctx_presult result;
+  GraphQueryAggregatorService_advance_path_query_ctx_presult result;
   result.success = &_return;
   result.read(iprot_);
   iprot_->readMessageEnd();
@@ -15356,7 +15356,7 @@ void GraphQueryAggregatorServiceClient::recv_advance_rpq_ctx(RPQCtx& _return)
     // _return pointer has now been filled
     return;
   }
-  throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "advance_rpq_ctx failed: unknown result");
+  throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "advance_path_query_ctx failed: unknown result");
 }
 
 bool GraphQueryAggregatorServiceProcessor::dispatchCall(::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, const std::string& fname, int32_t seqid, void* callContext) {
@@ -18074,38 +18074,38 @@ void GraphQueryAggregatorServiceProcessor::process_countLinks(int32_t seqid, ::a
   }
 }
 
-void GraphQueryAggregatorServiceProcessor::process_rpq(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
+void GraphQueryAggregatorServiceProcessor::process_path_query(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
 {
   void* ctx = NULL;
   if (this->eventHandler_.get() != NULL) {
-    ctx = this->eventHandler_->getContext("GraphQueryAggregatorService.rpq", callContext);
+    ctx = this->eventHandler_->getContext("GraphQueryAggregatorService.path_query", callContext);
   }
-  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "GraphQueryAggregatorService.rpq");
+  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "GraphQueryAggregatorService.path_query");
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->preRead(ctx, "GraphQueryAggregatorService.rpq");
+    this->eventHandler_->preRead(ctx, "GraphQueryAggregatorService.path_query");
   }
 
-  GraphQueryAggregatorService_rpq_args args;
+  GraphQueryAggregatorService_path_query_args args;
   args.read(iprot);
   iprot->readMessageEnd();
   uint32_t bytes = iprot->getTransport()->readEnd();
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->postRead(ctx, "GraphQueryAggregatorService.rpq", bytes);
+    this->eventHandler_->postRead(ctx, "GraphQueryAggregatorService.path_query", bytes);
   }
 
-  GraphQueryAggregatorService_rpq_result result;
+  GraphQueryAggregatorService_path_query_result result;
   try {
-    iface_->rpq(result.success, args.query);
+    iface_->path_query(result.success, args.query);
     result.__isset.success = true;
   } catch (const std::exception& e) {
     if (this->eventHandler_.get() != NULL) {
-      this->eventHandler_->handlerError(ctx, "GraphQueryAggregatorService.rpq");
+      this->eventHandler_->handlerError(ctx, "GraphQueryAggregatorService.path_query");
     }
 
     ::apache::thrift::TApplicationException x(e.what());
-    oprot->writeMessageBegin("rpq", ::apache::thrift::protocol::T_EXCEPTION, seqid);
+    oprot->writeMessageBegin("path_query", ::apache::thrift::protocol::T_EXCEPTION, seqid);
     x.write(oprot);
     oprot->writeMessageEnd();
     oprot->getTransport()->writeEnd();
@@ -18114,52 +18114,52 @@ void GraphQueryAggregatorServiceProcessor::process_rpq(int32_t seqid, ::apache::
   }
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->preWrite(ctx, "GraphQueryAggregatorService.rpq");
+    this->eventHandler_->preWrite(ctx, "GraphQueryAggregatorService.path_query");
   }
 
-  oprot->writeMessageBegin("rpq", ::apache::thrift::protocol::T_REPLY, seqid);
+  oprot->writeMessageBegin("path_query", ::apache::thrift::protocol::T_REPLY, seqid);
   result.write(oprot);
   oprot->writeMessageEnd();
   bytes = oprot->getTransport()->writeEnd();
   oprot->getTransport()->flush();
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->postWrite(ctx, "GraphQueryAggregatorService.rpq", bytes);
+    this->eventHandler_->postWrite(ctx, "GraphQueryAggregatorService.path_query", bytes);
   }
 }
 
-void GraphQueryAggregatorServiceProcessor::process_rpq_local(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
+void GraphQueryAggregatorServiceProcessor::process_path_query_local(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
 {
   void* ctx = NULL;
   if (this->eventHandler_.get() != NULL) {
-    ctx = this->eventHandler_->getContext("GraphQueryAggregatorService.rpq_local", callContext);
+    ctx = this->eventHandler_->getContext("GraphQueryAggregatorService.path_query_local", callContext);
   }
-  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "GraphQueryAggregatorService.rpq_local");
+  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "GraphQueryAggregatorService.path_query_local");
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->preRead(ctx, "GraphQueryAggregatorService.rpq_local");
+    this->eventHandler_->preRead(ctx, "GraphQueryAggregatorService.path_query_local");
   }
 
-  GraphQueryAggregatorService_rpq_local_args args;
+  GraphQueryAggregatorService_path_query_local_args args;
   args.read(iprot);
   iprot->readMessageEnd();
   uint32_t bytes = iprot->getTransport()->readEnd();
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->postRead(ctx, "GraphQueryAggregatorService.rpq_local", bytes);
+    this->eventHandler_->postRead(ctx, "GraphQueryAggregatorService.path_query_local", bytes);
   }
 
-  GraphQueryAggregatorService_rpq_local_result result;
+  GraphQueryAggregatorService_path_query_local_result result;
   try {
-    iface_->rpq_local(result.success, args.query);
+    iface_->path_query_local(result.success, args.query);
     result.__isset.success = true;
   } catch (const std::exception& e) {
     if (this->eventHandler_.get() != NULL) {
-      this->eventHandler_->handlerError(ctx, "GraphQueryAggregatorService.rpq_local");
+      this->eventHandler_->handlerError(ctx, "GraphQueryAggregatorService.path_query_local");
     }
 
     ::apache::thrift::TApplicationException x(e.what());
-    oprot->writeMessageBegin("rpq_local", ::apache::thrift::protocol::T_EXCEPTION, seqid);
+    oprot->writeMessageBegin("path_query_local", ::apache::thrift::protocol::T_EXCEPTION, seqid);
     x.write(oprot);
     oprot->writeMessageEnd();
     oprot->getTransport()->writeEnd();
@@ -18168,52 +18168,52 @@ void GraphQueryAggregatorServiceProcessor::process_rpq_local(int32_t seqid, ::ap
   }
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->preWrite(ctx, "GraphQueryAggregatorService.rpq_local");
+    this->eventHandler_->preWrite(ctx, "GraphQueryAggregatorService.path_query_local");
   }
 
-  oprot->writeMessageBegin("rpq_local", ::apache::thrift::protocol::T_REPLY, seqid);
+  oprot->writeMessageBegin("path_query_local", ::apache::thrift::protocol::T_REPLY, seqid);
   result.write(oprot);
   oprot->writeMessageEnd();
   bytes = oprot->getTransport()->writeEnd();
   oprot->getTransport()->flush();
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->postWrite(ctx, "GraphQueryAggregatorService.rpq_local", bytes);
+    this->eventHandler_->postWrite(ctx, "GraphQueryAggregatorService.path_query_local", bytes);
   }
 }
 
-void GraphQueryAggregatorServiceProcessor::process_advance_rpq_ctx(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
+void GraphQueryAggregatorServiceProcessor::process_advance_path_query_ctx(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
 {
   void* ctx = NULL;
   if (this->eventHandler_.get() != NULL) {
-    ctx = this->eventHandler_->getContext("GraphQueryAggregatorService.advance_rpq_ctx", callContext);
+    ctx = this->eventHandler_->getContext("GraphQueryAggregatorService.advance_path_query_ctx", callContext);
   }
-  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "GraphQueryAggregatorService.advance_rpq_ctx");
+  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "GraphQueryAggregatorService.advance_path_query_ctx");
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->preRead(ctx, "GraphQueryAggregatorService.advance_rpq_ctx");
+    this->eventHandler_->preRead(ctx, "GraphQueryAggregatorService.advance_path_query_ctx");
   }
 
-  GraphQueryAggregatorService_advance_rpq_ctx_args args;
+  GraphQueryAggregatorService_advance_path_query_ctx_args args;
   args.read(iprot);
   iprot->readMessageEnd();
   uint32_t bytes = iprot->getTransport()->readEnd();
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->postRead(ctx, "GraphQueryAggregatorService.advance_rpq_ctx", bytes);
+    this->eventHandler_->postRead(ctx, "GraphQueryAggregatorService.advance_path_query_ctx", bytes);
   }
 
-  GraphQueryAggregatorService_advance_rpq_ctx_result result;
+  GraphQueryAggregatorService_advance_path_query_ctx_result result;
   try {
-    iface_->advance_rpq_ctx(result.success, args.query, args.ctx);
+    iface_->advance_path_query_ctx(result.success, args.query, args.ctx);
     result.__isset.success = true;
   } catch (const std::exception& e) {
     if (this->eventHandler_.get() != NULL) {
-      this->eventHandler_->handlerError(ctx, "GraphQueryAggregatorService.advance_rpq_ctx");
+      this->eventHandler_->handlerError(ctx, "GraphQueryAggregatorService.advance_path_query_ctx");
     }
 
     ::apache::thrift::TApplicationException x(e.what());
-    oprot->writeMessageBegin("advance_rpq_ctx", ::apache::thrift::protocol::T_EXCEPTION, seqid);
+    oprot->writeMessageBegin("advance_path_query_ctx", ::apache::thrift::protocol::T_EXCEPTION, seqid);
     x.write(oprot);
     oprot->writeMessageEnd();
     oprot->getTransport()->writeEnd();
@@ -18222,17 +18222,17 @@ void GraphQueryAggregatorServiceProcessor::process_advance_rpq_ctx(int32_t seqid
   }
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->preWrite(ctx, "GraphQueryAggregatorService.advance_rpq_ctx");
+    this->eventHandler_->preWrite(ctx, "GraphQueryAggregatorService.advance_path_query_ctx");
   }
 
-  oprot->writeMessageBegin("advance_rpq_ctx", ::apache::thrift::protocol::T_REPLY, seqid);
+  oprot->writeMessageBegin("advance_path_query_ctx", ::apache::thrift::protocol::T_REPLY, seqid);
   result.write(oprot);
   oprot->writeMessageEnd();
   bytes = oprot->getTransport()->writeEnd();
   oprot->getTransport()->flush();
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->postWrite(ctx, "GraphQueryAggregatorService.advance_rpq_ctx", bytes);
+    this->eventHandler_->postWrite(ctx, "GraphQueryAggregatorService.advance_path_query_ctx", bytes);
   }
 }
 
@@ -22506,19 +22506,19 @@ int64_t GraphQueryAggregatorServiceConcurrentClient::recv_countLinks(const int32
   } // end while(true)
 }
 
-void GraphQueryAggregatorServiceConcurrentClient::rpq(RPQCtx& _return, const std::vector<int64_t> & query)
+void GraphQueryAggregatorServiceConcurrentClient::path_query(RPQCtx& _return, const std::vector<int64_t> & query)
 {
-  int32_t seqid = send_rpq(query);
-  recv_rpq(_return, seqid);
+  int32_t seqid = send_path_query(query);
+  recv_path_query(_return, seqid);
 }
 
-int32_t GraphQueryAggregatorServiceConcurrentClient::send_rpq(const std::vector<int64_t> & query)
+int32_t GraphQueryAggregatorServiceConcurrentClient::send_path_query(const std::vector<int64_t> & query)
 {
   int32_t cseqid = this->sync_.generateSeqId();
   ::apache::thrift::async::TConcurrentSendSentry sentry(&this->sync_);
-  oprot_->writeMessageBegin("rpq", ::apache::thrift::protocol::T_CALL, cseqid);
+  oprot_->writeMessageBegin("path_query", ::apache::thrift::protocol::T_CALL, cseqid);
 
-  GraphQueryAggregatorService_rpq_pargs args;
+  GraphQueryAggregatorService_path_query_pargs args;
   args.query = &query;
   args.write(oprot_);
 
@@ -22530,7 +22530,7 @@ int32_t GraphQueryAggregatorServiceConcurrentClient::send_rpq(const std::vector<
   return cseqid;
 }
 
-void GraphQueryAggregatorServiceConcurrentClient::recv_rpq(RPQCtx& _return, const int32_t seqid)
+void GraphQueryAggregatorServiceConcurrentClient::recv_path_query(RPQCtx& _return, const int32_t seqid)
 {
 
   int32_t rseqid = 0;
@@ -22559,7 +22559,7 @@ void GraphQueryAggregatorServiceConcurrentClient::recv_rpq(RPQCtx& _return, cons
         iprot_->readMessageEnd();
         iprot_->getTransport()->readEnd();
       }
-      if (fname.compare("rpq") != 0) {
+      if (fname.compare("path_query") != 0) {
         iprot_->skip(::apache::thrift::protocol::T_STRUCT);
         iprot_->readMessageEnd();
         iprot_->getTransport()->readEnd();
@@ -22568,7 +22568,7 @@ void GraphQueryAggregatorServiceConcurrentClient::recv_rpq(RPQCtx& _return, cons
         using ::apache::thrift::protocol::TProtocolException;
         throw TProtocolException(TProtocolException::INVALID_DATA);
       }
-      GraphQueryAggregatorService_rpq_presult result;
+      GraphQueryAggregatorService_path_query_presult result;
       result.success = &_return;
       result.read(iprot_);
       iprot_->readMessageEnd();
@@ -22580,7 +22580,7 @@ void GraphQueryAggregatorServiceConcurrentClient::recv_rpq(RPQCtx& _return, cons
         return;
       }
       // in a bad state, don't commit
-      throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "rpq failed: unknown result");
+      throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "path_query failed: unknown result");
     }
     // seqid != rseqid
     this->sync_.updatePending(fname, mtype, rseqid);
@@ -22590,19 +22590,19 @@ void GraphQueryAggregatorServiceConcurrentClient::recv_rpq(RPQCtx& _return, cons
   } // end while(true)
 }
 
-void GraphQueryAggregatorServiceConcurrentClient::rpq_local(RPQCtx& _return, const std::vector<int64_t> & query)
+void GraphQueryAggregatorServiceConcurrentClient::path_query_local(RPQCtx& _return, const std::vector<int64_t> & query)
 {
-  int32_t seqid = send_rpq_local(query);
-  recv_rpq_local(_return, seqid);
+  int32_t seqid = send_path_query_local(query);
+  recv_path_query_local(_return, seqid);
 }
 
-int32_t GraphQueryAggregatorServiceConcurrentClient::send_rpq_local(const std::vector<int64_t> & query)
+int32_t GraphQueryAggregatorServiceConcurrentClient::send_path_query_local(const std::vector<int64_t> & query)
 {
   int32_t cseqid = this->sync_.generateSeqId();
   ::apache::thrift::async::TConcurrentSendSentry sentry(&this->sync_);
-  oprot_->writeMessageBegin("rpq_local", ::apache::thrift::protocol::T_CALL, cseqid);
+  oprot_->writeMessageBegin("path_query_local", ::apache::thrift::protocol::T_CALL, cseqid);
 
-  GraphQueryAggregatorService_rpq_local_pargs args;
+  GraphQueryAggregatorService_path_query_local_pargs args;
   args.query = &query;
   args.write(oprot_);
 
@@ -22614,7 +22614,7 @@ int32_t GraphQueryAggregatorServiceConcurrentClient::send_rpq_local(const std::v
   return cseqid;
 }
 
-void GraphQueryAggregatorServiceConcurrentClient::recv_rpq_local(RPQCtx& _return, const int32_t seqid)
+void GraphQueryAggregatorServiceConcurrentClient::recv_path_query_local(RPQCtx& _return, const int32_t seqid)
 {
 
   int32_t rseqid = 0;
@@ -22643,7 +22643,7 @@ void GraphQueryAggregatorServiceConcurrentClient::recv_rpq_local(RPQCtx& _return
         iprot_->readMessageEnd();
         iprot_->getTransport()->readEnd();
       }
-      if (fname.compare("rpq_local") != 0) {
+      if (fname.compare("path_query_local") != 0) {
         iprot_->skip(::apache::thrift::protocol::T_STRUCT);
         iprot_->readMessageEnd();
         iprot_->getTransport()->readEnd();
@@ -22652,7 +22652,7 @@ void GraphQueryAggregatorServiceConcurrentClient::recv_rpq_local(RPQCtx& _return
         using ::apache::thrift::protocol::TProtocolException;
         throw TProtocolException(TProtocolException::INVALID_DATA);
       }
-      GraphQueryAggregatorService_rpq_local_presult result;
+      GraphQueryAggregatorService_path_query_local_presult result;
       result.success = &_return;
       result.read(iprot_);
       iprot_->readMessageEnd();
@@ -22664,7 +22664,7 @@ void GraphQueryAggregatorServiceConcurrentClient::recv_rpq_local(RPQCtx& _return
         return;
       }
       // in a bad state, don't commit
-      throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "rpq_local failed: unknown result");
+      throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "path_query_local failed: unknown result");
     }
     // seqid != rseqid
     this->sync_.updatePending(fname, mtype, rseqid);
@@ -22674,19 +22674,19 @@ void GraphQueryAggregatorServiceConcurrentClient::recv_rpq_local(RPQCtx& _return
   } // end while(true)
 }
 
-void GraphQueryAggregatorServiceConcurrentClient::advance_rpq_ctx(RPQCtx& _return, const std::vector<int64_t> & query, const RPQCtx& ctx)
+void GraphQueryAggregatorServiceConcurrentClient::advance_path_query_ctx(RPQCtx& _return, const std::vector<int64_t> & query, const RPQCtx& ctx)
 {
-  int32_t seqid = send_advance_rpq_ctx(query, ctx);
-  recv_advance_rpq_ctx(_return, seqid);
+  int32_t seqid = send_advance_path_query_ctx(query, ctx);
+  recv_advance_path_query_ctx(_return, seqid);
 }
 
-int32_t GraphQueryAggregatorServiceConcurrentClient::send_advance_rpq_ctx(const std::vector<int64_t> & query, const RPQCtx& ctx)
+int32_t GraphQueryAggregatorServiceConcurrentClient::send_advance_path_query_ctx(const std::vector<int64_t> & query, const RPQCtx& ctx)
 {
   int32_t cseqid = this->sync_.generateSeqId();
   ::apache::thrift::async::TConcurrentSendSentry sentry(&this->sync_);
-  oprot_->writeMessageBegin("advance_rpq_ctx", ::apache::thrift::protocol::T_CALL, cseqid);
+  oprot_->writeMessageBegin("advance_path_query_ctx", ::apache::thrift::protocol::T_CALL, cseqid);
 
-  GraphQueryAggregatorService_advance_rpq_ctx_pargs args;
+  GraphQueryAggregatorService_advance_path_query_ctx_pargs args;
   args.query = &query;
   args.ctx = &ctx;
   args.write(oprot_);
@@ -22699,7 +22699,7 @@ int32_t GraphQueryAggregatorServiceConcurrentClient::send_advance_rpq_ctx(const 
   return cseqid;
 }
 
-void GraphQueryAggregatorServiceConcurrentClient::recv_advance_rpq_ctx(RPQCtx& _return, const int32_t seqid)
+void GraphQueryAggregatorServiceConcurrentClient::recv_advance_path_query_ctx(RPQCtx& _return, const int32_t seqid)
 {
 
   int32_t rseqid = 0;
@@ -22728,7 +22728,7 @@ void GraphQueryAggregatorServiceConcurrentClient::recv_advance_rpq_ctx(RPQCtx& _
         iprot_->readMessageEnd();
         iprot_->getTransport()->readEnd();
       }
-      if (fname.compare("advance_rpq_ctx") != 0) {
+      if (fname.compare("advance_path_query_ctx") != 0) {
         iprot_->skip(::apache::thrift::protocol::T_STRUCT);
         iprot_->readMessageEnd();
         iprot_->getTransport()->readEnd();
@@ -22737,7 +22737,7 @@ void GraphQueryAggregatorServiceConcurrentClient::recv_advance_rpq_ctx(RPQCtx& _
         using ::apache::thrift::protocol::TProtocolException;
         throw TProtocolException(TProtocolException::INVALID_DATA);
       }
-      GraphQueryAggregatorService_advance_rpq_ctx_presult result;
+      GraphQueryAggregatorService_advance_path_query_ctx_presult result;
       result.success = &_return;
       result.read(iprot_);
       iprot_->readMessageEnd();
@@ -22749,7 +22749,7 @@ void GraphQueryAggregatorServiceConcurrentClient::recv_advance_rpq_ctx(RPQCtx& _
         return;
       }
       // in a bad state, don't commit
-      throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "advance_rpq_ctx failed: unknown result");
+      throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "advance_path_query_ctx failed: unknown result");
     }
     // seqid != rseqid
     this->sync_.updatePending(fname, mtype, rseqid);

@@ -441,21 +441,21 @@ class Iface(object):
         """
         pass
 
-    def rpq(self, query):
+    def path_query(self, query):
         """
         Parameters:
          - query
         """
         pass
 
-    def rpq_local(self, query):
+    def path_query_local(self, query):
         """
         Parameters:
          - query
         """
         pass
 
-    def advance_rpq_ctx(self, query, ctx):
+    def advance_path_query_ctx(self, query, ctx):
         """
         Parameters:
          - query
@@ -2175,23 +2175,23 @@ class Client(Iface):
             return result.success
         raise TApplicationException(TApplicationException.MISSING_RESULT, "countLinks failed: unknown result")
 
-    def rpq(self, query):
+    def path_query(self, query):
         """
         Parameters:
          - query
         """
-        self.send_rpq(query)
-        return self.recv_rpq()
+        self.send_path_query(query)
+        return self.recv_path_query()
 
-    def send_rpq(self, query):
-        self._oprot.writeMessageBegin('rpq', TMessageType.CALL, self._seqid)
-        args = rpq_args()
+    def send_path_query(self, query):
+        self._oprot.writeMessageBegin('path_query', TMessageType.CALL, self._seqid)
+        args = path_query_args()
         args.query = query
         args.write(self._oprot)
         self._oprot.writeMessageEnd()
         self._oprot.trans.flush()
 
-    def recv_rpq(self):
+    def recv_path_query(self):
         iprot = self._iprot
         (fname, mtype, rseqid) = iprot.readMessageBegin()
         if mtype == TMessageType.EXCEPTION:
@@ -2199,30 +2199,30 @@ class Client(Iface):
             x.read(iprot)
             iprot.readMessageEnd()
             raise x
-        result = rpq_result()
+        result = path_query_result()
         result.read(iprot)
         iprot.readMessageEnd()
         if result.success is not None:
             return result.success
-        raise TApplicationException(TApplicationException.MISSING_RESULT, "rpq failed: unknown result")
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "path_query failed: unknown result")
 
-    def rpq_local(self, query):
+    def path_query_local(self, query):
         """
         Parameters:
          - query
         """
-        self.send_rpq_local(query)
-        return self.recv_rpq_local()
+        self.send_path_query_local(query)
+        return self.recv_path_query_local()
 
-    def send_rpq_local(self, query):
-        self._oprot.writeMessageBegin('rpq_local', TMessageType.CALL, self._seqid)
-        args = rpq_local_args()
+    def send_path_query_local(self, query):
+        self._oprot.writeMessageBegin('path_query_local', TMessageType.CALL, self._seqid)
+        args = path_query_local_args()
         args.query = query
         args.write(self._oprot)
         self._oprot.writeMessageEnd()
         self._oprot.trans.flush()
 
-    def recv_rpq_local(self):
+    def recv_path_query_local(self):
         iprot = self._iprot
         (fname, mtype, rseqid) = iprot.readMessageBegin()
         if mtype == TMessageType.EXCEPTION:
@@ -2230,32 +2230,32 @@ class Client(Iface):
             x.read(iprot)
             iprot.readMessageEnd()
             raise x
-        result = rpq_local_result()
+        result = path_query_local_result()
         result.read(iprot)
         iprot.readMessageEnd()
         if result.success is not None:
             return result.success
-        raise TApplicationException(TApplicationException.MISSING_RESULT, "rpq_local failed: unknown result")
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "path_query_local failed: unknown result")
 
-    def advance_rpq_ctx(self, query, ctx):
+    def advance_path_query_ctx(self, query, ctx):
         """
         Parameters:
          - query
          - ctx
         """
-        self.send_advance_rpq_ctx(query, ctx)
-        return self.recv_advance_rpq_ctx()
+        self.send_advance_path_query_ctx(query, ctx)
+        return self.recv_advance_path_query_ctx()
 
-    def send_advance_rpq_ctx(self, query, ctx):
-        self._oprot.writeMessageBegin('advance_rpq_ctx', TMessageType.CALL, self._seqid)
-        args = advance_rpq_ctx_args()
+    def send_advance_path_query_ctx(self, query, ctx):
+        self._oprot.writeMessageBegin('advance_path_query_ctx', TMessageType.CALL, self._seqid)
+        args = advance_path_query_ctx_args()
         args.query = query
         args.ctx = ctx
         args.write(self._oprot)
         self._oprot.writeMessageEnd()
         self._oprot.trans.flush()
 
-    def recv_advance_rpq_ctx(self):
+    def recv_advance_path_query_ctx(self):
         iprot = self._iprot
         (fname, mtype, rseqid) = iprot.readMessageBegin()
         if mtype == TMessageType.EXCEPTION:
@@ -2263,12 +2263,12 @@ class Client(Iface):
             x.read(iprot)
             iprot.readMessageEnd()
             raise x
-        result = advance_rpq_ctx_result()
+        result = advance_path_query_ctx_result()
         result.read(iprot)
         iprot.readMessageEnd()
         if result.success is not None:
             return result.success
-        raise TApplicationException(TApplicationException.MISSING_RESULT, "advance_rpq_ctx failed: unknown result")
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "advance_path_query_ctx failed: unknown result")
 
 
 class Processor(Iface, TProcessor):
@@ -2325,9 +2325,9 @@ class Processor(Iface, TProcessor):
         self._processMap["getFilteredLinkList"] = Processor.process_getFilteredLinkList
         self._processMap["getFilteredLinkListLocal"] = Processor.process_getFilteredLinkListLocal
         self._processMap["countLinks"] = Processor.process_countLinks
-        self._processMap["rpq"] = Processor.process_rpq
-        self._processMap["rpq_local"] = Processor.process_rpq_local
-        self._processMap["advance_rpq_ctx"] = Processor.process_advance_rpq_ctx
+        self._processMap["path_query"] = Processor.process_path_query
+        self._processMap["path_query_local"] = Processor.process_path_query_local
+        self._processMap["advance_path_query_ctx"] = Processor.process_advance_path_query_ctx
 
     def process(self, iprot, oprot):
         (name, type, seqid) = iprot.readMessageBegin()
@@ -3294,13 +3294,13 @@ class Processor(Iface, TProcessor):
         oprot.writeMessageEnd()
         oprot.trans.flush()
 
-    def process_rpq(self, seqid, iprot, oprot):
-        args = rpq_args()
+    def process_path_query(self, seqid, iprot, oprot):
+        args = path_query_args()
         args.read(iprot)
         iprot.readMessageEnd()
-        result = rpq_result()
+        result = path_query_result()
         try:
-            result.success = self._handler.rpq(args.query)
+            result.success = self._handler.path_query(args.query)
             msg_type = TMessageType.REPLY
         except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
             raise
@@ -3308,18 +3308,18 @@ class Processor(Iface, TProcessor):
             msg_type = TMessageType.EXCEPTION
             logging.exception(ex)
             result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
-        oprot.writeMessageBegin("rpq", msg_type, seqid)
+        oprot.writeMessageBegin("path_query", msg_type, seqid)
         result.write(oprot)
         oprot.writeMessageEnd()
         oprot.trans.flush()
 
-    def process_rpq_local(self, seqid, iprot, oprot):
-        args = rpq_local_args()
+    def process_path_query_local(self, seqid, iprot, oprot):
+        args = path_query_local_args()
         args.read(iprot)
         iprot.readMessageEnd()
-        result = rpq_local_result()
+        result = path_query_local_result()
         try:
-            result.success = self._handler.rpq_local(args.query)
+            result.success = self._handler.path_query_local(args.query)
             msg_type = TMessageType.REPLY
         except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
             raise
@@ -3327,18 +3327,18 @@ class Processor(Iface, TProcessor):
             msg_type = TMessageType.EXCEPTION
             logging.exception(ex)
             result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
-        oprot.writeMessageBegin("rpq_local", msg_type, seqid)
+        oprot.writeMessageBegin("path_query_local", msg_type, seqid)
         result.write(oprot)
         oprot.writeMessageEnd()
         oprot.trans.flush()
 
-    def process_advance_rpq_ctx(self, seqid, iprot, oprot):
-        args = advance_rpq_ctx_args()
+    def process_advance_path_query_ctx(self, seqid, iprot, oprot):
+        args = advance_path_query_ctx_args()
         args.read(iprot)
         iprot.readMessageEnd()
-        result = advance_rpq_ctx_result()
+        result = advance_path_query_ctx_result()
         try:
-            result.success = self._handler.advance_rpq_ctx(args.query, args.ctx)
+            result.success = self._handler.advance_path_query_ctx(args.query, args.ctx)
             msg_type = TMessageType.REPLY
         except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
             raise
@@ -3346,7 +3346,7 @@ class Processor(Iface, TProcessor):
             msg_type = TMessageType.EXCEPTION
             logging.exception(ex)
             result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
-        oprot.writeMessageBegin("advance_rpq_ctx", msg_type, seqid)
+        oprot.writeMessageBegin("advance_path_query_ctx", msg_type, seqid)
         result.write(oprot)
         oprot.writeMessageEnd()
         oprot.trans.flush()
@@ -10511,7 +10511,7 @@ class countLinks_result(object):
         return not (self == other)
 
 
-class rpq_args(object):
+class path_query_args(object):
     """
     Attributes:
      - query
@@ -10553,7 +10553,7 @@ class rpq_args(object):
         if oprot._fast_encode is not None and self.thrift_spec is not None:
             oprot.trans.write(oprot._fast_encode(self, (self.__class__, self.thrift_spec)))
             return
-        oprot.writeStructBegin('rpq_args')
+        oprot.writeStructBegin('path_query_args')
         if self.query is not None:
             oprot.writeFieldBegin('query', TType.LIST, 1)
             oprot.writeListBegin(TType.I64, len(self.query))
@@ -10579,7 +10579,7 @@ class rpq_args(object):
         return not (self == other)
 
 
-class rpq_result(object):
+class path_query_result(object):
     """
     Attributes:
      - success
@@ -10616,7 +10616,7 @@ class rpq_result(object):
         if oprot._fast_encode is not None and self.thrift_spec is not None:
             oprot.trans.write(oprot._fast_encode(self, (self.__class__, self.thrift_spec)))
             return
-        oprot.writeStructBegin('rpq_result')
+        oprot.writeStructBegin('path_query_result')
         if self.success is not None:
             oprot.writeFieldBegin('success', TType.STRUCT, 0)
             self.success.write(oprot)
@@ -10639,7 +10639,7 @@ class rpq_result(object):
         return not (self == other)
 
 
-class rpq_local_args(object):
+class path_query_local_args(object):
     """
     Attributes:
      - query
@@ -10681,7 +10681,7 @@ class rpq_local_args(object):
         if oprot._fast_encode is not None and self.thrift_spec is not None:
             oprot.trans.write(oprot._fast_encode(self, (self.__class__, self.thrift_spec)))
             return
-        oprot.writeStructBegin('rpq_local_args')
+        oprot.writeStructBegin('path_query_local_args')
         if self.query is not None:
             oprot.writeFieldBegin('query', TType.LIST, 1)
             oprot.writeListBegin(TType.I64, len(self.query))
@@ -10707,7 +10707,7 @@ class rpq_local_args(object):
         return not (self == other)
 
 
-class rpq_local_result(object):
+class path_query_local_result(object):
     """
     Attributes:
      - success
@@ -10744,7 +10744,7 @@ class rpq_local_result(object):
         if oprot._fast_encode is not None and self.thrift_spec is not None:
             oprot.trans.write(oprot._fast_encode(self, (self.__class__, self.thrift_spec)))
             return
-        oprot.writeStructBegin('rpq_local_result')
+        oprot.writeStructBegin('path_query_local_result')
         if self.success is not None:
             oprot.writeFieldBegin('success', TType.STRUCT, 0)
             self.success.write(oprot)
@@ -10767,7 +10767,7 @@ class rpq_local_result(object):
         return not (self == other)
 
 
-class advance_rpq_ctx_args(object):
+class advance_path_query_ctx_args(object):
     """
     Attributes:
      - query
@@ -10818,7 +10818,7 @@ class advance_rpq_ctx_args(object):
         if oprot._fast_encode is not None and self.thrift_spec is not None:
             oprot.trans.write(oprot._fast_encode(self, (self.__class__, self.thrift_spec)))
             return
-        oprot.writeStructBegin('advance_rpq_ctx_args')
+        oprot.writeStructBegin('advance_path_query_ctx_args')
         if self.query is not None:
             oprot.writeFieldBegin('query', TType.LIST, 1)
             oprot.writeListBegin(TType.I64, len(self.query))
@@ -10848,7 +10848,7 @@ class advance_rpq_ctx_args(object):
         return not (self == other)
 
 
-class advance_rpq_ctx_result(object):
+class advance_path_query_ctx_result(object):
     """
     Attributes:
      - success
@@ -10885,7 +10885,7 @@ class advance_rpq_ctx_result(object):
         if oprot._fast_encode is not None and self.thrift_spec is not None:
             oprot.trans.write(oprot._fast_encode(self, (self.__class__, self.thrift_spec)))
             return
-        oprot.writeStructBegin('advance_rpq_ctx_result')
+        oprot.writeStructBegin('advance_path_query_ctx_result')
         if self.success is not None:
             oprot.writeFieldBegin('success', TType.STRUCT, 0)
             self.success.write(oprot)

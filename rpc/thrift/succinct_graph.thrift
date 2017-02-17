@@ -181,7 +181,7 @@ service GraphQueryAggregatorService {
   i64 countLinks(1: i64 id1, 2: i64 link_type),
   
   // RPQ API
-  RPQCtx rpq(1: list<i64> query),
-  RPQCtx rpq_local(1: list<i64> query),
-  RPQCtx advance_rpq_ctx(1: list<i64> query, 2: RPQCtx ctx),
+  RPQCtx path_query(1: list<i64> query),
+  RPQCtx path_query_local(1: list<i64> query),
+  RPQCtx advance_path_query_ctx(1: list<i64> query, 2: RPQCtx ctx),
 }
