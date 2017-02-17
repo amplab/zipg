@@ -403,23 +403,23 @@ public class RPQuery implements org.apache.thrift.TBase<RPQuery, RPQuery._Fields
           case 1: // PATH_QUERIES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list8 = iprot.readListBegin();
-                struct.path_queries = new java.util.ArrayList<java.util.List<java.lang.Long>>(_list8.size);
-                java.util.List<java.lang.Long> _elem9;
-                for (int _i10 = 0; _i10 < _list8.size; ++_i10)
+                org.apache.thrift.protocol.TList _list0 = iprot.readListBegin();
+                struct.path_queries = new java.util.ArrayList<java.util.List<java.lang.Long>>(_list0.size);
+                java.util.List<java.lang.Long> _elem1;
+                for (int _i2 = 0; _i2 < _list0.size; ++_i2)
                 {
                   {
-                    org.apache.thrift.protocol.TList _list11 = iprot.readListBegin();
-                    _elem9 = new java.util.ArrayList<java.lang.Long>(_list11.size);
-                    long _elem12;
-                    for (int _i13 = 0; _i13 < _list11.size; ++_i13)
+                    org.apache.thrift.protocol.TList _list3 = iprot.readListBegin();
+                    _elem1 = new java.util.ArrayList<java.lang.Long>(_list3.size);
+                    long _elem4;
+                    for (int _i5 = 0; _i5 < _list3.size; ++_i5)
                     {
-                      _elem12 = iprot.readI64();
-                      _elem9.add(_elem12);
+                      _elem4 = iprot.readI64();
+                      _elem1.add(_elem4);
                     }
                     iprot.readListEnd();
                   }
-                  struct.path_queries.add(_elem9);
+                  struct.path_queries.add(_elem1);
                 }
                 iprot.readListEnd();
               }
@@ -455,13 +455,13 @@ public class RPQuery implements org.apache.thrift.TBase<RPQuery, RPQuery._Fields
         oprot.writeFieldBegin(PATH_QUERIES_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.LIST, struct.path_queries.size()));
-          for (java.util.List<java.lang.Long> _iter14 : struct.path_queries)
+          for (java.util.List<java.lang.Long> _iter6 : struct.path_queries)
           {
             {
-              oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, _iter14.size()));
-              for (long _iter15 : _iter14)
+              oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, _iter6.size()));
+              for (long _iter7 : _iter6)
               {
-                oprot.writeI64(_iter15);
+                oprot.writeI64(_iter7);
               }
               oprot.writeListEnd();
             }
@@ -501,13 +501,13 @@ public class RPQuery implements org.apache.thrift.TBase<RPQuery, RPQuery._Fields
       if (struct.isSetPath_queries()) {
         {
           oprot.writeI32(struct.path_queries.size());
-          for (java.util.List<java.lang.Long> _iter16 : struct.path_queries)
+          for (java.util.List<java.lang.Long> _iter8 : struct.path_queries)
           {
             {
-              oprot.writeI32(_iter16.size());
-              for (long _iter17 : _iter16)
+              oprot.writeI32(_iter8.size());
+              for (long _iter9 : _iter8)
               {
-                oprot.writeI64(_iter17);
+                oprot.writeI64(_iter9);
               }
             }
           }
@@ -524,22 +524,22 @@ public class RPQuery implements org.apache.thrift.TBase<RPQuery, RPQuery._Fields
       java.util.BitSet incoming = iprot.readBitSet(2);
       if (incoming.get(0)) {
         {
-          org.apache.thrift.protocol.TList _list18 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.LIST, iprot.readI32());
-          struct.path_queries = new java.util.ArrayList<java.util.List<java.lang.Long>>(_list18.size);
-          java.util.List<java.lang.Long> _elem19;
-          for (int _i20 = 0; _i20 < _list18.size; ++_i20)
+          org.apache.thrift.protocol.TList _list10 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.LIST, iprot.readI32());
+          struct.path_queries = new java.util.ArrayList<java.util.List<java.lang.Long>>(_list10.size);
+          java.util.List<java.lang.Long> _elem11;
+          for (int _i12 = 0; _i12 < _list10.size; ++_i12)
           {
             {
-              org.apache.thrift.protocol.TList _list21 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
-              _elem19 = new java.util.ArrayList<java.lang.Long>(_list21.size);
-              long _elem22;
-              for (int _i23 = 0; _i23 < _list21.size; ++_i23)
+              org.apache.thrift.protocol.TList _list13 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
+              _elem11 = new java.util.ArrayList<java.lang.Long>(_list13.size);
+              long _elem14;
+              for (int _i15 = 0; _i15 < _list13.size; ++_i15)
               {
-                _elem22 = iprot.readI64();
-                _elem19.add(_elem22);
+                _elem14 = iprot.readI64();
+                _elem11.add(_elem14);
               }
             }
-            struct.path_queries.add(_elem19);
+            struct.path_queries.add(_elem11);
           }
         }
         struct.setPath_queriesIsSet(true);

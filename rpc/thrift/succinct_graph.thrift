@@ -22,6 +22,11 @@ struct ThriftSrcAtype {
   2: i64 atype,
 }
 
+struct RPQuery {
+  1: list<list<i64>> path_queries,
+  2: bool recurse,
+}
+
 struct Path {
   1: i64 src,
   2: i64 dst,
@@ -29,11 +34,6 @@ struct Path {
 
 struct RPQCtx {
   1: set<Path> endpoints,
-}
-
-struct RPQuery {
-  1: list<list<i64>> path_queries,
-  2: bool recurse,
 }
 
 // One aggregator per machine; handles local aggregation and query routing.

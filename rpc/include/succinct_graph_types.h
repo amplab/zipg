@@ -26,11 +26,11 @@ class ThriftEdgeUpdatePtr;
 
 class ThriftSrcAtype;
 
+class RPQuery;
+
 class Path;
 
 class RPQCtx;
-
-class RPQuery;
 
 typedef struct _ThriftAssoc__isset {
   _ThriftAssoc__isset() : srcId(false), dstId(false), atype(false), timestamp(false), attr(false) {}
@@ -206,6 +206,58 @@ inline std::ostream& operator<<(std::ostream& out, const ThriftSrcAtype& obj)
   return out;
 }
 
+typedef struct _RPQuery__isset {
+  _RPQuery__isset() : path_queries(false), recurse(false) {}
+  bool path_queries :1;
+  bool recurse :1;
+} _RPQuery__isset;
+
+class RPQuery : public virtual ::apache::thrift::TBase {
+ public:
+
+  RPQuery(const RPQuery&);
+  RPQuery& operator=(const RPQuery&);
+  RPQuery() : recurse(0) {
+  }
+
+  virtual ~RPQuery() throw();
+  std::vector<std::vector<int64_t> >  path_queries;
+  bool recurse;
+
+  _RPQuery__isset __isset;
+
+  void __set_path_queries(const std::vector<std::vector<int64_t> > & val);
+
+  void __set_recurse(const bool val);
+
+  bool operator == (const RPQuery & rhs) const
+  {
+    if (!(path_queries == rhs.path_queries))
+      return false;
+    if (!(recurse == rhs.recurse))
+      return false;
+    return true;
+  }
+  bool operator != (const RPQuery &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const RPQuery & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(RPQuery &a, RPQuery &b);
+
+inline std::ostream& operator<<(std::ostream& out, const RPQuery& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
 typedef struct _Path__isset {
   _Path__isset() : src(false), dst(false) {}
   bool src :1;
@@ -299,58 +351,6 @@ class RPQCtx : public virtual ::apache::thrift::TBase {
 void swap(RPQCtx &a, RPQCtx &b);
 
 inline std::ostream& operator<<(std::ostream& out, const RPQCtx& obj)
-{
-  obj.printTo(out);
-  return out;
-}
-
-typedef struct _RPQuery__isset {
-  _RPQuery__isset() : path_queries(false), recurse(false) {}
-  bool path_queries :1;
-  bool recurse :1;
-} _RPQuery__isset;
-
-class RPQuery : public virtual ::apache::thrift::TBase {
- public:
-
-  RPQuery(const RPQuery&);
-  RPQuery& operator=(const RPQuery&);
-  RPQuery() : recurse(0) {
-  }
-
-  virtual ~RPQuery() throw();
-  std::vector<std::vector<int64_t> >  path_queries;
-  bool recurse;
-
-  _RPQuery__isset __isset;
-
-  void __set_path_queries(const std::vector<std::vector<int64_t> > & val);
-
-  void __set_recurse(const bool val);
-
-  bool operator == (const RPQuery & rhs) const
-  {
-    if (!(path_queries == rhs.path_queries))
-      return false;
-    if (!(recurse == rhs.recurse))
-      return false;
-    return true;
-  }
-  bool operator != (const RPQuery &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const RPQuery & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-  virtual void printTo(std::ostream& out) const;
-};
-
-void swap(RPQuery &a, RPQuery &b);
-
-inline std::ostream& operator<<(std::ostream& out, const RPQuery& obj)
 {
   obj.printTo(out);
   return out;

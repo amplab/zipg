@@ -265,6 +265,94 @@ class ThriftSrcAtype(object):
         return not (self == other)
 
 
+class RPQuery(object):
+    """
+    Attributes:
+     - path_queries
+     - recurse
+    """
+
+    thrift_spec = (
+        None,  # 0
+        (1, TType.LIST, 'path_queries', (TType.LIST, (TType.I64, None, False), False), None, ),  # 1
+        (2, TType.BOOL, 'recurse', None, None, ),  # 2
+    )
+
+    def __init__(self, path_queries=None, recurse=None,):
+        self.path_queries = path_queries
+        self.recurse = recurse
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, (self.__class__, self.thrift_spec))
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.LIST:
+                    self.path_queries = []
+                    (_etype3, _size0) = iprot.readListBegin()
+                    for _i4 in range(_size0):
+                        _elem5 = []
+                        (_etype9, _size6) = iprot.readListBegin()
+                        for _i10 in range(_size6):
+                            _elem11 = iprot.readI64()
+                            _elem5.append(_elem11)
+                        iprot.readListEnd()
+                        self.path_queries.append(_elem5)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.BOOL:
+                    self.recurse = iprot.readBool()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, (self.__class__, self.thrift_spec)))
+            return
+        oprot.writeStructBegin('RPQuery')
+        if self.path_queries is not None:
+            oprot.writeFieldBegin('path_queries', TType.LIST, 1)
+            oprot.writeListBegin(TType.LIST, len(self.path_queries))
+            for iter12 in self.path_queries:
+                oprot.writeListBegin(TType.I64, len(iter12))
+                for iter13 in iter12:
+                    oprot.writeI64(iter13)
+                oprot.writeListEnd()
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        if self.recurse is not None:
+            oprot.writeFieldBegin('recurse', TType.BOOL, 2)
+            oprot.writeBool(self.recurse)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
 class Path(object):
     """
     Attributes:
@@ -363,11 +451,11 @@ class RPQCtx(object):
             if fid == 1:
                 if ftype == TType.SET:
                     self.endpoints = set()
-                    (_etype3, _size0) = iprot.readSetBegin()
-                    for _i4 in range(_size0):
-                        _elem5 = Path()
-                        _elem5.read(iprot)
-                        self.endpoints.add(_elem5)
+                    (_etype17, _size14) = iprot.readSetBegin()
+                    for _i18 in range(_size14):
+                        _elem19 = Path()
+                        _elem19.read(iprot)
+                        self.endpoints.add(_elem19)
                     iprot.readSetEnd()
                 else:
                     iprot.skip(ftype)
@@ -384,97 +472,9 @@ class RPQCtx(object):
         if self.endpoints is not None:
             oprot.writeFieldBegin('endpoints', TType.SET, 1)
             oprot.writeSetBegin(TType.STRUCT, len(self.endpoints))
-            for iter6 in self.endpoints:
-                iter6.write(oprot)
+            for iter20 in self.endpoints:
+                iter20.write(oprot)
             oprot.writeSetEnd()
-            oprot.writeFieldEnd()
-        oprot.writeFieldStop()
-        oprot.writeStructEnd()
-
-    def validate(self):
-        return
-
-    def __repr__(self):
-        L = ['%s=%r' % (key, value)
-             for key, value in self.__dict__.items()]
-        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-    def __eq__(self, other):
-        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-    def __ne__(self, other):
-        return not (self == other)
-
-
-class RPQuery(object):
-    """
-    Attributes:
-     - path_queries
-     - recurse
-    """
-
-    thrift_spec = (
-        None,  # 0
-        (1, TType.LIST, 'path_queries', (TType.LIST, (TType.I64, None, False), False), None, ),  # 1
-        (2, TType.BOOL, 'recurse', None, None, ),  # 2
-    )
-
-    def __init__(self, path_queries=None, recurse=None,):
-        self.path_queries = path_queries
-        self.recurse = recurse
-
-    def read(self, iprot):
-        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
-            iprot._fast_decode(self, iprot, (self.__class__, self.thrift_spec))
-            return
-        iprot.readStructBegin()
-        while True:
-            (fname, ftype, fid) = iprot.readFieldBegin()
-            if ftype == TType.STOP:
-                break
-            if fid == 1:
-                if ftype == TType.LIST:
-                    self.path_queries = []
-                    (_etype10, _size7) = iprot.readListBegin()
-                    for _i11 in range(_size7):
-                        _elem12 = []
-                        (_etype16, _size13) = iprot.readListBegin()
-                        for _i17 in range(_size13):
-                            _elem18 = iprot.readI64()
-                            _elem12.append(_elem18)
-                        iprot.readListEnd()
-                        self.path_queries.append(_elem12)
-                    iprot.readListEnd()
-                else:
-                    iprot.skip(ftype)
-            elif fid == 2:
-                if ftype == TType.BOOL:
-                    self.recurse = iprot.readBool()
-                else:
-                    iprot.skip(ftype)
-            else:
-                iprot.skip(ftype)
-            iprot.readFieldEnd()
-        iprot.readStructEnd()
-
-    def write(self, oprot):
-        if oprot._fast_encode is not None and self.thrift_spec is not None:
-            oprot.trans.write(oprot._fast_encode(self, (self.__class__, self.thrift_spec)))
-            return
-        oprot.writeStructBegin('RPQuery')
-        if self.path_queries is not None:
-            oprot.writeFieldBegin('path_queries', TType.LIST, 1)
-            oprot.writeListBegin(TType.LIST, len(self.path_queries))
-            for iter19 in self.path_queries:
-                oprot.writeListBegin(TType.I64, len(iter19))
-                for iter20 in iter19:
-                    oprot.writeI64(iter20)
-                oprot.writeListEnd()
-            oprot.writeListEnd()
-            oprot.writeFieldEnd()
-        if self.recurse is not None:
-            oprot.writeFieldBegin('recurse', TType.BOOL, 2)
-            oprot.writeBool(self.recurse)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()

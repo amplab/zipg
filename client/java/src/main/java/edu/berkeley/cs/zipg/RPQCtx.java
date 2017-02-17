@@ -322,14 +322,14 @@ public class RPQCtx implements org.apache.thrift.TBase<RPQCtx, RPQCtx._Fields>, 
           case 1: // ENDPOINTS
             if (schemeField.type == org.apache.thrift.protocol.TType.SET) {
               {
-                org.apache.thrift.protocol.TSet _set0 = iprot.readSetBegin();
-                struct.endpoints = new java.util.HashSet<Path>(2*_set0.size);
-                Path _elem1;
-                for (int _i2 = 0; _i2 < _set0.size; ++_i2)
+                org.apache.thrift.protocol.TSet _set16 = iprot.readSetBegin();
+                struct.endpoints = new java.util.HashSet<Path>(2*_set16.size);
+                Path _elem17;
+                for (int _i18 = 0; _i18 < _set16.size; ++_i18)
                 {
-                  _elem1 = new Path();
-                  _elem1.read(iprot);
-                  struct.endpoints.add(_elem1);
+                  _elem17 = new Path();
+                  _elem17.read(iprot);
+                  struct.endpoints.add(_elem17);
                 }
                 iprot.readSetEnd();
               }
@@ -357,9 +357,9 @@ public class RPQCtx implements org.apache.thrift.TBase<RPQCtx, RPQCtx._Fields>, 
         oprot.writeFieldBegin(ENDPOINTS_FIELD_DESC);
         {
           oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRUCT, struct.endpoints.size()));
-          for (Path _iter3 : struct.endpoints)
+          for (Path _iter19 : struct.endpoints)
           {
-            _iter3.write(oprot);
+            _iter19.write(oprot);
           }
           oprot.writeSetEnd();
         }
@@ -390,9 +390,9 @@ public class RPQCtx implements org.apache.thrift.TBase<RPQCtx, RPQCtx._Fields>, 
       if (struct.isSetEndpoints()) {
         {
           oprot.writeI32(struct.endpoints.size());
-          for (Path _iter4 : struct.endpoints)
+          for (Path _iter20 : struct.endpoints)
           {
-            _iter4.write(oprot);
+            _iter20.write(oprot);
           }
         }
       }
@@ -404,14 +404,14 @@ public class RPQCtx implements org.apache.thrift.TBase<RPQCtx, RPQCtx._Fields>, 
       java.util.BitSet incoming = iprot.readBitSet(1);
       if (incoming.get(0)) {
         {
-          org.apache.thrift.protocol.TSet _set5 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.endpoints = new java.util.HashSet<Path>(2*_set5.size);
-          Path _elem6;
-          for (int _i7 = 0; _i7 < _set5.size; ++_i7)
+          org.apache.thrift.protocol.TSet _set21 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.endpoints = new java.util.HashSet<Path>(2*_set21.size);
+          Path _elem22;
+          for (int _i23 = 0; _i23 < _set21.size; ++_i23)
           {
-            _elem6 = new Path();
-            _elem6.read(iprot);
-            struct.endpoints.add(_elem6);
+            _elem22 = new Path();
+            _elem22.read(iprot);
+            struct.endpoints.add(_elem22);
           }
         }
         struct.setEndpointsIsSet(true);

@@ -392,6 +392,152 @@ void ThriftSrcAtype::printTo(std::ostream& out) const {
 }
 
 
+RPQuery::~RPQuery() throw() {
+}
+
+
+void RPQuery::__set_path_queries(const std::vector<std::vector<int64_t> > & val) {
+  this->path_queries = val;
+}
+
+void RPQuery::__set_recurse(const bool val) {
+  this->recurse = val;
+}
+
+uint32_t RPQuery::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->path_queries.clear();
+            uint32_t _size6;
+            ::apache::thrift::protocol::TType _etype9;
+            xfer += iprot->readListBegin(_etype9, _size6);
+            this->path_queries.resize(_size6);
+            uint32_t _i10;
+            for (_i10 = 0; _i10 < _size6; ++_i10)
+            {
+              {
+                this->path_queries[_i10].clear();
+                uint32_t _size11;
+                ::apache::thrift::protocol::TType _etype14;
+                xfer += iprot->readListBegin(_etype14, _size11);
+                this->path_queries[_i10].resize(_size11);
+                uint32_t _i15;
+                for (_i15 = 0; _i15 < _size11; ++_i15)
+                {
+                  xfer += iprot->readI64(this->path_queries[_i10][_i15]);
+                }
+                xfer += iprot->readListEnd();
+              }
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.path_queries = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool(this->recurse);
+          this->__isset.recurse = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t RPQuery::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("RPQuery");
+
+  xfer += oprot->writeFieldBegin("path_queries", ::apache::thrift::protocol::T_LIST, 1);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_LIST, static_cast<uint32_t>(this->path_queries.size()));
+    std::vector<std::vector<int64_t> > ::const_iterator _iter16;
+    for (_iter16 = this->path_queries.begin(); _iter16 != this->path_queries.end(); ++_iter16)
+    {
+      {
+        xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>((*_iter16).size()));
+        std::vector<int64_t> ::const_iterator _iter17;
+        for (_iter17 = (*_iter16).begin(); _iter17 != (*_iter16).end(); ++_iter17)
+        {
+          xfer += oprot->writeI64((*_iter17));
+        }
+        xfer += oprot->writeListEnd();
+      }
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("recurse", ::apache::thrift::protocol::T_BOOL, 2);
+  xfer += oprot->writeBool(this->recurse);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(RPQuery &a, RPQuery &b) {
+  using ::std::swap;
+  swap(a.path_queries, b.path_queries);
+  swap(a.recurse, b.recurse);
+  swap(a.__isset, b.__isset);
+}
+
+RPQuery::RPQuery(const RPQuery& other18) {
+  path_queries = other18.path_queries;
+  recurse = other18.recurse;
+  __isset = other18.__isset;
+}
+RPQuery& RPQuery::operator=(const RPQuery& other19) {
+  path_queries = other19.path_queries;
+  recurse = other19.recurse;
+  __isset = other19.__isset;
+  return *this;
+}
+void RPQuery::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "RPQuery(";
+  out << "path_queries=" << to_string(path_queries);
+  out << ", " << "recurse=" << to_string(recurse);
+  out << ")";
+}
+
+
 Path::~Path() throw() {
 }
 
@@ -478,15 +624,15 @@ void swap(Path &a, Path &b) {
   swap(a.__isset, b.__isset);
 }
 
-Path::Path(const Path& other6) {
-  src = other6.src;
-  dst = other6.dst;
-  __isset = other6.__isset;
+Path::Path(const Path& other20) {
+  src = other20.src;
+  dst = other20.dst;
+  __isset = other20.__isset;
 }
-Path& Path::operator=(const Path& other7) {
-  src = other7.src;
-  dst = other7.dst;
-  __isset = other7.__isset;
+Path& Path::operator=(const Path& other21) {
+  src = other21.src;
+  dst = other21.dst;
+  __isset = other21.__isset;
   return *this;
 }
 void Path::printTo(std::ostream& out) const {
@@ -531,15 +677,15 @@ uint32_t RPQCtx::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_SET) {
           {
             this->endpoints.clear();
-            uint32_t _size8;
-            ::apache::thrift::protocol::TType _etype11;
-            xfer += iprot->readSetBegin(_etype11, _size8);
-            uint32_t _i12;
-            for (_i12 = 0; _i12 < _size8; ++_i12)
+            uint32_t _size22;
+            ::apache::thrift::protocol::TType _etype25;
+            xfer += iprot->readSetBegin(_etype25, _size22);
+            uint32_t _i26;
+            for (_i26 = 0; _i26 < _size22; ++_i26)
             {
-              Path _elem13;
-              xfer += _elem13.read(iprot);
-              this->endpoints.insert(_elem13);
+              Path _elem27;
+              xfer += _elem27.read(iprot);
+              this->endpoints.insert(_elem27);
             }
             xfer += iprot->readSetEnd();
           }
@@ -568,10 +714,10 @@ uint32_t RPQCtx::write(::apache::thrift::protocol::TProtocol* oprot) const {
   xfer += oprot->writeFieldBegin("endpoints", ::apache::thrift::protocol::T_SET, 1);
   {
     xfer += oprot->writeSetBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->endpoints.size()));
-    std::set<Path> ::const_iterator _iter14;
-    for (_iter14 = this->endpoints.begin(); _iter14 != this->endpoints.end(); ++_iter14)
+    std::set<Path> ::const_iterator _iter28;
+    for (_iter28 = this->endpoints.begin(); _iter28 != this->endpoints.end(); ++_iter28)
     {
-      xfer += (*_iter14).write(oprot);
+      xfer += (*_iter28).write(oprot);
     }
     xfer += oprot->writeSetEnd();
   }
@@ -588,165 +734,19 @@ void swap(RPQCtx &a, RPQCtx &b) {
   swap(a.__isset, b.__isset);
 }
 
-RPQCtx::RPQCtx(const RPQCtx& other15) {
-  endpoints = other15.endpoints;
-  __isset = other15.__isset;
+RPQCtx::RPQCtx(const RPQCtx& other29) {
+  endpoints = other29.endpoints;
+  __isset = other29.__isset;
 }
-RPQCtx& RPQCtx::operator=(const RPQCtx& other16) {
-  endpoints = other16.endpoints;
-  __isset = other16.__isset;
+RPQCtx& RPQCtx::operator=(const RPQCtx& other30) {
+  endpoints = other30.endpoints;
+  __isset = other30.__isset;
   return *this;
 }
 void RPQCtx::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
   out << "RPQCtx(";
   out << "endpoints=" << to_string(endpoints);
-  out << ")";
-}
-
-
-RPQuery::~RPQuery() throw() {
-}
-
-
-void RPQuery::__set_path_queries(const std::vector<std::vector<int64_t> > & val) {
-  this->path_queries = val;
-}
-
-void RPQuery::__set_recurse(const bool val) {
-  this->recurse = val;
-}
-
-uint32_t RPQuery::read(::apache::thrift::protocol::TProtocol* iprot) {
-
-  apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
-  uint32_t xfer = 0;
-  std::string fname;
-  ::apache::thrift::protocol::TType ftype;
-  int16_t fid;
-
-  xfer += iprot->readStructBegin(fname);
-
-  using ::apache::thrift::protocol::TProtocolException;
-
-
-  while (true)
-  {
-    xfer += iprot->readFieldBegin(fname, ftype, fid);
-    if (ftype == ::apache::thrift::protocol::T_STOP) {
-      break;
-    }
-    switch (fid)
-    {
-      case 1:
-        if (ftype == ::apache::thrift::protocol::T_LIST) {
-          {
-            this->path_queries.clear();
-            uint32_t _size17;
-            ::apache::thrift::protocol::TType _etype20;
-            xfer += iprot->readListBegin(_etype20, _size17);
-            this->path_queries.resize(_size17);
-            uint32_t _i21;
-            for (_i21 = 0; _i21 < _size17; ++_i21)
-            {
-              {
-                this->path_queries[_i21].clear();
-                uint32_t _size22;
-                ::apache::thrift::protocol::TType _etype25;
-                xfer += iprot->readListBegin(_etype25, _size22);
-                this->path_queries[_i21].resize(_size22);
-                uint32_t _i26;
-                for (_i26 = 0; _i26 < _size22; ++_i26)
-                {
-                  xfer += iprot->readI64(this->path_queries[_i21][_i26]);
-                }
-                xfer += iprot->readListEnd();
-              }
-            }
-            xfer += iprot->readListEnd();
-          }
-          this->__isset.path_queries = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      case 2:
-        if (ftype == ::apache::thrift::protocol::T_BOOL) {
-          xfer += iprot->readBool(this->recurse);
-          this->__isset.recurse = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      default:
-        xfer += iprot->skip(ftype);
-        break;
-    }
-    xfer += iprot->readFieldEnd();
-  }
-
-  xfer += iprot->readStructEnd();
-
-  return xfer;
-}
-
-uint32_t RPQuery::write(::apache::thrift::protocol::TProtocol* oprot) const {
-  uint32_t xfer = 0;
-  apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
-  xfer += oprot->writeStructBegin("RPQuery");
-
-  xfer += oprot->writeFieldBegin("path_queries", ::apache::thrift::protocol::T_LIST, 1);
-  {
-    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_LIST, static_cast<uint32_t>(this->path_queries.size()));
-    std::vector<std::vector<int64_t> > ::const_iterator _iter27;
-    for (_iter27 = this->path_queries.begin(); _iter27 != this->path_queries.end(); ++_iter27)
-    {
-      {
-        xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>((*_iter27).size()));
-        std::vector<int64_t> ::const_iterator _iter28;
-        for (_iter28 = (*_iter27).begin(); _iter28 != (*_iter27).end(); ++_iter28)
-        {
-          xfer += oprot->writeI64((*_iter28));
-        }
-        xfer += oprot->writeListEnd();
-      }
-    }
-    xfer += oprot->writeListEnd();
-  }
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("recurse", ::apache::thrift::protocol::T_BOOL, 2);
-  xfer += oprot->writeBool(this->recurse);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldStop();
-  xfer += oprot->writeStructEnd();
-  return xfer;
-}
-
-void swap(RPQuery &a, RPQuery &b) {
-  using ::std::swap;
-  swap(a.path_queries, b.path_queries);
-  swap(a.recurse, b.recurse);
-  swap(a.__isset, b.__isset);
-}
-
-RPQuery::RPQuery(const RPQuery& other29) {
-  path_queries = other29.path_queries;
-  recurse = other29.recurse;
-  __isset = other29.__isset;
-}
-RPQuery& RPQuery::operator=(const RPQuery& other30) {
-  path_queries = other30.path_queries;
-  recurse = other30.recurse;
-  __isset = other30.__isset;
-  return *this;
-}
-void RPQuery::printTo(std::ostream& out) const {
-  using ::apache::thrift::to_string;
-  out << "RPQuery(";
-  out << "path_queries=" << to_string(path_queries);
-  out << ", " << "recurse=" << to_string(recurse);
   out << ")";
 }
 
