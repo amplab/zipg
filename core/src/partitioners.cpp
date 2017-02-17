@@ -78,7 +78,7 @@ void HashPartitioner::partition(const std::string& node_file_in,
                                 const std::string& edge_file_in) {
   int32_t N = this->num_shards_;
   auto id_to_shard = [N](int64_t node_id) {return node_id % N;};
-  std::string line;
+  std::string fwd;
 
   int num_shards_digits = num_digits(this->num_shards_);
   int num = this->num_shards_;
@@ -95,16 +95,16 @@ void HashPartitioner::partition(const std::string& node_file_in,
   std::string dst_id_str;
   std::string label_str;
   std::string time_str;
-  while (std::getline(edgefile_ifstream, line)) {
-    std::stringstream ss(line);
+  while (std::getline(edgefile_ifstream, fwd)) {
+    std::stringstream ss(fwd);
     std::getline(ss, src_id_str, ' ');
     std::getline(ss, dst_id_str, ' ');
     std::getline(ss, label_str, ' ');
     std::getline(ss, time_str, ' ');
-    fprintf(stderr, "%s : (%s, %s, %s, %s)\n", line.c_str(), src_id_str.c_str(),
-            dst_id_str.c_str(), label_str.c_str(), time_str.c_str());
-    *(shard_edge_outs[id_to_shard(std::stoll(src_id_str))]) << line
-                                                            << std::endl;
+    std::string bwd = dst_id_str + " " + src_id_str + " -" + label_str + " "
+        + time_str + " ";
+    fprintf(stderr, "%s : %s\n", fwd.c_str(), bwd.c_str());
+    *(shard_edge_outs[id_to_shard(std::stoll(src_id_str))]) << fwd << std::endl;
   }
 }
 
@@ -133,8 +133,8 @@ void HashPartitioner::partition_node_table(const std::string& node_file_in) {
 
 int main(int argc, char **argv) {
   if (argc < 3) {
-    LOG_E("partitioners: [-n total_num_shards=1] [-t type] "
-          "node_file edge_file\n");
+    fprintf(stderr, "partitioners: [-n total_num_shards=1] [-t type] "
+            "node_file edge_file\n");
     return -1;
   }
 
