@@ -1523,6 +1523,7 @@ class GraphQueryAggregatorServiceHandler :
     std::string exp = query;
     try {
       RPQuery q = RPQParser(exp).parse();
+      print_query(q);
       rpq(_return, q);
     } catch (RPQParseException& e) {
       LOG_E("Could not parse query.\n");
@@ -1716,6 +1717,15 @@ class GraphQueryAggregatorServiceHandler :
  private:
 
   // RPQ Helpers
+  void print_query(const RPQuery& query) {
+    for (auto pq : query.path_queries) {
+      fprintf(stderr, "[");
+      for (auto i : pq)
+        fprintf(stderr, "%lld ", i);
+      fprintf(stderr, "],");
+    }
+    fprintf(stderr, "Recurse = %d\n", query.recurse);
+  }
   void transitive_closure(std::set<Path>& s) {
     std::set<Path> a;   // missing nodes to add
     for (auto i = s.cbegin(); i != s.cend(); i++) {
