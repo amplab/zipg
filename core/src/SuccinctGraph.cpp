@@ -1622,13 +1622,13 @@ void SuccinctGraph::init_rpq_ctx(SuccinctGraph::edge_label label,
 
     edge_table->Extract(str, off,
                         SuccinctGraphSerde::WIDTH_TIMESTAMP_WIDTH_PADDED);
-    COND_LOG_E("extracted timestamp width = '%s'\n", str.c_str());
+    // COND_LOG_E("extracted timestamp width = '%s'\n", str.c_str());
     timestamp_width = std::stoi(str);
 
     edge_table->Extract(str,
                         off + SuccinctGraphSerde::WIDTH_TIMESTAMP_WIDTH_PADDED,
                         SuccinctGraphSerde::WIDTH_DST_ID_WIDTH_PADDED);
-    COND_LOG_E("extracted dst id width = '%s'\n", str.c_str());
+    // COND_LOG_E("extracted dst id width = '%s'\n", str.c_str());
     dst_id_width = std::stoi(str);
 
     off = edge_table->ExtractUntil(
@@ -1637,24 +1637,14 @@ void SuccinctGraph::init_rpq_ctx(SuccinctGraph::edge_label label,
         off + SuccinctGraphSerde::WIDTH_TIMESTAMP_WIDTH_PADDED
             + SuccinctGraphSerde::WIDTH_DST_ID_WIDTH_PADDED,
         EDGE_WIDTH_DELIM);
-    COND_LOG_E("extracted cnt = '%s'\n", str.c_str());
+    // COND_LOG_E("extracted cnt = '%s'\n", str.c_str());
     cnt = std::stoll(str);
 
     off = edge_table->ExtractUntil(str, idx_hint, off, METADATA_DELIM);
     edge_data_len_width = std::stoi(str);
-    COND_LOG_E("extracted edge data length width = '%s'\n", str.c_str());
+    // COND_LOG_E("extracted edge data length width = '%s'\n", str.c_str());
 
     // Skip timestamps
-    EDGE_TABLE->Extract(str, off, cnt * timestamp_width);
-    std::vector<int64_t> decoded_timestamps =
-        SuccinctGraphSerde::decode_multi_node_ids(str, timestamp_width);
-
-    COND_LOG_E("Timestamps: ");
-    for (auto ts : decoded_timestamps) {
-      COND_LOG_E("%lld, ", ts);
-    }
-    COND_LOG_E("\n");
-
     off += cnt * timestamp_width;
 
     // Get dst node ids
@@ -1662,13 +1652,8 @@ void SuccinctGraph::init_rpq_ctx(SuccinctGraph::edge_label label,
     std::vector<int64_t> decoded_dst_ids =
         SuccinctGraphSerde::decode_multi_node_ids(str, dst_id_width);
 
-    COND_LOG_E("DstIds: ");
-    for (auto d : decoded_dst_ids) {
-      COND_LOG_E("%lld, ", d);
-    }
-    COND_LOG_E("\n");
-
     for (int64_t dst : decoded_dst_ids) {
+      COND_LOG_E("DSTID: %lld", dst);
       ctx.end_points.insert(SuccinctGraph::path_endpoints(off, dst));
     }
   }
