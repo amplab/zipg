@@ -1649,6 +1649,10 @@ void SuccinctGraph::init_rpq_ctx(SuccinctGraph::edge_label label,
 void SuccinctGraph::advance_rpq_ctx(SuccinctGraph::RPQContext& ret,
                                     SuccinctGraph::edge_label label,
                                     const SuccinctGraph::RPQContext& ctx) {
+  if (ctx.end_points.empty()) {
+    COND_LOG_E("!!!Context is empty!!!\n");
+    return;
+  }
   for (SuccinctGraph::path_endpoints ep : ctx.end_points) {
     int64_t id = ep.second;
     std::string search_key = mk_edge_table_search_key(id, label);
