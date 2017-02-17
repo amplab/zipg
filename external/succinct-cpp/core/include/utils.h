@@ -10,8 +10,6 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define LOG_DEBUG
-
 #ifndef LOG_E
 #define LOG_E(fmt, ...) fprintf(stderr, fmt, ##__VA_ARGS__); fflush(stderr)
 #endif
