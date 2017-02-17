@@ -39,8 +39,7 @@ class PathBench {
     // Warmup
     for (size_t i = 0; i < queries_.size(); i++) {
       // Run query
-      RPQCtx ctx;
-      aggregator_->regular_path_query(ctx, queries_.at(i));
+      int64_t cnt = aggregator_->count_regular_path_query(queries_.at(i));
     }
 
     // Measure
@@ -49,10 +48,9 @@ class PathBench {
       time_t start, tot;
       start = get_timestamp();
       // Run query
-      RPQCtx ctx;
-      aggregator_->regular_path_query(ctx, queries_.at(i));
+      int64_t cnt = aggregator_->count_regular_path_query(queries_.at(i));
       tot = get_timestamp() - start;
-      out << i << "\t" << ctx.endpoints.size() << "\t" << tot << "\n";
+      out << i << "\t" << cnt << "\t" << tot << "\n";
     }
   }
 

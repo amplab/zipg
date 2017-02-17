@@ -1558,6 +1558,8 @@ class GraphQueryAggregatorServiceHandler :
 
     if (recurse)
       transitive_closure(_return.endpoints);
+
+    COND_LOG_E("rpq(...) complete\n");
   }
 
   void path_query(RPQCtx& _return, const std::vector<int64_t> & query) {
