@@ -97,7 +97,7 @@ class RPQLexer {
         if (!isdigit(c))
           throw new RPQParseException("Invalid token");
 
-        std::string label = "";
+        std::string label = "" + c;
         while (isdigit(stream_.peek()))
           label += (char) stream_.get();
 
