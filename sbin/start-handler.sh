@@ -77,9 +77,6 @@ if [[ "$ENABLE_MULTI_STORE" == T ]]; then
   num_succinctstore_hosts=$(( num_hosts ))
 fi
 
-# Hacky fix
-edge_file_raw=$(echo -n "${edge_file_raw}" | sed 's/\(.*\)assoc\(.*\)/\1edge_table\2/')
-
 mkdir -p $SUCCINCT_LOG_PATH
 
 nohup "${bin}/../rpc/bin/graph_query_aggregator" \
