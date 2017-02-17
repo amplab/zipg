@@ -71,6 +71,7 @@ class GraphQueryAggregatorServiceIf {
   virtual void getFilteredLinkList(std::vector<ThriftAssoc> & _return, const int64_t id1, const int64_t link_type, const int64_t min_timestamp, const int64_t max_timestamp, const int64_t offset, const int64_t limit) = 0;
   virtual void getFilteredLinkListLocal(std::vector<ThriftAssoc> & _return, const int64_t shard_id, const int64_t id1, const int64_t link_type, const int64_t min_timestamp, const int64_t max_timestamp, const int64_t offset, const int64_t limit) = 0;
   virtual int64_t countLinks(const int64_t id1, const int64_t link_type) = 0;
+  virtual int64_t count_regular_path_query(const std::string& query) = 0;
   virtual void regular_path_query(RPQCtx& _return, const std::string& query) = 0;
   virtual void rpq(RPQCtx& _return, const RPQuery& query) = 0;
   virtual void path_query(RPQCtx& _return, const std::vector<int64_t> & query) = 0;
@@ -267,6 +268,10 @@ class GraphQueryAggregatorServiceNull : virtual public GraphQueryAggregatorServi
     return;
   }
   int64_t countLinks(const int64_t /* id1 */, const int64_t /* link_type */) {
+    int64_t _return = 0;
+    return _return;
+  }
+  int64_t count_regular_path_query(const std::string& /* query */) {
     int64_t _return = 0;
     return _return;
   }
@@ -6004,6 +6009,110 @@ class GraphQueryAggregatorService_countLinks_presult {
 
 };
 
+typedef struct _GraphQueryAggregatorService_count_regular_path_query_args__isset {
+  _GraphQueryAggregatorService_count_regular_path_query_args__isset() : query(false) {}
+  bool query :1;
+} _GraphQueryAggregatorService_count_regular_path_query_args__isset;
+
+class GraphQueryAggregatorService_count_regular_path_query_args {
+ public:
+
+  GraphQueryAggregatorService_count_regular_path_query_args(const GraphQueryAggregatorService_count_regular_path_query_args&);
+  GraphQueryAggregatorService_count_regular_path_query_args& operator=(const GraphQueryAggregatorService_count_regular_path_query_args&);
+  GraphQueryAggregatorService_count_regular_path_query_args() : query() {
+  }
+
+  virtual ~GraphQueryAggregatorService_count_regular_path_query_args() throw();
+  std::string query;
+
+  _GraphQueryAggregatorService_count_regular_path_query_args__isset __isset;
+
+  void __set_query(const std::string& val);
+
+  bool operator == (const GraphQueryAggregatorService_count_regular_path_query_args & rhs) const
+  {
+    if (!(query == rhs.query))
+      return false;
+    return true;
+  }
+  bool operator != (const GraphQueryAggregatorService_count_regular_path_query_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GraphQueryAggregatorService_count_regular_path_query_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class GraphQueryAggregatorService_count_regular_path_query_pargs {
+ public:
+
+
+  virtual ~GraphQueryAggregatorService_count_regular_path_query_pargs() throw();
+  const std::string* query;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _GraphQueryAggregatorService_count_regular_path_query_result__isset {
+  _GraphQueryAggregatorService_count_regular_path_query_result__isset() : success(false) {}
+  bool success :1;
+} _GraphQueryAggregatorService_count_regular_path_query_result__isset;
+
+class GraphQueryAggregatorService_count_regular_path_query_result {
+ public:
+
+  GraphQueryAggregatorService_count_regular_path_query_result(const GraphQueryAggregatorService_count_regular_path_query_result&);
+  GraphQueryAggregatorService_count_regular_path_query_result& operator=(const GraphQueryAggregatorService_count_regular_path_query_result&);
+  GraphQueryAggregatorService_count_regular_path_query_result() : success(0) {
+  }
+
+  virtual ~GraphQueryAggregatorService_count_regular_path_query_result() throw();
+  int64_t success;
+
+  _GraphQueryAggregatorService_count_regular_path_query_result__isset __isset;
+
+  void __set_success(const int64_t val);
+
+  bool operator == (const GraphQueryAggregatorService_count_regular_path_query_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    return true;
+  }
+  bool operator != (const GraphQueryAggregatorService_count_regular_path_query_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GraphQueryAggregatorService_count_regular_path_query_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _GraphQueryAggregatorService_count_regular_path_query_presult__isset {
+  _GraphQueryAggregatorService_count_regular_path_query_presult__isset() : success(false) {}
+  bool success :1;
+} _GraphQueryAggregatorService_count_regular_path_query_presult__isset;
+
+class GraphQueryAggregatorService_count_regular_path_query_presult {
+ public:
+
+
+  virtual ~GraphQueryAggregatorService_count_regular_path_query_presult() throw();
+  int64_t* success;
+
+  _GraphQueryAggregatorService_count_regular_path_query_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 typedef struct _GraphQueryAggregatorService_regular_path_query_args__isset {
   _GraphQueryAggregatorService_regular_path_query_args__isset() : query(false) {}
   bool query :1;
@@ -6706,6 +6815,9 @@ class GraphQueryAggregatorServiceClient : virtual public GraphQueryAggregatorSer
   int64_t countLinks(const int64_t id1, const int64_t link_type);
   void send_countLinks(const int64_t id1, const int64_t link_type);
   int64_t recv_countLinks();
+  int64_t count_regular_path_query(const std::string& query);
+  void send_count_regular_path_query(const std::string& query);
+  int64_t recv_count_regular_path_query();
   void regular_path_query(RPQCtx& _return, const std::string& query);
   void send_regular_path_query(const std::string& query);
   void recv_regular_path_query(RPQCtx& _return);
@@ -6786,6 +6898,7 @@ class GraphQueryAggregatorServiceProcessor : public ::apache::thrift::TDispatchP
   void process_getFilteredLinkList(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_getFilteredLinkListLocal(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_countLinks(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_count_regular_path_query(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_regular_path_query(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_rpq(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_path_query(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -6844,6 +6957,7 @@ class GraphQueryAggregatorServiceProcessor : public ::apache::thrift::TDispatchP
     processMap_["getFilteredLinkList"] = &GraphQueryAggregatorServiceProcessor::process_getFilteredLinkList;
     processMap_["getFilteredLinkListLocal"] = &GraphQueryAggregatorServiceProcessor::process_getFilteredLinkListLocal;
     processMap_["countLinks"] = &GraphQueryAggregatorServiceProcessor::process_countLinks;
+    processMap_["count_regular_path_query"] = &GraphQueryAggregatorServiceProcessor::process_count_regular_path_query;
     processMap_["regular_path_query"] = &GraphQueryAggregatorServiceProcessor::process_regular_path_query;
     processMap_["rpq"] = &GraphQueryAggregatorServiceProcessor::process_rpq;
     processMap_["path_query"] = &GraphQueryAggregatorServiceProcessor::process_path_query;
@@ -7358,6 +7472,15 @@ class GraphQueryAggregatorServiceMultiface : virtual public GraphQueryAggregator
     return ifaces_[i]->countLinks(id1, link_type);
   }
 
+  int64_t count_regular_path_query(const std::string& query) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->count_regular_path_query(query);
+    }
+    return ifaces_[i]->count_regular_path_query(query);
+  }
+
   void regular_path_query(RPQCtx& _return, const std::string& query) {
     size_t sz = ifaces_.size();
     size_t i = 0;
@@ -7588,6 +7711,9 @@ class GraphQueryAggregatorServiceConcurrentClient : virtual public GraphQueryAgg
   int64_t countLinks(const int64_t id1, const int64_t link_type);
   int32_t send_countLinks(const int64_t id1, const int64_t link_type);
   int64_t recv_countLinks(const int32_t seqid);
+  int64_t count_regular_path_query(const std::string& query);
+  int32_t send_count_regular_path_query(const std::string& query);
+  int64_t recv_count_regular_path_query(const int32_t seqid);
   void regular_path_query(RPQCtx& _return, const std::string& query);
   int32_t send_regular_path_query(const std::string& query);
   void recv_regular_path_query(RPQCtx& _return, const int32_t seqid);
