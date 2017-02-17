@@ -1,46 +1,29 @@
 #!/bin/bash
 set -e
-make -j partitioned-graph-formatter
 
-dataset=orkut-40attr16each
-dataset="uk-2007-05"
+num_shards=${1:-"30"}
 genFromEdgeList=true # if false, coalesce from assocs
+attr_file=$HOME/rpq/empty
+edge_attr_size=0
+inner_delim='	' # tab
+end_delim='^M'
 
-if [[ "$dataset" == "uk-2007-05" ]]; then
-  genFromEdgeList=false
-  output_file_prefix="/vol0/uk-2007-05-40attr16each-npa128sa32isa64.assoc"
-  num_shards=16
-  attr_file=/vol0/data_0
-  edge_attr_size=128
-  inner_delim='	' # tab
-  end_delim='^M'
-  input_edgelists=(/vol1/uk*assoc*of40)
-elif [[ "$dataset" == "orkut-40attr16each" ]]; then
-  output_file_prefix=/vol0/orkut-40attr16each-npa128sa32isa64.assoc
-  num_shards=8
-  attr_file=/vol0/data_0
-  edge_attr_size=128
-  inner_delim='	' # tab
-  end_delim='^M'
-  input_edgelists=(/vol0/com-orkut.ungraph.txt)
-elif [[ "$dataset" == "twitter2010-40attr16each" ]]; then
-  output_file_prefix=/mnt2T/twitter2010-npa128sa32isa64.assoc
-  num_shards=16
-  attr_file=/mnt/succinct-graph/data/data_0
-  edge_attr_size=128
-  inner_delim='	' # tab
-  end_delim='^M'
-  input_edgelists=(/mnt2/twitter/part-*)
-else
-  exit 1
-fi
+currDir=$(cd $(dirname $0); pwd)
+export LD_LIBRARY_PATH="${currDir}/../external/succinct-cpp/lib:/usr/local/lib:${LD_LIBRARY_PATH}"
 
-./core/bin/partitioned-graph-formatter \
-  ${genFromEdgeList} \
-  ${output_file_prefix} \
-  ${num_shards} \
-  ${attr_file} \
-  ${edge_attr_size} \
-  "${inner_delim}" \
-  "${end_delim}" \
-  ${input_edgelists[*]}
+echo $LD_LIBRARY_PATH
+
+for dataset in "500000" "1000000" "2000000" "4000000" "8000000"; do
+  mkdir -p "$HOME/rpq/succinct/$dataset"
+  input_edgelists=($HOME/rpq/succinct/raw/$dataset/$dataset.assoc)
+  output_file_prefix="$HOME/rpq/succinct/$dataset/$dataset.assoc"
+  ../core/bin/partitioned-graph-formatter \
+    ${genFromEdgeList} \
+    ${output_file_prefix} \
+    ${num_shards} \
+    ${attr_file} \
+    ${edge_attr_size} \
+    "${inner_delim}" \
+    "${end_delim}" \
+    ${input_edgelists[*]}
+done
