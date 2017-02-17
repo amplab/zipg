@@ -1522,7 +1522,8 @@ class GraphQueryAggregatorServiceHandler :
     bool recurse = query.recurse;
     for (const auto& path_query : query.path_queries) {
       RPQCtx ctx;
-      path_query(ctx, query);
+      path_query(ctx, path_query);
+
       // Union
       _return.endpoints.insert(ctx.endpoints.begin(), ctx.endpoints.end());
     }
