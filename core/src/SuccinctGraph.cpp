@@ -1600,7 +1600,10 @@ int64_t SuccinctGraph::countLinks(int64_t id1, int64_t link_type) {
 
 void SuccinctGraph::init_rpq_ctx(SuccinctGraph::edge_label label,
                                  SuccinctGraph::RPQContext& ctx) {
+
+  COND_LOG_E("[SuccinctGraph] init_rpq_request()\n");
   std::vector<int64_t> *ids = node_table->GetKeys();
+  COND_LOG_E("[SuccinctGraph] ids->size() = %zu\n", ids->size());
   for (size_t i = 0; i < ids->size(); i++) {
     int64_t id = ids->at(i);
     std::string search_key = mk_edge_table_search_key(id, label);
