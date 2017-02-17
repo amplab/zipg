@@ -1590,10 +1590,10 @@ class GraphQueryAggregatorServiceHandler :
           continue;
         }
         COND_LOG_E("Sending advance ctx request to aggregator %d\n", i);
-        aggregators_.at(i).send_advance_rpq_ctx(rem_query, host_ctx[i]);
+        aggregators_.at(i).send_advance_path_query_ctx(rem_query, host_ctx[i]);
       }
 
-      advance_rpq_ctx(_return, rem_query, host_ctx[local_host_id_]);
+      advance_path_query_ctx(_return, rem_query, host_ctx[local_host_id_]);
 
       for (int i = 0; i < total_num_hosts_; ++i) {
         if (i == local_host_id_) {
@@ -1602,7 +1602,7 @@ class GraphQueryAggregatorServiceHandler :
         COND_LOG_E("Receiving advance_ctx response from aggregator %d\n", i);
 
         RPQCtx ret;
-        aggregators_.at(i).recv_advance_rpq_ctx(ret);
+        aggregators_.at(i).recv_advance_path_query_ctx(ret);
 
         COND_LOG_E("Aggregating advance_ctx response from aggregator %d\n", i);
         _return.endpoints.insert(_return.endpoints.end(), ret.endpoints.begin(),
@@ -1618,7 +1618,7 @@ class GraphQueryAggregatorServiceHandler :
     }
   }
 
-  void advance_rpq_ctx(RPQCtx& _return, const std::vector<int64_t> & query,
+  void advance_path_query_ctx(RPQCtx& _return, const std::vector<int64_t> & query,
                        const RPQCtx& ctx) {
 
     COND_LOG_E("Received advance_rpq_ctx(...) request\n");
@@ -1672,10 +1672,10 @@ class GraphQueryAggregatorServiceHandler :
           continue;
         }
         COND_LOG_E("Sending advance ctx request to aggregator %d\n", i);
-        aggregators_.at(i).send_advance_rpq_ctx(rem_query, host_ctx[i]);
+        aggregators_.at(i).send_advance_path_query_ctx(rem_query, host_ctx[i]);
       }
 
-      advance_rpq_ctx(_return, rem_query, host_ctx[local_host_id_]);
+      advance_path_query_ctx(_return, rem_query, host_ctx[local_host_id_]);
 
       for (int i = 0; i < total_num_hosts_; ++i) {
         if (i == local_host_id_) {
@@ -1683,7 +1683,7 @@ class GraphQueryAggregatorServiceHandler :
         }
         RPQCtx ret;
         COND_LOG_E("Receiving advance_ctx response from aggregator %d\n", i);
-        aggregators_.at(i).recv_advance_rpq_ctx(ret);
+        aggregators_.at(i).recv_advance_path_query_ctx(ret);
 
         COND_LOG_E("Aggregating advance_ctx response from aggregator %d\n", i);
         _return.endpoints.insert(_return.endpoints.end(), ret.endpoints.begin(),
