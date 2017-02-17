@@ -159,7 +159,7 @@ class RPQParser {
       path_union_b(uq);
       tok = lex_.next();
       if (tok.id != RPQLexer::RIGHT)
-        throw new RPQParseException(std::string("Missing ): ") + lex_.str());
+        throw new RPQParseException(std::string("Missing ): ") + tok.value);
     } else {
       fprintf(stderr, "Removed all brackets...\n");
       lex_.put_back(tok);
@@ -190,7 +190,7 @@ class RPQParser {
       path_query_b(pq);
       tok = lex_.next();
       if (tok.id != RPQLexer::RIGHT)
-        throw new RPQParseException(std::string("Missing ): ") + lex_.str());
+        throw new RPQParseException(std::string("Missing ): ") + tok.value);
     } else {
       lex_.put_back(tok);
       path_query(pq);
@@ -201,7 +201,7 @@ class RPQParser {
     RPQToken tok = lex_.next();
     if (tok.id != RPQLexer::LABEL)
       throw new RPQParseException(
-          std::string("Expected beginning label: ") + lex_.str());
+          std::string("Expected beginning label: ") + tok.value);
 
     pq.push_back(std::stoll(tok.value));
     while (true) {
@@ -213,7 +213,7 @@ class RPQParser {
       tok = lex_.next();
       if (tok.id != RPQLexer::LABEL)
         throw new RPQParseException(
-            std::string("Expected label after dot: ") + lex_.str());
+            std::string("Expected label after dot: ") + tok.value);
       pq.push_back(std::stoll(tok.value));
     }
   }
