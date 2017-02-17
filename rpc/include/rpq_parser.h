@@ -105,6 +105,7 @@ class RPQLexer {
           label = "-" + label;
           stream_.get();
         }
+        fprintf(stderr, "label: %s\n", label.c_str());
         return RPQToken(LABEL, label);
       }
     }
