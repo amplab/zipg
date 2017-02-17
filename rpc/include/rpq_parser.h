@@ -134,6 +134,7 @@ class RPQParser {
  public:
   RPQParser(std::string& exp) {
     rtrim(exp);
+    recurse_ = false;
     if (exp.back() == '*') {
       recurse_ = true;
       exp.back() = ' ';
