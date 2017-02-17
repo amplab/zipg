@@ -37,6 +37,11 @@ target_link_libraries(create succinctgraph)
 target_link_libraries(create succinctgraph-client)
 target_link_libraries(create ${THRIFT_LIBRARIES})
 
+add_executable(pbench src/path-bench.cpp)
+target_link_libraries(pbench succinctgraph)
+target_link_libraries(pbench succinctgraph-client)
+target_link_libraries(pbench ${THRIFT_LIBRARIES})
+
 add_executable(tests src/tests.cpp)
 target_link_libraries(tests succinctgraph)
 
