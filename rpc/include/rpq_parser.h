@@ -30,8 +30,8 @@ struct RPQToken {
     return *this;
   }
 
-  const int id;
-  const std::string value;
+  int id;
+  std::string value;
 };
 
 class RPQLexer {
