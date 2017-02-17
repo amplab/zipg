@@ -143,7 +143,17 @@ class RPQParser {
 
   RPQuery parse() {
     RPQuery q;
-    path_union_b(q.path_queries);
+
+    RPQToken tok = lex_.next();
+    if (tok.id == RPQLexer::LEFT) {
+      path_union_b(q.path_queries);
+      tok = lex_.next();
+      if (tok.id != RPQLexer::RIGHT)
+        throw new RPQParseException(std::string("Missing root ): ") + tok.value);
+    } else {
+      lex_.put_back(tok);
+      path_union_b(q.path_queries);
+    }
     q.recurse = recurse_;
     return q;
   }
@@ -159,10 +169,10 @@ class RPQParser {
   void path_union_b(std::vector<std::vector<int64_t>>& uq) {
     RPQToken tok = lex_.next();
     if (tok.id == RPQLexer::LEFT) {
-      path_union_b(uq);
+      path_union(uq);
       tok = lex_.next();
       if (tok.id != RPQLexer::RIGHT)
-        throw new RPQParseException(std::string("Missing ): ") + tok.value);
+        throw new RPQParseException(std::string("Missing union ): ") + tok.value);
     } else {
       lex_.put_back(tok);
       path_union(uq);
@@ -189,10 +199,10 @@ class RPQParser {
   void path_query_b(std::vector<int64_t>& pq) {
     RPQToken tok = lex_.next();
     if (tok.id == RPQLexer::LEFT) {
-      path_query_b(pq);
+      path_query(pq);
       tok = lex_.next();
       if (tok.id != RPQLexer::RIGHT)
-        throw new RPQParseException(std::string("Missing ): ") + tok.value);
+        throw new RPQParseException(std::string("Missing path ): ") + tok.value);
     } else {
       lex_.put_back(tok);
       path_query(pq);
@@ -222,6 +232,7 @@ class RPQParser {
 
   RPQLexer lex_;
   bool recurse_;
-};
+}
+;
 
 #endif
