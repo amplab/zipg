@@ -232,7 +232,7 @@ void SuccinctFile::Extract(std::string& result, uint64_t& suf_arr_idx,
   suf_arr_idx = idx;  // points to next char past len
 }
 
-void SuccinctFile::Extract(std::string& result, uint64_t start_off_approx,
+void SuccinctFile::ExtractApprox(std::string& result, uint64_t start_off_approx,
                            char start_char, char end_char) {
   result = "";
 

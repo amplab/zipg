@@ -1619,7 +1619,7 @@ void SuccinctGraph::init_rpq_ctx(SuccinctGraph::edge_label label,
     int32_t dst_id_width, timestamp_width, edge_data_len_width, cnt;
 
     uint64_t start_off_approx = std::max(0LL, off - 8);  // Hack, fix
-    edge_table->Extract(str, start_off_approx, NODE_ID_DELIM, ATYPE_DELIM);
+    edge_table->ExtractApprox(str, start_off_approx, NODE_ID_DELIM, ATYPE_DELIM);
     src = std::stoll(str);
     fprintf(stderr, "src_id = %lld\n", src);
 

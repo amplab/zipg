@@ -64,7 +64,7 @@ class SuccinctFile : public SuccinctCore {
       uint64_t offset, // unused
       uint64_t len);
 
-  void Extract(std::string& result, uint64_t start_off_approx, char start, char end);
+  void ExtractApprox(std::string& result, uint64_t start_off_approx, char start, char end);
 
   // Starts extraction at `offset` until hitting `end_char`.  Returns the
   // next offset.  If `suf_arr_idx` is not -1, use it and avoid initial
