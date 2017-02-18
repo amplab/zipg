@@ -107,7 +107,7 @@ class PathBench {
 
     std::string exp;
     while (std::getline(in, exp)) {
-      queries_.push_back(split(exp, ' '));
+      queries_.push_back(split(exp, '\t'));
     }
     fprintf(stderr, "Loaded %zu queries.\n", queries_.size());
   }
