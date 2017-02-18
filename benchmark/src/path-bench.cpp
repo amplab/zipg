@@ -61,8 +61,9 @@ class PathBench {
     for (size_t i = 0; i < queries_.size(); i++) {
       // Run query
       for (auto query : queries_.at(i)) {
-        if (query.back() == '*')
-          continue;
+        if (query.back() == '*') {
+          break;
+        }
         sum += aggregator_->count_regular_path_query(query);
       }
     }
