@@ -1621,7 +1621,6 @@ void SuccinctGraph::init_rpq_ctx(SuccinctGraph::edge_label label,
     uint64_t start_off_approx = std::max(0LL, off - 8LL);  // Hack, fix
     edge_table->ExtractApprox(str, start_off_approx, NODE_ID_DELIM, ATYPE_DELIM);
     src = std::stoll(str);
-    fprintf(stderr, "src_id = %lld\n", src);
 
     off += search_key.size();
 
@@ -1658,7 +1657,7 @@ void SuccinctGraph::init_rpq_ctx(SuccinctGraph::edge_label label,
         SuccinctGraphSerde::decode_multi_node_ids(str, dst_id_width);
 
     for (int64_t dst : decoded_dst_ids)
-      ctx.end_points.insert(SuccinctGraph::path_endpoints(off, dst));
+      ctx.end_points.insert(SuccinctGraph::path_endpoints(src, dst));
   }
 }
 
