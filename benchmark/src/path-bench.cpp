@@ -79,9 +79,10 @@ class PathBench {
       bool recursive = false;
       for (auto query : queries_.at(i)) {
         if (query.back() == '*') {
-          fprintf(stderr, "Query: %s\n", query.c_str());
           recursive = true;
           break;
+        } else {
+          fprintf(stderr, "Query: %s\n", query.c_str());
         }
         cnt += aggregator_->count_regular_path_query(query);
       }
