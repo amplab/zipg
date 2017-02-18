@@ -60,8 +60,11 @@ class PathBench {
     LOG_E("Starting warmup...\n");
     for (size_t i = 0; i < queries_.size(); i++) {
       // Run query
-      for (auto query : queries_.at(i))
+      for (auto query : queries_.at(i)) {
+        if (query.back() == '*')
+          continue;
         sum += aggregator_->count_regular_path_query(query);
+      }
     }
     LOG_E("Completed warmup, sum = %lld\n", sum);
 
@@ -73,11 +76,20 @@ class PathBench {
       start = get_timestamp();
       // Run query
       int64_t cnt = 0;
-      for (auto query : queries_.at(i))
+      bool recursive = false;
+      for (auto query : queries_.at(i)) {
+        if (query.back() == '*') {
+          recursive = true;
+          continue;
+        }
         cnt += aggregator_->count_regular_path_query(query);
+      }
 
       tot = get_timestamp() - start;
-      out << i << "\t" << cnt << "\t" << tot << "\n";
+      if (recursive)
+        out << i << "\t" << -1 << "\t" << -1 << "\n";
+      else
+        out << i << "\t" << cnt << "\t" << tot << "\n";
     }
     LOG_E("Finished measure.\n");
   }
