@@ -63,101 +63,101 @@ std::pair<int64_t, int64_t> SuccinctFile::GetRange(const char *p,
 }
 
 /*
-std::pair<int64_t, int64_t> SuccinctFile::GetRange(const char *p,
-                                                   uint64_t len) {
-  uint64_t m = strlen(p);
+ std::pair<int64_t, int64_t> SuccinctFile::GetRange(const char *p,
+ uint64_t len) {
+ uint64_t m = strlen(p);
 
-  if (m <= npa_->GetContextLength()) {
-    return GetRangeSlow(p, len);
-  }
+ if (m <= npa_->GetContextLength()) {
+ return GetRangeSlow(p, len);
+ }
 
-  typedef std::pair<int64_t, int64_t> Range;
+ typedef std::pair<int64_t, int64_t> Range;
 
-  Range range(0, -1);
-  uint32_t sigma_id;
-  int64_t left, right, c1, c2;
-  uint64_t start_off;
-  uint64_t context_val, context_id;
+ Range range(0, -1);
+ uint32_t sigma_id;
+ int64_t left, right, c1, c2;
+ uint64_t start_off;
+ uint64_t context_val, context_id;
 
-  // Get the sigma_id and context_id corresponding to the last
-  // context and sigma
+ // Get the sigma_id and context_id corresponding to the last
+ // context and sigma
 
-  // Get sigma_id:
-  if (alphabet_map_.find(p[m - npa_->GetContextLength() - 1])
-      == alphabet_map_.end())
-    return range;
-  sigma_id = alphabet_map_[p[m - npa_->GetContextLength() - 1]].second;
+ // Get sigma_id:
+ if (alphabet_map_.find(p[m - npa_->GetContextLength() - 1])
+ == alphabet_map_.end())
+ return range;
+ sigma_id = alphabet_map_[p[m - npa_->GetContextLength() - 1]].second;
 
-  // Get context_id:
-  context_val = ComputeContextValue(p, m - npa_->GetContextLength());
-  if (npa_->contexts_.find(context_val) == npa_->contexts_.end())
-    return range;
-  context_id = npa_->contexts_[context_val];
+ // Get context_id:
+ context_val = ComputeContextValue(p, m - npa_->GetContextLength());
+ if (npa_->contexts_.find(context_val) == npa_->contexts_.end())
+ return range;
+ context_id = npa_->contexts_[context_val];
 
-  // Get start offset:
-  start_off = GetRank1(&(npa_->col_nec_[sigma_id]), context_id) - 1;
+ // Get start offset:
+ start_off = GetRank1(&(npa_->col_nec_[sigma_id]), context_id) - 1;
 
-  // Get left boundary:
-  left = npa_->col_offsets_[sigma_id]
-      + npa_->cell_offsets_[sigma_id][start_off];
+ // Get left boundary:
+ left = npa_->col_offsets_[sigma_id]
+ + npa_->cell_offsets_[sigma_id][start_off];
 
-  // Get right boundary:
-  if (start_off + 1 < npa_->cell_offsets_[sigma_id].size()) {
-    right = npa_->col_offsets_[sigma_id]
-        + npa_->cell_offsets_[sigma_id][start_off + 1] - 1;
-  } else if ((sigma_id + 1) < alphabet_size_) {
-    right = npa_->col_offsets_[sigma_id + 1] - 1;
-  } else {
-    right = input_size_ - 1;
-  }
+ // Get right boundary:
+ if (start_off + 1 < npa_->cell_offsets_[sigma_id].size()) {
+ right = npa_->col_offsets_[sigma_id]
+ + npa_->cell_offsets_[sigma_id][start_off + 1] - 1;
+ } else if ((sigma_id + 1) < alphabet_size_) {
+ right = npa_->col_offsets_[sigma_id + 1] - 1;
+ } else {
+ right = input_size_ - 1;
+ }
 
-  if (left > right)
-    return range;
+ if (left > right)
+ return range;
 
-  for (int64_t i = m - npa_->GetContextLength() - 2; i >= 0; i--) {
-    // Get sigma_id:
-    if (alphabet_map_.find(p[i]) == alphabet_map_.end())
-      return range;
-    sigma_id = alphabet_map_[p[i]].second;
+ for (int64_t i = m - npa_->GetContextLength() - 2; i >= 0; i--) {
+ // Get sigma_id:
+ if (alphabet_map_.find(p[i]) == alphabet_map_.end())
+ return range;
+ sigma_id = alphabet_map_[p[i]].second;
 
-    // Get context_id:
-    context_val = ComputeContextValue(p, i + 1);
-    if (npa_->contexts_.find(context_val) == npa_->contexts_.end())
-      return range;
-    context_id = npa_->contexts_[context_val];
+ // Get context_id:
+ context_val = ComputeContextValue(p, i + 1);
+ if (npa_->contexts_.find(context_val) == npa_->contexts_.end())
+ return range;
+ context_id = npa_->contexts_[context_val];
 
-    // Get start offset:
-    start_off = GetRank1(&(npa_->col_nec_[sigma_id]), context_id) - 1;
+ // Get start offset:
+ start_off = GetRank1(&(npa_->col_nec_[sigma_id]), context_id) - 1;
 
-    // Get left boundary:
-    c1 = npa_->col_offsets_[sigma_id]
-        + npa_->cell_offsets_[sigma_id][start_off];
+ // Get left boundary:
+ c1 = npa_->col_offsets_[sigma_id]
+ + npa_->cell_offsets_[sigma_id][start_off];
 
-    // Get right boundary:
-    if (start_off + 1 < npa_->cell_offsets_[sigma_id].size()) {
-      c2 = npa_->col_offsets_[sigma_id]
-          + npa_->cell_offsets_[sigma_id][start_off + 1] - 1;
-    } else if ((sigma_id + 1) < alphabet_size_) {
-      c2 = npa_->col_offsets_[sigma_id + 1] - 1;
-    } else {
-      c2 = input_size_ - 1;
-    }
-    if (c2 < c1)
-      return range;
+ // Get right boundary:
+ if (start_off + 1 < npa_->cell_offsets_[sigma_id].size()) {
+ c2 = npa_->col_offsets_[sigma_id]
+ + npa_->cell_offsets_[sigma_id][start_off + 1] - 1;
+ } else if ((sigma_id + 1) < alphabet_size_) {
+ c2 = npa_->col_offsets_[sigma_id + 1] - 1;
+ } else {
+ c2 = input_size_ - 1;
+ }
+ if (c2 < c1)
+ return range;
 
-    left = npa_->BinarySearch(left, c1, c2, false);
-    right = npa_->BinarySearch(right, left, c2, true);
+ left = npa_->BinarySearch(left, c1, c2, false);
+ right = npa_->BinarySearch(right, left, c2, true);
 
-    if (left > right)
-      return range;
-  }
+ if (left > right)
+ return range;
+ }
 
-  range.first = left;
-  range.second = right;
+ range.first = left;
+ range.second = right;
 
-  return range;
-}
-*/
+ return range;
+ }
+ */
 
 std::string SuccinctFile::Name() {
   return input_filename_;
@@ -177,8 +177,8 @@ uint64_t SuccinctFile::Count(const std::string& str) {
   return range.second - range.first + 1;
 }
 
-void SuccinctFile::Search(std::vector<int64_t>& result, const std::string& str)
-{
+void SuccinctFile::Search(std::vector<int64_t>& result,
+                          const std::string& str) {
   std::pair<int64_t, int64_t> range = GetRange(str.c_str(), str.length());
   if (range.first > range.second)
     return;
@@ -188,8 +188,7 @@ void SuccinctFile::Search(std::vector<int64_t>& result, const std::string& str)
   }
 }
 
-int64_t SuccinctFile::Search(const std::string& str)
-{
+int64_t SuccinctFile::Search(const std::string& str) {
   std::pair<int64_t, int64_t> range = GetRange(str.c_str(), str.length());
   if (range.first > range.second)
     return -1;
@@ -204,74 +203,82 @@ void SuccinctFile::RegexSearch(std::set<std::pair<size_t, size_t>>& results,
   re.GetResults(results);
 }
 
-int64_t SuccinctFile::ExtractUntil(
-    std::string& result,
-    uint64_t offset,
-    char end_char) {
+int64_t SuccinctFile::ExtractUntil(std::string& result, uint64_t offset,
+                                   char end_char) {
 
-    result.clear();
-    uint32_t k = 1;
-    uint64_t idx = LookupISA(offset);
-    char curr_char = alphabet_[LookupC(idx)];
-    while (curr_char != end_char) {
-        ++k;
-        result += curr_char;
+  result.clear();
+  uint32_t k = 1;
+  uint64_t idx = LookupISA(offset);
+  char curr_char = alphabet_[LookupC(idx)];
+  while (curr_char != end_char) {
+    ++k;
+    result += curr_char;
 
-        idx = LookupNPA(idx);
-        curr_char = alphabet_[LookupC(idx)];
-    }
-    return offset + k;
+    idx = LookupNPA(idx);
+    curr_char = alphabet_[LookupC(idx)];
+  }
+  return offset + k;
 }
 
-void SuccinctFile::Extract(
-    std::string& result,
-    uint64_t& suf_arr_idx,
-    uint64_t offset,
-    uint64_t len) {
+void SuccinctFile::Extract(std::string& result, uint64_t& suf_arr_idx,
+                           uint64_t offset, uint64_t len) {
 
-    result = "";
-    uint64_t idx = suf_arr_idx;
-    for (uint64_t k = 0;  k < len; k++) {
-        result += alphabet_[LookupC(idx)];
-        idx = LookupNPA(idx);
-    }
-    suf_arr_idx = idx; // points to next char past len
+  result = "";
+  uint64_t idx = suf_arr_idx;
+  for (uint64_t k = 0; k < len; k++) {
+    result += alphabet_[LookupC(idx)];
+    idx = LookupNPA(idx);
+  }
+  suf_arr_idx = idx;  // points to next char past len
 }
 
-int64_t SuccinctFile::SkippingExtractUntil(
-    uint64_t& suf_arr_idx,
-    uint64_t offset,
-    char end_char)
-{
-    uint32_t k = 1;
-    uint64_t idx = (suf_arr_idx == -1) ? LookupISA(offset) : suf_arr_idx;
-    char curr_char = alphabet_[LookupC(idx)];
-    while (curr_char != end_char) {
-        ++k;
-        idx = LookupNPA(idx);
-        curr_char = alphabet_[LookupC(idx)];
-    }
-    suf_arr_idx = LookupNPA(idx); // points to next char past `end_char`
-    return offset + k;
+void SuccinctFile::Extract(std::string& result, uint64_t start_off_approx,
+                           char start_char, char end_char) {
+  result = "";
+
+  uint64_t idx = LookupISA(start_off_approx);
+  char cur_char = alphabet_[LookupC(idx)];
+  while (cur_char != start_char) {
+    idx = LookupNPA(idx);
+    cur_char = alphabet_[LookupC(idx)];
+  }
+
+  while (true) {
+    idx = LookupNPA(idx);
+    cur_char = alphabet_[LookupC(idx)];
+    if (cur_char == end_char)
+      break;
+    result += cur_char;
+  }
 }
 
-int64_t SuccinctFile::ExtractUntil(
-    std::string& result,
-    uint64_t& suf_arr_idx,
-    uint64_t offset,
-    char end_char)
-{
-    result.clear();
-    uint32_t k = 1;
-    uint64_t idx = (suf_arr_idx == -1ULL) ? LookupISA(offset) : suf_arr_idx;
-    char curr_char = alphabet_[LookupC(idx)];
-    while (curr_char != end_char) {
-        ++k;
-        result += curr_char;
+int64_t SuccinctFile::SkippingExtractUntil(uint64_t& suf_arr_idx,
+                                           uint64_t offset, char end_char) {
+  uint32_t k = 1;
+  uint64_t idx = (suf_arr_idx == -1) ? LookupISA(offset) : suf_arr_idx;
+  char curr_char = alphabet_[LookupC(idx)];
+  while (curr_char != end_char) {
+    ++k;
+    idx = LookupNPA(idx);
+    curr_char = alphabet_[LookupC(idx)];
+  }
+  suf_arr_idx = LookupNPA(idx);  // points to next char past `end_char`
+  return offset + k;
+}
 
-        idx = LookupNPA(idx);
-        curr_char = alphabet_[LookupC(idx)];
-    }
-    suf_arr_idx = LookupNPA(idx); // points to next
-    return offset + k;
+int64_t SuccinctFile::ExtractUntil(std::string& result, uint64_t& suf_arr_idx,
+                                   uint64_t offset, char end_char) {
+  result.clear();
+  uint32_t k = 1;
+  uint64_t idx = (suf_arr_idx == -1ULL) ? LookupISA(offset) : suf_arr_idx;
+  char curr_char = alphabet_[LookupC(idx)];
+  while (curr_char != end_char) {
+    ++k;
+    result += curr_char;
+
+    idx = LookupNPA(idx);
+    curr_char = alphabet_[LookupC(idx)];
+  }
+  suf_arr_idx = LookupNPA(idx);  // points to next
+  return offset + k;
 }
