@@ -3,6 +3,9 @@
 #include <iostream>
 #include <unistd.h>
 #include <initializer_list>
+#include <string>
+#include <sstream>
+#include <vector>
 
 #include "GraphFormatter.hpp"
 #include "SuccinctGraph.hpp"
@@ -10,6 +13,22 @@
 #include "GraphBenchmark.hpp"
 
 using boost::shared_ptr;
+
+template<typename Out>
+void split(const std::string &s, char delim, Out result) {
+  std::stringstream ss;
+  ss.str(s);
+  std::string item;
+  while (std::getline(ss, item, delim)) {
+    *(result++) = item;
+  }
+}
+
+std::set<std::string> split(const std::string &s, char delim) {
+  std::set<std::string> elems;
+  split(s, delim, std::back_inserter(elems));
+  return elems;
+}
 
 class PathBench {
  public:
@@ -40,7 +59,8 @@ class PathBench {
     int sum = 0;
     for (size_t i = 0; i < queries_.size(); i++) {
       // Run query
-      sum += aggregator_->count_regular_path_query(queries_.at(i));
+      for (auto query : queries_.at(i))
+        sum += aggregator_->count_regular_path_query(query);
     }
     fprintf(stderr, "Sum=%lld\n", sum);
 
@@ -50,7 +70,10 @@ class PathBench {
       time_t start, tot;
       start = get_timestamp();
       // Run query
-      int64_t cnt = aggregator_->count_regular_path_query(queries_.at(i));
+      int64_t cnt = 0;
+      for (auto query : queries_.at(i))
+        cnt += aggregator_->count_regular_path_query(query);
+
       tot = get_timestamp() - start;
       out << i << "\t" << cnt << "\t" << tot << "\n";
     }
@@ -67,12 +90,12 @@ class PathBench {
 
     std::string exp;
     while (std::getline(in, exp)) {
-      queries_.push_back(exp);
+      queries_.push_back(split(exp, ' '));
     }
     fprintf(stderr, "Loaded %zu queries.\n", queries_.size());
   }
 
-  std::vector<std::string> queries_;
+  std::vector<std::set<std::string>> queries_;
 
   shared_ptr<GraphQueryAggregatorServiceClient> aggregator_;
   shared_ptr<TTransport> transport_;
