@@ -26,7 +26,7 @@ void split(const std::string &s, char delim, Out result) {
 
 std::set<std::string> split(const std::string &s, char delim) {
   std::set<std::string> elems;
-  split(s, delim, std::back_inserter(elems));
+  split(s, delim, std::inserter(elems, elems.end()));
   return elems;
 }
 
