@@ -1771,6 +1771,7 @@ class GraphQueryAggregatorServiceHandler :
       }
     }
     if (!a.empty()) {
+      fprintf(stderr, "Recursing\n");
       for (auto p : a)
         s.insert(p);
       transitive_closure(s);
