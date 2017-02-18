@@ -57,15 +57,17 @@ class PathBench {
 
     // Warmup
     int sum = 0;
+    LOG_E("Starting warmup...\n");
     for (size_t i = 0; i < queries_.size(); i++) {
       // Run query
       for (auto query : queries_.at(i))
         sum += aggregator_->count_regular_path_query(query);
     }
-    fprintf(stderr, "Sum=%lld\n", sum);
+    LOG_E("Completed warmup, sum = %lld\n", sum);
 
     // Measure
     std::ofstream out(output_file);
+    LOG_E("Starting measure...\n");
     for (size_t i = 0; i < queries_.size(); i++) {
       time_t start, tot;
       start = get_timestamp();
@@ -77,6 +79,7 @@ class PathBench {
       tot = get_timestamp() - start;
       out << i << "\t" << cnt << "\t" << tot << "\n";
     }
+    LOG_E("Finished measure.\n");
   }
 
  private:
