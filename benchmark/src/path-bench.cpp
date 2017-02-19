@@ -127,8 +127,7 @@ class PathBench {
       exit(-1);
     }
 
-    auto ret = std::getline(in, query_str_);
-    if (ret) {
+    if (std::getline(in, query_str_)) {
       query_ = split(query_str_, '\t');
       fprintf(stderr, "Loaded query.\n");
     } else {
