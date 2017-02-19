@@ -112,7 +112,7 @@ class PathBench {
   }
 
   int64_t run_query() {
-    int64_t ret;
+    int64_t ret = 0;
     for (auto q : query_) {
       ret += aggregator_->count_regular_path_query(q);
     }
