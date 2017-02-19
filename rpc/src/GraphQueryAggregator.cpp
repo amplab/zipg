@@ -1556,7 +1556,7 @@ class GraphQueryAggregatorServiceHandler :
     COND_LOG_E("All done before recurse; recurse = %d\n", recurse);
 
     if (recurse)
-      transitive_closure(_return.endpoints);
+      transitive_closure2(_return.endpoints);
 
     COND_LOG_E("rpq(...) complete\n");
   }
@@ -1768,6 +1768,8 @@ class GraphQueryAggregatorServiceHandler :
   }
 
   void transitive_closure2(std::set<Path>& s) {
+    fprintf(stderr, "Transitive closure 2 called\n");
+    fflush(stderr);
     std::set<Path> a;   // missing nodes to add
     for (auto p : s) {
       Path p_search;
