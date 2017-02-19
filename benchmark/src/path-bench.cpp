@@ -6,6 +6,9 @@
 #include <string>
 #include <sstream>
 #include <vector>
+#include <condition_variable>
+#include <thread>
+#include <chrono>
 
 #include "GraphFormatter.hpp"
 #include "SuccinctGraph.hpp"
@@ -32,8 +35,12 @@ std::set<std::string> split(const std::string &s, char delim) {
 
 class PathBench {
  public:
+  static const uint64_t TIMEOUT_SECS = 600;
+  static const size_t NUM_RUNS = 1;
+
   PathBench(const std::string& query_file) {
-    load_queries(query_file);
+    load_query(query_file);
+    output_path_ = query_file + ".results";
 
     try {
       LOG_E("Connecting to localhost...\n");
@@ -53,37 +60,66 @@ class PathBench {
   }
 
   void run() {
-    std::string output_file = "path_query_latency.txt";
-
-    // Warmup
-    int sum = 0;
-    LOG_E("Starting warmup...\n");
-    for (size_t i = 0; i < queries_.size(); i++) {
-      // Run query
-      for (auto query : queries_.at(i))
-        sum += aggregator_->count_regular_path_query(query);
+    // Run once to see if it times out
+    LOG_E("Testing query for timeout...\n");
+    std::ofstream out(output_path_);
+    if (run_query_timeout() == -1) {
+      fprintf(stderr, "Timeout! Query %s did not finish.\n",
+              query_str_.c_str());
+      out << "DNF";
+      out.close();
+      return;
     }
-    LOG_E("Completed warmup, sum = %lld\n", sum);
 
     // Measure
-    std::ofstream out(output_file);
-    LOG_E("Starting measure...\n");
-    for (size_t i = 0; i < queries_.size(); i++) {
+    LOG_E("Starting benchmark...\n");
+    for (size_t i = 0; i < NUM_RUNS; i++) {
       time_t start, tot;
       start = get_timestamp();
       // Run query
-      int64_t cnt = 0;
-      for (auto query : queries_.at(i))
-        cnt += aggregator_->count_regular_path_query(query);
-
+      int64_t cnt = run_query();
       tot = get_timestamp() - start;
-      out << i << "\t" << cnt << "\t" << tot << "\n";
+      out << cnt << "\t" << tot << "\n";
     }
+    out.close();
     LOG_E("Finished measure.\n");
   }
 
  private:
-  void load_queries(const std::string& query_path) {
+  int64_t run_query_timeout() {
+    std::mutex m;
+    std::condition_variable cv;
+    int ret = 0;
+
+    std::thread t([&m, &cv, &ret, this]()
+    {
+      for (auto q : query_) {
+        ret += aggregator_->count_regular_path_query(q);
+      }
+      cv.notify_one();
+    });
+
+    t.detach();
+
+    {
+      std::unique_lock<std::mutex> l(m);
+      if (cv.wait_for(l, std::chrono::seconds(TIMEOUT_SECS))
+          == std::cv_status::timeout)
+        return -1;
+    }
+
+    return ret;
+  }
+
+  int64_t run_query() {
+    int64_t ret;
+    for (auto q : query_) {
+      ret += aggregator_->count_regular_path_query(q);
+    }
+    return ret;
+  }
+
+  void load_query(const std::string& query_path) {
     fprintf(stderr, "Loading queries...\n");
     std::ifstream in(query_path);
     if (!in.is_open()) {
@@ -91,14 +127,19 @@ class PathBench {
       exit(-1);
     }
 
-    std::string exp;
-    while (std::getline(in, exp)) {
-      queries_.push_back(split(exp, '\t'));
+    auto ret = std::getline(in, query_str_);
+    if (ret) {
+      query_ = split(query_str_, '\t');
+      fprintf(stderr, "Loaded query.\n");
+    } else {
+      fprintf(stderr, "Could not load query: is query file empty?\n");
+      exit(-1);
     }
-    fprintf(stderr, "Loaded %zu queries.\n", queries_.size());
   }
 
-  std::vector<std::set<std::string>> queries_;
+  std::string query_str_;
+  std::set<std::string> query_;
+  std::string output_path_;
 
   shared_ptr<GraphQueryAggregatorServiceClient> aggregator_;
   shared_ptr<TTransport> transport_;
