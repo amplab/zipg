@@ -1,9 +1,9 @@
 # NOTE: #shards should be a multiple of num_hosts for now.
 export ENABLE_MULTI_STORE=T # T for enabled, anything else disabled
-export TOTAL_NUM_SHARDS=40
-export num_hosts=10
+export TOTAL_NUM_SHARDS=30
+export num_hosts=1
 # NOTE: change this manually to "shards per SuccinctStore server", if multistore
-export SHARDS_PER_SERVER=4
+export SHARDS_PER_SERVER=30
 
 export NUM_SUFFIXSTORE_PARTS=0
 export NUM_LOGSTORE_PARTS=0
