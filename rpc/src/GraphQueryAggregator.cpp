@@ -1783,6 +1783,7 @@ class GraphQueryAggregatorServiceHandler :
         new_p.dst = it->dst;
         if (s.find(new_p) == s.end())
           a.insert(new_p);
+        it++;
       }
     }
 
