@@ -48,7 +48,7 @@ cd boost_1_55_0
 cd ..
 
 # Manually install latest thrift
-git clone https://git-wip-us.apache.org/repos/asf/thrift.git
+git clone https://git-wip-us.apache.org/repos/asf/thrift.git -b 0.10.0
 cd thrift
 ./bootstrap.sh
 ./configure --with-lua=no
