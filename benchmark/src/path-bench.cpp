@@ -66,7 +66,7 @@ class PathBench {
     if (run_query_timeout() == -1) {
       fprintf(stderr, "Timeout! Query %s did not finish.\n",
               query_str_.c_str());
-      out << "DNF";
+      out << "DNF\tDNF\n";
       out.close();
       return;
     }
