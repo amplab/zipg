@@ -17,12 +17,12 @@ currDir=$(cd $(dirname $0); pwd)
 
 function stop_all() {
   bash ${currDir}/../sbin/stop-all.sh 
-  sleep 2
+  #sleep 2
 }
 
 function start_all() {
   bash ${currDir}/../sbin/start-handlers.sh $node_file_raw $edge_file_raw $sa $isa $npa
-  sleep 2
+  #sleep 2
 }
 
 stop_all

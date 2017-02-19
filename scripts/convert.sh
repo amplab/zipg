@@ -13,3 +13,4 @@ for dataset in "500000" "1000000" "2000000" "4000000" "8000000"; do
   done
   wait
 done
+bash ./compress.sh $num_shards
