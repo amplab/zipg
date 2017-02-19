@@ -1776,6 +1776,8 @@ class GraphQueryAggregatorServiceHandler :
       auto it = s.lower_bound(p_search);
 
       while (it->src == p.dst) {
+        fprintf(stderr, "Found: (%lld, %lld), (%lld, %lld)", p.src, p.dst,
+                it->src, it->dst);
         Path new_p;
         new_p.src = p.src;
         new_p.dst = it->dst;
@@ -1785,6 +1787,7 @@ class GraphQueryAggregatorServiceHandler :
     }
 
     if (!a.empty()) {
+      fprintf(stderr, "Recursing...\n");
       s.insert(a.begin(), a.end());
       transitive_closure2(s);
     }
