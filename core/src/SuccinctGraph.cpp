@@ -1183,6 +1183,22 @@ void SuccinctGraph::get_nodes(std::set<int64_t>& result, int attr1,
                         std::inserter(result, result.end()));
 }
 
+void SuccinctGraph::get_nodes2(std::set<int64_t>& result, int attr1,
+                              const std::string& search_key1, int attr2,
+                              const std::string& search_key2) {
+
+  result.clear();
+  this->node_table->Search(result, mk_node_attr_key(attr1, search_key1));
+  for (auto it = result.begin(); it != result.end();) {
+    std::string attr;
+    get_attribute(attr, *it, attr2);
+    if (attr != search_key2)
+      it = result.erase(it);
+    else
+      it++;
+  }
+}
+
 // LinkBench API
 bool SuccinctGraph::getNode(std::string& data, int64_t id) {
   std::string token;
@@ -1604,7 +1620,7 @@ int64_t SuccinctGraph::countLinks(int64_t id1, int64_t link_type) {
 void SuccinctGraph::init_rpq_ctx(SuccinctGraph::edge_label label,
                                  SuccinctGraph::RPQContext& ctx) {
 
-  COND_LOG_E("[SuccinctGraph] init_rpq_request()\n"); COND_LOG_E("[SuccinctGraph] label = %lld\n", label);
+  COND_LOG_E("[SuccinctGraph] init_rpq_request()\n");COND_LOG_E("[SuccinctGraph] label = %lld\n", label);
 
   std::string search_key = ATYPE_DELIM + std::to_string(label)
       + TIMESTAMP_WIDTH_DELIM;
@@ -1619,7 +1635,8 @@ void SuccinctGraph::init_rpq_ctx(SuccinctGraph::edge_label label,
     int32_t dst_id_width, timestamp_width, edge_data_len_width, cnt;
 
     uint64_t start_off_approx = std::max(0LL, off - 8LL);  // Hack, fix
-    edge_table->ExtractApprox(str, start_off_approx, NODE_ID_DELIM, ATYPE_DELIM);
+    edge_table->ExtractApprox(str, start_off_approx, NODE_ID_DELIM,
+                              ATYPE_DELIM);
     src = std::stoll(str);
 
     off += search_key.size();
@@ -1665,7 +1682,7 @@ void SuccinctGraph::advance_rpq_ctx(SuccinctGraph::RPQContext& ret,
                                     SuccinctGraph::edge_label label,
                                     const SuccinctGraph::RPQContext& ctx) {
 
-  COND_LOG_E("[SuccinctGraph] advance_rpq_request()\n"); COND_LOG_E("[SuccinctGraph] label = %lld\n", label);
+  COND_LOG_E("[SuccinctGraph] advance_rpq_request()\n");COND_LOG_E("[SuccinctGraph] label = %lld\n", label);
 
   if (ctx.end_points.empty())
     COND_LOG_E("[SuccinctGraph] Empty ctx input!\n");
@@ -1717,6 +1734,6 @@ void SuccinctGraph::advance_rpq_ctx(SuccinctGraph::RPQContext& ret,
       for (int64_t dst : decoded_dst_ids)
         ret.end_points.insert(SuccinctGraph::path_endpoints(ep.first, dst));
     }
-  } COND_LOG_E("[SuccinctGraph] Found %zu paths on shard\n",
+  }COND_LOG_E("[SuccinctGraph] Found %zu paths on shard\n",
       ret.end_points.size());
 }

@@ -90,6 +90,9 @@ service GraphQueryAggregatorService {
 
   list<i64> get_neighbors_attr_local(
     1: i32 shardId, 2: i64 nodeId, 3: i32 attrId, 4: string attrKey),
+    
+    list<i64> get_neighbors_attr2(
+    1: i64 nodeId, 2: i32 attrId, 3: string attrKey),
 
   set<i64> get_nodes(1: i32 attrId, 2: string attrKey),
 
@@ -106,6 +109,19 @@ service GraphQueryAggregatorService {
     2: string attrKey1,
     3: i32 attrId2,
     4: string attrKey2),
+    
+  set<i64> get_nodes22(
+    1: i32 attrId1,
+    2: string attrKey1,
+    3: i32 attrId2,
+    4: string attrKey2),
+
+  set<i64> get_nodes22_local(
+    1: i32 attrId1,
+    2: string attrKey1,
+    3: i32 attrId2,
+    4: string attrKey2),
+    
 
   // The passed-in `nodeIds` are global keys that are guaranteed to only
   // belong to shards under this aggregator.  On return, the keys are global.

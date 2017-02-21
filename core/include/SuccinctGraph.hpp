@@ -154,6 +154,10 @@ class SuccinctGraph {
                  const std::string& search_key1, int attr2,
                  const std::string& search_key2);
 
+  void get_nodes2(std::set<int64_t>& result, int attr1,
+                 const std::string& search_key1, int attr2,
+                 const std::string& search_key2);
+
   // Clears `result` for caller.
   void filter_nodes(std::vector<int64_t>& result,
                     const std::vector<int64_t>& node_ids, int attr,

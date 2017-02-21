@@ -197,6 +197,26 @@ class GraphShard {
     }
   }
 
+  void get_nodes22(std::set<int64_t> & _return, const int32_t attrId1,
+                   const std::string& attrKey1, const int32_t attrId2,
+                   const std::string& attrKey2) {
+    COND_LOG_E("get_nodes2\n");
+
+    _return.clear();
+    if (node_table_empty_) {
+      return;
+    }
+
+    std::set<int64_t> local_keys;
+    graph_->get_nodes2(local_keys, attrId1, attrKey1, attrId2, attrKey2);
+
+    // TODO: this assumes a particular form of hash partitioning
+    auto it = _return.begin();
+    for (int64_t local_key : local_keys) {
+      it = _return.insert(it, local_key * total_num_shards_ + shard_id_);
+    }
+  }
+
   void get_attribute_local(std::string& _return, const int64_t nodeId,
                            const int32_t attrId) {
     graph_->get_attribute(_return, nodeId, attrId);
@@ -598,6 +618,16 @@ class AsyncGraphShard : public GraphShard {
     return pool_->enqueue([&] {
       std::set<int64_t> res;
       get_nodes2(res, attrId1, attrKey1, attrId2, attrKey2);
+      return res;
+    });
+  }
+
+  std::future<std::set<int64_t>> async_get_nodes22(
+      const int32_t attrId1, const std::string& attrKey1, const int32_t attrId2,
+      const std::string& attrKey2) {
+    return pool_->enqueue([&] {
+      std::set<int64_t> res;
+      get_nodes22(res, attrId1, attrKey1, attrId2, attrKey2);
       return res;
     });
   }

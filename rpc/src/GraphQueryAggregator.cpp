@@ -294,6 +294,18 @@ class GraphQueryAggregatorServiceHandler :
                                                               atype);
   }
 
+  void get_neighbors_attr2(std::vector<int64_t> & _return, const int64_t nodeId,
+                           const int32_t attrId, const std::string& attrKey) {
+    std::vector<int64_t> nhbrs;
+    get_neighbors(nhbrs, nodeId);
+
+    std::set<int64_t> nodes;
+    get_nodes(nodes, attrId, attrKey);
+
+    std::set_intersection(nhbrs.begin(), nhbrs.end(), nodes.begin(),
+                          nodes.end(), _return.begin());
+  }
+
   void get_neighbors_attr(std::vector<int64_t> & _return, const int64_t nodeId,
                           const int32_t attrId, const std::string& attrKey) {
     COND_LOG_E("Aggregator get_nhbr_node(nodeId %d, attrId %d)\n", nodeId,
@@ -478,6 +490,49 @@ class GraphQueryAggregatorServiceHandler :
     for (auto& shard : local_shards_) {
       auto future = shard->async_get_nodes2(attrId1, attrKey1, attrId2,
                                             attrKey2);
+      futures.push_back(std::move(future));
+    }
+
+    std::set<int64_t> shard_result;
+    _return.clear();
+
+    for (auto& future : futures) {
+      shard_result = future.get();
+      _return.insert(shard_result.begin(), shard_result.end());
+    }
+  }
+
+  void get_nodes22(std::set<int64_t> & _return, const int32_t attrId1,
+                   const std::string& attrKey1, const int32_t attrId2,
+                   const std::string& attrKey2) {
+    for (int i = 0; i < total_num_hosts_; ++i) {
+      if (i == local_host_id_) {
+        continue;
+      }
+      aggregators_.at(i).send_get_nodes22_local(attrId1, attrKey1, attrId2,
+                                                attrKey2);
+    }
+
+    get_nodes22_local(_return, attrId1, attrKey1, attrId2, attrKey2);
+
+    std::set<int64_t> shard_result;
+    for (int i = 0; i < total_num_hosts_; ++i) {
+      if (i == local_host_id_) {
+        continue;
+      }
+      aggregators_.at(i).recv_get_nodes22_local(shard_result);
+      _return.insert(shard_result.begin(), shard_result.end());
+    }
+  }
+
+  void get_nodes22_local(std::set<int64_t> & _return, const int32_t attrId1,
+                         const std::string& attrKey1, const int32_t attrId2,
+                         const std::string& attrKey2) {
+    typedef std::future<std::set<int64_t>> future_t;
+    std::vector<future_t> futures;
+    for (auto& shard : local_shards_) {
+      auto future = shard->async_get_nodes22(attrId1, attrKey1, attrId2,
+                                             attrKey2);
       futures.push_back(std::move(future));
     }
 
@@ -1742,7 +1797,9 @@ class GraphQueryAggregatorServiceHandler :
 
     // Then process query at designated shard.
     std::vector<int64_t> nhbrs;
-    local_shards_[shard_id / total_num_hosts_]->get_neighbors_atype(nhbrs, start_id, 0);
+    local_shards_[shard_id / total_num_hosts_]->get_neighbors_atype(nhbrs,
+                                                                    start_id,
+                                                                    0);
 
     for (int64_t nhbr_id : nhbrs)
       DFS(_return, nhbr_id);
