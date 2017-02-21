@@ -220,7 +220,7 @@ class GraphBenchmark {
                       this, thread_data)));
         }
         break;
-      case NODE2:
+      case NODE22:
         LOG_E("Starting nodeNode2 thput\n")
         ;
         for (auto thread_data : thread_datas) {
