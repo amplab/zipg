@@ -1732,7 +1732,57 @@ class GraphQueryAggregatorServiceHandler :
     }
   }
 
+  // BFS, DFS
+  void DFS(std::vector<int64_t>& _return, int64_t start_id) {
+    COND_LOG_E("Received DFS(id1=%lld) request\n", start_id);
+
+    _return.push_back(start_id);
+
+    int shard_id = start_id % total_num_shards_;
+
+    // Then process query at designated shard.
+    std::vector<int64_t> nhbrs;
+    local_shards_[shard_id / total_num_hosts_]->get_neighbors_atype(nhbrs, start_id, 0);
+
+    for (int64_t nhbr_id : nhbrs)
+      DFS(_return, nhbr_id);
+
+    COND_LOG_E("DFS(%lld): returning %d nodes.\n", start_id, _return.size());
+  }
+
+  void BFS(std::vector<int64_t>& _return, int64_t start_id) {
+    COND_LOG_E("Received BFS(id1=%lld) request\n", start_id);
+
+    std::vector<int64_t> current_level;
+    current_level.push_back(start_id);
+    while (!current_level.empty()) {
+      typedef std::future<std::vector<int64_t>> future_t;
+      std::vector<future_t> next_level(current_level.size());
+      for (int64_t node_id : current_level) {
+        _return.push_back(node_id);
+        int shard_id = node_id % total_num_shards_;
+        local_shards_[shard_id / total_num_hosts_]->async_get_neighbors_atype(
+            node_id, 0);
+      }
+      current_level.clear();
+      for (future_t& f : next_level)
+        append(current_level, f.get());
+    }
+  }
+
  private:
+
+  // General helper
+  template<typename X>
+  void append(std::vector<X>& src, std::vector<X>& dst) {
+    if (dst.empty()) {
+      dst = std::move(src);
+    } else {
+      dst.reserve(dst.size() + src.size());
+      std::move(std::begin(src), std::end(src), std::back_inserter(dst));
+      src.clear();
+    }
+  }
 
   // RPQ Helpers
   std::string query_to_string(const RPQuery& query) {

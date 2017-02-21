@@ -608,6 +608,17 @@ class AsyncGraphShard : public GraphShard {
     });
   }
 
+  std::future<std::vector<int64_t>> async_get_neighbors_atype(
+      const int64_t node_id, const int64_t atype) {
+
+    return pool_->enqueue([&] {
+      std::vector<int64_t> nhbrs;
+      get_neighbors_atype(nhbrs, node_id, atype);
+      return nhbrs;
+    });
+
+  }
+
   std::future<std::vector<ThriftAssoc>> async_assoc_get(
       const int64_t src, const int64_t atype, const std::set<int64_t>& dstIdSet,
       const int64_t tLow, const int64_t tHigh) {
