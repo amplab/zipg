@@ -1774,7 +1774,7 @@ class GraphQueryAggregatorServiceHandler :
 
   // General helper
   template<typename X>
-  void append(std::vector<X>& src, std::vector<X>& dst) {
+  void append(std::vector<X>& dst, const std::vector<X>& src) {
     if (dst.empty()) {
       dst = std::move(src);
     } else {
