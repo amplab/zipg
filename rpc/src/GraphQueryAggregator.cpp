@@ -1780,7 +1780,6 @@ class GraphQueryAggregatorServiceHandler :
     } else {
       dst.reserve(dst.size() + src.size());
       std::move(std::begin(src), std::end(src), std::back_inserter(dst));
-      src.clear();
     }
   }
 
