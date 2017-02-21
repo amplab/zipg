@@ -317,6 +317,19 @@ int main(int argc, char **argv) {
                                               warmup_query_file,
                                               measure_query_file);
 
+  } else if (type == "node-node2-throughput") {
+
+    bench->benchmark_node_node2_throughput(throughput_threads, master_hostname,
+                                          warmup_query_file,
+                                          measure_query_file);
+
+  } else if (type == "neighbor-node2-throughput") {
+
+    bench->benchmark_neighbor_node2_throughput(throughput_threads,
+                                              master_hostname,
+                                              warmup_query_file,
+                                              measure_query_file);
+
   } else if (type == "neighbor-atype-throughput") {
 
     bench->benchmark_neighbor_atype_throughput(throughput_threads,
