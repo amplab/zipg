@@ -42,6 +42,11 @@ target_link_libraries(pbench succinctgraph)
 target_link_libraries(pbench succinctgraph-client)
 target_link_libraries(pbench ${THRIFT_LIBRARIES})
 
+add_executable(tbench src/traversal-bench.cpp)
+target_link_libraries(tbench succinctgraph)
+target_link_libraries(tbench succinctgraph-client)
+target_link_libraries(tbench ${THRIFT_LIBRARIES})
+
 add_executable(tests src/tests.cpp)
 target_link_libraries(tests succinctgraph)
 
