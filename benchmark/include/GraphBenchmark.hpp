@@ -47,9 +47,9 @@ class GraphBenchmark {
   const static int MAX_NUM_NEW_NODES = 125000;
 
   // Timings for throughput benchmarks.
-  constexpr static int64_t WARMUP_MICROSECS = 300 * 1000 * 1000;
-  constexpr static int64_t MEASURE_MICROSECS = 300 * 1000 * 1000;
-  constexpr static int64_t COOLDOWN_MICROSECS = 1050 * 1000 * 1000;
+  constexpr static int64_t WARMUP_MICROSECS = 30 * 1000 * 1000;
+  constexpr static int64_t MEASURE_MICROSECS = 30 * 1000 * 1000;
+  constexpr static int64_t COOLDOWN_MICROSECS = 60 * 1000 * 1000;
   // constexpr static int64_t WARMUP_MICROSECS = 30 * 1000 * 1000;
   // constexpr static int64_t MEASURE_MICROSECS = 120 * 1000 * 1000;
   // constexpr static int64_t COOLDOWN_MICROSECS = 30 * 1000 * 1000;
