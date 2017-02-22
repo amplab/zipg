@@ -112,13 +112,13 @@ class TraversalBench {
 
  private:
   size_t run_bfs(int64_t start_id) {
-    std::vector<int64_t> res;
+    std::set<int64_t> res;
     aggregator_->BFS(res, start_id);
     return res.size();
   }
 
   size_t run_dfs(int64_t start_id) {
-    std::vector<int64_t> res;
+    std::set<int64_t> res;
     aggregator_->DFS(res, start_id);
     return res.size();
   }
