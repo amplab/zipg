@@ -294,22 +294,6 @@ class GraphQueryAggregatorServiceHandler :
                                                               atype);
   }
 
-  template<class InputIt1, class InputIt2, class OutputIt>
-  OutputIt set_intersection(InputIt1 first1, InputIt1 last1, InputIt2 first2,
-                            InputIt2 last2, OutputIt d_first) {
-    while (first1 != last1 && first2 != last2) {
-      if (*first1 < *first2) {
-        ++first1;
-      } else {
-        if (!(*first2 < *first1)) {
-          *d_first++ = *first1++;
-        }
-        ++first2;
-      }
-    }
-    return d_first;
-  }
-
   void get_neighbors_attr2(std::vector<int64_t> & _return, const int64_t nodeId,
                            const int32_t attrId, const std::string& attrKey) {
     std::vector<int64_t> nhbrs;
@@ -319,7 +303,8 @@ class GraphQueryAggregatorServiceHandler :
     std::set<int64_t> nodes;
     get_nodes(nodes, attrId, attrKey);
 
-    set_intersection(nhbrs.begin(), nhbrs.end(), nodes.begin(), nodes.end(), _return);
+    std::set_intersection(nhbrs.begin(), nhbrs.end(), nodes.begin(),
+                          nodes.end(), std::back_inserter(_return));
 
   }
 
