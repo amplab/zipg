@@ -13673,19 +13673,20 @@ uint32_t GraphQueryAggregatorService_BFS_result::read(::apache::thrift::protocol
     switch (fid)
     {
       case 0:
-        if (ftype == ::apache::thrift::protocol::T_LIST) {
+        if (ftype == ::apache::thrift::protocol::T_SET) {
           {
             this->success.clear();
             uint32_t _size409;
             ::apache::thrift::protocol::TType _etype412;
-            xfer += iprot->readListBegin(_etype412, _size409);
-            this->success.resize(_size409);
+            xfer += iprot->readSetBegin(_etype412, _size409);
             uint32_t _i413;
             for (_i413 = 0; _i413 < _size409; ++_i413)
             {
-              xfer += iprot->readI64(this->success[_i413]);
+              int64_t _elem414;
+              xfer += iprot->readI64(_elem414);
+              this->success.insert(_elem414);
             }
-            xfer += iprot->readListEnd();
+            xfer += iprot->readSetEnd();
           }
           this->__isset.success = true;
         } else {
@@ -13711,15 +13712,15 @@ uint32_t GraphQueryAggregatorService_BFS_result::write(::apache::thrift::protoco
   xfer += oprot->writeStructBegin("GraphQueryAggregatorService_BFS_result");
 
   if (this->__isset.success) {
-    xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
+    xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_SET, 0);
     {
-      xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->success.size()));
-      std::vector<int64_t> ::const_iterator _iter414;
-      for (_iter414 = this->success.begin(); _iter414 != this->success.end(); ++_iter414)
+      xfer += oprot->writeSetBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->success.size()));
+      std::set<int64_t> ::const_iterator _iter415;
+      for (_iter415 = this->success.begin(); _iter415 != this->success.end(); ++_iter415)
       {
-        xfer += oprot->writeI64((*_iter414));
+        xfer += oprot->writeI64((*_iter415));
       }
-      xfer += oprot->writeListEnd();
+      xfer += oprot->writeSetEnd();
     }
     xfer += oprot->writeFieldEnd();
   }
@@ -13755,19 +13756,20 @@ uint32_t GraphQueryAggregatorService_BFS_presult::read(::apache::thrift::protoco
     switch (fid)
     {
       case 0:
-        if (ftype == ::apache::thrift::protocol::T_LIST) {
+        if (ftype == ::apache::thrift::protocol::T_SET) {
           {
             (*(this->success)).clear();
-            uint32_t _size415;
-            ::apache::thrift::protocol::TType _etype418;
-            xfer += iprot->readListBegin(_etype418, _size415);
-            (*(this->success)).resize(_size415);
-            uint32_t _i419;
-            for (_i419 = 0; _i419 < _size415; ++_i419)
+            uint32_t _size416;
+            ::apache::thrift::protocol::TType _etype419;
+            xfer += iprot->readSetBegin(_etype419, _size416);
+            uint32_t _i420;
+            for (_i420 = 0; _i420 < _size416; ++_i420)
             {
-              xfer += iprot->readI64((*(this->success))[_i419]);
+              int64_t _elem421;
+              xfer += iprot->readI64(_elem421);
+              (*(this->success)).insert(_elem421);
             }
-            xfer += iprot->readListEnd();
+            xfer += iprot->readSetEnd();
           }
           this->__isset.success = true;
         } else {
@@ -13892,19 +13894,20 @@ uint32_t GraphQueryAggregatorService_DFS_result::read(::apache::thrift::protocol
     switch (fid)
     {
       case 0:
-        if (ftype == ::apache::thrift::protocol::T_LIST) {
+        if (ftype == ::apache::thrift::protocol::T_SET) {
           {
             this->success.clear();
-            uint32_t _size420;
-            ::apache::thrift::protocol::TType _etype423;
-            xfer += iprot->readListBegin(_etype423, _size420);
-            this->success.resize(_size420);
-            uint32_t _i424;
-            for (_i424 = 0; _i424 < _size420; ++_i424)
+            uint32_t _size422;
+            ::apache::thrift::protocol::TType _etype425;
+            xfer += iprot->readSetBegin(_etype425, _size422);
+            uint32_t _i426;
+            for (_i426 = 0; _i426 < _size422; ++_i426)
             {
-              xfer += iprot->readI64(this->success[_i424]);
+              int64_t _elem427;
+              xfer += iprot->readI64(_elem427);
+              this->success.insert(_elem427);
             }
-            xfer += iprot->readListEnd();
+            xfer += iprot->readSetEnd();
           }
           this->__isset.success = true;
         } else {
@@ -13930,15 +13933,15 @@ uint32_t GraphQueryAggregatorService_DFS_result::write(::apache::thrift::protoco
   xfer += oprot->writeStructBegin("GraphQueryAggregatorService_DFS_result");
 
   if (this->__isset.success) {
-    xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
+    xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_SET, 0);
     {
-      xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->success.size()));
-      std::vector<int64_t> ::const_iterator _iter425;
-      for (_iter425 = this->success.begin(); _iter425 != this->success.end(); ++_iter425)
+      xfer += oprot->writeSetBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->success.size()));
+      std::set<int64_t> ::const_iterator _iter428;
+      for (_iter428 = this->success.begin(); _iter428 != this->success.end(); ++_iter428)
       {
-        xfer += oprot->writeI64((*_iter425));
+        xfer += oprot->writeI64((*_iter428));
       }
-      xfer += oprot->writeListEnd();
+      xfer += oprot->writeSetEnd();
     }
     xfer += oprot->writeFieldEnd();
   }
@@ -13974,19 +13977,20 @@ uint32_t GraphQueryAggregatorService_DFS_presult::read(::apache::thrift::protoco
     switch (fid)
     {
       case 0:
-        if (ftype == ::apache::thrift::protocol::T_LIST) {
+        if (ftype == ::apache::thrift::protocol::T_SET) {
           {
             (*(this->success)).clear();
-            uint32_t _size426;
-            ::apache::thrift::protocol::TType _etype429;
-            xfer += iprot->readListBegin(_etype429, _size426);
-            (*(this->success)).resize(_size426);
-            uint32_t _i430;
-            for (_i430 = 0; _i430 < _size426; ++_i430)
+            uint32_t _size429;
+            ::apache::thrift::protocol::TType _etype432;
+            xfer += iprot->readSetBegin(_etype432, _size429);
+            uint32_t _i433;
+            for (_i433 = 0; _i433 < _size429; ++_i433)
             {
-              xfer += iprot->readI64((*(this->success))[_i430]);
+              int64_t _elem434;
+              xfer += iprot->readI64(_elem434);
+              (*(this->success)).insert(_elem434);
             }
-            xfer += iprot->readListEnd();
+            xfer += iprot->readSetEnd();
           }
           this->__isset.success = true;
         } else {
@@ -17503,7 +17507,7 @@ void GraphQueryAggregatorServiceClient::recv_advance_path_query_ctx(RPQCtx& _ret
   throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "advance_path_query_ctx failed: unknown result");
 }
 
-void GraphQueryAggregatorServiceClient::BFS(std::vector<int64_t> & _return, const int64_t start_id)
+void GraphQueryAggregatorServiceClient::BFS(std::set<int64_t> & _return, const int64_t start_id)
 {
   send_BFS(start_id);
   recv_BFS(_return);
@@ -17523,7 +17527,7 @@ void GraphQueryAggregatorServiceClient::send_BFS(const int64_t start_id)
   oprot_->getTransport()->flush();
 }
 
-void GraphQueryAggregatorServiceClient::recv_BFS(std::vector<int64_t> & _return)
+void GraphQueryAggregatorServiceClient::recv_BFS(std::set<int64_t> & _return)
 {
 
   int32_t rseqid = 0;
@@ -17561,7 +17565,7 @@ void GraphQueryAggregatorServiceClient::recv_BFS(std::vector<int64_t> & _return)
   throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "BFS failed: unknown result");
 }
 
-void GraphQueryAggregatorServiceClient::DFS(std::vector<int64_t> & _return, const int64_t start_id)
+void GraphQueryAggregatorServiceClient::DFS(std::set<int64_t> & _return, const int64_t start_id)
 {
   send_DFS(start_id);
   recv_DFS(_return);
@@ -17581,7 +17585,7 @@ void GraphQueryAggregatorServiceClient::send_DFS(const int64_t start_id)
   oprot_->getTransport()->flush();
 }
 
-void GraphQueryAggregatorServiceClient::recv_DFS(std::vector<int64_t> & _return)
+void GraphQueryAggregatorServiceClient::recv_DFS(std::set<int64_t> & _return)
 {
 
   int32_t rseqid = 0;
@@ -25963,7 +25967,7 @@ void GraphQueryAggregatorServiceConcurrentClient::recv_advance_path_query_ctx(RP
   } // end while(true)
 }
 
-void GraphQueryAggregatorServiceConcurrentClient::BFS(std::vector<int64_t> & _return, const int64_t start_id)
+void GraphQueryAggregatorServiceConcurrentClient::BFS(std::set<int64_t> & _return, const int64_t start_id)
 {
   int32_t seqid = send_BFS(start_id);
   recv_BFS(_return, seqid);
@@ -25987,7 +25991,7 @@ int32_t GraphQueryAggregatorServiceConcurrentClient::send_BFS(const int64_t star
   return cseqid;
 }
 
-void GraphQueryAggregatorServiceConcurrentClient::recv_BFS(std::vector<int64_t> & _return, const int32_t seqid)
+void GraphQueryAggregatorServiceConcurrentClient::recv_BFS(std::set<int64_t> & _return, const int32_t seqid)
 {
 
   int32_t rseqid = 0;
@@ -26047,7 +26051,7 @@ void GraphQueryAggregatorServiceConcurrentClient::recv_BFS(std::vector<int64_t> 
   } // end while(true)
 }
 
-void GraphQueryAggregatorServiceConcurrentClient::DFS(std::vector<int64_t> & _return, const int64_t start_id)
+void GraphQueryAggregatorServiceConcurrentClient::DFS(std::set<int64_t> & _return, const int64_t start_id)
 {
   int32_t seqid = send_DFS(start_id);
   recv_DFS(_return, seqid);
@@ -26071,7 +26075,7 @@ int32_t GraphQueryAggregatorServiceConcurrentClient::send_DFS(const int64_t star
   return cseqid;
 }
 
-void GraphQueryAggregatorServiceConcurrentClient::recv_DFS(std::vector<int64_t> & _return, const int32_t seqid)
+void GraphQueryAggregatorServiceConcurrentClient::recv_DFS(std::set<int64_t> & _return, const int32_t seqid)
 {
 
   int32_t rseqid = 0;

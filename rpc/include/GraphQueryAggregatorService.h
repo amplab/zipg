@@ -80,8 +80,8 @@ class GraphQueryAggregatorServiceIf {
   virtual void path_query(RPQCtx& _return, const std::vector<int64_t> & query) = 0;
   virtual void path_query_local(RPQCtx& _return, const std::vector<int64_t> & query) = 0;
   virtual void advance_path_query_ctx(RPQCtx& _return, const std::vector<int64_t> & query, const RPQCtx& ctx) = 0;
-  virtual void BFS(std::vector<int64_t> & _return, const int64_t start_id) = 0;
-  virtual void DFS(std::vector<int64_t> & _return, const int64_t start_id) = 0;
+  virtual void BFS(std::set<int64_t> & _return, const int64_t start_id) = 0;
+  virtual void DFS(std::set<int64_t> & _return, const int64_t start_id) = 0;
 };
 
 class GraphQueryAggregatorServiceIfFactory {
@@ -304,10 +304,10 @@ class GraphQueryAggregatorServiceNull : virtual public GraphQueryAggregatorServi
   void advance_path_query_ctx(RPQCtx& /* _return */, const std::vector<int64_t> & /* query */, const RPQCtx& /* ctx */) {
     return;
   }
-  void BFS(std::vector<int64_t> & /* _return */, const int64_t /* start_id */) {
+  void BFS(std::set<int64_t> & /* _return */, const int64_t /* start_id */) {
     return;
   }
-  void DFS(std::vector<int64_t> & /* _return */, const int64_t /* start_id */) {
+  void DFS(std::set<int64_t> & /* _return */, const int64_t /* start_id */) {
     return;
   }
 };
@@ -7091,11 +7091,11 @@ class GraphQueryAggregatorService_BFS_result {
   }
 
   virtual ~GraphQueryAggregatorService_BFS_result() throw();
-  std::vector<int64_t>  success;
+  std::set<int64_t>  success;
 
   _GraphQueryAggregatorService_BFS_result__isset __isset;
 
-  void __set_success(const std::vector<int64_t> & val);
+  void __set_success(const std::set<int64_t> & val);
 
   bool operator == (const GraphQueryAggregatorService_BFS_result & rhs) const
   {
@@ -7124,7 +7124,7 @@ class GraphQueryAggregatorService_BFS_presult {
 
 
   virtual ~GraphQueryAggregatorService_BFS_presult() throw();
-  std::vector<int64_t> * success;
+  std::set<int64_t> * success;
 
   _GraphQueryAggregatorService_BFS_presult__isset __isset;
 
@@ -7195,11 +7195,11 @@ class GraphQueryAggregatorService_DFS_result {
   }
 
   virtual ~GraphQueryAggregatorService_DFS_result() throw();
-  std::vector<int64_t>  success;
+  std::set<int64_t>  success;
 
   _GraphQueryAggregatorService_DFS_result__isset __isset;
 
-  void __set_success(const std::vector<int64_t> & val);
+  void __set_success(const std::set<int64_t> & val);
 
   bool operator == (const GraphQueryAggregatorService_DFS_result & rhs) const
   {
@@ -7228,7 +7228,7 @@ class GraphQueryAggregatorService_DFS_presult {
 
 
   virtual ~GraphQueryAggregatorService_DFS_presult() throw();
-  std::vector<int64_t> * success;
+  std::set<int64_t> * success;
 
   _GraphQueryAggregatorService_DFS_presult__isset __isset;
 
@@ -7438,12 +7438,12 @@ class GraphQueryAggregatorServiceClient : virtual public GraphQueryAggregatorSer
   void advance_path_query_ctx(RPQCtx& _return, const std::vector<int64_t> & query, const RPQCtx& ctx);
   void send_advance_path_query_ctx(const std::vector<int64_t> & query, const RPQCtx& ctx);
   void recv_advance_path_query_ctx(RPQCtx& _return);
-  void BFS(std::vector<int64_t> & _return, const int64_t start_id);
+  void BFS(std::set<int64_t> & _return, const int64_t start_id);
   void send_BFS(const int64_t start_id);
-  void recv_BFS(std::vector<int64_t> & _return);
-  void DFS(std::vector<int64_t> & _return, const int64_t start_id);
+  void recv_BFS(std::set<int64_t> & _return);
+  void DFS(std::set<int64_t> & _return, const int64_t start_id);
   void send_DFS(const int64_t start_id);
-  void recv_DFS(std::vector<int64_t> & _return);
+  void recv_DFS(std::set<int64_t> & _return);
  protected:
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> piprot_;
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> poprot_;
@@ -8182,7 +8182,7 @@ class GraphQueryAggregatorServiceMultiface : virtual public GraphQueryAggregator
     return;
   }
 
-  void BFS(std::vector<int64_t> & _return, const int64_t start_id) {
+  void BFS(std::set<int64_t> & _return, const int64_t start_id) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
@@ -8192,7 +8192,7 @@ class GraphQueryAggregatorServiceMultiface : virtual public GraphQueryAggregator
     return;
   }
 
-  void DFS(std::vector<int64_t> & _return, const int64_t start_id) {
+  void DFS(std::set<int64_t> & _return, const int64_t start_id) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
@@ -8409,12 +8409,12 @@ class GraphQueryAggregatorServiceConcurrentClient : virtual public GraphQueryAgg
   void advance_path_query_ctx(RPQCtx& _return, const std::vector<int64_t> & query, const RPQCtx& ctx);
   int32_t send_advance_path_query_ctx(const std::vector<int64_t> & query, const RPQCtx& ctx);
   void recv_advance_path_query_ctx(RPQCtx& _return, const int32_t seqid);
-  void BFS(std::vector<int64_t> & _return, const int64_t start_id);
+  void BFS(std::set<int64_t> & _return, const int64_t start_id);
   int32_t send_BFS(const int64_t start_id);
-  void recv_BFS(std::vector<int64_t> & _return, const int32_t seqid);
-  void DFS(std::vector<int64_t> & _return, const int64_t start_id);
+  void recv_BFS(std::set<int64_t> & _return, const int32_t seqid);
+  void DFS(std::set<int64_t> & _return, const int64_t start_id);
   int32_t send_DFS(const int64_t start_id);
-  void recv_DFS(std::vector<int64_t> & _return, const int32_t seqid);
+  void recv_DFS(std::set<int64_t> & _return, const int32_t seqid);
  protected:
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> piprot_;
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> poprot_;
