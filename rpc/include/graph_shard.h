@@ -139,9 +139,6 @@ class GraphShard {
                            const int64_t atype) {
     COND_LOG_E("get_neighbors_atype\n");
 
-    if (nodeId % total_num_shards_ != shard_id_) {
-      COND_LOG_E("ASSERTION FAIL: %lld mod %d != %d\n", nodeId, total_num_shards_, shard_id_);
-    }
     assert(nodeId % total_num_shards_ == shard_id_);
     if (edge_table_empty_) {
       _return.clear();
