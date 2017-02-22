@@ -146,8 +146,9 @@ class GraphQueryAggregatorServiceHandler :
       LOG_E("%zu total aggregators, but only %zu live\n", total_num_hosts_,
             hostnames_.size());
       return 1;
-    }COND_LOG_E("Aggregators connected: cluster has %zu aggregators in total.\n",
-        hostnames_.size());
+    }
+    COND_LOG_E("Aggregators connected: cluster has %zu aggregators in total.\n",
+               hostnames_.size());
     return 0;
   }
 
@@ -189,8 +190,8 @@ class GraphQueryAggregatorServiceHandler :
                            const int32_t local_shard_id,
                            const std::vector<ThriftSrcAtype> & updates) {
     COND_LOG_E("Recording edge updates for shard %d at host %d, "
-        "from shard %d, %lld assoc lists\n",
-        local_shard_id, local_host_id_, next_shard_id, updates.size());
+               "from shard %d, %lld assoc lists\n",
+               local_shard_id, local_host_id_, next_shard_id, updates.size());
 
     boost::unique_lock<boost::shared_mutex> lk(edge_update_ptrs_mutex);
     ThriftEdgeUpdatePtr ptr;
@@ -222,7 +223,7 @@ class GraphQueryAggregatorServiceHandler :
       get_attribute_local(_return, shard_id, nodeId, attrId);
     } else {
       COND_LOG_E("nodeId %lld, host id %d, aggs size\n", nodeId, host_id,
-          aggregators_.size());
+                 aggregators_.size());
       aggregators_.at(host_id).get_attribute_local(_return, shard_id, nodeId,
                                                    attrId);
     }
@@ -238,7 +239,7 @@ class GraphQueryAggregatorServiceHandler :
     int shard_id = nodeId % total_num_shards_;
     int host_id = shard_id % total_num_hosts_;
     COND_LOG_E("Received: get_neighbors(%lld), route to shard %d on host %d\n",
-        nodeId, shard_id, host_id);
+               nodeId, shard_id, host_id);
     if (host_id == local_host_id_) {
       int shard_idx = shard_id_to_shard_idx(shard_id);
       local_shards_.at(shard_idx)->get_neighbors(_return, nodeId);
@@ -309,7 +310,7 @@ class GraphQueryAggregatorServiceHandler :
   void get_neighbors_attr(std::vector<int64_t> & _return, const int64_t nodeId,
                           const int32_t attrId, const std::string& attrKey) {
     COND_LOG_E("Aggregator get_nhbr_node(nodeId %d, attrId %d)\n", nodeId,
-        attrId);
+               attrId);
 
     int shard_id = nodeId % total_num_shards_;
     int host_id = shard_id % total_num_hosts_;
@@ -333,7 +334,7 @@ class GraphQueryAggregatorServiceHandler :
                                 const int32_t attrId,
                                 const std::string& attrKey) {
     COND_LOG_E("In get_nhbr_node_local(shardId %d, nodeId %d, attrId %d)\n",
-        shardId, nodeId, attrId);
+               shardId, nodeId, attrId);
 
     std::vector<int64_t> nhbrs;
     get_neighbors_local(nhbrs, shardId, nodeId);
@@ -394,7 +395,7 @@ class GraphQueryAggregatorServiceHandler :
     std::unordered_map<int, future_t> futures;
     for (auto it = splits_by_keys.begin(); it != splits_by_keys.end(); ++it) {
       COND_LOG_E("sending to shard %d, filter_nodes\n",
-          it->first / total_num_hosts_);
+                 it->first / total_num_hosts_);
       // FIXME?: try to sleep a while? get_nhbr(n, attr) bug here?
       AsyncGraphShard *shard = local_shards_[it->first / total_num_hosts_];
       auto future = shard->async_filter_nodes(it->second, attrId, attrKey);
@@ -408,7 +409,7 @@ class GraphQueryAggregatorServiceHandler :
     std::vector<int64_t> shard_result;
     for (auto it = splits_by_keys.begin(); it != splits_by_keys.end(); ++it) {
       COND_LOG_E("receiving filter_nodes() result from shard %d, ",
-          it->first / total_num_hosts_);
+                 it->first / total_num_hosts_);
       shard_result = futures[it->first / total_num_hosts_].get();
       COND_LOG_E("size: %d\n", shard_result.size());
       // local back to global
@@ -554,7 +555,7 @@ class GraphQueryAggregatorServiceHandler :
     }
 
     COND_LOG_E("Getting edge update pointers at idx=%d, size = %zu\n",
-        shard_idx, edge_update_ptrs.size());
+               shard_idx, edge_update_ptrs.size());
 
     assert(
         shard_idx < edge_update_ptrs.size()
@@ -588,8 +589,8 @@ class GraphQueryAggregatorServiceHandler :
       assoc_range_local(_return, shard_id, src, atype, off, len);
     } else {
       COND_LOG_E("assoc_range(src %lld, atype %lld,...) "
-          "route to shard %d on host %d",
-          src, atype, shard_id, host_id);
+                 "route to shard %d on host %d",
+                 src, atype, shard_id, host_id);
       aggregators_.at(host_id).assoc_range_local(_return, shard_id, src, atype,
                                                  off, len);
     }
@@ -603,9 +604,9 @@ class GraphQueryAggregatorServiceHandler :
     int shard_idx = shard_id_to_shard_idx(shardId);
 
     COND_LOG_E("assoc_range_local(src %lld, atype %lld, ..., len %d) "
-        "shard %d on host %d, shard idx %d of %d shards\n",
-        src, atype, len, shardId, local_host_id_, shard_idx,
-        local_shards_.size());
+               "shard %d on host %d, shard idx %d of %d shards\n",
+               src, atype, len, shardId, local_host_id_, shard_idx,
+               local_shards_.size());
     std::vector<ThriftAssoc> assocs;
     int32_t curr_len = 0;
     _return.clear();
@@ -644,7 +645,7 @@ class GraphQueryAggregatorServiceHandler :
 
     if (!ptrs.empty()) {
       COND_LOG_E("assoc_range_local(%lld, %lld, %d, %d), %d ptrs", src, atype,
-          off, len, ptrs.size());
+                 off, len, ptrs.size());
     }
 
     auto start = _return.begin();
@@ -668,8 +669,8 @@ class GraphQueryAggregatorServiceHandler :
       return assoc_count_local(primary_shard_id, src, atype);
     } else {
       COND_LOG_E("assoc_count(src %lld, atype %lld) "
-          "route to shard %d on host %d, shard idx",
-          src, atype, primary_shard_id, host_id);
+                 "route to shard %d on host %d, shard idx",
+                 src, atype, primary_shard_id, host_id);
       return aggregators_.at(host_id).assoc_count_local(primary_shard_id, src,
                                                         atype);
     }
@@ -680,8 +681,8 @@ class GraphQueryAggregatorServiceHandler :
   int64_t assoc_count_local(int32_t shardId, int64_t src, int64_t atype) {
     int shard_idx = shard_id_to_shard_idx(shardId);
     COND_LOG_E("assoc_count_local(src %lld, atype %lld) "
-        "shard %d on host %d, shard idx %d",
-        src, atype, shardId, local_host_id_, shard_idx);
+               "shard %d on host %d, shard idx %d",
+               src, atype, shardId, local_host_id_, shard_idx);
 
     std::vector<ThriftEdgeUpdatePtr> ptrs;
     get_edge_update_ptrs(ptrs, shard_idx, src, atype);
@@ -788,7 +789,7 @@ class GraphQueryAggregatorServiceHandler :
     }
 
     COND_LOG_E("Sending assoc_get request to local shard at idx=%d\n",
-        shard_idx);
+               shard_idx);
 
     auto future = local_shards_.at(shard_idx)->async_assoc_get(src, atype,
                                                                dstIdSet, tLow,
@@ -845,7 +846,7 @@ class GraphQueryAggregatorServiceHandler :
 
     // TODO: Add check for key range to determine if object lies within SuccinctStore shards or LogStore shards
     COND_LOG_E("Shard index = %d, number of shards on this server = %zu\n",
-        shard_idx, local_shards_.size());
+               shard_idx, local_shards_.size());
     local_shards_.at(shard_idx)->obj_get(
         _return, global_to_local_node_id(nodeId, shardId));
   }
@@ -878,8 +879,8 @@ class GraphQueryAggregatorServiceHandler :
             && "shard_idx >= local_shards_.size()");
 
     COND_LOG_E("assoc_time_range_local(src %lld, atype %lld,...) "
-        "; shardId %d on host %d, shard idx %d\n",
-        src, atype, shardId, local_host_id_, shard_idx);
+               "; shardId %d on host %d, shard idx %d\n",
+               src, atype, shardId, local_host_id_, shard_idx);
 
     std::vector<ThriftEdgeUpdatePtr> ptrs;
     get_edge_update_ptrs(ptrs, shard_idx, src, atype);
@@ -944,7 +945,7 @@ class GraphQueryAggregatorServiceHandler :
     }
 
     COND_LOG_E("assoc_time_range done, returning %d assocs (limit %d)!\n",
-        _return.size(), limit);
+               _return.size(), limit);
   }
 
   int64_t obj_add(const std::vector<std::string>& attrs) {
@@ -970,7 +971,7 @@ class GraphQueryAggregatorServiceHandler :
         // assert(local_host_id_ != primary_host_id); // No loger holds
 
         COND_LOG_E("Updating host %d, shard %d about obj(%lld)\n",
-            primary_host_id, primary_shard_id, obj);
+                   primary_host_id, primary_shard_id, obj);
 
         if (primary_host_id == local_host_id_) {
           record_node_append(
@@ -986,7 +987,7 @@ class GraphQueryAggregatorServiceHandler :
       }
       end = get_timestamp();
       COND_LOG_E("Updated remote node update pointers in %lld us\n",
-          (end - start));
+                 (end - start));
     } else {
       COND_LOG_E("Forwarding assoc_add to host %d\n", (total_num_hosts_ - 1));
       return aggregators_.at(total_num_hosts_ - 1).obj_add(attrs);
@@ -1020,7 +1021,7 @@ class GraphQueryAggregatorServiceHandler :
         src_atype.atype = atype;
 
         COND_LOG_E("Updating host %d, shard %d about (%lld,%d)\n",
-            primary_host_id, primary_shard_id, src, atype);
+                   primary_host_id, primary_shard_id, src, atype);
 
         if (primary_host_id == local_host_id_) {
           record_edge_updates(
@@ -1059,7 +1060,7 @@ class GraphQueryAggregatorServiceHandler :
               && "shard_idx >= local_shards_.size()");
 
       COND_LOG_E("Shard index = %d, number of shards on this server = %zu\n",
-          shard_idx, local_shards_.size());
+                 shard_idx, local_shards_.size());
       int64_t local_id;
       if (local_host_id_ == total_num_hosts_ - 1
           && shard_idx == local_shards_.size() - 1) {
@@ -1129,14 +1130,14 @@ class GraphQueryAggregatorServiceHandler :
 
   bool deleteNodeLocal(int64_t shard_id, int64_t id) {
     COND_LOG_E("Received local request for deleteNodeLocal node_id = %lld\n",
-        id);
+               id);
     int shard_idx = shard_id_to_shard_idx(shard_id);
     assert(
         shard_idx < local_shards_.size()
             && "shard_idx >= local_shards_.size()");
 
     COND_LOG_E("Shard index = %d, number of shards on this server = %zu\n",
-        shard_idx, local_shards_.size());
+               shard_idx, local_shards_.size());
     int64_t local_id;
     if (local_host_id_ == total_num_hosts_ - 1
         && shard_idx == local_shards_.size() - 1) {
@@ -1203,7 +1204,7 @@ class GraphQueryAggregatorServiceHandler :
             && "shard_idx >= local_shards_.size()");
 
     COND_LOG_E("getLinkLocal(src %lld, atype %lld, dst %lld)\n", id1, link_type,
-        id2);
+               id2);
 
     // First try designated shard
     bool found = local_shards_.at(shard_idx)->getLink(link, id1, link_type,
@@ -1227,7 +1228,7 @@ class GraphQueryAggregatorServiceHandler :
           local_shards_.at(shard_idx_local)->getLink(link, id1, link_type, id2);
         } else {
           COND_LOG_E("LogStore is remote at host id = %lld, shard id=%lld\n",
-              next_host_id, ptr.shardId);
+                     next_host_id, ptr.shardId);
           aggregators_.at(next_host_id).getLinkLocal(link, ptr.shardId, id1,
                                                      link_type, id2);
         }
@@ -1258,7 +1259,7 @@ class GraphQueryAggregatorServiceHandler :
         multistore_enabled_ && "multistore not enabled but assoc_add called");
 
     COND_LOG_E("Received addLink(%lld,%d,%lld)\n", link.srcId, link.atype,
-        link.dstId);
+               link.dstId);
 
     // NOTE: this hard-codes the knowledge that:
     // (1) the last machine is LogStore machine, and
@@ -1308,7 +1309,7 @@ class GraphQueryAggregatorServiceHandler :
             && "shard_idx >= local_shards_.size()");
 
     COND_LOG_E("deleteLinkLocal(src %lld, atype %lld, dst %lld)\n", id1,
-        link_type, id2);
+               link_type, id2);
 
     // First try designated shard
     bool deleted = local_shards_.at(shard_idx)->deleteLink(id1, link_type, id2);
@@ -1396,12 +1397,12 @@ class GraphQueryAggregatorServiceHandler :
       if (update_host_id == local_host_id_) {
         int shard_idx_local = shard_id_to_shard_idx(ptr.shardId);
         COND_LOG_E("LogStore shard is local at index = %lld.\n",
-            shard_idx_local);
+                   shard_idx_local);
         update_future = local_shards_.at(shard_idx_local)->async_getLinkList(
             id1, link_type);
       } else {
         COND_LOG_E("LogStore shard is remote at host = %lld, shard_id = %lld\n",
-            update_host_id, ptr.shardId);
+                   update_host_id, ptr.shardId);
         aggregators_.at(update_host_id).send_getLinkListLocal(ptr.shardId, id1,
                                                               link_type);
       }
@@ -1437,7 +1438,7 @@ class GraphQueryAggregatorServiceHandler :
     assert(num_succinctstore_hosts_ > 0 && "num_succinctstore_hosts_ <= 0");
 
     COND_LOG_E("Received getLinkList(id1=%lld, link_type=%lld) request\n", id1,
-        link_type);
+               link_type);
 
     int shard_id = id1 % total_num_shards_;
     int host_id = shard_id % num_succinctstore_hosts_;
@@ -1447,7 +1448,7 @@ class GraphQueryAggregatorServiceHandler :
       getLinkListLocal(assocs, shard_id, id1, link_type);
     } else {
       COND_LOG_E("Forwarding to remote shard %lld on host %lld\n", shard_id,
-          host_id);
+                 host_id);
       aggregators_.at(host_id).getLinkListLocal(assocs, shard_id, id1,
                                                 link_type);
     }
@@ -1488,13 +1489,13 @@ class GraphQueryAggregatorServiceHandler :
       if (update_host_id == local_host_id_) {
         int shard_idx_local = shard_id_to_shard_idx(ptr.shardId);
         COND_LOG_E("LogStore shard is local at index = %lld.\n",
-            shard_idx_local);
+                   shard_idx_local);
         update_future = local_shards_.at(shard_idx_local)
             ->async_getFilteredLinkList(id1, link_type, min_timestamp,
                                         max_timestamp, offset, limit);
       } else {
         COND_LOG_E("LogStore shard is remote at host = %lld, shard_id = %lld\n",
-            update_host_id, ptr.shardId);
+                   update_host_id, ptr.shardId);
         aggregators_.at(update_host_id).send_getFilteredLinkListLocal(
             ptr.shardId, id1, link_type, min_timestamp, max_timestamp, offset,
             limit);
@@ -1536,7 +1537,7 @@ class GraphQueryAggregatorServiceHandler :
     }
 
     COND_LOG_E("getFilteredLinkListLocal done, returning %d links!\n",
-        assocs.size());
+               assocs.size());
 
   }
 
@@ -1560,7 +1561,7 @@ class GraphQueryAggregatorServiceHandler :
                                max_timestamp, offset, limit);
     } else {
       COND_LOG_E("Forwarding to remote shard %lld on host %lld\n", shard_id,
-          host_id);
+                 host_id);
       aggregators_.at(host_id).getFilteredLinkListLocal(assocs, shard_id, id1,
                                                         link_type,
                                                         min_timestamp,
@@ -1621,7 +1622,8 @@ class GraphQueryAggregatorServiceHandler :
     for (int i = 0; i < total_num_hosts_; ++i) {
       if (i == local_host_id_) {
         continue;
-      }COND_LOG_E("Forwarding to rpq to aggregator %d\n", i);
+      }
+      COND_LOG_E("Forwarding to rpq to aggregator %d\n", i);
       aggregators_.at(i).send_path_query_local(query);
     }
 
@@ -1636,7 +1638,8 @@ class GraphQueryAggregatorServiceHandler :
 
       COND_LOG_E("Aggregating rpq response from aggregator %d\n", i);
       _return.endpoints.insert(ret.endpoints.begin(), ret.endpoints.end());
-    }COND_LOG_E("Finished path query\n");
+    }
+    COND_LOG_E("Finished path query\n");
   }
 
   void path_query_local(RPQCtx& _return, const std::vector<int64_t> & query) {
@@ -1666,7 +1669,8 @@ class GraphQueryAggregatorServiceHandler :
         int shard_id = ep.second % total_num_shards_;
         int host_id = shard_id % total_num_hosts_;
         host_ctx[host_id].endpoints.insert(pair2path(ep));
-      }COND_LOG_E("Done segregating local results.\n");
+      }
+      COND_LOG_E("Done segregating local results.\n");
     }
 
     if (query.size() > 1) {
@@ -1682,7 +1686,8 @@ class GraphQueryAggregatorServiceHandler :
       for (int i = 0; i < total_num_hosts_; ++i) {
         if (i == local_host_id_) {
           continue;
-        }COND_LOG_E("Sending advance ctx request to aggregator %d\n", i);
+        }
+        COND_LOG_E("Sending advance ctx request to aggregator %d\n", i);
         aggregators_.at(i).send_advance_path_query_ctx(rem_query, host_ctx[i]);
       }
 
@@ -1691,20 +1696,23 @@ class GraphQueryAggregatorServiceHandler :
       for (int i = 0; i < total_num_hosts_; ++i) {
         if (i == local_host_id_) {
           continue;
-        }COND_LOG_E("Receiving advance_ctx response from aggregator %d\n", i);
+        }
+        COND_LOG_E("Receiving advance_ctx response from aggregator %d\n", i);
 
         RPQCtx ret;
         aggregators_.at(i).recv_advance_path_query_ctx(ret);
 
         COND_LOG_E("Aggregating advance_ctx response from aggregator %d\n", i);
         _return.endpoints.insert(ret.endpoints.begin(), ret.endpoints.end());
-      }COND_LOG_E("Finished advance_ctx\n");
+      }
+      COND_LOG_E("Finished advance_ctx\n");
     } else {
       COND_LOG_E("No more hops left in query, aggregating local results\n");
       for (int i = 0; i < total_num_hosts_; ++i) {
         _return.endpoints.insert(host_ctx[i].endpoints.begin(),
                                  host_ctx[i].endpoints.end());
-      }COND_LOG_E("Finished aggregating local results\n");
+      }
+      COND_LOG_E("Finished aggregating local results\n");
     }
   }
 
@@ -1761,7 +1769,8 @@ class GraphQueryAggregatorServiceHandler :
       for (int i = 0; i < total_num_hosts_; ++i) {
         if (i == local_host_id_) {
           continue;
-        }COND_LOG_E("Sending advance ctx request to aggregator %d\n", i);
+        }
+        COND_LOG_E("Sending advance ctx request to aggregator %d\n", i);
         aggregators_.at(i).send_advance_path_query_ctx(rem_query, host_ctx[i]);
       }
 
@@ -1783,7 +1792,8 @@ class GraphQueryAggregatorServiceHandler :
       for (int i = 0; i < total_num_hosts_; ++i) {
         _return.endpoints.insert(host_ctx[i].endpoints.begin(),
                                  host_ctx[i].endpoints.end());
-      }COND_LOG_E("Finished aggregating local results\n");
+      }
+      COND_LOG_E("Finished aggregating local results\n");
     }
   }
 
@@ -1815,7 +1825,7 @@ class GraphQueryAggregatorServiceHandler :
     current_level.push_back(start_id);
     while (!current_level.empty()) {
       typedef std::future<std::vector<int64_t>> future_t;
-      std::vector<future_t> next_level(current_level.size());
+      std::vector<future_t> next_level;
       uint32_t i = 0;
       for (int64_t node_id : current_level) {
         if (_return.find(node_id) != _return.end())
@@ -1823,10 +1833,11 @@ class GraphQueryAggregatorServiceHandler :
         _return.insert(node_id);
         int shard_id = node_id % total_num_shards_;
 
-        COND_LOG_E("Sending out request for node %llu to shard %d\n", node_id, shard_id);
-        next_level[i] = local_shards_[shard_id / total_num_hosts_]->async_get_neighbors_atype(
-            node_id, 0);
-        i++;
+        COND_LOG_E("Sending out request for node %llu to shard %d\n", node_id,
+                   shard_id / total_num_hosts_);
+        next_level.push_back(
+            local_shards_[shard_id / total_num_hosts_]
+                ->async_get_neighbors_atype(node_id, 0));
       }
       COND_LOG_E("Done sending %zu async requests...\n", current_level.size());
       current_level.clear();
@@ -1921,7 +1932,8 @@ class GraphQueryAggregatorServiceHandler :
               && "shard_idx >= local_shards_.size()");
       ret[shard_idx].end_points.insert(
           SuccinctGraph::path_endpoints(ep.src, ep.dst));
-    }COND_LOG_E("Done segregating input ctx into shard-local ctxs.\n");
+    }
+    COND_LOG_E("Done segregating input ctx into shard-local ctxs.\n");
   }
 
 // globalKey = localKey * numShards + shardId
@@ -1940,7 +1952,7 @@ class GraphQueryAggregatorServiceHandler :
     }
     // FIXME
     COND_LOG_E("LogStore shard %d resides on host %d\n", shard_id,
-        num_succinctstore_hosts_ - 1);
+               num_succinctstore_hosts_ - 1);
     return num_succinctstore_hosts_ - 1;
   }
 
@@ -1955,7 +1967,7 @@ class GraphQueryAggregatorServiceHandler :
     int diff = shard_id - total_num_shards_;
     if (diff >= 0) {
       COND_LOG_E("Shard id %d >= #SS shards %d => LS shard id.\n", shard_id,
-          num_succinctstore_shards_);
+                 num_succinctstore_shards_);
       return local_shards_.size() - 1;  // log store
     }
     return shard_id / num_succinctstore_hosts_;  // succinct st., round-robin
