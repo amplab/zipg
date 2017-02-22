@@ -6,6 +6,8 @@
 
 #include <string>
 
+#define LOG_DEBUG
+
 // For proper (u)int64t printing
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>

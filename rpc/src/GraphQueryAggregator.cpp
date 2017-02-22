@@ -1804,7 +1804,7 @@ class GraphQueryAggregatorServiceHandler :
     for (int64_t nhbr_id : nhbrs)
       DFS(_return, nhbr_id);
 
-    COND_LOG_E("DFS(%lld): returning %d nodes.\n", start_id, _return.size());
+    COND_LOG_E("DFS(%lld): returning %zu nodes.\n", start_id, _return.size());
   }
 
   void BFS(std::vector<int64_t>& _return, int64_t start_id) {
