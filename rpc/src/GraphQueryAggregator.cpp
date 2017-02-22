@@ -1808,7 +1808,7 @@ class GraphQueryAggregatorServiceHandler :
     COND_LOG_E("DFS(%lld): returning %zu nodes.\n", start_id, _return.size());
   }
 
-  void BFS(std::vector<int64_t>& _return, int64_t start_id) {
+  void BFS(std::set<int64_t>& _return, int64_t start_id) {
     COND_LOG_E("Received BFS(id1=%lld) request\n", start_id);
 
     std::vector<int64_t> current_level;
@@ -1817,7 +1817,9 @@ class GraphQueryAggregatorServiceHandler :
       typedef std::future<std::vector<int64_t>> future_t;
       std::vector<future_t> next_level(current_level.size());
       for (int64_t node_id : current_level) {
-        _return.push_back(node_id);
+        if (_return.find(node_id) != _return.end())
+          continue;
+        _return.insert(node_id);
         int shard_id = node_id % total_num_shards_;
         local_shards_[shard_id / total_num_hosts_]->async_get_neighbors_atype(
             node_id, 0);
