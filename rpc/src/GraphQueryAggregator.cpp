@@ -1832,12 +1832,7 @@ class GraphQueryAggregatorServiceHandler :
   // General helper
   template<typename X>
   void append(std::vector<X>& dst, const std::vector<X>& src) {
-    if (dst.empty()) {
-      dst = std::move(src);
-    } else {
-      dst.reserve(dst.size() + src.size());
-      std::move(std::begin(src), std::end(src), std::back_inserter(dst));
-    }
+    dst.insert(std::end(dst), std::begin(src), std::end(src));
   }
 
   // RPQ Helpers
