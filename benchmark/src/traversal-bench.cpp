@@ -36,7 +36,7 @@ std::set<std::string> split(const std::string &s, char delim) {
 class TraversalBench {
  public:
   static const uint64_t TIMEOUT_SECS = 600;
-  static const size_t NUM_IDS = 1;
+  static const size_t NUM_IDS = 10;
 
   TraversalBench(const std::string& result_file) {
     output_path_ = result_file;
