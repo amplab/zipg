@@ -1800,7 +1800,7 @@ class GraphQueryAggregatorServiceHandler :
     local_shards_[shard_id / total_num_hosts_]->get_neighbors_atype(nhbrs,
                                                                     start_id,
                                                                     0);
-    COND_LOG_E("Node %lld has %zu neighbors\n", nhbrs.size());
+    COND_LOG_E("Node %lld has %zu neighbors\n", start_id, nhbrs.size());
     for (int64_t nhbr_id : nhbrs)
       if (_return.find(nhbr_id) == _return.end())
         DFS(_return, nhbr_id);
@@ -1818,11 +1818,12 @@ class GraphQueryAggregatorServiceHandler :
       std::vector<future_t> next_level(current_level.size());
       uint32_t i = 0;
       for (int64_t node_id : current_level) {
-        COND_LOG_E("Sending out request for node %llu\n", node_id);
         if (_return.find(node_id) != _return.end())
           continue;
         _return.insert(node_id);
         int shard_id = node_id % total_num_shards_;
+
+        COND_LOG_E("Sending out request for node %llu to shard %d\n", node_id, shard_id);
         next_level[i] = local_shards_[shard_id / total_num_hosts_]->async_get_neighbors_atype(
             node_id, 0);
         i++;
