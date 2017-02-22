@@ -604,7 +604,7 @@ class AsyncGraphShard : public GraphShard {
 
   std::future<std::set<int64_t>> async_get_nodes(const int32_t attrId,
                                                  const std::string& attrKey) {
-    return pool_->enqueue([&] {
+    return pool_->enqueue([attrId, attrKey, this] {
       std::set<int64_t> res;
       get_nodes(res, attrId, attrKey);
       return res;

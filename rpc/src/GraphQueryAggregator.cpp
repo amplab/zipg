@@ -299,6 +299,7 @@ class GraphQueryAggregatorServiceHandler :
                            const int32_t attrId, const std::string& attrKey) {
     std::vector<int64_t> nhbrs;
     get_neighbors(nhbrs, nodeId);
+    std::sort(nhbrs.begin(), nhbrs.end());
 
     std::set<int64_t> nodes;
     get_nodes(nodes, attrId, attrKey);
