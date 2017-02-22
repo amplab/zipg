@@ -1788,10 +1788,10 @@ class GraphQueryAggregatorServiceHandler :
   }
 
   // BFS, DFS
-  void DFS(std::vector<int64_t>& _return, int64_t start_id) {
+  void DFS(std::set<int64_t>& _return, int64_t start_id) {
     COND_LOG_E("Received DFS(id1=%lld) request\n", start_id);
 
-    _return.push_back(start_id);
+    _return.insert(start_id);
 
     int shard_id = start_id % total_num_shards_;
 
@@ -1800,9 +1800,10 @@ class GraphQueryAggregatorServiceHandler :
     local_shards_[shard_id / total_num_hosts_]->get_neighbors_atype(nhbrs,
                                                                     start_id,
                                                                     0);
-
+    COND_LOG_E("Node %lld has %zu neighbors\n", nhbrs.size());
     for (int64_t nhbr_id : nhbrs)
-      DFS(_return, nhbr_id);
+      if (_return.find(nhbr_id) == _return.end())
+        DFS(_return, nhbr_id);
 
     COND_LOG_E("DFS(%lld): returning %zu nodes.\n", start_id, _return.size());
   }
@@ -1821,9 +1822,11 @@ class GraphQueryAggregatorServiceHandler :
         local_shards_[shard_id / total_num_hosts_]->async_get_neighbors_atype(
             node_id, 0);
       }
+      COND_LOG_E("Done sending %zu async requests...\n", current_level.size());
       current_level.clear();
       for (future_t& f : next_level)
         append(current_level, f.get());
+      COND_LOG_E("Received responses; total size = %zu\n", current_level.size());
     }
   }
 

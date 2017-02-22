@@ -210,6 +210,6 @@ service GraphQueryAggregatorService {
   RPQCtx advance_path_query_ctx(1: list<i64> query, 2: RPQCtx ctx),
   
   // BFS/DFS API
-  list<i64> BFS(1: i64 start_id),
-  list<i64> DFS(1: i64 start_id),
+  set<i64> BFS(1: i64 start_id),
+  set<i64> DFS(1: i64 start_id),
 }
