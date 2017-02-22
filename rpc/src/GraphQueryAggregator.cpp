@@ -1816,13 +1816,16 @@ class GraphQueryAggregatorServiceHandler :
     while (!current_level.empty()) {
       typedef std::future<std::vector<int64_t>> future_t;
       std::vector<future_t> next_level(current_level.size());
+      uint32_t i = 0;
       for (int64_t node_id : current_level) {
+        COND_LOG_E("Sending out request for node %llu\n", node_id);
         if (_return.find(node_id) != _return.end())
           continue;
         _return.insert(node_id);
         int shard_id = node_id % total_num_shards_;
-        local_shards_[shard_id / total_num_hosts_]->async_get_neighbors_atype(
+        next_level[i] = local_shards_[shard_id / total_num_hosts_]->async_get_neighbors_atype(
             node_id, 0);
+        i++;
       }
       COND_LOG_E("Done sending %zu async requests...\n", current_level.size());
       current_level.clear();
