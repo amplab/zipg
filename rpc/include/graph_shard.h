@@ -644,7 +644,7 @@ class AsyncGraphShard : public GraphShard {
   std::future<std::vector<int64_t>> async_get_neighbors_atype(
       const int64_t node_id, const int64_t atype) {
 
-    return pool_->enqueue([node_id, atype] {
+    return pool_->enqueue([node_id, atype, this] {
       std::vector<int64_t> nhbrs;
       get_neighbors_atype(nhbrs, node_id, atype);
       return nhbrs;
