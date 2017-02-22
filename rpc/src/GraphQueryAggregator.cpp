@@ -1824,7 +1824,7 @@ class GraphQueryAggregatorServiceHandler :
     std::vector<int64_t> current_level;
     current_level.push_back(start_id);
     uint32_t num_levels = 0;
-    while (!current_level.empty() && num_levels <= 5) {
+    while (!current_level.empty() && num_levels <= 4) {
       typedef std::future<std::vector<int64_t>> future_t;
       std::vector<future_t> next_level;
       uint32_t i = 0;
