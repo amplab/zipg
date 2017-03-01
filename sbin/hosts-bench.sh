@@ -9,6 +9,8 @@
 #   SUCCINCT_SSH_OPTS Options passed to ssh when running remote commands.
 ##
 
+set -ex
+
 sbin="`dirname "$0"`"
 sbin="`cd "$sbin"; pwd`"
 
@@ -63,7 +65,7 @@ if [ "$SUCCINCT_SSH_OPTS" = "" ]; then
   SUCCINCT_SSH_OPTS="-o StrictHostKeyChecking=no"
 fi
 
-IFS=$'\n' read -r -d '' -a servers <<< "$SERVERLIST"
+#IFS=$'\n' read -r -d '' -a servers <<< "$SERVERLIST"
 #`echo "$SERVERLIST"| sed "s/#.*$//;/^$/d"`
 node_file_raw=$1
 edge_file_raw=$2

@@ -12,7 +12,7 @@ GRAPH_DIR=${DATA_DIR}/graphs
 SUCCINCT_DIR=${DATA_DIR}/succinct
 CSV_DIR=${DATA_DIR}/csv
 NEO4J_DIR=${DATA_DIR}/neo4j
-QUERY_DIR=${DATA_DIR}/queries
+QUERY_DIR=${HOME}/queries
 
 NODE_FILE=${DATA_DIR}/higgs-2attr350each-tpch.node
 EDGE_FILE=${DATA_DIR}/higgs-social_network.edge_table

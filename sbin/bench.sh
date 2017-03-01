@@ -22,21 +22,25 @@ datasets=(
 )
 threads=( 64 128 256 )
 benches=(
-  benchNhbrNode # latency
-  benchNhbr # latency
-  benchNhbrAtype # latency
-  benchNodeNode # latency
-  benchEdgeAttrs # latency
-  benchPrimitiveMix # latency
-  benchTaoAssocRange # latency
-  benchTaoAssocCount # latency
-  benchTaoObjGet # latency
-  benchTaoAssocGet # latency
-  benchTaoAssocTimeRange # latency
-  benchTaoAssocAdd # latency
-  benchTaoObjAdd # latency
-  benchTaoMix  # latency
+  #benchNhbrNode # latency
+  #benchNhbr # latency
+  #benchNhbrAtype # latency
+  #benchNodeNode # latency
+  #benchEdgeAttrs # latency
+  #benchPrimitiveMix # latency
+  #benchTaoAssocRange # latency
+  #benchTaoAssocCount # latency
+  #benchTaoObjGet # latency
+  #benchTaoAssocGet # latency
+  #benchTaoAssocTimeRange # latency
+  #benchTaoAssocAdd # latency
+  #benchTaoObjAdd # latency
+  #benchTaoMix  # latency
   #benchTaoMixWithUpdates # latency
+  benchNhbrNodeThput
+  benchNhbrNode2Thput
+  benchNodeNodeThput
+  benchNodeNode2Thput
   #benchPrimitiveMixThput
   #benchTaoMixThput
   #benchTaoMixWithUpdatesThput
@@ -61,42 +65,42 @@ function timestamp() {
 function setup() {
   # By default disable strict host key checking
   if [ "$SUCCINCT_SSH_OPTS" = "" ]; then
-    SUCCINCT_SSH_OPTS="-o StrictHostKeyChecking=no -i $SUCCINCT_CONF_DIR/cqlkeypair.pem"
+    SUCCINCT_SSH_OPTS="-o StrictHostKeyChecking=no"
   fi
 
   if [ "$dataset" = "twitter" ]; then
-    node_file_raw=/mnt2/twitter2010-40attr16each-tpch.node
-    edge_file_raw=/mnt2/twitter2010-npa128sa32isa64.assoc
-    $sbin/hosts.sh rm -rf /mnt2/queries
-    $sbin/hosts.sh cp -r /mnt2/twitterQueries /mnt2/queries
+    node_file_raw=$HOME/data/twitter/twitter.node
+    edge_file_raw=$HOME/data/twitter/twitter.assoc
+    $sbin/hosts.sh rm -rf $HOME/queries
+    $sbin/hosts.sh cp -r $HOME/twitterQueries $HOME/queries
   elif [ "$dataset" = "uk" ]; then
-    node_file_raw=/mnt2/uk-2007-05-40attr16each-tpch.node
-    edge_file_raw=/mnt2/uk-2007-05-40attr16each-npa128sa32isa64.assoc
-    $sbin/hosts.sh rm -rf /mnt2/queries
-    $sbin/hosts.sh cp -r /mnt2/ukQueries /mnt2/queries
+    node_file_raw=$HOME/data/uk/uk.node
+    edge_file_raw=$HOME/data/uk/uk.assoc
+    $sbin/hosts.sh rm -rf $HOME/queries
+    $sbin/hosts.sh cp -r $HOME/ukQueries $HOME/queries
   elif [ "$dataset" = "orkut" ]; then
-    node_file_raw=/mnt2/orkut-40attr16each-tpch-npa128sa32isa64.node
-    edge_file_raw=/mnt2/orkut-40attr16each-npa128sa32isa64.assoc
-    $sbin/hosts.sh rm -rf /mnt2/queries
-    $sbin/hosts.sh cp -r /mnt2/orkutQueries /mnt2/queries
+    node_file_raw=$HOME/data/orkut/orkut.node
+    edge_file_raw=$HOME/data/orkut/orkut.assoc
+    $sbin/hosts.sh rm -rf $HOME/queries
+    $sbin/hosts.sh cp -r $HOME/orkutQueries $HOME/queries
   else
     echo "Must specify dataset."
     exit
   fi
 	
-	if [ "$master" = "localhost" ]; then
-		bash $sbin/../scripts/setup_dist.sh $node_file_raw $edge_file_raw $sa $isa $npa
+  if [ "$master" = "localhost" ]; then
+    bash $sbin/../scripts/setup_dist.sh $node_file_raw $edge_file_raw $sa $isa $npa
   else
     ssh $SUCCINCT_SSH_OPTS "$master" "bash $sbin/../scripts/setup_dist.sh $node_file_raw $edge_file_raw $sa $isa $npa"
-	fi
+  fi
 }
 
 function bench_latency() {
-	
-	if [ "$dataset" = "" ]; then
-		echo "Must specify dataset."
-		exit
-	fi
+
+  if [ "$dataset" = "" ]; then
+    echo "Must specify dataset."
+    exit
+  fi
 	
   client=`tail -n 1 "$SUCCINCT_CONF_DIR/servers"`
   
@@ -109,8 +113,8 @@ function bench_latency() {
     fi
   fi
 	
-  ssh $SUCCINCT_SSH_OPTS "$client" "rm -rf /mnt2/queries"
-	scp $SUCCINCT_SSH_OPTS -r /mnt2/${dataset}Queries $client:/mnt2/queries
+  ssh $SUCCINCT_SSH_OPTS "$client" "rm -rf $HOME/queries"
+  scp $SUCCINCT_SSH_OPTS -r $HOME/${dataset}Queries $client:$HOME/queries
   ssh $SUCCINCT_SSH_OPTS "$client" "$benchType=T bash ${currDir}/../scripts/bench_func.sh $node_file_raw $edge_file_raw 0 localhost false $sa $isa $npa $dataset 2>&1"
 }
 
@@ -120,7 +124,9 @@ declare -A benchMap=(
   ["benchTaoMixWithUpdatesThput"]="taoMixWithUpdates"
   ["benchPrimitiveMixThput"]="mix"
   ["benchNodeNodeThput"]="get_nodes2"
+  ["benchNodeNode2Thput"]="get_nodes22"
   ["benchNhbrNodeThput"]="get_nhbrsNode"
+  ["benchNhbrNode2Thput"]="get_nhbrsNode2"
   ["benchEdgeAttrsThput"]="getEdgeAttrs"
   ["benchNhbrAtypeThput"]="get_nhbrsAtype"
   ["benchNhbrThput"]="get_nhbrs"
@@ -132,7 +138,7 @@ declare -A benchMap=(
 )
 
 for throughput_threads in ${threads[*]}; do
-  for bench in get_nodes2 get_nhbrsNode get_nhbrsAtype getEdgeAttrs get_nhbrs tao_mix mix taoMixWithUpdates; do
+  for bench in get_nodes2 get_nodes22 get_nhbrsNode get_nhbrsNode2 get_nhbrsAtype getEdgeAttrs get_nhbrs tao_mix mix taoMixWithUpdates; do
     bash $sbin/hosts.sh \
       rm -rf throughput_${bench}-npa128sa32isa64-${throughput_threads}clients.txt
   done

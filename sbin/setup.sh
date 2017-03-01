@@ -30,8 +30,8 @@ function setup() {
     exit -1
   fi
 
-  node_file_raw=$HOME/rpq/succinct/${dataset}/${dataset}.node
-  edge_file_raw=$HOME/rpq/succinct/${dataset}/${dataset}.assoc
+  node_file_raw=$HOME/data/${dataset}/${dataset}.node
+  edge_file_raw=$HOME/data/${dataset}/${dataset}.assoc
 
   if [ "$master" = "localhost" ]; then
     bash $sbin/../scripts/setup_dist.sh $node_file_raw $edge_file_raw $sa $isa $npa
