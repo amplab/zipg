@@ -133,7 +133,4 @@ $ZIPG_HOME/scripts/download_data.sh <dataset-name>
 
 If you have any doubts or would like to report bugs, please contact us at:
 
-* anuragk [at] berkeley.edu
-* ragarwal [at] cs.cornell.edu
-
-Please note that the repo is undergoing rapid changes, and there may be temporary inconsistencies in the instructions and the repo.
+* anurag.khandelwal [at] yale.edu
